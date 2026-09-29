@@ -75,11 +75,11 @@ public sealed partial class LobbyViewModel : ViewModelBase
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsSignedIn), nameof(IsSignedOut), nameof(UserText))]
-    [NotifyCanExecuteChangedFor(nameof(SignInCommand), nameof(SignOutCommand), nameof(RefreshGamesCommand), nameof(CreateChallengeCommand), nameof(AcceptCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SignInCommand), nameof(SignInWithGoogleCommand), nameof(SignOutCommand), nameof(RefreshGamesCommand), nameof(CreateChallengeCommand), nameof(AcceptCommand))]
     private OgsSession? _session;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SignInCommand), nameof(SignOutCommand), nameof(RefreshGamesCommand), nameof(CreateChallengeCommand), nameof(AcceptCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SignInCommand), nameof(SignInWithGoogleCommand), nameof(SignOutCommand), nameof(RefreshGamesCommand), nameof(CreateChallengeCommand), nameof(AcceptCommand))]
     private bool _isBusy;
 
     [ObservableProperty]
@@ -232,9 +232,28 @@ public sealed partial class LobbyViewModel : ViewModelBase
             else
             {
                 StatusMessage = "Autoriza a Hoshi en la ventana del navegador…";
-                await _ogs.SignInWithBrowserAsync(ct);
+                await _ogs.SignInWithBrowserAsync(OgsLoginProvider.Ogs, ct);
             }
 
+            Session = _ogs.Session;
+            StatusMessage = null;
+        });
+        if (Session is not null)
+        {
+            await LoadAsync();
+        }
+    }
+
+    private bool CanSignInWithGoogle() => !IsBusy && Session is null && IsOAuthMode;
+
+    /// <summary>Google sign-in handled by OGS in the browser; Hoshi only receives the OGS authorization.</summary>
+    [RelayCommand(CanExecute = nameof(CanSignInWithGoogle))]
+    private async Task SignInWithGoogleAsync()
+    {
+        await RunAsync(async ct =>
+        {
+            StatusMessage = "Entra con Google en el navegador y autoriza a Hoshi…";
+            await _ogs.SignInWithBrowserAsync(OgsLoginProvider.Google, ct);
             Session = _ogs.Session;
             StatusMessage = null;
         });

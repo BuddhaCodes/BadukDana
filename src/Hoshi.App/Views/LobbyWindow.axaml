@@ -74,10 +74,12 @@
                   Width="320" Spacing="10" x:Name="SignInPanel">
         <TextBlock Text="Inicia sesión en OGS" FontSize="18" HorizontalAlignment="Center" />
         <StackPanel IsVisible="{Binding IsOAuthMode}" Spacing="10">
-          <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center"
-                     Text="Se abrirá tu navegador en OGS. Allí puedes entrar con usuario y contraseña, Google, Facebook o GitHub, y luego autorizar a Hoshi. Hoshi nunca ve tus credenciales." />
+          <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                  Content="Continuar con Google" Command="{Binding SignInWithGoogleCommand}" x:Name="GoogleSignInButton" />
           <Button Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                  Content="Iniciar sesión con el navegador" Command="{Binding SignInCommand}" x:Name="BrowserSignInButton" />
+                  Content="Iniciar sesión con OGS" Command="{Binding SignInCommand}" x:Name="BrowserSignInButton" />
+          <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center"
+                     Text="Se abre tu navegador: entras en OGS (con Google o tu usuario) y autorizas a Hoshi. Hoshi nunca ve tus credenciales." />
         </StackPanel>
         <StackPanel IsVisible="{Binding IsPasswordMode}" Spacing="8">
           <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center"
@@ -91,7 +93,7 @@
           <Button Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                   Content="Iniciar sesión" Command="{Binding SignInCommand}" x:Name="PasswordSignInButton" />
           <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center" x:Name="SocialAccountHint"
-                     Text="¿Tu cuenta usa Google? Este modo necesita una contraseña de OGS: crea una cuenta de pruebas en beta.online-go.com o usa online-go.com, donde el inicio de sesión con Google funciona desde el navegador." />
+                     Text="¿Tu cuenta usa Google? En beta hace falta una contraseña de OGS: ponle una en Configuración → Cuenta de beta.online-go.com, o crea una cuenta de pruebas. «Continuar con Google» está disponible con online-go.com." />
         </StackPanel>
       </StackPanel>
 

@@ -30,7 +30,8 @@ public interface IOgsClient
     /// <summary>Signs in silently with a stored token; false when the user has to sign in.</summary>
     Task<bool> RestoreAsync(CancellationToken cancellationToken);
 
-    Task SignInWithBrowserAsync(CancellationToken cancellationToken);
+    /// <summary>Browser OAuth sign-in, optionally starting at one of OGS's social logins (Google…).</summary>
+    Task SignInWithBrowserAsync(OgsLoginProvider provider, CancellationToken cancellationToken);
 
     Task SignInWithPasswordAsync(string username, string password, CancellationToken cancellationToken);
 
@@ -127,9 +128,9 @@ public sealed class OgsClient : IOgsClient, IAsyncDisposable
         return true;
     }
 
-    public async Task SignInWithBrowserAsync(CancellationToken cancellationToken)
+    public async Task SignInWithBrowserAsync(OgsLoginProvider provider, CancellationToken cancellationToken)
     {
-        await _auth.SignInWithBrowserAsync(_browser.OpenAsync, cancellationToken);
+        await _auth.SignInWithBrowserAsync(provider, _browser.OpenAsync, cancellationToken);
         await GoOnlineAsync(cancellationToken);
     }
 

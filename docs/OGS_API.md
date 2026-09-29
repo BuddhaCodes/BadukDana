@@ -36,14 +36,15 @@ Hoshi usa dos modos, elegidos por configuración (`Ogs:AuthMode`):
 - REST: `Authorization: Bearer <access_token>`.
 - ⚠️ Sin verificar hasta la primera prueba: que OGS acepte PKCE sin secreto y que `ui/config` devuelva `user_jwt` con Bearer.
 
-- **Cuentas de Google/Facebook/GitHub:** funcionan sin código extra. El inicio de sesión social ocurre en la web de OGS dentro del navegador, antes de autorizar a Hoshi. Hoshi **no** integra Google directamente: la API de OGS no acepta tokens de Google y eso exigiría un secreto en la app.
+- **Botón «Continuar con Google»:** abre `GET /login/google-oauth2/?next=<ruta relativa de /oauth2/authorize/?…>` (ruta del login social de OGS, python-social-auth; verificada en `SocialLoginButtons.tsx`). Tras Google, OGS redirige a `next`, el usuario autoriza a Hoshi y el código llega al listener loopback como en el flujo normal. `next` debe ser relativo (social-auth rechaza otros hosts). Otras rutas: `/login/facebook/`, `/login/github/`, `/login/apple-id/` (`OgsLoginProvider`).
+- Hoshi **no** habla con Google ni recibe tokens de Google: la API de OGS no los acepta y exigiría un secreto en la app.
 
 ### 1.2 Login web (beta, desarrollo)
 - `GET /api/v1/ui/config` para obtener la cookie `csrftoken`.
 - `POST /api/v0/login` JSON `{ username, password, ebi, timezone }` con `X-CSRFToken` y `Referer`; la respuesta es la misma estructura que `ui/config` (usuario + `user_jwt`) y deja la cookie de sesión.
 - Las peticiones siguientes usan esas cookies (+ CSRF en escrituras). Las cookies las gestiona `OgsAuthService` (el `HttpClient` tiene `UseCookies=false`).
 - La contraseña se envía una vez y se borra del view model inmediatamente; nunca se guarda ni se registra.
-- Las cuentas que solo usan Google no tienen contraseña de OGS: para beta, crear una cuenta de pruebas con usuario y contraseña (sirve también como segunda cuenta).
+- Beta no admite apps OAuth, así que ahí no hay botón de Google. Una cuenta solo-Google puede ponerse contraseña en Configuración → Cuenta (`password_is_set: false` permite fijarla sin la anterior), o usar una cuenta de pruebas.
 
 ### 1.3 JWT del WebSocket
 - `user_jwt` de `ui/config` (o de la respuesta del login). Invitado: `jwt: ""`.
