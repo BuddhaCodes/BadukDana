@@ -38,6 +38,16 @@
               TileMode="Tile" Stretch="None" AlignmentX="Center" AlignmentY="Center"
               DestinationRect="0,0,87,195" />
 
+  <!-- Theme-driven keys: defaults here, replaced at start-up and on theme change by ThemeService. -->
+  <SolidColorBrush x:Key="EditBar.Foreground" Color="#222222" />
+  <SolidColorBrush x:Key="EditBar.Hover" Color="#B3AC53" />
+  <SolidColorBrush x:Key="Bg.Surround" Color="#C2CB9C" />
+  <FontFamily x:Key="Font.UI">avares://Hoshi/Assets/Fonts/Manrope#Manrope</FontFamily>
+  <FontFamily x:Key="Font.Title">avares://Hoshi/Assets/Fonts/Manrope#Manrope</FontFamily>
+  <FontFamily x:Key="Font.Mono">avares://Hoshi/Assets/Fonts/JetBrainsMono#JetBrains Mono</FontFamily>
+  <FontFamily x:Key="Font.Brand">avares://Hoshi/Assets/Fonts/ShipporiMincho#Shippori Mincho</FontFamily>
+  <x:Double x:Key="Font.Size.Title">14</x:Double>
+
   <x:Double x:Key="BottomBar.Height">40</x:Double>
   <x:Double x:Key="Font.Size.Small">12</x:Double>
   <x:Double x:Key="Font.Size.Normal">13</x:Double>
