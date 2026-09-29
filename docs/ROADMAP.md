@@ -21,12 +21,12 @@ Cada tarea termina con: compila sin warnings, tests en verde, y una captura (si 
 - [x] Juego local 2 jugadores: clic para jugar, pasar (P), deshacer (Ctrl+Z), nueva partida 19/13/9 (Ctrl+N).
 **Aceptación:** partida 19×19 local jugable; redimensionar la ventana mantiene el tablero nítido; aspecto cercano a Sabaki.
 
-## Fase 3 — SGF y árbol de variantes
-- [ ] Parser/serializer SGF con tests de ida y vuelta (usar SGF de ejemplo de dominio público).
-- [ ] `GameCursor` y navegación por teclado/rueda.
-- [ ] `GameTreePanel` y `CommentPanel`.
-- [ ] Abrir/guardar, arrastrar y soltar `.sgf`, diálogo de info de partida.
-- [ ] Modo edición (añadir piedras, marcadores, etiquetas).
+## Fase 3 — SGF y árbol de variantes ✅ 2026-09-29 (70 tests Sgf + 20 de App)
+- [x] Parser/serializer SGF con tests de ida y vuelta (SGF de muestra propio, CC0, en `tests/Hoshi.Sgf.Tests/Samples`).
+- [x] `GameCursor` y navegación por teclado (←/→/Home/End/↑/↓) y rueda.
+- [x] Panel de árbol de variantes (`GameTreeControl`) y panel de comentarios.
+- [x] Abrir/guardar (Ctrl+O / Ctrl+S / Ctrl+Shift+S), arrastrar y soltar `.sgf`, diálogo de info de partida (Ctrl+I).
+- [x] Modo edición (Ctrl+E): piedras de colocación, triángulo, cuadrado, círculo, cruz, etiquetas.
 **Aceptación:** abrir un SGF con variantes y comentarios, editar, guardar y reabrir sin pérdidas.
 
 ## Fase 4 — OGS: sesión y lobby

@@ -38,12 +38,17 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 - `Scoring.Score(board, deadStones, komi, handicap) → ScoreResult` — territorio o área según el `RuleSet`; las piedras muertas cuentan como prisioneros y su punto como territorio; las regiones que tocan ambos colores son dame (seki). Los ojos en seki cuentan como territorio (modo no estricto, como OGS). `OwnerAt(point)` para el overlay de territorio.
 - `GameClock` — modelos de tiempo (absoluto, Fischer, byo-yomi, canadiense, simple) — **pendiente, Fase 5**.
 
-## Hoshi.Sgf
+## Hoshi.Sgf (implementado en la Fase 3)
 
-- `GameTree` / `GameNode`: nodo con propiedades (`B`, `W`, `AB`, `AW`, `C`, `LB`, `TR`, `SQ`, `CR`, `MA`...), hijos ordenados, padre.
-- Parser tolerante (recupera errores, soporta escapes `\]`, múltiples juegos en un archivo, codificaciones vía `CA`).
-- Serializer que produce SGF FF[4] válido y estable (orden de propiedades determinista para diffs limpios).
-- `GameCursor`: navegación (siguiente, anterior, variante siguiente, ir a nodo) y cálculo perezoso de `BoardState` por nodo (con caché).
+- `GameTree` (raíz + `Info`) / `GameNode`: propiedades ordenadas con valores sin escapar, hijos ordenados (el primero es la línea principal), `Parent`, `Descendants()`.
+  - Ayudas tipadas: `GetMove(size) → SgfMove?` (pase = `""` o `tt`), `GetPoints(id)` (expande listas comprimidas `aa:cc`), `GetMarkup() → Markup(Point, MarkupKind, Text?)`, `Comment`.
+- `GameInfo`: vista tipada del nodo raíz (SZ con tamaño rectangular, KM, HA, RU con alias de otros programas, PB/BR/PW/WR, DT, EV, RE, GN, PC). Asignar vacío elimina la propiedad.
+- `SgfParser`: tolerante (texto previo, `)` final ausente, valores sin cerrar, identificadores FF[3] en minúsculas, varios juegos por archivo) con `Warnings`. Decodifica bytes por BOM → `CA` → UTF-8 estricto → ISO-8859-1; soporta páginas de código asiáticas.
+- `SgfWriter`: FF[4] en UTF-8, siempre con `FF[4]GM[1]CA[UTF-8]AP[Hoshi:versión]`, orden de propiedades fijo (raíz/info, jugadas y colocación, anotaciones, marcas, resto alfabético) y escritura idempotente.
+- `GameCursor`: nodo actual, `BoardState` por nodo calculado de forma perezosa e iterativa con caché (invalidada al editar), recuerda la última variante visitada.
+  - Navegación: `Next/Previous/First/Last/NextVariation/PreviousVariation/GoTo`.
+  - Edición: `Play(Point?)` (reutiliza el hijo si la jugada ya existe; si no, crea variante), `ToggleSetupStone` (AB/AW/AE; en un nodo con jugada crea un hijo), `ToggleMarkup`, `NextFreeLabel`, `Comment`, `DeleteCurrent`, `PromoteToMainLine`.
+  - Jugadas ilegales en un archivo se colocan igualmente y se informan en `Warnings`. Tableros > 25 → `NotSupportedException`.
 
 ## Hoshi.Ogs
 
@@ -76,6 +81,12 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 - Escala al tamaño disponible manteniendo proporción cuadrada; usa `RenderTargetBitmap`/cachés para texturas.
 - Expone: `BoardState`, `Markers`, `ShowCoordinates`, `LastMove`, `IsInteractive`, evento `PointClicked(Point, MouseButton)`.
 - Animación sutil al colocar piedra (opcional, desactivable).
+
+### GameViewModel y paneles (Fase 3)
+- `GameViewModel` envuelve un `GameCursor`: jugar/pasar/deshacer (deshacer borra la jugada si es hoja), navegación, modo edición con `EditTool`, abrir/guardar (`IFileDialogService`), info de partida y confirmaciones (`IDialogService`), título con `*` si hay cambios.
+- `GameTreeLayout` (filas = profundidad; línea principal en la columna 0; cada variante en la primera columna libre para todo su subárbol) y `GameTreeControl` (dibujo, clic para navegar, auto-scroll al nodo actual).
+- Barra lateral: jugadores/capturas, árbol, comentario. Barra inferior con navegación, menú Archivo y, en modo edición, herramientas.
+- Atajos de una letra (P) solo en el área del tablero, para que no se disparen al escribir un comentario.
 
 ### Servicios de App
 - `INavigationService`, `IDialogService`, `ISettingsService` (JSON en carpeta de datos del usuario), `ISoundService` (clic de piedra, captura, aviso de tiempo), `ISecureStore`.
