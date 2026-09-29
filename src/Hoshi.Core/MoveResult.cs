@@ -31,6 +31,13 @@ public sealed class MoveResult
 
     public bool IsLegal => State is not null;
 
+    /// <summary>A legal result for a pass (no captures), for callers that treat moves and passes uniformly.</summary>
+    public static MoveResult ForPass(BoardState state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        return new MoveResult(state, null, []);
+    }
+
     internal static MoveResult Legal(BoardState state, IReadOnlyList<Point> captured) => new(state, null, captured);
 
     internal static MoveResult Illegal(IllegalMoveReason reason) => new(null, reason, []);
