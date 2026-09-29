@@ -1,0 +1,22 @@
+{
+  "active_games": [
+    {
+      "id": 5550001,
+      "name": "Friendly Match",
+      "width": 19,
+      "height": 19,
+      "black": { "id": 1001, "username": "kuro_test", "ranking": 25.4, "pro": false },
+      "white": { "id": 2002, "username": "shiro_test", "ranking": 31.2, "pro": false },
+      "json": { "game_id": 5550001, "phase": "play", "player_to_move": 1001, "moves": [[15, 3, 1200], [3, 15, 900]] }
+    },
+    {
+      "id": 5550002,
+      "name": "Correspondence",
+      "width": 9,
+      "height": 9,
+      "black": { "id": 3003, "username": "someone", "ranking": 10, "pro": false },
+      "white": { "id": 1001, "username": "kuro_test", "ranking": 25.4, "pro": false },
+      "json": { "game_id": 5550002, "phase": "stone removal", "player_to_move": 3003 }
+    }
+  ]
+}

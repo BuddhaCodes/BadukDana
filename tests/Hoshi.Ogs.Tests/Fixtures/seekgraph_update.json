@@ -1,0 +1,4 @@
+[
+  { "challenge_id": 900001, "delete": true },
+  { "challenge_id": 900002, "game_started": true, "game_id": 7770002, "creator": 5005, "black": { "id": 5005, "username": "ranked_player" }, "white": { "id": 6006, "username": "x" }, "time_control": "fischer", "time_control_parameters": {} }
+]

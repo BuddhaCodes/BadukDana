@@ -1,0 +1,16 @@
+{
+  "user": {
+    "anonymous": false,
+    "id": 1001,
+    "username": "kuro_test",
+    "ranking": 25.4,
+    "professional": false,
+    "provisional": 0,
+    "email": "should-never-be-logged@example.invalid",
+    "ui_class": ""
+  },
+  "user_jwt": "eyJ0eXAiOiJKV1QifQ.test-jwt.signature",
+  "csrf_token": "ignored",
+  "cdn": "cdn.online-go.com",
+  "version": "5.0"
+}
