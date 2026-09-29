@@ -23,7 +23,22 @@
   <SolidColorBrush x:Key="Board.Wood" Color="{StaticResource Board.Wood.Color}" />
   <SolidColorBrush x:Key="Board.Line" Color="{StaticResource Board.Line.Color}" />
 
-  <x:Double x:Key="BottomBar.Height">36</x:Double>
+  <!-- Sabaki look (colours from Sabaki's index.css; tatami texture MIT, see THIRD_PARTY_NOTICES.md). -->
+  <Color x:Key="Bg.Bar.Color">#292A2D</Color>
+  <Color x:Key="Bg.Sidebar.Color">#111111</Color>
+  <Color x:Key="Bg.Properties.Color">#181818</Color>
+  <Color x:Key="Bg.EditBar.Color">#C4BD64</Color>
+  <Color x:Key="Bg.Tatami.Base.Color">#C2CB9C</Color>
+  <SolidColorBrush x:Key="Bg.Bar" Color="{StaticResource Bg.Bar.Color}" />
+  <SolidColorBrush x:Key="Bg.Sidebar" Color="{StaticResource Bg.Sidebar.Color}" />
+  <SolidColorBrush x:Key="Bg.Properties" Color="{StaticResource Bg.Properties.Color}" />
+  <SolidColorBrush x:Key="Bg.EditBar" Color="{StaticResource Bg.EditBar.Color}" />
+  <SolidColorBrush x:Key="Bg.Tatami.Base" Color="{StaticResource Bg.Tatami.Base.Color}" />
+  <ImageBrush x:Key="Bg.Tatami" Source="/Assets/Sabaki/tatami.png"
+              TileMode="Tile" Stretch="None" AlignmentX="Center" AlignmentY="Center"
+              DestinationRect="0,0,87,195" />
+
+  <x:Double x:Key="BottomBar.Height">40</x:Double>
   <x:Double x:Key="Font.Size.Small">12</x:Double>
   <x:Double x:Key="Font.Size.Normal">13</x:Double>
 </ResourceDictionary>
