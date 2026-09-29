@@ -4,14 +4,14 @@ using Point = Hoshi.Core.Point;
 
 namespace Hoshi.App.Tests;
 
-public sealed class LocalGameViewModelTests
+public sealed class GameViewModelTests
 {
     private static Point P(int x, int y) => new(x, y);
 
     [Fact]
     public void Starts_with_an_empty_19x19_board_and_black_to_move()
     {
-        var game = new LocalGameViewModel();
+        var game = new GameViewModel();
 
         game.Board.Width.Should().Be(19);
         game.Board.ToMove.Should().Be(Stone.Black);
@@ -23,7 +23,7 @@ public sealed class LocalGameViewModelTests
     [Fact]
     public void Playing_alternates_colours_and_records_the_last_move()
     {
-        var game = new LocalGameViewModel(9, RuleSet.Japanese);
+        var game = new GameViewModel(9, RuleSet.Japanese);
 
         game.PlayCommand.Execute(P(2, 2));
         game.PlayCommand.Execute(P(6, 6));
@@ -38,7 +38,7 @@ public sealed class LocalGameViewModelTests
     [Fact]
     public void Illegal_moves_leave_the_position_unchanged_and_explain_why()
     {
-        var game = new LocalGameViewModel(9, RuleSet.Japanese);
+        var game = new GameViewModel(9, RuleSet.Japanese);
         game.PlayCommand.Execute(P(4, 4));
         BoardState before = game.Board;
 
@@ -51,7 +51,7 @@ public sealed class LocalGameViewModelTests
     [Fact]
     public void Undo_restores_the_previous_position()
     {
-        var game = new LocalGameViewModel(9, RuleSet.Japanese);
+        var game = new GameViewModel(9, RuleSet.Japanese);
         game.PlayCommand.Execute(P(2, 2));
         BoardState afterFirst = game.Board;
         game.PlayCommand.Execute(P(3, 3));
@@ -66,7 +66,7 @@ public sealed class LocalGameViewModelTests
     [Fact]
     public void Captures_are_shown()
     {
-        var game = new LocalGameViewModel(9, RuleSet.Japanese);
+        var game = new GameViewModel(9, RuleSet.Japanese);
         foreach (Point p in new[] { P(1, 0), P(0, 0), P(8, 8) })
         {
             game.PlayCommand.Execute(p);
@@ -82,7 +82,7 @@ public sealed class LocalGameViewModelTests
     [Fact]
     public void Two_consecutive_passes_end_the_game_and_undo_resumes_it()
     {
-        var game = new LocalGameViewModel(9, RuleSet.Japanese);
+        var game = new GameViewModel(9, RuleSet.Japanese);
 
         game.PassCommand.Execute(null);
         game.StatusText.Should().Be("Negras pasa · juegan blancas");
@@ -100,7 +100,7 @@ public sealed class LocalGameViewModelTests
     [Fact]
     public void Ghost_stone_only_appears_on_legal_points()
     {
-        var game = new LocalGameViewModel(9, RuleSet.Japanese);
+        var game = new GameViewModel(9, RuleSet.Japanese);
         game.PlayCommand.Execute(P(4, 4));
 
         game.HoverPoint = P(3, 3);
@@ -116,7 +116,7 @@ public sealed class LocalGameViewModelTests
     [Fact]
     public void New_game_resets_with_the_requested_size()
     {
-        var game = new LocalGameViewModel(19, RuleSet.Japanese);
+        var game = new GameViewModel(19, RuleSet.Japanese);
         game.PlayCommand.Execute(P(3, 3));
 
         game.NewGameCommand.Execute(13);
