@@ -75,7 +75,7 @@
         <TextBlock Text="Inicia sesión en OGS" FontSize="18" HorizontalAlignment="Center" />
         <StackPanel IsVisible="{Binding IsOAuthMode}" Spacing="10">
           <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center"
-                     Text="Se abrirá tu navegador para autorizar a Hoshi. Hoshi nunca ve tu contraseña." />
+                     Text="Se abrirá tu navegador en OGS. Allí puedes entrar con usuario y contraseña, Google, Facebook o GitHub, y luego autorizar a Hoshi. Hoshi nunca ve tus credenciales." />
           <Button Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                   Content="Iniciar sesión con el navegador" Command="{Binding SignInCommand}" x:Name="BrowserSignInButton" />
         </StackPanel>
@@ -90,6 +90,8 @@
           </TextBox>
           <Button Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                   Content="Iniciar sesión" Command="{Binding SignInCommand}" x:Name="PasswordSignInButton" />
+          <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center" x:Name="SocialAccountHint"
+                     Text="¿Tu cuenta usa Google? Este modo necesita una contraseña de OGS: crea una cuenta de pruebas en beta.online-go.com o usa online-go.com, donde el inicio de sesión con Google funciona desde el navegador." />
         </StackPanel>
       </StackPanel>
 
