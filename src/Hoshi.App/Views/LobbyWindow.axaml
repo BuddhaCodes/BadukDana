@@ -73,17 +73,27 @@
       <StackPanel IsVisible="{Binding IsSignedOut}" VerticalAlignment="Center" HorizontalAlignment="Center"
                   Width="320" Spacing="10" x:Name="SignInPanel">
         <TextBlock Text="Inicia sesión en OGS" FontSize="18" HorizontalAlignment="Center" />
+        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                Content="Continuar con Google" Command="{Binding SignInWithGoogleCommand}" x:Name="GoogleSignInButton"
+                ToolTip.Tip="Se abre OGS en el navegador (online-go.com); Hoshi nunca ve tu cuenta de Google" />
+        <Grid ColumnDefinitions="Auto,*" Margin="0,6,0,0">
+          <TextBlock Classes="secondary" Text="Servidor" VerticalAlignment="Center" Margin="0,0,10,0" />
+          <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding Servers}"
+                    SelectedItem="{Binding SelectedServer}" x:Name="ServerBox">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:ServerChoice"><TextBlock Text="{Binding Label}" /></DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+        </Grid>
         <StackPanel IsVisible="{Binding IsOAuthMode}" Spacing="10">
-          <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                  Content="Continuar con Google" Command="{Binding SignInWithGoogleCommand}" x:Name="GoogleSignInButton" />
           <Button Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                   Content="Iniciar sesión con OGS" Command="{Binding SignInCommand}" x:Name="BrowserSignInButton" />
           <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center"
-                     Text="Se abre tu navegador: entras en OGS (con Google o tu usuario) y autorizas a Hoshi. Hoshi nunca ve tus credenciales." />
+                     Text="Se abre tu navegador: entras en OGS y autorizas a Hoshi. Hoshi nunca ve tus credenciales." />
         </StackPanel>
         <StackPanel IsVisible="{Binding IsPasswordMode}" Spacing="8">
           <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center"
-                     Text="Modo de desarrollo (servidor beta). La contraseña se envía una sola vez y no se guarda." />
+                     Text="Servidor de pruebas: usuario y contraseña de beta. La contraseña se envía una sola vez y no se guarda." />
           <TextBox Watermark="Usuario" Text="{Binding Username}" x:Name="UsernameBox" />
           <TextBox Watermark="Contraseña" PasswordChar="•" Text="{Binding Password}" x:Name="PasswordBox">
             <TextBox.KeyBindings>
@@ -93,7 +103,7 @@
           <Button Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                   Content="Iniciar sesión" Command="{Binding SignInCommand}" x:Name="PasswordSignInButton" />
           <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center" x:Name="SocialAccountHint"
-                     Text="¿Tu cuenta usa Google? En beta hace falta una contraseña de OGS: ponle una en Configuración → Cuenta de beta.online-go.com, o crea una cuenta de pruebas. «Continuar con Google» está disponible con online-go.com." />
+                     Text="¿Cuenta de Google? «Continuar con Google» entra en online-go.com. Para beta necesitas contraseña (Configuración → Cuenta en beta.online-go.com) o una cuenta de pruebas." />
         </StackPanel>
       </StackPanel>
 

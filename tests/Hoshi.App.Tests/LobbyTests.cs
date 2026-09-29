@@ -27,7 +27,20 @@ internal sealed class FakeOgsClient : IOgsClient
     private OgsSession? _session;
     private List<OgsOpenChallenge> _open = [];
 
-    public OgsOptions Options { get; set; } = new() { BaseUrl = new Uri("https://beta.online-go.com"), AuthMode = OgsAuthMode.Password };
+    public static readonly OgsOptions Production = new() { AuthMode = OgsAuthMode.OAuth, ClientId = "id" };
+    public static readonly OgsOptions Beta = new() { BaseUrl = new Uri("https://beta.online-go.com"), AuthMode = OgsAuthMode.Password };
+
+    public IReadOnlyList<OgsOptions> Servers { get; } = [Production, Beta];
+
+    public OgsOptions Options { get; set; } = Beta;
+
+    public event EventHandler? ServerChanged;
+
+    public void SelectServer(OgsOptions server)
+    {
+        Options = server;
+        ServerChanged?.Invoke(this, EventArgs.Empty);
+    }
 
     public OgsSession? Session => _session;
 
@@ -208,7 +221,7 @@ public sealed class LobbyViewModelTests
     [Fact]
     public async Task OAuth_mode_signs_in_through_the_browser_without_credentials()
     {
-        _ogs.Options = new OgsOptions { AuthMode = OgsAuthMode.OAuth, ClientId = "id" };
+        _ogs.Options = FakeOgsClient.Production;
         LobbyViewModel vm = Create();
 
         vm.IsOAuthMode.Should().BeTrue();
@@ -223,7 +236,7 @@ public sealed class LobbyViewModelTests
     [Fact]
     public async Task Google_button_starts_the_browser_flow_at_OGS_google_login()
     {
-        _ogs.Options = new OgsOptions { AuthMode = OgsAuthMode.OAuth, ClientId = "id" };
+        _ogs.Options = FakeOgsClient.Production;
         _ogs.Games.Add(new OgsActiveGame(1, "Game", FakeOgsClient.Me, FakeOgsClient.Rival, 19, 19, 200, "play"));
         LobbyViewModel vm = Create();
 
@@ -237,15 +250,52 @@ public sealed class LobbyViewModelTests
     }
 
     [Fact]
-    public void Google_is_not_offered_in_beta_password_mode()
+    public async Task Google_from_beta_switches_to_online_go_com_first()
     {
-        Create().SignInWithGoogleCommand.CanExecute(null).Should().BeFalse();
+        LobbyViewModel vm = Create();
+        vm.IsPasswordMode.Should().BeTrue();
+        vm.SignInWithGoogleCommand.CanExecute(null).Should().BeTrue("Google is offered whatever server is selected");
+
+        await vm.SignInWithGoogleCommand.ExecuteAsync(null);
+
+        _ogs.Options.Should().BeSameAs(FakeOgsClient.Production);
+        _ogs.BrowserSignIns.Should().Equal(OgsLoginProvider.Google);
+        vm.SelectedServer!.Label.Should().Be("online-go.com");
+        vm.IsSignedIn.Should().BeTrue();
+    }
+
+    [Fact]
+    public void The_server_can_be_chosen_while_signed_out()
+    {
+        LobbyViewModel vm = Create();
+        var changed = new List<string?>();
+        vm.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
+
+        vm.Servers.Select(s => s.Label).Should().Equal("online-go.com", "beta.online-go.com (pruebas)");
+        vm.SelectedServer = vm.Servers[0];
+
+        _ogs.Options.Should().BeSameAs(FakeOgsClient.Production);
+        vm.IsOAuthMode.Should().BeTrue();
+        vm.ServerName.Should().Be("online-go.com");
+        changed.Should().Contain([nameof(LobbyViewModel.IsOAuthMode), nameof(LobbyViewModel.IsPasswordMode), nameof(LobbyViewModel.ServerName)]);
+    }
+
+    [Fact]
+    public async Task The_server_cannot_change_while_signed_in()
+    {
+        _ogs.HasStoredSession = true;
+        LobbyViewModel vm = Create();
+        await vm.InitializeAsync();
+
+        vm.SelectedServer = vm.Servers[0];
+
+        _ogs.Options.Should().BeSameAs(FakeOgsClient.Beta);
     }
 
     [Fact]
     public async Task Network_errors_become_a_friendly_message()
     {
-        _ogs.Options = new OgsOptions { AuthMode = OgsAuthMode.OAuth, ClientId = "id" };
+        _ogs.Options = FakeOgsClient.Production;
         _ogs.SignInError = new HttpRequestException("socket error");
         LobbyViewModel vm = Create();
 
@@ -406,6 +456,11 @@ public sealed class LobbyWindowTests
         window.FindControl<TextBox>("UsernameBox")!.IsEffectivelyVisible.Should().BeTrue();
         window.FindControl<TextBox>("PasswordBox")!.PasswordChar.Should().Be('•');
         window.FindControl<Button>("BrowserSignInButton")!.IsEffectivelyVisible.Should().BeFalse();
+        window.FindControl<Button>("GoogleSignInButton")!.IsEffectivelyVisible.Should().BeTrue();
+        window.FindControl<ComboBox>("ServerBox")!.IsEffectivelyVisible.Should().BeTrue();
+        using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
+        Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
+        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "phase4-lobby-beta.png"));
         window.FindControl<TabControl>("Tabs")!.IsVisible.Should().BeFalse();
         window.FindControl<TextBlock>("SocialAccountHint")!.IsEffectivelyVisible.Should().BeTrue();
     }
@@ -413,7 +468,7 @@ public sealed class LobbyWindowTests
     [AvaloniaFact]
     public void OAuth_mode_offers_Google_and_OGS_sign_in_and_is_saved_as_screenshot()
     {
-        var ogs = new FakeOgsClient { Options = new OgsOptions { AuthMode = OgsAuthMode.OAuth, ClientId = "id" } };
+        var ogs = new FakeOgsClient { Options = FakeOgsClient.Production };
         var window = new LobbyWindow { DataContext = new LobbyViewModel(ogs, new ImmediateDispatcher()) };
         window.Show();
 
@@ -473,34 +528,43 @@ public sealed class OgsConfigurationTests
     private static IConfiguration Config(params (string Key, string Value)[] values) =>
         new ConfigurationBuilder().AddInMemoryCollection(values.Select(v => KeyValuePair.Create(v.Key, (string?)v.Value))).Build();
 
-    [Fact]
-    public void Shipped_settings_use_OAuth_on_production_and_password_on_beta_for_development()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Shipped_settings_start_on_online_go_com_in_every_environment(bool development)
     {
         string dir = AppContext.BaseDirectory;
-        IConfiguration production = new ConfigurationBuilder().AddJsonFile(Path.Combine(dir, "appsettings.json")).Build();
-        IConfiguration development = new ConfigurationBuilder()
-            .AddJsonFile(Path.Combine(dir, "appsettings.json"))
-            .AddJsonFile(Path.Combine(dir, "appsettings.Development.json"))
-            .Build();
+        var builder = new ConfigurationBuilder().AddJsonFile(Path.Combine(dir, "appsettings.json"));
+        if (development)
+        {
+            builder.AddJsonFile(Path.Combine(dir, "appsettings.Development.json"));
+        }
 
-        OgsOptions prod = OgsServiceRegistration.ReadOptions(production);
-        prod.IsProduction.Should().BeTrue();
-        prod.AuthMode.Should().Be(OgsAuthMode.OAuth);
-        prod.ClientId.Should().NotBeNullOrEmpty();
-        prod.RedirectUri.Should().Be(new Uri("http://127.0.0.1:8734/callback"));
+        OgsServerCatalog catalog = OgsServerCatalog.FromConfiguration(builder.Build());
 
-        OgsOptions dev = OgsServiceRegistration.ReadOptions(development);
-        dev.BaseUrl.Host.Should().Be("beta.online-go.com");
-        dev.AuthMode.Should().Be(OgsAuthMode.Password);
-        dev.EffectiveWebSocketUrl.Should().Be(new Uri("wss://beta.online-go.com/"));
+        catalog.Initial.Should().BeSameAs(catalog.Production);
+        catalog.Production.AuthMode.Should().Be(OgsAuthMode.OAuth);
+        catalog.Production.ClientId.Should().NotBeNullOrEmpty();
+        catalog.Production.RedirectUri.Should().Be(new Uri("http://127.0.0.1:8734/callback"));
+        catalog.Beta.BaseUrl.Host.Should().Be("beta.online-go.com");
+        catalog.Beta.AuthMode.Should().Be(OgsAuthMode.Password);
+        catalog.Beta.EffectiveWebSocketUrl.Should().Be(new Uri("wss://beta.online-go.com/"));
     }
 
     [Fact]
-    public void Password_login_is_refused_against_production()
+    public void Beta_can_be_the_initial_server()
     {
-        Action read = () => OgsServiceRegistration.ReadOptions(Config(("Ogs:BaseUrl", "https://online-go.com"), ("Ogs:AuthMode", "Password")));
+        OgsServerCatalog catalog = OgsServerCatalog.FromConfiguration(Config(("Ogs:DefaultServer", "beta")));
 
-        read.Should().Throw<InvalidOperationException>();
+        catalog.Initial.Should().BeSameAs(catalog.Beta);
+    }
+
+    [Fact]
+    public void Production_never_uses_password_login_whatever_the_configuration()
+    {
+        OgsServerCatalog catalog = OgsServerCatalog.FromConfiguration(Config(("Ogs:AuthMode", "Password"), ("Ogs:BaseUrl", "https://online-go.com")));
+
+        catalog.All.Where(s => s.IsProduction).Should().OnlyContain(s => s.AuthMode == OgsAuthMode.OAuth);
     }
 
     [Fact]
@@ -517,8 +581,11 @@ public sealed class OgsConfigurationTests
     {
         using Microsoft.Extensions.Hosting.IHost host = AppHost.Create([]);
 
-        Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<IOgsClient>(host.Services)
-            .Should().NotBeNull();
+        IOgsClient ogs = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<IOgsClient>(host.Services);
+        ogs.Servers.Should().HaveCount(2);
+        ogs.Options.IsProduction.Should().BeTrue();
+        ogs.SelectServer(ogs.Servers[1]);
+        ogs.Options.BaseUrl.Host.Should().Be("beta.online-go.com");
         Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<MainWindowViewModel>(host.Services)
             .IsOnlineAvailable.Should().BeTrue();
     }
