@@ -13,6 +13,10 @@ namespace Hoshi.App.Services;
 /// </summary>
 public interface IOgsClient
 {
+    /// <summary>The servers the user can pick from (online-go.com and beta).</summary>
+    IReadOnlyList<OgsOptions> Servers { get; }
+
+    /// <summary>The selected server.</summary>
     OgsOptions Options { get; }
 
     OgsSession? Session { get; }
@@ -26,6 +30,11 @@ public interface IOgsClient
     event EventHandler? ConnectionStateChanged;
 
     event EventHandler? OpenChallengesChanged;
+
+    event EventHandler? ServerChanged;
+
+    /// <summary>Switches server; only allowed while signed out.</summary>
+    void SelectServer(OgsOptions server);
 
     /// <summary>Signs in silently with a stored token; false when the user has to sign in.</summary>
     Task<bool> RestoreAsync(CancellationToken cancellationToken);
@@ -84,23 +93,21 @@ public sealed class AvaloniaBrowserLauncher : IBrowserLauncher
 
 public sealed class OgsClient : IOgsClient, IAsyncDisposable
 {
-    private readonly OgsAuthService _auth;
-    private readonly OgsRestClient _rest;
-    private readonly OgsRealtimeClient _realtime;
+    private readonly OgsServerCatalog _servers;
+    private readonly IOgsConnectionFactory _factory;
     private readonly IBrowserLauncher _browser;
     private readonly ILogger<OgsClient> _logger;
+    private readonly Dictionary<Uri, OgsConnection> _connections = [];
+    private OgsConnection _current;
     private OgsSeekGraph? _seekGraph;
 
-    public OgsClient(OgsAuthService auth, OgsRestClient rest, OgsRealtimeClient realtime, IBrowserLauncher browser, ILogger<OgsClient> logger)
+    public OgsClient(OgsServerCatalog servers, IOgsConnectionFactory factory, IBrowserLauncher browser, ILogger<OgsClient> logger)
     {
-        _auth = auth;
-        _rest = rest;
-        _realtime = realtime;
+        _servers = servers;
+        _factory = factory;
         _browser = browser;
         _logger = logger;
-        _auth.SessionChanged += (_, _) => SessionChanged?.Invoke(this, EventArgs.Empty);
-        _realtime.StateChanged += (_, _) => ConnectionStateChanged?.Invoke(this, EventArgs.Empty);
-        _realtime.JwtUpdated += (_, jwt) => _auth.UpdateJwt(jwt);
+        _current = Connect(servers.Initial);
     }
 
     public event EventHandler? SessionChanged;
@@ -109,77 +116,147 @@ public sealed class OgsClient : IOgsClient, IAsyncDisposable
 
     public event EventHandler? OpenChallengesChanged;
 
-    public OgsOptions Options => _auth.Options;
+    public event EventHandler? ServerChanged;
 
-    public OgsSession? Session => _auth.Session;
+    public IReadOnlyList<OgsOptions> Servers => _servers.All;
 
-    public OgsConnectionState ConnectionState => _realtime.State;
+    public OgsOptions Options => _current.Auth.Options;
+
+    public OgsSession? Session => _current.Auth.Session;
+
+    public OgsConnectionState ConnectionState => _current.Realtime.State;
 
     public IReadOnlyList<OgsOpenChallenge> OpenChallenges => _seekGraph?.Challenges ?? [];
 
-    public async Task<bool> RestoreAsync(CancellationToken cancellationToken)
+    public void SelectServer(OgsOptions server)
     {
-        if (await _auth.RestoreAsync(cancellationToken) is null)
+        ArgumentNullException.ThrowIfNull(server);
+        if (server.BaseUrl == Options.BaseUrl)
         {
-            return false;
+            return;
         }
 
-        await GoOnlineAsync(cancellationToken);
-        return true;
+        if (Session is not null)
+        {
+            throw new InvalidOperationException("Cierra la sesión antes de cambiar de servidor.");
+        }
+
+        _current = Connect(server);
+        _logger.LogInformation("Selected OGS server {Host}", server.BaseUrl.Host);
+        ServerChanged?.Invoke(this, EventArgs.Empty);
+        ConnectionStateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Restores a stored OAuth session (only online-go.com keeps tokens), switching to that server.</summary>
+    public async Task<bool> RestoreAsync(CancellationToken cancellationToken)
+    {
+        OgsOptions original = Options;
+        foreach (OgsOptions server in _servers.All.OrderBy(s => s.BaseUrl == original.BaseUrl ? 0 : 1))
+        {
+            if (server.AuthMode != OgsAuthMode.OAuth)
+            {
+                continue;
+            }
+
+            OgsConnection c = Connect(server);
+            if (await c.Auth.RestoreAsync(cancellationToken) is not null)
+            {
+                if (c != _current)
+                {
+                    _current = c;
+                    ServerChanged?.Invoke(this, EventArgs.Empty);
+                }
+
+                await GoOnlineAsync(cancellationToken);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public async Task SignInWithBrowserAsync(OgsLoginProvider provider, CancellationToken cancellationToken)
     {
-        await _auth.SignInWithBrowserAsync(provider, _browser.OpenAsync, cancellationToken);
+        await _current.Auth.SignInWithBrowserAsync(provider, _browser.OpenAsync, cancellationToken);
         await GoOnlineAsync(cancellationToken);
     }
 
     public async Task SignInWithPasswordAsync(string username, string password, CancellationToken cancellationToken)
     {
-        await _auth.SignInWithPasswordAsync(username, password, cancellationToken);
+        await _current.Auth.SignInWithPasswordAsync(username, password, cancellationToken);
         await GoOnlineAsync(cancellationToken);
     }
 
     public async Task SignOutAsync(CancellationToken cancellationToken)
     {
         await GoOfflineAsync();
-        await _auth.SignOutAsync(cancellationToken);
+        await _current.Auth.SignOutAsync(cancellationToken);
     }
 
     public Task<IReadOnlyList<OgsActiveGame>> GetActiveGamesAsync(CancellationToken cancellationToken) =>
-        _rest.GetActiveGamesAsync(cancellationToken);
+        _current.Rest.GetActiveGamesAsync(cancellationToken);
 
     public Task<OgsUser?> FindPlayerAsync(string username, CancellationToken cancellationToken) =>
-        _rest.FindPlayerAsync(username, cancellationToken);
+        _current.Rest.FindPlayerAsync(username, cancellationToken);
 
     public Task<CreatedChallenge> CreateChallengeAsync(ChallengeRequest request, long? opponentId, CancellationToken cancellationToken) =>
-        _rest.CreateChallengeAsync(request, opponentId, cancellationToken);
+        _current.Rest.CreateChallengeAsync(request, opponentId, cancellationToken);
 
     public Task<bool> WaitForOpponentAsync(CreatedChallenge challenge, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(challenge);
         return ChallengeKeepAlive.WaitForOpponentAsync(
-            _realtime, challenge.ChallengeId, challenge.GameId, TimeSpan.FromSeconds(1), cancellationToken);
+            _current.Realtime, challenge.ChallengeId, challenge.GameId, TimeSpan.FromSeconds(1), cancellationToken);
     }
 
     public Task CancelChallengeAsync(long challengeId, CancellationToken cancellationToken) =>
-        _rest.CancelChallengeAsync(challengeId, cancellationToken);
+        _current.Rest.CancelChallengeAsync(challengeId, cancellationToken);
 
     public Task<long> AcceptChallengeAsync(long challengeId, CancellationToken cancellationToken) =>
-        _rest.AcceptChallengeAsync(challengeId, cancellationToken);
+        _current.Rest.AcceptChallengeAsync(challengeId, cancellationToken);
 
     public async ValueTask DisposeAsync()
     {
         await GoOfflineAsync();
-        await _realtime.DisposeAsync();
+        foreach (OgsConnection c in _connections.Values)
+        {
+            await c.Realtime.DisposeAsync();
+        }
+    }
+
+    private OgsConnection Connect(OgsOptions server)
+    {
+        if (!_connections.TryGetValue(server.BaseUrl, out OgsConnection? c))
+        {
+            c = _factory.Create(server);
+            OgsConnection captured = c;
+            c.Auth.SessionChanged += (_, _) =>
+            {
+                if (captured == _current)
+                {
+                    SessionChanged?.Invoke(this, EventArgs.Empty);
+                }
+            };
+            c.Realtime.StateChanged += (_, _) =>
+            {
+                if (captured == _current)
+                {
+                    ConnectionStateChanged?.Invoke(this, EventArgs.Empty);
+                }
+            };
+            c.Realtime.JwtUpdated += (_, jwt) => captured.Auth.UpdateJwt(jwt);
+            _connections[server.BaseUrl] = c;
+        }
+
+        return c;
     }
 
     private async Task GoOnlineAsync(CancellationToken cancellationToken)
     {
-        await _realtime.StartAsync(CancellationToken.None);
+        await _current.Realtime.StartAsync(CancellationToken.None);
         if (_seekGraph is null)
         {
-            _seekGraph = new OgsSeekGraph(_realtime);
+            _seekGraph = new OgsSeekGraph(_current.Realtime);
             _seekGraph.Changed += (_, _) => OpenChallengesChanged?.Invoke(this, EventArgs.Empty);
         }
 
@@ -192,6 +269,6 @@ public sealed class OgsClient : IOgsClient, IAsyncDisposable
         _seekGraph?.Dispose();
         _seekGraph = null;
         OpenChallengesChanged?.Invoke(this, EventArgs.Empty);
-        await _realtime.StopAsync();
+        await _current.Realtime.StopAsync();
     }
 }

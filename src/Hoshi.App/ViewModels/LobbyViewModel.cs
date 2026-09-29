@@ -19,6 +19,8 @@ public sealed record ColorChoice(string Label, ChallengeColor Color);
 
 public sealed record RulesChoice(string Label, RuleSet Rules);
 
+public sealed record ServerChoice(string Label, OgsOptions Options);
+
 /// <summary>One of the user's ongoing games.</summary>
 public sealed record ActiveGameItem(OgsActiveGame Game, string Opponent, string Board, bool IsMyTurn)
 {
@@ -137,6 +139,9 @@ public sealed partial class LobbyViewModel : ViewModelBase
         _ogs.SessionChanged += (_, _) => _ui.Post(() => Session = _ogs.Session);
         _ogs.ConnectionStateChanged += (_, _) => _ui.Post(UpdateConnectionText);
         _ogs.OpenChallengesChanged += (_, _) => _ui.Post(RefreshOpenChallenges);
+        _ogs.ServerChanged += (_, _) => _ui.Post(OnServerChanged);
+        Servers = [.. ogs.Servers.Select(o => new ServerChoice(
+            o.IsProduction ? "online-go.com" : $"{o.BaseUrl.Host} (pruebas)", o))];
         UpdateConnectionText();
     }
 
@@ -172,6 +177,25 @@ public sealed partial class LobbyViewModel : ViewModelBase
         new("Coreanas", RuleSet.Korean),
         new("AGA", RuleSet.Aga),
     ];
+
+    public IReadOnlyList<ServerChoice> Servers { get; }
+
+    /// <summary>The server to sign in to; changing it is only possible while signed out.</summary>
+    public ServerChoice? SelectedServer
+    {
+        get => Servers.FirstOrDefault(s => s.Options.BaseUrl == _ogs.Options.BaseUrl);
+        set
+        {
+            if (value is null || value.Options.BaseUrl == _ogs.Options.BaseUrl || Session is not null)
+            {
+                return;
+            }
+
+            ErrorMessage = null;
+            _ogs.SelectServer(value.Options);
+            OnServerChanged();
+        }
+    }
 
     public string ServerName => _ogs.Options.BaseUrl.Host;
 
@@ -244,7 +268,7 @@ public sealed partial class LobbyViewModel : ViewModelBase
         }
     }
 
-    private bool CanSignInWithGoogle() => !IsBusy && Session is null && IsOAuthMode;
+    private bool CanSignInWithGoogle() => !IsBusy && Session is null;
 
     /// <summary>Google sign-in handled by OGS in the browser; Hoshi only receives the OGS authorization.</summary>
     [RelayCommand(CanExecute = nameof(CanSignInWithGoogle))]
@@ -252,6 +276,14 @@ public sealed partial class LobbyViewModel : ViewModelBase
     {
         await RunAsync(async ct =>
         {
+            if (!IsOAuthMode)
+            {
+                // Beta cannot do OAuth: Google sign-in always goes to the server that supports it.
+                ServerChoice oauth = Servers.FirstOrDefault(s => s.Options.AuthMode == OgsAuthMode.OAuth)
+                    ?? throw new InvalidOperationException("No hay ningún servidor con inicio de sesión por navegador.");
+                SelectedServer = oauth;
+            }
+
             StatusMessage = "Entra con Google en el navegador y autoriza a Hoshi…";
             await _ogs.SignInWithBrowserAsync(OgsLoginProvider.Google, ct);
             Session = _ogs.Session;
@@ -430,6 +462,17 @@ public sealed partial class LobbyViewModel : ViewModelBase
         {
             OpenChallenges.Add(new OpenChallengeItem(c, c.Challenger.Id == me));
         }
+    }
+
+    private void OnServerChanged()
+    {
+        OnPropertyChanged(nameof(SelectedServer));
+        OnPropertyChanged(nameof(ServerName));
+        OnPropertyChanged(nameof(IsBeta));
+        OnPropertyChanged(nameof(IsPasswordMode));
+        OnPropertyChanged(nameof(IsOAuthMode));
+        SignInCommand.NotifyCanExecuteChanged();
+        UpdateConnectionText();
     }
 
     private void UpdateConnectionText() => ConnectionText = _ogs.ConnectionState switch
