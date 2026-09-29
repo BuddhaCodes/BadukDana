@@ -118,6 +118,14 @@ Respuestas paginadas: `{ count, next, previous, results: [...] }`.
 | `active_game` | `GameListEntry` | Cambios en tus partidas activas (turno, etc.) |
 | `notification` | `{ id, type, ... }` | Desafíos recibidos, fin de partida… |
 
+### Partidas — verificado (goban e61c56e, 2026-09-29) e implementado en `OgsGameSession`
+- `gamedata`: `players.{black,white}` (`id`, `username`, `rank`), `black_player_id`/`white_player_id`, `width`/`height`, `rules`, `komi`, `handicap`, `free_handicap_placement`, `initial_state {black,white}` (letras SGF), `initial_player`, `moves` (arrays `[x,y,Δt,color?]`, pasar `[-1,-1]`), `phase`, `time_control` (JGOF, segundos), `clock`, `removed`, y al terminar `winner` (id o `"black"`/`"white"`) + `outcome` (`"Resignation"`, `"Timeout"`, `"3.5 points"`…).
+- Colores: `initial_player` y alternancia; con `free_handicap_placement` negras juegan las primeras `handicap` jugadas (los pases implícitos durante la colocación se ignoran), como `GobanEngine`.
+- `game/{id}/move`: goban ignora `move_number` y añade la jugada a la última oficial; Hoshi hace lo mismo (lo registra en el log). El servidor devuelve también **la jugada propia**: Hoshi no coloca la piedra hasta ese eco.
+- Abandono / tiempo: llegan como un `gamedata` nuevo con `phase: "finished"`; el conteo termina con `removed_stones_accepted` (`phase: "finished"`, `score`, `winner`, `outcome`).
+- Reloj: `black_time`/`white_time` = `{thinking_time, periods, period_time}` en **segundos** (número = ms en tiempo simple); `last_move` en ms del servidor. Solo corre el jugador al turno: `elapsed = ahora_servidor − last_move` (o hasta `paused_since` si está en pausa); byo-yomi consume periodos completos (`OgsClockMath`, misma lógica que `computeNewPlayerClock`).
+- Chat: `game/{id}/chat` `{channel, line:{chat_id, body, date(s), move_number, player_id, username}}`.
+
 ### Partidas — cliente → servidor
 | Mensaje | Datos | Notas |
 |---|---|---|

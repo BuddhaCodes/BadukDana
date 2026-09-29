@@ -36,12 +36,15 @@ Cada tarea termina con: compila sin warnings, tests en verde, y una captura (si 
 - [x] Lobby (Ctrl+L): mis partidas activas, desafíos abiertos (seek graph), crear/aceptar/cancelar desafío con keepalive.
 **Aceptación:** iniciar sesión en beta (contraseña) y en online-go.com (OAuth), ver partidas activas y crear un desafío no clasificatorio visible desde la web de OGS.
 
-## Fase 5 — OGS: jugar
-- [ ] `OgsGameSession`: gamedata, jugadas, reloj con compensación de latencia, fin de partida.
-- [ ] Pasar, rendirse, deshacer, chat.
-- [ ] Fase de conteo: marcar piedras muertas y aceptar.
+## Fase 5 — OGS: jugar (en curso)
+- [x] `OgsGameSession`: gamedata, jugadas, reloj (algoritmo de goban + deriva del socket), fin de partida (abandono, tiempo, conteo).
+- [x] Tablero en línea: abrir desde el lobby (al empezar un desafío o con «Abrir» / doble clic en «Mis partidas»), jugar con clic (la piedra aparece al confirmar el servidor), revisar jugadas anteriores sin perder las nuevas.
+- [x] Pasar, abandonar (con confirmación), pedir/aceptar deshacer, chat. La tecla P no pasa en partidas en línea.
+- [x] Fase de conteo: clic en un grupo para marcarlo muerto o vivo, aceptar o reanudar; resultado en `RE`.
+- [x] Salir de la partida deja el árbol como partida local guardable en SGF.
 - [ ] Automatch.
 - [ ] Notificación (sonido/visual) cuando es tu turno en otra partida.
+- [ ] Capturar fixtures reales de beta y ajustar lo que difiera (forma exacta de `move_number`, reloj en fase de conteo).
 **Aceptación:** jugar una partida completa en beta contra otra cuenta (navegador) de principio a conteo final, con relojes coincidiendo ±1 s.
 
 ## Fase 6 — Pulido

@@ -72,7 +72,9 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 - `LobbyWindow` (Ctrl+L, botón «En línea»): pestañas "Mis partidas", "Desafíos abiertos", "Automatch", "Crear desafío".
 - Diálogos: Nueva partida local, Info de partida (propiedades SGF), Preferencias, Login OGS.
 
-### OgsGameCoordinator (decisión 2026-09-29)
+### OgsGameCoordinator (decisión 2026-09-29; implementado como `OnlineGameViewModel`, Fase 5)
+- `IOnlineGame` (App) envuelve `OgsGameSession` para poder probar con un falso. `MainWindowViewModel.OpenOnlineGameAsync` crea el `OnlineGameViewModel` y lo conecta; `GameViewModel.LoadOnline` enruta clics, pasar, marcadores (piedras muertas) y el estado al coordinador.
+- El árbol es la línea principal: `gamedata` lo reconstruye (AB/AW/PL/HA/KM/PB/PW…), cada jugada se añade al final y la vista la sigue solo si el usuario estaba en la última; deshacer aceptado recorta. El turno sale de las jugadas recibidas (`ColorForMove`), no del reloj.
 - Vive en App y es el único que conoce a la vez `OgsGameSession` y `GameCursor`.
 - Al recibir `gamedata` construye un `GameTree` con las jugadas; en cada `MoveReceived` añade el nodo (o confirma la jugada pendiente) y mueve el cursor si el usuario estaba en la última jugada.
 - Alternativa descartada: permitir `Ogs → Sgf`. Se descartó para mantener Ogs testeable con fixtures sin el modelo SGF y para no acoplar el protocolo al árbol de variantes.
