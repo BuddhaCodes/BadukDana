@@ -1,0 +1,67 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Hoshi.App.ViewModels"
+        xmlns:core="using:Hoshi.Core"
+        x:Class="Hoshi.App.Views.GameInfoWindow"
+        x:DataType="vm:GameInfoViewModel"
+        Title="Información de la partida"
+        Width="520" SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+  <Window.Styles>
+    <Style Selector="TextBlock.label">
+      <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="0,0,12,0" />
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="Margin" Value="0,3" />
+    </Style>
+  </Window.Styles>
+
+  <DockPanel Margin="20">
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,16,0,0">
+      <Button Content="Cancelar" IsCancel="True" Click="OnCancel" x:Name="CancelButton" />
+      <Button Content="Aceptar" IsDefault="True" Classes="accent" Click="OnOk" x:Name="OkButton"
+              IsEnabled="{Binding KomiIsValid}" />
+    </StackPanel>
+
+    <Grid ColumnDefinitions="Auto,*,Auto,90" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+      <TextBlock Grid.Row="0" Classes="label" Text="Negras" />
+      <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding BlackPlayer}" x:Name="BlackPlayerBox" />
+      <TextBlock Grid.Row="0" Grid.Column="2" Classes="label" Text="Rango" Margin="12,0" />
+      <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding BlackRank}" />
+
+      <TextBlock Grid.Row="1" Classes="label" Text="Blancas" />
+      <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding WhitePlayer}" />
+      <TextBlock Grid.Row="1" Grid.Column="2" Classes="label" Text="Rango" Margin="12,0" />
+      <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding WhiteRank}" />
+
+      <TextBlock Grid.Row="2" Classes="label" Text="Nombre" />
+      <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding GameName}" />
+
+      <TextBlock Grid.Row="3" Classes="label" Text="Evento" />
+      <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Event}" />
+
+      <TextBlock Grid.Row="4" Classes="label" Text="Fecha" />
+      <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Date}" Watermark="AAAA-MM-DD" />
+      <TextBlock Grid.Row="4" Grid.Column="2" Classes="label" Text="Lugar" Margin="12,0" />
+      <TextBox Grid.Row="4" Grid.Column="3" Text="{Binding Place}" />
+
+      <TextBlock Grid.Row="5" Classes="label" Text="Reglas" />
+      <ComboBox Grid.Row="5" Grid.Column="1" Margin="0,3" HorizontalAlignment="Stretch"
+                ItemsSource="{Binding AvailableRules}" SelectedItem="{Binding Rules}">
+        <ComboBox.ItemTemplate>
+          <DataTemplate x:DataType="core:RuleSet">
+            <TextBlock Text="{Binding Name}" />
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+      <TextBlock Grid.Row="5" Grid.Column="2" Classes="label" Text="Komi" Margin="12,0" />
+      <TextBox Grid.Row="5" Grid.Column="3" Text="{Binding Komi}" />
+
+      <TextBlock Grid.Row="6" Classes="label" Text="Resultado" />
+      <TextBox Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Result}" Watermark="B+R, W+3.5…" />
+    </Grid>
+  </DockPanel>
+</Window>
