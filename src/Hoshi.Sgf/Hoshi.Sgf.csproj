@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Hoshi.Sgf</RootNamespace>
+    <Description>SGF FF[4] parser/serializer and game tree.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Hoshi.Core\Hoshi.Core.csproj" />
+  </ItemGroup>
+</Project>

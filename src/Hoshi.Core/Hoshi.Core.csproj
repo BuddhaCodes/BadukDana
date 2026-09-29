@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Hoshi.Core</RootNamespace>
+    <Description>Pure Go rules: board, captures, ko, superko, scoring. No UI or I/O.</Description>
+  </PropertyGroup>
+
+</Project>
