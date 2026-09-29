@@ -1,0 +1,69 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Hoshi.App.ViewModels"
+        xmlns:c="using:Hoshi.App.Controls"
+        x:Class="Hoshi.App.Views.PreferencesWindow"
+        x:DataType="vm:PreferencesViewModel"
+        x:Name="Root"
+        Title="Preferencias"
+        Width="760" Height="600" MinWidth="560" MinHeight="460"
+        Background="{DynamicResource Bg.Window}"
+        WindowStartupLocation="CenterOwner">
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Escape" Command="{Binding #Root.CloseCommand}" />
+  </Window.KeyBindings>
+  <DockPanel Margin="24,20">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="0,0,0,16">
+      <TextBlock Text="星" FontFamily="{DynamicResource Font.Brand}" FontSize="30" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
+      <StackPanel VerticalAlignment="Center">
+        <TextBlock Text="Apariencia" FontFamily="{DynamicResource Font.Title}" FontSize="22" />
+        <TextBlock Classes="secondary" Text="El tema se aplica al momento y se recuerda." />
+      </StackPanel>
+    </StackPanel>
+
+    <Border DockPanel.Dock="Bottom" Padding="0,14,0,0">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel>
+          <ToggleSwitch IsChecked="{Binding Animations}" OnContent="Animaciones" OffContent="Animaciones" x:Name="AnimationsSwitch" />
+          <TextBlock Classes="secondary" Text="Fondo animado y animaciones al colocar piedras. Desactívalas si prefieres una vista quieta." TextWrapping="Wrap" />
+        </StackPanel>
+        <Button Grid.Column="1" Classes="accent" Content="Listo" Command="{Binding #Root.CloseCommand}" VerticalAlignment="Bottom" />
+      </Grid>
+    </Border>
+
+    <ListBox ItemsSource="{Binding Cards}" SelectedItem="{Binding Selected}" Background="Transparent" x:Name="ThemeList">
+      <ListBox.ItemsPanel>
+        <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+      </ListBox.ItemsPanel>
+      <ListBox.Styles>
+        <Style Selector="ListBoxItem">
+          <Setter Property="Padding" Value="0" />
+          <Setter Property="Margin" Value="0,0,14,14" />
+          <Setter Property="CornerRadius" Value="10" />
+        </Style>
+      </ListBox.Styles>
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:ThemeCard">
+          <Border Classes="theme-card" Classes.selected="{Binding IsSelected}" Width="220">
+            <StackPanel>
+              <Panel Height="120" ClipToBounds="True">
+                <c:ThemeBackground Kind="{Binding Theme.Background}" Animate="False" />
+                <c:GoBoardControl Board="{Binding SampleBoard}" BoardStyle="{Binding Theme.Board}" ShowCoordinates="False"
+                                  IsInteractive="False" Margin="14" />
+              </Panel>
+              <Border Background="{Binding Chrome}" Padding="12,10">
+                <StackPanel Spacing="3">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Ellipse Width="9" Height="9" Fill="{Binding Accent}" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Name}" FontFamily="{Binding TitleFont}" FontSize="16" Foreground="#F2F0EA" />
+                  </StackPanel>
+                  <TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontSize="11" Foreground="#B8B4AC" />
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </Border>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </DockPanel>
+</Window>
