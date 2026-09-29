@@ -70,7 +70,7 @@ Regla de dependencias: `App → Ogs, Sgf, Core` · `Ogs → Core` · `Sgf → Co
 3. Escribe tests primero para `Hoshi.Core` y `Hoshi.Sgf` (reglas y parsing tienen muchos casos borde).
 4. Al terminar una tarea: compila (`dotnet build`), ejecuta tests (`dotnet test`), y resume en 2–4 líneas qué cambió y qué queda pendiente.
 5. Si una decisión afecta la arquitectura, la UX o la privacidad del usuario, pregunta antes.
-6. Cuando pruebes contra OGS real, usa **beta.online-go.com** (servidor de pruebas) con el login de contraseña del entorno `Development`. Como beta no admite aplicaciones OAuth, el flujo OAuth solo puede probarse en online-go.com: ahí, **solo partidas no clasificatorias y privadas contra una segunda cuenta propia**; nunca clasificatorias (Hoshi siempre envía `ranked: false`). *(Actualizado 2026-09-29.)*
+6. Cuando pruebes contra OGS real, usa **beta.online-go.com** (servidor de pruebas) con usuario y contraseña (se elige en el selector de servidor del lobby). Como beta no admite aplicaciones OAuth, el flujo OAuth solo puede probarse en online-go.com: ahí, **solo partidas no clasificatorias y privadas contra una segunda cuenta propia**; nunca clasificatorias (Hoshi siempre envía `ranked: false`). *(Actualizado 2026-09-29.)*
 
 ## 6. Qué NO hacer
 

@@ -38,18 +38,17 @@ Dependency rule: `App → Ogs, Sgf, Core` · `Ogs → Core` · `Sgf → Core` ·
 
 ## Development against OGS
 
-| Environment | Server | Sign-in |
-|---|---|---|
-| `Development` | `https://beta.online-go.com` | Username + password (beta cannot register OAuth apps). The password is never stored. |
-| `Production` (default) | `https://online-go.com` | Browser OAuth (authorization code + PKCE, public client, redirect `http://127.0.0.1:8734/callback`). |
+Pick the server in the lobby (**Ctrl+L** or "En línea"); it does not depend on the .NET environment.
+
+| Server | Sign-in |
+|---|---|
+| `https://online-go.com` (default) | "Continuar con Google" or "Iniciar sesión con OGS": browser OAuth (authorization code + PKCE, public client, redirect `http://127.0.0.1:8734/callback`). |
+| `https://beta.online-go.com` (pruebas) | Username + password (beta cannot register OAuth apps). The password is never stored. |
 
 ```bash
-# Beta, for everyday development
-DOTNET_ENVIRONMENT=Development dotnet run --project src/Hoshi.App      # PowerShell: $env:DOTNET_ENVIRONMENT="Development"
-# online-go.com (OAuth) — unranked, private games against your own second account only
 dotnet run --project src/Hoshi.App
 ```
 
-Visual Studio / Rider: pick the launch profile "Hoshi (beta, desarrollo)" or "Hoshi (online-go.com)".
-Open the lobby with **Ctrl+L** (or "En línea" in the bottom bar). Hoshi never creates or accepts ranked games.
-No secrets live in the repository: the OAuth client id is public.
+"Continuar con Google" always uses online-go.com. There: unranked, private games against your own second
+account only. Hoshi never creates or accepts ranked games. Set `Ogs:DefaultServer` to `beta` in `appsettings.json`
+to start on beta. No secrets live in the repository: the OAuth client id is public.

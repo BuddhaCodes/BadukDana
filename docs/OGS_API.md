@@ -25,7 +25,7 @@ Hoshi usa dos modos, elegidos por configuración (`Ogs:AuthMode`):
 | Servidor | Modo | Motivo |
 |---|---|---|
 | `online-go.com` | `OAuth` (authorization code + PKCE) | Único modo permitido en producción (`ReadOptions` rechaza `Password` contra producción). |
-| `beta.online-go.com` | `Password` (login web) | **Beta no permite registrar aplicaciones OAuth** (comprobado 2026-09-29). Solo desarrollo, entorno `Development`. |
+| `beta.online-go.com` | `Password` (login web) | **Beta no permite registrar aplicaciones OAuth** (comprobado 2026-09-29). Solo pruebas. |
 
 ### 1.1 OAuth (producción)
 - Aplicación registrada en `https://online-go.com/oauth2/applications/`: **Client type = Public**, **Authorization grant = Authorization code**, redirect `http://127.0.0.1:8734/callback` (loopback IPv4, RFC 8252; no `localhost`). Sin `client_secret`. El `client_id` no es secreto y va en `appsettings.json`.
