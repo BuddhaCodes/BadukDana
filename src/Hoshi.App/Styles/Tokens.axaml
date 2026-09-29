@@ -1,0 +1,29 @@
+<!-- Design tokens. Source of truth: docs/DESIGN.md → "Paleta". -->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Color x:Key="Bg.Window.Color">#1E1E1E</Color>
+  <Color x:Key="Bg.Panel.Color">#252526</Color>
+  <Color x:Key="Bg.PanelAlt.Color">#2D2D30</Color>
+  <Color x:Key="Border.Subtle.Color">#3A3A3A</Color>
+  <Color x:Key="Text.Primary.Color">#E6E6E6</Color>
+  <Color x:Key="Text.Secondary.Color">#9A9A9A</Color>
+  <Color x:Key="Accent.Color">#E0A94A</Color>
+  <Color x:Key="Danger.Color">#D9534F</Color>
+  <Color x:Key="Board.Wood.Color">#DCB35C</Color>
+  <Color x:Key="Board.Line.Color">#CC1A1A1A</Color>
+
+  <SolidColorBrush x:Key="Bg.Window" Color="{StaticResource Bg.Window.Color}" />
+  <SolidColorBrush x:Key="Bg.Panel" Color="{StaticResource Bg.Panel.Color}" />
+  <SolidColorBrush x:Key="Bg.PanelAlt" Color="{StaticResource Bg.PanelAlt.Color}" />
+  <SolidColorBrush x:Key="Border.Subtle" Color="{StaticResource Border.Subtle.Color}" />
+  <SolidColorBrush x:Key="Text.Primary" Color="{StaticResource Text.Primary.Color}" />
+  <SolidColorBrush x:Key="Text.Secondary" Color="{StaticResource Text.Secondary.Color}" />
+  <SolidColorBrush x:Key="Accent" Color="{StaticResource Accent.Color}" />
+  <SolidColorBrush x:Key="Danger" Color="{StaticResource Danger.Color}" />
+  <SolidColorBrush x:Key="Board.Wood" Color="{StaticResource Board.Wood.Color}" />
+  <SolidColorBrush x:Key="Board.Line" Color="{StaticResource Board.Line.Color}" />
+
+  <x:Double x:Key="BottomBar.Height">36</x:Double>
+  <x:Double x:Key="Font.Size.Small">12</x:Double>
+  <x:Double x:Key="Font.Size.Normal">13</x:Double>
+</ResourceDictionary>
