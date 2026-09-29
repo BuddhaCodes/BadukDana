@@ -6,12 +6,57 @@
     <Setter Property="FontSize" Value="{DynamicResource Font.Size.Normal}" />
   </Style>
 
+  <!-- Sabaki's bar: flat #292A2D, 40 px; the edit bar turns olive with dark text. -->
   <Style Selector="Border.bottom-bar">
-    <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
-    <Setter Property="BorderThickness" Value="0,1,0,0" />
+    <Setter Property="Background" Value="{DynamicResource Bg.Bar}" />
     <Setter Property="Height" Value="{DynamicResource BottomBar.Height}" />
-    <Setter Property="Padding" Value="12,0" />
+    <Setter Property="Padding" Value="8,0" />
+  </Style>
+  <Style Selector="Border.bottom-bar.edit">
+    <Setter Property="Background" Value="{DynamicResource Bg.EditBar}" />
+  </Style>
+  <!-- Buttons inside sidebar panels: flat, like Sabaki's sidebar controls. -->
+  <Style Selector="Border.panel-header Button">
+    <Setter Property="Background" Value="#2A2A2A" />
+    <Setter Property="Foreground" Value="#D0D0D0" />
+    <Setter Property="Padding" Value="10,4" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="FontSize" Value="{DynamicResource Font.Size.Normal}" />
+  </Style>
+
+  <Style Selector="TextBlock.player">
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="MaxWidth" Value="220" />
+  </Style>
+
+  <!-- Turn toggle between the player names (Sabaki's bar). -->
+  <Style Selector="Border.turn-toggle">
+    <Setter Property="Width" Value="36" />
+    <Setter Property="Height" Value="20" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="Padding" Value="2" />
+    <Setter Property="Background" Value="#E6E6E6" />
+    <Setter Property="BorderBrush" Value="#111111" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Ellipse.turn-knob">
+    <Setter Property="Width" Value="15" />
+    <Setter Property="Height" Value="15" />
+    <Setter Property="StrokeThickness" Value="1" />
+  </Style>
+  <Style Selector="Ellipse.turn-knob.black">
+    <Setter Property="Fill" Value="#1A1A1A" />
+    <Setter Property="Stroke" Value="#000000" />
+  </Style>
+  <Style Selector="Ellipse.turn-knob.white">
+    <Setter Property="Fill" Value="#FFFFFF" />
+    <Setter Property="Stroke" Value="#9A9A9A" />
+  </Style>
+
+  <Style Selector="Border.properties-header">
+    <Setter Property="Background" Value="{DynamicResource Bg.Properties}" />
+    <Setter Property="Padding" Value="12,8,12,0" />
   </Style>
 
   <Style Selector="TextBlock.secondary">
@@ -43,11 +88,12 @@
   </Style>
 
   <Style Selector="RadioButton.tool">
+    <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border Name="bg" Background="Transparent" CornerRadius="3" Padding="9,3" MinHeight="26">
           <ContentPresenter Content="{TemplateBinding Content}" VerticalAlignment="Center"
-                            Foreground="{DynamicResource Text.Primary}" />
+                            Foreground="{TemplateBinding Foreground}" />
         </Border>
       </ControlTemplate>
     </Setter>
@@ -73,23 +119,41 @@
   </Style>
 
   <Style Selector="Border.panel-header">
-    <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
-    <Setter Property="BorderThickness" Value="0,0,0,1" />
+    <Setter Property="Background" Value="{DynamicResource Bg.Properties}" />
   </Style>
 
   <Style Selector="TextBox.comment">
-    <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
+    <Setter Property="Background" Value="{DynamicResource Bg.Properties}" />
+    <Setter Property="Foreground" Value="#D0D0D0" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="CornerRadius" Value="0" />
     <Setter Property="Padding" Value="12,10" />
     <Setter Property="VerticalContentAlignment" Value="Top" />
   </Style>
   <Style Selector="TextBox.comment:focus /template/ Border#PART_BorderElement">
-    <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
+    <Setter Property="Background" Value="{DynamicResource Bg.Properties}" />
     <Setter Property="BorderThickness" Value="0" />
   </Style>
   <Style Selector="TextBox.comment:pointerover /template/ Border#PART_BorderElement">
-    <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
+    <Setter Property="Background" Value="{DynamicResource Bg.Properties}" />
   </Style>
+  <!-- Edit bar overrides: last, so they win over the generic bar styles above. -->
+  <Style Selector="Border.bottom-bar.edit Button.bar">
+    <Setter Property="Foreground" Value="#222222" />
+  </Style>
+  <Style Selector="Border.bottom-bar.edit Button.bar:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Foreground" Value="#8E851B" />
+  </Style>
+  <Style Selector="Border.bottom-bar.edit RadioButton.tool">
+    <Setter Property="Foreground" Value="#222222" />
+  </Style>
+  <Style Selector="Border.bottom-bar.edit RadioButton.tool:pointerover /template/ Border#bg, Border.bottom-bar.edit RadioButton.tool:checked /template/ Border#bg">
+    <Setter Property="Background" Value="#B3AC53" />
+    <Setter Property="BorderBrush" Value="#8E851B" />
+  </Style>
+  <Style Selector="Border.bottom-bar.edit Button.bar:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="#B3AC53" />
+    <Setter Property="Foreground" Value="#222222" />
+  </Style>
+
 </Styles>

@@ -30,7 +30,7 @@ public sealed class MainWindowTests
     }
 
     [AvaloniaFact]
-    public void Rendered_frame_is_dark_and_is_saved_as_screenshot()
+    public void Board_sits_on_tatami_next_to_a_dark_sidebar_and_is_saved_as_screenshot()
     {
         var window = new MainWindow(new MainWindowViewModel()) { Width = 1100, Height = 800 };
         window.Show();
@@ -38,9 +38,11 @@ public sealed class MainWindowTests
         using WriteableBitmap frame = window.CaptureRenderedFrame()
             ?? throw new InvalidOperationException("No frame rendered");
 
-        // Outside the wooden board (the board control has a 16 px margin) the window must be exactly Bg.Window.
-        Pixels.Read(frame, 6, 6)
-            .Should().Be(BgWindow);
+        // Around the board: Sabaki's tatami (greenish straw); the sidebar is Sabaki's #111.
+        Color tatami = Pixels.Read(frame, 6, 6);
+        tatami.G.Should().BeGreaterThan(tatami.B, "tatami is green-yellow straw");
+        tatami.R.Should().BeInRange(120, 230);
+        Pixels.Read(frame, 1100 - 20, 400).Should().Be(Color.Parse("#111111"));
 
         string outDir = Path.Combine(AppContext.BaseDirectory, "screenshots");
         Directory.CreateDirectory(outDir);
@@ -73,5 +75,23 @@ public sealed class MainWindowTests
         services.GetRequiredService<MainWindowViewModel>().Game.Should().BeSameAs(services.GetRequiredService<GameViewModel>());
         services.GetRequiredService<MainWindowViewModel>()
             .Should().BeSameAs(services.GetRequiredService<MainWindowViewModel>());
+    }
+
+    [AvaloniaFact]
+    public void Edit_mode_turns_the_bar_into_Sabaki_s_edit_bar()
+    {
+        var vm = new MainWindowViewModel();
+        var window = new MainWindow(vm) { Width = 1100, Height = 800 };
+        window.Show();
+
+        vm.Game.ToggleEditModeCommand.Execute(null);
+
+        Border bar = window.FindControl<Border>("BottomBar")!;
+        bar.Classes.Should().Contain("edit");
+        window.FindControl<StackPanel>("EditBar")!.IsEffectivelyVisible.Should().BeTrue();
+        window.FindControl<Grid>("PlayerInfo")!.IsEffectivelyVisible.Should().BeFalse();
+        using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
+        Pixels.Read(frame, 400, 800 - 3).Should().Be(Color.Parse("#C4BD64"));
+        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "ui-edit-mode.png"));
     }
 }
