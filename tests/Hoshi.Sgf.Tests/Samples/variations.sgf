@@ -1,0 +1,32 @@
+(;FF[4]GM[1]CA[UTF-8]AP[HoshiTests:1]SZ[19]KM[6.5]RU[Japanese]
+PB[Kuro]BR[3k]PW[Shiro]WR[2k]DT[2026-09-29]EV[Hoshi test fixture]GN[Variations and comments]
+C[Sample written for the Hoshi test suite (CC0).
+It contains variations, comments with escaped \] brackets and a back\\slash, and markup.]
+;B[pd]C[Black starts on the upper right star point.]
+;W[dp]
+;B[pp]
+;W[dd]
+(;B[fq]C[Main line: the low approach.]
+;W[cn]
+;B[jp]TR[jp]SQ[dp]CR[pp]MA[dd]LB[qf:A][pj:B]
+;W[qn]C[White invades.]
+(;B[pn]
+;W[qm]
+;B[pl])
+(;B[qo]C[Variation: block from below.]
+;W[pm]))
+(;B[qf]C[Variation: enclosure first.]
+;W[fc]
+(;B[cf])
+(;B[ec]N[Attach]C[A second-level variation
+spanning two lines.]))
+(;B[dq]C[Variation: attach.]
+;W[cq]
+;B[cp]
+;W[co]
+;B[bp]
+;W[do]
+;B[bo]
+;W[eq]
+;B[cr]
+;W[dr]))
