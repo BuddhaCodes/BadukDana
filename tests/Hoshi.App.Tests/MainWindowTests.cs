@@ -5,6 +5,7 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Hoshi.App.Services;
 using Hoshi.App.ViewModels;
 using Hoshi.App.Views;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,7 +64,11 @@ public sealed class MainWindowTests
     [Fact]
     public void Host_resolves_main_window_and_view_model()
     {
-        var services = new ServiceCollection().AddAppServices().BuildServiceProvider(validateScopes: true);
+        var services = new ServiceCollection()
+            .AddLogging()
+            .AddAppServices()
+            .AddOgs(new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build())
+            .BuildServiceProvider(validateScopes: true);
 
         services.GetRequiredService<MainWindowViewModel>().Game.Should().BeSameAs(services.GetRequiredService<GameViewModel>());
         services.GetRequiredService<MainWindowViewModel>()
