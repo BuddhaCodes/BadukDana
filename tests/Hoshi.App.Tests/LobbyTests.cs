@@ -385,6 +385,7 @@ public sealed class LobbyWindowTests
         window.FindControl<TextBox>("PasswordBox")!.PasswordChar.Should().Be('•');
         window.FindControl<Button>("BrowserSignInButton")!.IsEffectivelyVisible.Should().BeFalse();
         window.FindControl<TabControl>("Tabs")!.IsVisible.Should().BeFalse();
+        window.FindControl<TextBlock>("SocialAccountHint")!.IsEffectivelyVisible.Should().BeTrue();
     }
 
     [AvaloniaFact]
