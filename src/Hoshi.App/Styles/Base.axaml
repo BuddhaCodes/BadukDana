@@ -36,4 +36,49 @@
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
   </Style>
+
+  <Style Selector="Button.icon">
+    <Setter Property="Padding" Value="8,3" />
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+
+  <Style Selector="RadioButton.tool">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="bg" Background="Transparent" CornerRadius="3" Padding="9,3" MinHeight="26">
+          <ContentPresenter Content="{TemplateBinding Content}" VerticalAlignment="Center"
+                            Foreground="{DynamicResource Text.Primary}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="RadioButton.tool:pointerover /template/ Border#bg">
+    <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
+  </Style>
+  <Style Selector="RadioButton.tool:checked /template/ Border#bg">
+    <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+    <Setter Property="BorderThickness" Value="0,0,0,2" />
+  </Style>
+
+  <Style Selector="Border.panel-header">
+    <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+  </Style>
+
+  <Style Selector="TextBox.comment">
+    <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="0" />
+    <Setter Property="Padding" Value="12,10" />
+    <Setter Property="VerticalContentAlignment" Value="Top" />
+  </Style>
+  <Style Selector="TextBox.comment:focus /template/ Border#PART_BorderElement">
+    <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+  <Style Selector="TextBox.comment:pointerover /template/ Border#PART_BorderElement">
+    <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
+  </Style>
 </Styles>
