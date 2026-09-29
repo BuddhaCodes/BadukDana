@@ -1,21 +1,16 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-
 namespace Hoshi.App.ViewModels;
 
-public sealed partial class MainWindowViewModel : ViewModelBase
+public sealed class MainWindowViewModel : ViewModelBase
 {
-    [ObservableProperty]
-    private string _title = "Hoshi";
-
     public MainWindowViewModel()
-        : this(new LocalGameViewModel())
+        : this(new GameViewModel())
     {
     }
 
-    public MainWindowViewModel(LocalGameViewModel game)
+    public MainWindowViewModel(GameViewModel game)
     {
         Game = game;
     }
 
-    public LocalGameViewModel Game { get; }
+    public GameViewModel Game { get; }
 }
