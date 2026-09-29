@@ -1,0 +1,53 @@
+# Roadmap
+
+Cada tarea termina con: compila sin warnings, tests en verde, y una captura (si es visual) comparada con Sabaki.
+
+## Fase 0 — Esqueleto (½ día) ✅ 2026-09-29
+- [x] Solución y proyectos según `CLAUDE.md` §3, `Directory.Build.props` con Nullable, warnings como errores, versión de lenguaje.
+- [x] App Avalonia vacía con DI, logging y ventana oscura.
+- [x] CI (GitHub Actions): build + test en Windows, macOS y Linux. *(workflow escrito; pendiente de primera ejecución en GitHub)*
+**Aceptación:** `dotnet run --project src/Hoshi.App` abre una ventana con el fondo `Bg.Window`.
+
+## Fase 1 — Reglas (Hoshi.Core) ✅ 2026-09-29 (111 tests)
+- [x] `Point`, `Stone`, `BoardState` inmutable con Zobrist.
+- [x] Capturas, suicidio, ko simple, superko posicional (y situacional para AGA/NZ).
+- [x] Handicap fijo y libre; komi (por defecto en `RuleSet`, compensación de handicap china/AGA).
+- [x] Conteo por territorio y por área con piedras muertas marcadas.
+**Aceptación:** ≥ 40 tests, incluyendo: captura múltiple, snapback, ko, triple ko con superko, seki en conteo.
+
+## Fase 2 — Tablero visual
+- [ ] `GoBoardControl` con madera, líneas, hoshi, coordenadas, piedras con textura y sombra.
+- [ ] Piedra fantasma, última jugada, marcadores SGF.
+- [ ] Juego local 2 jugadores: clic para jugar, pasar, deshacer.
+**Aceptación:** partida 19×19 local jugable; redimensionar la ventana mantiene el tablero nítido; aspecto cercano a Sabaki.
+
+## Fase 3 — SGF y árbol de variantes
+- [ ] Parser/serializer SGF con tests de ida y vuelta (usar SGF de ejemplo de dominio público).
+- [ ] `GameCursor` y navegación por teclado/rueda.
+- [ ] `GameTreePanel` y `CommentPanel`.
+- [ ] Abrir/guardar, arrastrar y soltar `.sgf`, diálogo de info de partida.
+- [ ] Modo edición (añadir piedras, marcadores, etiquetas).
+**Aceptación:** abrir un SGF con variantes y comentarios, editar, guardar y reabrir sin pérdidas.
+
+## Fase 4 — OGS: sesión y lobby
+- [ ] Login OAuth (beta), refresh, logout, almacenamiento seguro.
+- [ ] Cliente WebSocket con autenticación, ping, reconexión.
+- [ ] Lobby: mis partidas activas, desafíos abiertos, crear/aceptar/cancelar desafío.
+**Aceptación:** iniciar sesión en beta, ver partidas activas y crear un desafío visible desde la web de OGS.
+
+## Fase 5 — OGS: jugar
+- [ ] `OgsGameSession`: gamedata, jugadas, reloj con compensación de latencia, fin de partida.
+- [ ] Pasar, rendirse, deshacer, chat.
+- [ ] Fase de conteo: marcar piedras muertas y aceptar.
+- [ ] Automatch.
+- [ ] Notificación (sonido/visual) cuando es tu turno en otra partida.
+**Aceptación:** jugar una partida completa en beta contra otra cuenta (navegador) de principio a conteo final, con relojes coincidiendo ±1 s.
+
+## Fase 6 — Pulido
+- [ ] Preferencias (tema, sonidos, coordenadas, piedras "fuzzy", servidor).
+- [ ] Revisión de partidas OGS terminadas (descargar SGF y abrir en el editor).
+- [ ] Empaquetado: instalador Windows (MSIX/Velopack), `.app` macOS, AppImage Linux.
+- [ ] Localización es/en.
+
+## Fase 7 (opcional) — Motores
+- [ ] Cliente GTP (KataGo): jugar contra motor, análisis con winrate y mapa de calor sobre el tablero.
