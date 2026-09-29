@@ -5,21 +5,33 @@
         xmlns:vm="using:Hoshi.App.ViewModels"
         xmlns:c="using:Hoshi.App.Controls"
         xmlns:sys="using:System"
-        mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="800"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="820"
         x:Class="Hoshi.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Title="{Binding Title}"
-        Width="1100" Height="800"
-        MinWidth="480" MinHeight="400"
+        Title="{Binding Game.Title}"
+        Width="1200" Height="820"
+        MinWidth="640" MinHeight="480"
+        DragDrop.AllowDrop="True"
         WindowStartupLocation="CenterScreen">
 
   <Design.DataContext>
     <vm:MainWindowViewModel />
   </Design.DataContext>
 
+  <!-- Shortcuts that are safe while typing in the comment box (modifier keys, or keys a TextBox consumes). -->
   <Window.KeyBindings>
-    <KeyBinding Gesture="P" Command="{Binding Game.PassCommand}" />
+    <KeyBinding Gesture="Left" Command="{Binding Game.GoBackCommand}" />
+    <KeyBinding Gesture="Right" Command="{Binding Game.GoForwardCommand}" />
+    <KeyBinding Gesture="Home" Command="{Binding Game.GoFirstCommand}" />
+    <KeyBinding Gesture="End" Command="{Binding Game.GoLastCommand}" />
+    <KeyBinding Gesture="Up" Command="{Binding Game.PreviousVariationCommand}" />
+    <KeyBinding Gesture="Down" Command="{Binding Game.NextVariationCommand}" />
     <KeyBinding Gesture="Ctrl+Z" Command="{Binding Game.UndoCommand}" />
+    <KeyBinding Gesture="Ctrl+O" Command="{Binding Game.OpenCommand}" />
+    <KeyBinding Gesture="Ctrl+S" Command="{Binding Game.SaveCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding Game.SaveAsCommand}" />
+    <KeyBinding Gesture="Ctrl+E" Command="{Binding Game.ToggleEditModeCommand}" />
+    <KeyBinding Gesture="Ctrl+I" Command="{Binding Game.EditGameInfoCommand}" />
     <KeyBinding Gesture="Ctrl+N" Command="{Binding Game.NewGameCommand}">
       <KeyBinding.CommandParameter>
         <sys:Int32>19</sys:Int32>
@@ -28,45 +40,134 @@
   </Window.KeyBindings>
 
   <DockPanel>
-    <!-- Bottom mode bar (DESIGN.md: 36 px). -->
+    <!-- Bottom mode bar (DESIGN.md: 36 px). In edit mode it shows the edit tools, like Sabaki's edit bar. -->
     <Border Classes="bottom-bar" DockPanel.Dock="Bottom" x:Name="BottomBar">
-      <Grid ColumnDefinitions="Auto,*,Auto">
-        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-          <Button Classes="bar" Content="Nueva" ToolTip.Tip="Nueva partida (Ctrl+N)">
+      <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+        <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+          <Button Classes="bar icon" Content="⏮" Command="{Binding Game.GoFirstCommand}" ToolTip.Tip="Inicio (Home)" />
+          <Button Classes="bar icon" Content="◀" Command="{Binding Game.GoBackCommand}" ToolTip.Tip="Anterior (←)" />
+          <Button Classes="bar icon" Content="▶" Command="{Binding Game.GoForwardCommand}" ToolTip.Tip="Siguiente (→)" />
+          <Button Classes="bar icon" Content="⏭" Command="{Binding Game.GoLastCommand}" ToolTip.Tip="Final (End)" />
+          <Border Width="1" Background="{DynamicResource Border.Subtle}" Margin="8,6" />
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center"
+                    IsVisible="{Binding !Game.IsEditMode}">
+          <Button Classes="bar" Content="Archivo" ToolTip.Tip="Nueva, abrir y guardar">
             <Button.Flyout>
               <MenuFlyout>
-                <MenuItem Header="19 × 19" Command="{Binding Game.NewGameCommand}">
+                <MenuItem Header="Nueva 19 × 19" Command="{Binding Game.NewGameCommand}" InputGesture="Ctrl+N">
                   <MenuItem.CommandParameter><sys:Int32>19</sys:Int32></MenuItem.CommandParameter>
                 </MenuItem>
-                <MenuItem Header="13 × 13" Command="{Binding Game.NewGameCommand}">
+                <MenuItem Header="Nueva 13 × 13" Command="{Binding Game.NewGameCommand}">
                   <MenuItem.CommandParameter><sys:Int32>13</sys:Int32></MenuItem.CommandParameter>
                 </MenuItem>
-                <MenuItem Header="9 × 9" Command="{Binding Game.NewGameCommand}">
+                <MenuItem Header="Nueva 9 × 9" Command="{Binding Game.NewGameCommand}">
                   <MenuItem.CommandParameter><sys:Int32>9</sys:Int32></MenuItem.CommandParameter>
                 </MenuItem>
+                <Separator />
+                <MenuItem Header="Abrir…" Command="{Binding Game.OpenCommand}" InputGesture="Ctrl+O" />
+                <MenuItem Header="Guardar" Command="{Binding Game.SaveCommand}" InputGesture="Ctrl+S" />
+                <MenuItem Header="Guardar como…" Command="{Binding Game.SaveAsCommand}" InputGesture="Ctrl+Shift+S" />
+                <Separator />
+                <MenuItem Header="Información de la partida…" Command="{Binding Game.EditGameInfoCommand}" InputGesture="Ctrl+I" />
+                <MenuItem Header="Hacer línea principal" Command="{Binding Game.PromoteVariationCommand}" />
+                <MenuItem Header="Borrar nodo y variantes" Command="{Binding Game.DeleteNodeCommand}" />
               </MenuFlyout>
             </Button.Flyout>
           </Button>
           <Button Classes="bar" Content="Pasar" Command="{Binding Game.PassCommand}" ToolTip.Tip="Pasar (P)" x:Name="PassButton" />
           <Button Classes="bar" Content="Deshacer" Command="{Binding Game.UndoCommand}" ToolTip.Tip="Deshacer (Ctrl+Z)" x:Name="UndoButton" />
+          <Button Classes="bar" Content="Editar" Command="{Binding Game.ToggleEditModeCommand}" ToolTip.Tip="Modo edición (Ctrl+E)" />
         </StackPanel>
 
-        <TextBlock Grid.Column="1" Classes="secondary" HorizontalAlignment="Center" VerticalAlignment="Center"
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center"
+                    IsVisible="{Binding Game.IsEditMode}" x:Name="EditBar">
+          <RadioButton Classes="tool" GroupName="tool" Content="●" ToolTip.Tip="Piedra negra"
+                       IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.BlackStone}}"
+                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.BlackStone}" />
+          <RadioButton Classes="tool" GroupName="tool" Content="○" ToolTip.Tip="Piedra blanca"
+                       IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.WhiteStone}}"
+                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.WhiteStone}" />
+          <RadioButton Classes="tool" GroupName="tool" Content="△" ToolTip.Tip="Triángulo"
+                       IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.Triangle}}"
+                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Triangle}" />
+          <RadioButton Classes="tool" GroupName="tool" Content="□" ToolTip.Tip="Cuadrado"
+                       IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.Square}}"
+                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Square}" />
+          <RadioButton Classes="tool" GroupName="tool" Content="◯" ToolTip.Tip="Círculo"
+                       IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.Circle}}"
+                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Circle}" />
+          <RadioButton Classes="tool" GroupName="tool" Content="✕" ToolTip.Tip="Cruz"
+                       IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.Cross}}"
+                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Cross}" />
+          <RadioButton Classes="tool" GroupName="tool" Content="A" ToolTip.Tip="Etiqueta"
+                       IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.Label}}"
+                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Label}" />
+          <Button Classes="bar" Content="Terminar edición" Command="{Binding Game.ToggleEditModeCommand}" Margin="8,0,0,0" />
+        </StackPanel>
+
+        <TextBlock Grid.Column="2" Classes="secondary" HorizontalAlignment="Center" VerticalAlignment="Center"
+                   TextTrimming="CharacterEllipsis" Margin="12,0"
                    Text="{Binding Game.StatusText}" x:Name="StatusText" />
 
-        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
-          <TextBlock Classes="secondary" Text="{Binding Game.CapturesText}" />
+        <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
           <TextBlock Classes="secondary" Text="{Binding Game.MoveNumberText}" />
         </StackPanel>
       </Grid>
     </Border>
 
-    <c:GoBoardControl x:Name="Board"
-                      Margin="16"
-                      Board="{Binding Game.Board}"
-                      LastMove="{Binding Game.LastMove}"
-                      HoverPoint="{Binding Game.HoverPoint}"
-                      GhostStone="{Binding Game.GhostStone}"
-                      PointClickedCommand="{Binding Game.PlayCommand}" />
+    <Grid ColumnDefinitions="*,Auto,280">
+      <!-- Board area; single-letter shortcuts live here so they do not fire while typing a comment. -->
+      <Panel x:Name="BoardArea" Grid.Column="0">
+        <Panel.KeyBindings>
+          <KeyBinding Gesture="P" Command="{Binding Game.PassCommand}" />
+        </Panel.KeyBindings>
+        <c:GoBoardControl x:Name="Board"
+                          Margin="16"
+                          Board="{Binding Game.Board}"
+                          LastMove="{Binding Game.LastMove}"
+                          Markers="{Binding Game.Markers}"
+                          HoverPoint="{Binding Game.HoverPoint}"
+                          GhostStone="{Binding Game.GhostStone}"
+                          PointClickedCommand="{Binding Game.PlayCommand}"
+                          ScrollCommand="{Binding Game.ScrollCommand}" />
+      </Panel>
+
+      <GridSplitter Grid.Column="1" Width="1" Background="{DynamicResource Border.Subtle}" ResizeDirection="Columns" />
+
+      <!-- Sidebar: players, variation tree, comment. Width 220–420 (DESIGN.md). -->
+      <Grid Grid.Column="2" x:Name="Sidebar" MinWidth="220" MaxWidth="420"
+            Background="{DynamicResource Bg.Panel}" RowDefinitions="Auto,*,Auto,200">
+        <Border Grid.Row="0" Classes="panel-header" Padding="12,10">
+          <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" x:Name="PlayerInfo">
+            <Ellipse Grid.Row="0" Width="10" Height="10" Fill="#111" Stroke="#888" StrokeThickness="1" Margin="0,0,8,0" />
+            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Game.BlackName}"
+                       FontWeight="{Binding Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
+            <TextBlock Grid.Row="0" Grid.Column="2" Classes="secondary" Text="{Binding Game.Board.BlackCaptures, StringFormat='{}{0} cap.'}" />
+            <Ellipse Grid.Row="1" Width="10" Height="10" Fill="#EEE" Stroke="#888" StrokeThickness="1" Margin="0,6,8,0" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Game.WhiteName}" Margin="0,6,0,0"
+                       FontWeight="{Binding !Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
+            <TextBlock Grid.Row="1" Grid.Column="2" Classes="secondary" Margin="0,6,0,0" Text="{Binding Game.Board.WhiteCaptures, StringFormat='{}{0} cap.'}" />
+          </Grid>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" x:Name="TreeScroll">
+          <c:GameTreeControl x:Name="GameTree"
+                             Root="{Binding Game.Tree.Root}"
+                             Current="{Binding Game.CurrentNode}"
+                             Version="{Binding Game.TreeVersion}"
+                             BoardSize="{Binding Game.Board.Width}"
+                             NodeClickedCommand="{Binding Game.GoToNodeCommand}"
+                             HorizontalAlignment="Left" VerticalAlignment="Top" />
+        </ScrollViewer>
+
+        <GridSplitter Grid.Row="2" Height="1" Background="{DynamicResource Border.Subtle}" ResizeDirection="Rows" />
+
+        <TextBox Grid.Row="3" x:Name="CommentBox" Classes="comment"
+                 AcceptsReturn="True" TextWrapping="Wrap" Watermark="Comentario"
+                 Text="{Binding Game.Comment}" />
+      </Grid>
+    </Grid>
   </DockPanel>
 </Window>
