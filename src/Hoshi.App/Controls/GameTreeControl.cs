@@ -11,9 +11,10 @@ using AvPoint = Avalonia.Point;
 namespace Hoshi.App.Controls;
 
 /// <summary>
-/// Draws the variation tree (DESIGN.md "Árbol de variantes"): small black/white circles per move, thin grey lines,
-/// the current node highlighted with the accent colour and a dot on nodes with comments. Clicking a node executes
-/// <see cref="NodeClickedCommand"/> with that node. Meant to be hosted in a ScrollViewer.
+/// Draws the variation tree in Sabaki's style (its game graph: 22 px grid, light nodes, orange for comments, squares
+/// for passes, a diamond for non-move nodes, the current track brighter and thicker, everything else dimmed, and
+/// variations joined with a diagonal). Clicking a node executes <see cref="NodeClickedCommand"/> with that node.
+/// Meant to be hosted in a ScrollViewer.
 /// </summary>
 public sealed class GameTreeControl : Control
 {
@@ -35,15 +36,18 @@ public sealed class GameTreeControl : Control
 
     public const double Spacing = 22;
     public const double Padding = 14;
-    private const double NodeRadius = 5.5;
+    private const double NodeRadius = 5;
 
-    private static readonly IBrush LineBrush = new ImmutableSolidColorBrush(Color.FromRgb(0x5A, 0x5A, 0x5A));
-    private static readonly IBrush MainLineBrush = new ImmutableSolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80));
-    private static readonly IBrush BlackNode = new ImmutableSolidColorBrush(Color.FromRgb(0x10, 0x10, 0x10));
-    private static readonly IBrush WhiteNode = new ImmutableSolidColorBrush(Color.FromRgb(0xE6, 0xE6, 0xE6));
-    private static readonly IBrush SetupNode = new ImmutableSolidColorBrush(Color.FromRgb(0x7A, 0x7A, 0x7A));
-    private static readonly IPen NodeOutline = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromRgb(0x9A, 0x9A, 0x9A)), 1);
-    private static readonly IBrush CommentDot = new ImmutableSolidColorBrush(Color.FromRgb(0x6C, 0xA6, 0xE0));
+    private static readonly Color NodeColor = Color.FromRgb(0xEE, 0xEE, 0xEE);
+    private static readonly Color CommentColor = Color.FromRgb(255, 174, 61);
+    private static readonly Color BadMoveColor = Color.FromRgb(240, 35, 17);
+    private static readonly Color DoubtfulColor = Color.FromRgb(146, 39, 143);
+    private static readonly Color InterestingColor = Color.FromRgb(72, 134, 213);
+    private static readonly Color GoodMoveColor = Color.FromRgb(89, 168, 15);
+    private static readonly IPen EdgePen = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromRgb(0x77, 0x77, 0x77)), 1);
+    private static readonly IPen TrackPen = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC)), 2);
+    private static readonly IPen NodeOutline = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromRgb(0x11, 0x11, 0x11)), 1);
+    private static readonly IPen CurrentOutline = new ImmutablePen(new ImmutableSolidColorBrush(NodeColor), 2);
 
     private GameTreeLayout? _layout;
 
@@ -96,56 +100,108 @@ public sealed class GameTreeControl : Control
             return;
         }
 
-        var linePen = new Pen(LineBrush, 1);
-        var mainPen = new Pen(MainLineBrush, 1.5);
+        HashSet<GameNode> track = CurrentTrack();
         foreach ((GameNode node, (int Column, int Row) pos) in _layout.Positions)
         {
-            if (node.Parent is { } parent && _layout.Positions.TryGetValue(parent, out var parentPos))
+            if (node.Parent is not { } parent || !_layout.Positions.TryGetValue(parent, out var parentPos))
             {
-                bool main = parentPos.Column == pos.Column;
-                context.DrawLine(main ? mainPen : linePen, CenterOf(parentPos), CenterOf(pos));
+                continue;
+            }
+
+            bool onTrack = track.Contains(node) && track.Contains(parent);
+            IPen pen = onTrack ? TrackPen : EdgePen;
+            AvPoint from = CenterOf(parentPos);
+            AvPoint to = CenterOf(pos);
+            if (parentPos.Column == pos.Column)
+            {
+                context.DrawLine(pen, from, to);
+            }
+            else
+            {
+                // Along the parent's row to the column before the child, then diagonally down into it.
+                var elbow = new AvPoint(to.X - Spacing, from.Y);
+                var geometry = new StreamGeometry();
+                using (StreamGeometryContext ctx = geometry.Open())
+                {
+                    ctx.BeginFigure(from, false);
+                    ctx.LineTo(elbow);
+                    ctx.LineTo(to);
+                    ctx.EndFigure(false);
+                }
+
+                context.DrawGeometry(null, pen, geometry);
             }
         }
-
-        var accent = this.TryFindResource("Accent", ActualThemeVariant, out object? a) && a is IBrush b
-            ? b
-            : new ImmutableSolidColorBrush(Color.FromRgb(0xE0, 0xA9, 0x4A));
 
         foreach ((GameNode node, (int Column, int Row) pos) in _layout.Positions)
         {
             AvPoint c = CenterOf(pos);
-            SgfMove? move = node.GetMove(BoardSize);
-            IBrush fill = move?.Color switch
+            Color color = FillFor(node);
+            if (!track.Contains(node))
             {
-                Stone.Black => BlackNode,
-                Stone.White => WhiteNode,
-                _ => SetupNode,
-            };
-
-            if (node == Current)
-            {
-                context.DrawEllipse(null, new Pen(accent, 2.5), c, NodeRadius + 3.5, NodeRadius + 3.5);
+                color = Color.FromRgb((byte)(color.R / 2), (byte)(color.G / 2), (byte)(color.B / 2));
             }
 
+            var fill = new ImmutableSolidColorBrush(color);
+            IPen outline = node == Current ? CurrentOutline : NodeOutline;
+            SgfMove? move = node.GetMove(BoardSize);
+            double r = NodeRadius;
             if (move is null)
             {
-                // Root and setup-only nodes are drawn as small squares.
-                context.DrawRectangle(fill, NodeOutline, new Rect(c.X - NodeRadius + 1, c.Y - NodeRadius + 1, (NodeRadius - 1) * 2, (NodeRadius - 1) * 2));
+                // Non-move node (root, setup): a diamond.
+                var diamond = new StreamGeometry();
+                using (StreamGeometryContext ctx = diamond.Open())
+                {
+                    ctx.BeginFigure(new AvPoint(c.X, c.Y - r - 1), true);
+                    ctx.LineTo(new AvPoint(c.X + r + 1, c.Y));
+                    ctx.LineTo(new AvPoint(c.X, c.Y + r + 1));
+                    ctx.LineTo(new AvPoint(c.X - r - 1, c.Y));
+                    ctx.EndFigure(true);
+                }
+
+                context.DrawGeometry(fill, outline, diamond);
             }
             else if (move.Value.IsPass)
             {
-                context.DrawEllipse(null, new Pen(fill, 2), c, NodeRadius - 1, NodeRadius - 1);
+                context.DrawRectangle(fill, outline, new Rect(c.X - r, c.Y - r, 2 * r, 2 * r));
             }
             else
             {
-                context.DrawEllipse(fill, NodeOutline, c, NodeRadius, NodeRadius);
-            }
-
-            if (node.Comment is not null)
-            {
-                context.DrawEllipse(CommentDot, null, new AvPoint(c.X + NodeRadius + 2, c.Y - NodeRadius - 1), 2.2, 2.2);
+                context.DrawEllipse(fill, outline, c, r, r);
             }
         }
+    }
+
+    /// <summary>Colour of a node as in Sabaki: move annotations, then comments, otherwise light grey.</summary>
+    private static Color FillFor(GameNode node) =>
+        node.HasProperty("BM") ? BadMoveColor
+        : node.HasProperty("DO") ? DoubtfulColor
+        : node.HasProperty("IT") ? InterestingColor
+        : node.HasProperty("TE") ? GoodMoveColor
+        : node.Comment is not null || node.HasProperty("N") ? CommentColor
+        : NodeColor;
+
+    /// <summary>Root → current node, then on along the first children (Sabaki's "current track").</summary>
+    private HashSet<GameNode> CurrentTrack()
+    {
+        var track = new HashSet<GameNode>();
+        if (Current is not { } current)
+        {
+            return track;
+        }
+
+        for (GameNode? n = current; n is not null; n = n.Parent)
+        {
+            track.Add(n);
+        }
+
+        for (GameNode n = current; n.Children.Count > 0;)
+        {
+            n = n.Children[0];
+            track.Add(n);
+        }
+
+        return track;
     }
 
     /// <summary>The node whose circle contains <paramref name="position"/>, if any.</summary>
