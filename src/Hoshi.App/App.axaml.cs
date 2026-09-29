@@ -21,7 +21,20 @@ public partial class App : Application
         _services = services;
     }
 
-    public override void Initialize() => AvaloniaXamlLoader.Load(this);
+    public override void Initialize()
+    {
+        AvaloniaXamlLoader.Load(this);
+
+        // The saved theme (or Hoshi's default when there is no host, e.g. the designer and UI tests).
+        if (_services?.GetService<Themes.ThemeService>() is { } themes)
+        {
+            themes.ApplyCurrent(Resources);
+        }
+        else
+        {
+            Themes.ThemeService.Apply(Themes.HoshiThemes.Default, animations: false, Resources);
+        }
+    }
 
     public override void OnFrameworkInitializationCompleted()
     {

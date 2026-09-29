@@ -42,6 +42,10 @@ public static class AppHost
     {
         services.AddSingleton<IFileDialogService, AvaloniaFileDialogService>();
         services.AddSingleton<IDialogService, AvaloniaDialogService>();
+        services.AddSingleton<ISettingsService, JsonSettingsService>();
+        services.AddSingleton<Themes.ThemeService>();
+        services.AddSingleton<PreferencesViewModel>();
+        services.AddSingleton<IPreferencesWindowService, PreferencesWindowService>();
         services.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
         services.AddSingleton<LobbyViewModel>();
         services.AddSingleton<ILobbyWindowService, LobbyWindowService>();
