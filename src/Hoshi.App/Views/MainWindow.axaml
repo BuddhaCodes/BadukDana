@@ -32,6 +32,7 @@
     <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding Game.SaveAsCommand}" />
     <KeyBinding Gesture="Ctrl+E" Command="{Binding Game.ToggleEditModeCommand}" />
     <KeyBinding Gesture="Ctrl+I" Command="{Binding Game.EditGameInfoCommand}" />
+    <KeyBinding Gesture="Ctrl+L" Command="{Binding OpenLobbyCommand}" />
     <KeyBinding Gesture="Ctrl+N" Command="{Binding Game.NewGameCommand}">
       <KeyBinding.CommandParameter>
         <sys:Int32>19</sys:Int32>
@@ -76,6 +77,7 @@
               </MenuFlyout>
             </Button.Flyout>
           </Button>
+          <Button Classes="bar" Content="En línea" Command="{Binding OpenLobbyCommand}" ToolTip.Tip="Jugar en OGS (Ctrl+L)" x:Name="OnlineButton" />
           <Button Classes="bar" Content="Pasar" Command="{Binding Game.PassCommand}" ToolTip.Tip="Pasar (P)" x:Name="PassButton" />
           <Button Classes="bar" Content="Deshacer" Command="{Binding Game.UndoCommand}" ToolTip.Tip="Deshacer (Ctrl+Z)" x:Name="UndoButton" />
           <Button Classes="bar" Content="Editar" Command="{Binding Game.ToggleEditModeCommand}" ToolTip.Tip="Modo edición (Ctrl+E)" />
