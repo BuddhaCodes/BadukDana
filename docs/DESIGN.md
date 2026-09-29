@@ -1,6 +1,35 @@
-# Guía visual (inspirada en Sabaki)
+# Guía visual
 
-Objetivo: la sensación de Sabaki — **el tablero es el protagonista**, la interfaz es oscura, silenciosa y se aparta.
+Objetivo: la sensación de Sabaki — **el tablero es el protagonista**, la interfaz es oscura, silenciosa y se aparta —
+pero con **identidad propia**: Hoshi (星, «estrella») tiene cinco temas, elegibles en *Preferencias* (☰ → Preferencias…,
+Ctrl+,), que cambian fondo, paleta, fuentes, iconos, piedras y animaciones al momento.
+
+## Temas (`Themes/HoshiTheme.cs`, aplicados por `ThemeService`)
+
+| Tema | Fondo (propio, animado salvo indicación) | Acento | Fuentes (título · UI) | Iconos | Piedras | Efecto al jugar |
+|---|---|---|---|---|---|---|
+| **Cielo nocturno** (por defecto) | Azul noche con ~240 estrellas que titilan, nebulosa que deriva, constelaciones tenues y una estrella fugaz cada ~23 s | oro pálido `#D8B46A` | Cormorant Garamond · Manrope | Phosphor light | Perla | Halo dorado |
+| **Tinta y oro** | Niebla de tinta sumi-e que respira y un ensō de pincel en oro tenue enmarcando el tablero | oro `#C9A45C`, rojo sello `#B23A2E` | Shippori Mincho · Manrope | Phosphor regular | Pizarra y concha | Onda de tinta |
+| **Jardín zen** | Arena rastrillada con ondas alrededor de dos rocas, moviéndose muy despacio | musgo `#9DBB7F` | Zen Kaku Gothic New | Lucide | Pizarra y concha | Onda en la arena |
+| **Minimal cálido** | Papel washi con fibras (estático) | terracota `#D07A4A` | Manrope | Tabler | Suaves | Asentarse |
+| **Clásico** | Tatami de Sabaki (estático) | `#E0A94A` | Manrope | Lucide | Shudan | — |
+
+- Relojes siempre en JetBrains Mono. Las fuentes van recortadas a latín (+ 星 碁).
+- Recursos DynamicResource que cambia el tema: `Bg.*`, `Text.*`, `Accent`, `Danger`, `Border.Subtle`, `Bg.EditBar`,
+  `EditBar.Foreground/Hover`, `Bg.Surround`, `Font.UI/Title/Mono`, `Font.Size.Title`, `Icon.*` (21 iconos),
+  `Theme.Board` (`BoardStyle`), `Theme.Background`, `Theme.Animations`; también el acento de Fluent.
+- «Animaciones» (Preferencias) apaga el fondo animado y las animaciones de piedra; se guarda en `settings.json`.
+
+## Animaciones
+
+- Piedra nueva: aparece 14 % más grande y elevada (sombra mayor) y se asienta en 200 ms (ease-out cúbico); el efecto
+  del tema dura 650 ms. Solo cuando aparece exactamente una piedra en la última jugada (jugar o avanzar 1), no al saltar.
+- Paneles que aparecen (panel en línea, chat, barra de edición): fundido de 280 ms.
+- Botones de la barra: fondo con transición de 150 ms y leve pulsación (escala 0.94). Barra de edición: transición de color.
+- Tarjetas de Preferencias: se elevan 3 px al pasar el ratón; borde de acento en la seleccionada.
+- Fondo animado a ~24 fps con movimiento muy lento; se detiene fuera de pantalla o con animaciones apagadas.
+
+## Referencia Sabaki
 
 Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su componente de tablero Shudan 1.8.0
 (`css/goban.css`, `board.png`, `stone_±1.svg`). Ambos MIT; los assets incluidos y sus licencias están en
@@ -14,7 +43,7 @@ Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su compo
 4. Toda acción importante tiene atajo de teclado (ver abajo).
 5. Modo "zen" (F11): solo tablero *(pendiente)*.
 
-## Paleta (tokens en `Styles/Tokens.axaml`)
+## Paleta del tema Clásico (valores por defecto en `Styles/Tokens.axaml`)
 
 | Token | Valor | Origen / uso |
 |---|---|---|
@@ -100,6 +129,7 @@ Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su compo
 
 ## Pendiente de estilo
 
+- Iconos: barra y herramientas usan `HoshiIcon` (nada de emoji: en Windows ⏮/⏭ salían como emoji de color).
 - Sonidos de piedra: Sabaki trae `data/*.mp3` (5 piedras, 5 capturas, pase, nueva partida) dentro de su repo MIT, pero sin origen documentado de las grabaciones; confirmar la procedencia antes de incluirlos, o usar grabaciones CC0.
 - Animación al colocar piedra, gráfico de winrate (con motores, fase posterior), modo zen, tema claro.
 
