@@ -15,10 +15,10 @@ Cada tarea termina con: compila sin warnings, tests en verde, y una captura (si 
 - [x] Conteo por territorio y por área con piedras muertas marcadas.
 **Aceptación:** ≥ 40 tests, incluyendo: captura múltiple, snapback, ko, triple ko con superko, seki en conteo.
 
-## Fase 2 — Tablero visual
-- [ ] `GoBoardControl` con madera, líneas, hoshi, coordenadas, piedras con textura y sombra.
-- [ ] Piedra fantasma, última jugada, marcadores SGF.
-- [ ] Juego local 2 jugadores: clic para jugar, pasar, deshacer.
+## Fase 2 — Tablero visual 🟡 2026-09-29 (implementada; pendiente de revisión visual frente a Sabaki)
+- [x] `GoBoardControl` con madera, líneas, hoshi, coordenadas, piedras con textura y sombra (texturas procedurales propias).
+- [x] Piedra fantasma, última jugada, marcadores SGF (TR, SQ, CR, MA, LB).
+- [x] Juego local 2 jugadores: clic para jugar, pasar (P), deshacer (Ctrl+Z), nueva partida 19/13/9 (Ctrl+N).
 **Aceptación:** partida 19×19 local jugable; redimensionar la ventana mantiene el tablero nítido; aspecto cercano a Sabaki.
 
 ## Fase 3 — SGF y árbol de variantes
