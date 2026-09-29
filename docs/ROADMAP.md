@@ -29,11 +29,12 @@ Cada tarea termina con: compila sin warnings, tests en verde, y una captura (si 
 - [x] Modo edición (Ctrl+E): piedras de colocación, triángulo, cuadrado, círculo, cruz, etiquetas.
 **Aceptación:** abrir un SGF con variantes y comentarios, editar, guardar y reabrir sin pérdidas.
 
-## Fase 4 — OGS: sesión y lobby
-- [ ] Login OAuth (beta), refresh, logout, almacenamiento seguro.
-- [ ] Cliente WebSocket con autenticación, ping, reconexión.
-- [ ] Lobby: mis partidas activas, desafíos abiertos, crear/aceptar/cancelar desafío.
-**Aceptación:** iniciar sesión en beta, ver partidas activas y crear un desafío visible desde la web de OGS.
+## Fase 4 — OGS: sesión y lobby ✅ (código; pendiente la prueba real)
+- [x] Login OAuth + PKCE en online-go.com, refresh, logout, almacenamiento seguro (DPAPI / Keychain / secret-tool).
+- [x] Login con usuario/contraseña solo para beta en modo `Development` (beta no admite apps OAuth).
+- [x] Cliente WebSocket con autenticación, ping/deriva, reconexión, `user/jwt`.
+- [x] Lobby (Ctrl+L): mis partidas activas, desafíos abiertos (seek graph), crear/aceptar/cancelar desafío con keepalive.
+**Aceptación:** iniciar sesión en beta (contraseña) y en online-go.com (OAuth), ver partidas activas y crear un desafío no clasificatorio visible desde la web de OGS.
 
 ## Fase 5 — OGS: jugar
 - [ ] `OgsGameSession`: gamedata, jugadas, reloj con compensación de latencia, fin de partida.

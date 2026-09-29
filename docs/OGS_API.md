@@ -6,7 +6,7 @@
 > - Documentación REST: https://apidocs.online-go.com (si está disponible) y el foro https://forums.online-go.com (categoría de desarrollo)
 > Si algo difiere, corrige este documento en el mismo commit.
 >
-> **Última verificación del protocolo WebSocket:** 2026-09-29 contra `online-go/goban` commit `e61c56e` (2026-09-17) y `online-go.com@main`. Las secciones REST y OAuth **aún no** se han verificado.
+> **Última verificación del protocolo WebSocket:** 2026-09-29 contra `online-go/goban` commit `e61c56e` (2026-09-17) y `online-go.com@main`. REST y login web verificados contra `online-go.com@main` (2026-09-29). OAuth: rutas estándar de django-oauth-toolkit; el soporte de PKCE en cliente público **se confirma en la primera prueba real** (ver §1.1).
 
 ## Servidores
 
@@ -20,28 +20,52 @@
 
 ## 1. Autenticación
 
-1. Registrar la aplicación en `https://online-go.com/oauth2/applications/` (y en beta por separado) para obtener `client_id` (y `client_secret` si el tipo de cliente lo requiere). Para una app de escritorio, preferir cliente **público** con **Authorization Code + PKCE** y redirect a `http://127.0.0.1:<puerto>/callback` (loopback). Si OGS no admite PKCE/loopback para la app registrada, usar el grant `password` como alternativa temporal (documentarlo). *(Pendiente de verificar en Fase 4.)*
-2. Token: `POST /oauth2/token/` → `access_token`, `refresh_token`, `expires_in`.
-3. Peticiones REST: cabecera `Authorization: Bearer <access_token>`.
-4. Para el WebSocket se necesita el **JWT de usuario**: `GET /api/v1/ui/config` → campo **`user_jwt`** ✅ (confirmado: el cliente web lo guarda como `config.user_jwt`). Invitado: `jwt: ""`.
-5. El servidor puede **rotar el JWT** con el evento `user/jwt` (payload: el nuevo JWT como string). Hay que guardarlo en memoria y usarlo en la siguiente re-autenticación. Nunca registrarlo en logs.
-6. Guardar solo `refresh_token` en `ISecureStore`; renovar el access token antes de expirar.
+Hoshi usa dos modos, elegidos por configuración (`Ogs:AuthMode`):
 
-## 2. REST (prefijo `/api/v1/`) — endpoints que usaremos (sin verificar)
+| Servidor | Modo | Motivo |
+|---|---|---|
+| `online-go.com` | `OAuth` (authorization code + PKCE) | Único modo permitido en producción (`ReadOptions` rechaza `Password` contra producción). |
+| `beta.online-go.com` | `Password` (login web) | **Beta no permite registrar aplicaciones OAuth** (comprobado 2026-09-29). Solo desarrollo, entorno `Development`. |
+
+### 1.1 OAuth (producción)
+- Aplicación registrada en `https://online-go.com/oauth2/applications/`: **Client type = Public**, **Authorization grant = Authorization code**, redirect `http://127.0.0.1:8734/callback` (loopback IPv4, RFC 8252; no `localhost`). Sin `client_secret`. El `client_id` no es secreto y va en `appsettings.json`.
+- `GET /oauth2/authorize/?response_type=code&client_id=…&redirect_uri=…&code_challenge=<S256>&code_challenge_method=S256&state=…` en el navegador del sistema.
+- `LoopbackRedirectListener` escucha solo en `127.0.0.1:<puerto>`, valida `state`, devuelve 404 a otras rutas y muestra una página "puedes cerrar esta pestaña".
+- `POST /oauth2/token/` (form) con `grant_type=authorization_code`, `code`, `redirect_uri`, `client_id`, `code_verifier` → `access_token`, `refresh_token`, `expires_in`.
+- Renovación: `grant_type=refresh_token` cuando faltan < 60 s para expirar. Logout: `POST /oauth2/revoke_token/` y borrar el token local.
+- REST: `Authorization: Bearer <access_token>`.
+- ⚠️ Sin verificar hasta la primera prueba: que OGS acepte PKCE sin secreto y que `ui/config` devuelva `user_jwt` con Bearer.
+
+### 1.2 Login web (beta, desarrollo)
+- `GET /api/v1/ui/config` para obtener la cookie `csrftoken`.
+- `POST /api/v0/login` JSON `{ username, password, ebi, timezone }` con `X-CSRFToken` y `Referer`; la respuesta es la misma estructura que `ui/config` (usuario + `user_jwt`) y deja la cookie de sesión.
+- Las peticiones siguientes usan esas cookies (+ CSRF en escrituras). Las cookies las gestiona `OgsAuthService` (el `HttpClient` tiene `UseCookies=false`).
+- La contraseña se envía una vez y se borra del view model inmediatamente; nunca se guarda ni se registra.
+
+### 1.3 JWT del WebSocket
+- `user_jwt` de `ui/config` (o de la respuesta del login). Invitado: `jwt: ""`.
+- El servidor puede rotarlo con `user/jwt` (payload: string) → `OgsAuthService.UpdateJwt`. Nunca en logs.
+
+### 1.4 Almacenamiento
+- Solo el `refresh_token` (clave `ogs.refresh_token`) en el almacén del SO: DPAPI (Windows, archivo cifrado en `secrets/`), Keychain (macOS, `security -i` por stdin), Secret Service (Linux, `secret-tool` por stdin). Si no hay almacén, se guarda en memoria y se avisa en el log.
+
+## 2. REST (prefijo `/api/v1/`) — usados por Hoshi (verificados contra el cliente web)
 
 | Método | Ruta | Uso |
 |---|---|---|
-| GET | `me/` | Usuario actual (id, username, ranking) |
-| GET | `ui/config` | Config + `user_jwt` para el socket |
-| GET | `players/{id}/` | Perfil de jugador |
-| GET | `players/{id}/games/?ended__isnull=true` | Partidas activas (verificar filtros) |
-| GET | `games/{id}/` | Datos de la partida |
-| GET | `games/{id}/sgf` | SGF de la partida (para revisión / guardar) |
-| GET | `challenges/` | Desafíos abiertos |
-| POST | `challenges/` | Crear desafío abierto |
-| POST | `challenges/{id}/accept` | Aceptar desafío |
-| DELETE | `challenges/{id}` | Cancelar desafío propio |
-| POST | `players/{id}/challenge/` | Desafiar a un jugador concreto |
+| GET | `ui/config` | Usuario + `user_jwt` |
+| GET | `ui/overview` | `active_games[]` (cada una con `black`, `white`, `json.player_to_move`, `json.phase`) |
+| GET | `players?username=<nombre>` | Buscar jugador exacto → `results[0]` |
+| POST | `challenges` | Crear desafío abierto |
+| POST | `players/{id}/challenge` | Desafío directo |
+| POST | `challenges/{id}/accept` | Aceptar (respuesta: forma exacta sin confirmar; se lee `game` o `game_id`) |
+| DELETE | `me/challenges/{id}` | Cancelar desafío propio |
+
+Cuerpo de creación (igual que `ChallengeModal` del web): `{ initialized:false, challenger_color, invite_only, min_ranking, max_ranking, rengo_auto_start:0, game:{ name, rules, ranked:false, width, height, handicap, komi_auto:"automatic"|"custom", komi?, disable_analysis, initial_state:null, private, time_control, time_control_parameters, pause_on_weekends } }`. Respuesta: `{ challenge, game }`.
+
+- **Hoshi siempre envía `ranked: false`** y no permite aceptar desafíos clasificatorios.
+- Velocidad (como goban): media por jugada = `main/moves + period` con `moves = round(0.7·w·h)/2`; `< 10 s` blitz, `≤ 3600 s` live, resto (o 0) correspondencia. Live/blitz requieren `challenge/keepalive` cada segundo (§3).
+- Pendiente (fases 5–6): `games/{id}`, `games/{id}/sgf`, perfiles.
 
 Respuestas paginadas: `{ count, next, previous, results: [...] }`.
 
@@ -167,7 +191,7 @@ Respuestas paginadas: `{ count, next, previous, results: [...] }`.
 - Respetar límites de peticiones; no hacer polling REST si hay evento por WebSocket.
 - Identificar el cliente en `user_agent` y `client`/`client_version`.
 - No automatizar jugadas en cuentas humanas.
-- Probar siempre en beta.
+- Probar en beta. En producción solo partidas **no clasificatorias** y privadas contra una segunda cuenta propia (ver CLAUDE.md).
 
 ## 6. Tests
 

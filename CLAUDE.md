@@ -70,14 +70,15 @@ Regla de dependencias: `App → Ogs, Sgf, Core` · `Ogs → Core` · `Sgf → Co
 3. Escribe tests primero para `Hoshi.Core` y `Hoshi.Sgf` (reglas y parsing tienen muchos casos borde).
 4. Al terminar una tarea: compila (`dotnet build`), ejecuta tests (`dotnet test`), y resume en 2–4 líneas qué cambió y qué queda pendiente.
 5. Si una decisión afecta la arquitectura, la UX o la privacidad del usuario, pregunta antes.
-6. Cuando pruebes contra OGS real, usa **beta.online-go.com** (servidor de pruebas), nunca partidas clasificatorias en producción.
+6. Cuando pruebes contra OGS real, usa **beta.online-go.com** (servidor de pruebas) con el login de contraseña del entorno `Development`. Como beta no admite aplicaciones OAuth, el flujo OAuth solo puede probarse en online-go.com: ahí, **solo partidas no clasificatorias y privadas contra una segunda cuenta propia**; nunca clasificatorias (Hoshi siempre envía `ranked: false`). *(Actualizado 2026-09-29.)*
 
 ## 6. Qué NO hacer
 
 - No copiar código de Sabaki. Sus assets (texturas de piedras/tablero) están bajo licencia MIT: si se reutilizan, incluir el aviso de licencia en `THIRD_PARTY_NOTICES.md`; preferimos generar los nuestros.
 - No usar socket.io: OGS usa ahora un WebSocket JSON plano.
 - No implementar "bots" que jueguen automáticamente en OGS sin marcar la cuenta como bot (va contra sus términos).
-- No guardar la contraseña del usuario; solo tokens OAuth en el almacén seguro.
+- No guardar la contraseña del usuario; solo tokens OAuth en el almacén seguro. El login con contraseña existe solo para beta y está bloqueado contra producción.
+- No poner `client_secret` ni ningún secreto en el repositorio: la app OAuth es un cliente público con PKCE.
 
 ## 7. Documentos de referencia
 
