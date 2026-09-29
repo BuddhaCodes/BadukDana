@@ -13,6 +13,9 @@
     <PackageVersion Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="Avalonia.Headless.XUnit" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <!-- Security override: Avalonia 11.3.2 (via Avalonia.FreeDesktop) pulls Tmds.DBus.Protocol 0.21.2, affected by
+         GHSA-xrw6-gwf8-vvr9 (high). 0.21.3 is the patched backport. Remove once Avalonia is upgraded to >= 11.3.22. -->
+    <PackageVersion Include="Tmds.DBus.Protocol" Version="0.21.3" />
   </ItemGroup>
 
   <ItemGroup Label="Hosting and logging">
