@@ -11,6 +11,7 @@
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,6 +23,7 @@
     <!-- Direct reference only to lift the transitive version (see Directory.Packages.props). -->
     <PackageReference Include="Tmds.DBus.Protocol" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Serilog.Extensions.Hosting" />
     <PackageReference Include="Serilog.Settings.Configuration" />
     <PackageReference Include="Serilog.Sinks.File" />
