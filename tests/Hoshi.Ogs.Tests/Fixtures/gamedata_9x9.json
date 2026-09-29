@@ -1,0 +1,31 @@
+{
+  "game_id": 70000001,
+  "game_name": "Hoshi",
+  "player_id": 1001,
+  "width": 9,
+  "height": 9,
+  "rules": "japanese",
+  "komi": 6.5,
+  "handicap": 0,
+  "free_handicap_placement": false,
+  "initial_player": "black",
+  "initial_state": { "black": "", "white": "" },
+  "black_player_id": 1001,
+  "white_player_id": 2002,
+  "players": {
+    "black": { "id": 1001, "username": "kuro_test", "rank": 25.4, "pro": false },
+    "white": { "id": 2002, "username": "shiro_test", "rank": 27.2, "pro": false }
+  },
+  "ranked": false,
+  "private": true,
+  "phase": "play",
+  "moves": [[4, 4, 4211], [2, 2, 3102], [-1, -1, 1500]],
+  "time_control": { "system": "byoyomi", "speed": "live", "main_time": 600, "period_time": 30, "periods": 5, "pause_on_weekends": false },
+  "clock": {
+    "game_id": 70000001, "title": "Hoshi",
+    "current_player": 2002, "black_player_id": 1001, "white_player_id": 2002,
+    "last_move": 1790000000000, "expiration": 1790000750000,
+    "black_time": { "thinking_time": 590.5, "periods": 5, "period_time": 30 },
+    "white_time": { "thinking_time": 596.9, "periods": 5, "period_time": 30 }
+  }
+}

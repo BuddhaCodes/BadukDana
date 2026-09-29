@@ -1,0 +1,17 @@
+{
+  "player_id": 2002,
+  "stones": "aaba",
+  "strict_seki_mode": false,
+  "players": {
+    "black": { "id": 1001, "username": "kuro_test", "accepted_stones": "aaba", "accepted_strict_seki_mode": false },
+    "white": { "id": 2002, "username": "shiro_test", "accepted_stones": "aaba", "accepted_strict_seki_mode": false }
+  },
+  "phase": "finished",
+  "score": {
+    "black": { "total": 30, "stones": 0, "territory": 28, "prisoners": 2, "scoring_positions": "", "handicap": 0, "komi": 0 },
+    "white": { "total": 26.5, "stones": 0, "territory": 19, "prisoners": 1, "scoring_positions": "", "handicap": 0, "komi": 6.5 }
+  },
+  "winner": 1001,
+  "outcome": "3.5 points",
+  "end_time": 1790000900
+}
