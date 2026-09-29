@@ -1,0 +1,18 @@
+[
+  {
+    "challenge_id": 900001, "user_id": 4004, "username": "open_player", "ranking": 18.0, "professional": false,
+    "min_rank": -1000, "max_rank": 1000, "game_id": 7770001, "name": "Open game", "ranked": false,
+    "handicap": 0, "komi": null, "komi_auto": "automatic", "rules": "japanese", "width": 19, "height": 19,
+    "challenger_color": "automatic", "disable_analysis": false, "time_control": "byoyomi",
+    "time_control_parameters": { "system": "byoyomi", "speed": "live", "main_time": 600, "period_time": 30, "periods": 5 },
+    "time_per_move": 90, "rengo": false, "invite_only": false, "uuid": "11111111-2222-3333-4444-555555555555"
+  },
+  {
+    "challenge_id": 900002, "user_id": 5005, "username": "ranked_player", "ranking": 30.5, "professional": false,
+    "min_rank": 20, "max_rank": 35, "game_id": 7770002, "name": "Ranked 9x9", "ranked": true,
+    "handicap": null, "komi": 5.5, "komi_auto": "custom", "rules": "chinese", "width": 9, "height": 9,
+    "challenger_color": "white", "disable_analysis": true, "time_control": "fischer",
+    "time_control_parameters": { "system": "fischer", "speed": "blitz", "initial_time": 60, "time_increment": 5, "max_time": 120 },
+    "time_per_move": 10, "rengo": false, "invite_only": false, "uuid": "66666666-7777-8888-9999-000000000000"
+  }
+]
