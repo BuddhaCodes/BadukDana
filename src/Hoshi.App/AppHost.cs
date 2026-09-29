@@ -31,6 +31,7 @@ public static class AppHost
                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}"));
 
         AddAppServices(builder.Services);
+        builder.Services.AddOgs(builder.Configuration);
         configureServices?.Invoke(builder.Services);
 
         return builder.Build();
@@ -41,6 +42,9 @@ public static class AppHost
     {
         services.AddSingleton<IFileDialogService, AvaloniaFileDialogService>();
         services.AddSingleton<IDialogService, AvaloniaDialogService>();
+        services.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
+        services.AddSingleton<LobbyViewModel>();
+        services.AddSingleton<ILobbyWindowService, LobbyWindowService>();
         services.AddSingleton<GameViewModel>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddTransient<MainWindow>();

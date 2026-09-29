@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Hoshi (beta, desarrollo)": {
+      "commandName": "Project",
+      "environmentVariables": { "DOTNET_ENVIRONMENT": "Development" }
+    },
+    "Hoshi (online-go.com)": {
+      "commandName": "Project",
+      "environmentVariables": { "DOTNET_ENVIRONMENT": "Production" }
+    }
+  }
+}
