@@ -3,6 +3,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:Hoshi.App.ViewModels"
+        xmlns:c="using:Hoshi.App.Controls"
+        xmlns:sys="using:System"
         mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="800"
         x:Class="Hoshi.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -15,13 +17,56 @@
     <vm:MainWindowViewModel />
   </Design.DataContext>
 
+  <Window.KeyBindings>
+    <KeyBinding Gesture="P" Command="{Binding Game.PassCommand}" />
+    <KeyBinding Gesture="Ctrl+Z" Command="{Binding Game.UndoCommand}" />
+    <KeyBinding Gesture="Ctrl+N" Command="{Binding Game.NewGameCommand}">
+      <KeyBinding.CommandParameter>
+        <sys:Int32>19</sys:Int32>
+      </KeyBinding.CommandParameter>
+    </KeyBinding>
+  </Window.KeyBindings>
+
   <DockPanel>
-    <!-- Bottom mode bar (DESIGN.md: 36 px). Navigation and mode controls arrive in later phases. -->
+    <!-- Bottom mode bar (DESIGN.md: 36 px). -->
     <Border Classes="bottom-bar" DockPanel.Dock="Bottom" x:Name="BottomBar">
-      <TextBlock Classes="secondary" VerticalAlignment="Center" Text="{Binding StatusText}" />
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+          <Button Classes="bar" Content="Nueva" ToolTip.Tip="Nueva partida (Ctrl+N)">
+            <Button.Flyout>
+              <MenuFlyout>
+                <MenuItem Header="19 × 19" Command="{Binding Game.NewGameCommand}">
+                  <MenuItem.CommandParameter><sys:Int32>19</sys:Int32></MenuItem.CommandParameter>
+                </MenuItem>
+                <MenuItem Header="13 × 13" Command="{Binding Game.NewGameCommand}">
+                  <MenuItem.CommandParameter><sys:Int32>13</sys:Int32></MenuItem.CommandParameter>
+                </MenuItem>
+                <MenuItem Header="9 × 9" Command="{Binding Game.NewGameCommand}">
+                  <MenuItem.CommandParameter><sys:Int32>9</sys:Int32></MenuItem.CommandParameter>
+                </MenuItem>
+              </MenuFlyout>
+            </Button.Flyout>
+          </Button>
+          <Button Classes="bar" Content="Pasar" Command="{Binding Game.PassCommand}" ToolTip.Tip="Pasar (P)" x:Name="PassButton" />
+          <Button Classes="bar" Content="Deshacer" Command="{Binding Game.UndoCommand}" ToolTip.Tip="Deshacer (Ctrl+Z)" x:Name="UndoButton" />
+        </StackPanel>
+
+        <TextBlock Grid.Column="1" Classes="secondary" HorizontalAlignment="Center" VerticalAlignment="Center"
+                   Text="{Binding Game.StatusText}" x:Name="StatusText" />
+
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+          <TextBlock Classes="secondary" Text="{Binding Game.CapturesText}" />
+          <TextBlock Classes="secondary" Text="{Binding Game.MoveNumberText}" />
+        </StackPanel>
+      </Grid>
     </Border>
 
-    <!-- Board area placeholder: GoBoardControl lands here in Phase 2. -->
-    <Panel x:Name="BoardHost" />
+    <c:GoBoardControl x:Name="Board"
+                      Margin="16"
+                      Board="{Binding Game.Board}"
+                      LastMove="{Binding Game.LastMove}"
+                      HoverPoint="{Binding Game.HoverPoint}"
+                      GhostStone="{Binding Game.GhostStone}"
+                      PointClickedCommand="{Binding Game.PlayCommand}" />
   </DockPanel>
 </Window>

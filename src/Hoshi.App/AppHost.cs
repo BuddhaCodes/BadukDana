@@ -39,6 +39,7 @@ public static class AppHost
     /// <summary>Registers the application's own services, view models and views.</summary>
     public static IServiceCollection AddAppServices(this IServiceCollection services)
     {
+        services.AddSingleton<LocalGameViewModel>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddTransient<MainWindow>();
         return services;
