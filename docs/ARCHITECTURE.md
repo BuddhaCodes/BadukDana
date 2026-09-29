@@ -52,9 +52,11 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 
 ## Hoshi.Ogs
 
-- `IOgsAuthService` — login OAuth2, refresh, logout, estado de sesión.
-- `IOgsRestClient` — usuario actual, partidas activas, desafíos, SGF de partidas, perfiles.
-- `IOgsRealtimeClient` — conexión WebSocket, autenticación con JWT, ping/latencia, reconexión, suscripción a partidas.
+- `OgsOptions` — servidor, modo de autenticación (`OAuth` | `Password`), `ClientId`, puerto loopback.
+- `OgsAuthService` (`IOgsCredentials`) — OAuth2 + PKCE con `LoopbackRedirectListener`, refresh, revocación; login web solo en beta; `Session` (usuario + JWT). Guarda el refresh token en un `ITokenStore`.
+- `OgsRestClient` — partidas activas (`ui/overview`), desafíos, búsqueda de jugadores.
+- `OgsRealtimeClient` — WebSocket (`IWebSocketConnection`), `authenticate`, ping/latencia/deriva, reconexión con back-off, cola de salida, `RequestAsync`, `Subscribe`.
+- `OgsSeekGraph` (desafíos abiertos en vivo) y `ChallengeKeepAlive` (espera de rival).
 - `OgsGameSession` — una partida en curso **sin conocer el árbol SGF**:
   - Entrada: `gamedata` inicial → `OgsGameSnapshot` (reglas, tamaño, handicap, komi, jugadores, lista de jugadas como `Point?`, reloj, fase).
   - Eventos: `MoveReceived(moveNumber, color, Point?)`, `MoveRejected`, `ClockUpdated`, `PhaseChanged`, `RemovedStonesChanged`, `UndoRequested/Accepted/Canceled`, `ChatReceived`, `GameEnded(score, winner, outcome)`.
@@ -67,7 +69,7 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 ### Ventanas y vistas
 - `MainWindow`: tablero central + barra lateral derecha (plegable) + barra inferior de modo.
 - Sidebar: `PlayerInfoPanel` (nombres, rango, capturas, relojes), `GameTreePanel` (grafo de variantes), `CommentPanel`, `ChatPanel` (en modo OGS).
-- `OgsLobbyView`: pestañas "Mis partidas", "Desafíos abiertos", "Automatch", "Crear desafío".
+- `LobbyWindow` (Ctrl+L, botón «En línea»): pestañas "Mis partidas", "Desafíos abiertos", "Automatch", "Crear desafío".
 - Diálogos: Nueva partida local, Info de partida (propiedades SGF), Preferencias, Login OGS.
 
 ### OgsGameCoordinator (decisión 2026-09-29)
@@ -89,7 +91,11 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 - Atajos de una letra (P) solo en el área del tablero, para que no se disparen al escribir un comentario.
 
 ### Servicios de App
-- `INavigationService`, `IDialogService`, `ISettingsService` (JSON en carpeta de datos del usuario), `ISoundService` (clic de piedra, captura, aviso de tiempo), `ISecureStore`.
+- `IDialogService`, `IFileDialogService`; futuros `ISettingsService` (JSON en carpeta de datos), `ISoundService`.
+- `SecureTokenStore` → `ITokenStore` del SO con respaldo en memoria (implementa el `ISecureStore` de CLAUDE.md).
+- `IOgsClient` / `OgsClient` — fachada que une auth, REST, tiempo real y seek graph para el lobby; `LobbyViewModel` solo depende de ella (tests con un falso). `IUiDispatcher` lleva los eventos al hilo de UI.
+- `OgsServiceRegistration.AddOgs` — `HttpClient` con nombre `ogs` (`IHttpClientFactory`, `UseCookies=false`), opciones desde `appsettings.json` / `appsettings.Development.json`.
+- `ILobbyWindowService` — ventana "Jugar en línea" (no modal, única).
 - `AppPaths.DataDirectory`: `%LOCALAPPDATA%\Hoshi`, `~/Library/Application Support/Hoshi`, `~/.local/share/Hoshi`. Logs en `logs/hoshi-YYYYMMDD.log` (14 días).
 
 ## Flujo: jugada en OGS
