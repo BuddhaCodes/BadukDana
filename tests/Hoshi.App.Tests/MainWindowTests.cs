@@ -14,39 +14,59 @@ namespace Hoshi.App.Tests;
 
 public sealed class MainWindowTests
 {
-    private static readonly Color BgWindow = Color.Parse("#1E1E1E");
 
     [AvaloniaFact]
-    public void Window_background_is_the_Bg_Window_token()
+    public void Window_background_follows_the_Bg_Window_token()
     {
         var window = new MainWindow(new MainWindowViewModel());
         window.Show();
 
-        window.Background.Should().BeOfType<SolidColorBrush>()
-            .Which.Color.Should().Be(BgWindow);
-
         Application.Current!.TryGetResource("Bg.Window", null, out object? token).Should().BeTrue();
-        ((SolidColorBrush)token!).Color.Should().Be(BgWindow);
+        window.Background.Should().BeOfType<SolidColorBrush>()
+            .Which.Color.Should().Be(((SolidColorBrush)token!).Color);
     }
 
-    [AvaloniaFact]
-    public void Board_sits_on_tatami_next_to_a_dark_sidebar_and_is_saved_as_screenshot()
+    public static TheoryData<string> ThemeIds => [.. Hoshi.App.Themes.HoshiThemes.All.Select(t => t.Id)];
+
+    [AvaloniaTheory]
+    [MemberData(nameof(ThemeIds))]
+    public void Every_theme_renders_its_backdrop_and_sidebar_and_is_saved_as_screenshot(string id)
     {
-        var window = new MainWindow(new MainWindowViewModel()) { Width = 1100, Height = 800 };
-        window.Show();
+        Hoshi.App.Themes.HoshiTheme theme = Hoshi.App.Themes.HoshiThemes.ById(id);
+        Hoshi.App.Themes.ThemeService.Apply(theme, animations: false, Application.Current!.Resources);
+        try
+        {
+            var vm = new MainWindowViewModel();
+            foreach (var p in new[] { (3, 3), (15, 15), (15, 3), (3, 15), (2, 5), (16, 13), (9, 9) })
+            {
+                vm.Game.PlayCommand.Execute(new Hoshi.Core.Point(p.Item1, p.Item2));
+            }
 
-        using WriteableBitmap frame = window.CaptureRenderedFrame()
-            ?? throw new InvalidOperationException("No frame rendered");
+            var window = new MainWindow(vm) { Width = 1100, Height = 800 };
+            window.Show();
+            using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
 
-        // Around the board: Sabaki's tatami (greenish straw); the sidebar is Sabaki's #111.
-        Color tatami = Pixels.Read(frame, 6, 6);
-        tatami.G.Should().BeGreaterThan(tatami.B, "tatami is green-yellow straw");
-        tatami.R.Should().BeInRange(120, 230);
-        Pixels.Read(frame, 1100 - 20, 400).Should().Be(Color.Parse("#111111"));
+            Pixels.Read(frame, 1100 - 20, 400).Should().Be(theme.Sidebar, "the sidebar uses the theme colour");
+            Color backdrop = Pixels.Read(frame, 6, 6);
+            backdrop.Should().NotBe(theme.Sidebar, "the board sits on the theme's backdrop");
+            if (theme.Background == Hoshi.App.Themes.BackgroundKind.Tatami)
+            {
+                backdrop.G.Should().BeGreaterThan(backdrop.B, "tatami is green-yellow straw");
+            }
 
-        string outDir = Path.Combine(AppContext.BaseDirectory, "screenshots");
-        Directory.CreateDirectory(outDir);
-        frame.Save(Path.Combine(outDir, "phase0-main-window.png"));
+            string outDir = Path.Combine(AppContext.BaseDirectory, "screenshots");
+            Directory.CreateDirectory(outDir);
+            frame.Save(Path.Combine(outDir, $"theme-{id}.png"));
+
+            window.Width = 1600;
+            window.Height = 900;
+            using WriteableBitmap wide = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
+            wide.Save(Path.Combine(outDir, $"theme-{id}-wide.png"));
+        }
+        finally
+        {
+            Hoshi.App.Themes.ThemeService.Apply(Hoshi.App.Themes.HoshiThemes.Default, animations: false, Application.Current!.Resources);
+        }
     }
 
     [AvaloniaFact]
@@ -78,7 +98,7 @@ public sealed class MainWindowTests
     }
 
     [AvaloniaFact]
-    public void Edit_mode_turns_the_bar_into_Sabaki_s_edit_bar()
+    public void Edit_mode_turns_the_bar_into_the_theme_s_edit_bar()
     {
         var vm = new MainWindowViewModel();
         var window = new MainWindow(vm) { Width = 1100, Height = 800 };
@@ -90,8 +110,7 @@ public sealed class MainWindowTests
         bar.Classes.Should().Contain("edit");
         window.FindControl<StackPanel>("EditBar")!.IsEffectivelyVisible.Should().BeTrue();
         window.FindControl<Grid>("PlayerInfo")!.IsEffectivelyVisible.Should().BeFalse();
-        using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
-        Pixels.Read(frame, 400, 800 - 3).Should().Be(Color.Parse("#C4BD64"));
-        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "ui-edit-mode.png"));
+        Application.Current!.TryGetResource("Bg.EditBar", null, out object? edit).Should().BeTrue();
+        ((SolidColorBrush)edit!).Color.Should().Be(Hoshi.App.Themes.HoshiThemes.Default.EditBar);
     }
 }

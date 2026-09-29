@@ -4,10 +4,30 @@
     <Setter Property="Background" Value="{DynamicResource Bg.Window}" />
     <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
     <Setter Property="FontSize" Value="{DynamicResource Font.Size.Normal}" />
+    <Setter Property="FontFamily" Value="{DynamicResource Font.UI}" />
+  </Style>
+
+  <!-- Panels that appear (online panel, chat, edit bar, players) fade in. -->
+  <Style Selector=":is(Control).appear[IsVisible=True]">
+    <Style.Animations>
+      <Animation Duration="0:0:0.28" Easing="CubicEaseOut" FillMode="Forward">
+        <KeyFrame Cue="0%">
+          <Setter Property="Opacity" Value="0" />
+        </KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="Opacity" Value="1" />
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
   </Style>
 
   <!-- Sabaki's bar: flat #292A2D, 40 px; the edit bar turns olive with dark text. -->
   <Style Selector="Border.bottom-bar">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.25" />
+      </Transitions>
+    </Setter>
     <Setter Property="Background" Value="{DynamicResource Bg.Bar}" />
     <Setter Property="Height" Value="{DynamicResource BottomBar.Height}" />
     <Setter Property="Padding" Value="8,0" />
@@ -17,8 +37,8 @@
   </Style>
   <!-- Buttons inside sidebar panels: flat, like Sabaki's sidebar controls. -->
   <Style Selector="Border.panel-header Button">
-    <Setter Property="Background" Value="#2A2A2A" />
-    <Setter Property="Foreground" Value="#D0D0D0" />
+    <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
+    <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
     <Setter Property="Padding" Value="10,4" />
     <Setter Property="CornerRadius" Value="3" />
     <Setter Property="FontSize" Value="{DynamicResource Font.Size.Normal}" />
@@ -26,7 +46,8 @@
 
   <Style Selector="TextBlock.player">
     <Setter Property="VerticalAlignment" Value="Center" />
-    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontFamily" Value="{DynamicResource Font.Title}" />
+    <Setter Property="FontSize" Value="{DynamicResource Font.Size.Title}" />
     <Setter Property="MaxWidth" Value="220" />
   </Style>
 
@@ -54,6 +75,12 @@
     <Setter Property="Stroke" Value="#9A9A9A" />
   </Style>
 
+  <Style Selector="Border.game-header">
+    <Setter Property="Padding" Value="14,12,14,10" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+  </Style>
+
   <Style Selector="Border.properties-header">
     <Setter Property="Background" Value="{DynamicResource Bg.Properties}" />
     <Setter Property="Padding" Value="12,8,12,0" />
@@ -70,6 +97,25 @@
     <Setter Property="Padding" Value="10,3" />
     <Setter Property="MinHeight" Value="26" />
     <Setter Property="CornerRadius" Value="3" />
+  </Style>
+
+  <Style Selector="Button.bar /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.15" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Button.bar:pressed">
+    <Setter Property="RenderTransform" Value="scale(0.94)" />
+  </Style>
+  <Style Selector="Button.bar">
+    <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" />
+      </Transitions>
+    </Setter>
   </Style>
 
   <Style Selector="Button.bar:pointerover /template/ ContentPresenter#PART_ContentPresenter">
@@ -109,7 +155,7 @@
 
   <!-- Online clocks: monospaced digits; amber when the player to move is under 10 s (DESIGN.md accent). -->
   <Style Selector="TextBlock.clock">
-    <Setter Property="FontFamily" Value="Consolas, Menlo, DejaVu Sans Mono, monospace" />
+    <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
     <Setter Property="FontSize" Value="16" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Margin" Value="0,2,0,0" />
@@ -124,7 +170,7 @@
 
   <Style Selector="TextBox.comment">
     <Setter Property="Background" Value="{DynamicResource Bg.Properties}" />
-    <Setter Property="Foreground" Value="#D0D0D0" />
+    <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="CornerRadius" Value="0" />
     <Setter Property="Padding" Value="12,10" />
@@ -139,21 +185,43 @@
   </Style>
   <!-- Edit bar overrides: last, so they win over the generic bar styles above. -->
   <Style Selector="Border.bottom-bar.edit Button.bar">
-    <Setter Property="Foreground" Value="#222222" />
+    <Setter Property="Foreground" Value="{DynamicResource EditBar.Foreground}" />
   </Style>
   <Style Selector="Border.bottom-bar.edit Button.bar:disabled /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="Foreground" Value="#8E851B" />
+    <Setter Property="Foreground" Value="{DynamicResource EditBar.Foreground}" />
+    <Setter Property="Opacity" Value="0.45" />
   </Style>
   <Style Selector="Border.bottom-bar.edit RadioButton.tool">
-    <Setter Property="Foreground" Value="#222222" />
+    <Setter Property="Foreground" Value="{DynamicResource EditBar.Foreground}" />
   </Style>
   <Style Selector="Border.bottom-bar.edit RadioButton.tool:pointerover /template/ Border#bg, Border.bottom-bar.edit RadioButton.tool:checked /template/ Border#bg">
-    <Setter Property="Background" Value="#B3AC53" />
-    <Setter Property="BorderBrush" Value="#8E851B" />
+    <Setter Property="Background" Value="{DynamicResource EditBar.Hover}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource EditBar.Foreground}" />
   </Style>
   <Style Selector="Border.bottom-bar.edit Button.bar:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="Background" Value="#B3AC53" />
-    <Setter Property="Foreground" Value="#222222" />
+    <Setter Property="Background" Value="{DynamicResource EditBar.Hover}" />
+    <Setter Property="Foreground" Value="{DynamicResource EditBar.Foreground}" />
   </Style>
 
+
+  <!-- Preferences: theme cards. -->
+  <Style Selector="Border.theme-card">
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="ClipToBounds" Value="True" />
+    <Setter Property="BorderThickness" Value="2" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.2" />
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Border.theme-card:pointerover">
+    <Setter Property="RenderTransform" Value="translateY(-3px)" />
+  </Style>
+  <Style Selector="Border.theme-card.selected">
+    <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+  </Style>
 </Styles>

@@ -33,6 +33,7 @@
     <KeyBinding Gesture="Ctrl+E" Command="{Binding Game.ToggleEditModeCommand}" />
     <KeyBinding Gesture="Ctrl+I" Command="{Binding Game.EditGameInfoCommand}" />
     <KeyBinding Gesture="Ctrl+L" Command="{Binding OpenLobbyCommand}" />
+    <KeyBinding Gesture="Ctrl+OemComma" Command="{Binding OpenPreferencesCommand}" />
     <KeyBinding Gesture="Ctrl+N" Command="{Binding Game.NewGameCommand}">
       <KeyBinding.CommandParameter>
         <sys:Int32>19</sys:Int32>
@@ -46,10 +47,10 @@
       <Border Classes="bottom-bar" Classes.edit="{Binding Game.IsEditMode}" DockPanel.Dock="Bottom" x:Name="BottomBar">
         <Grid ColumnDefinitions="Auto,*,Auto">
           <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-            <Button Classes="bar icon" Content="⏮" Command="{Binding Game.GoFirstCommand}" ToolTip.Tip="Inicio (Home)" />
-            <Button Classes="bar icon" Content="◀" Command="{Binding Game.GoBackCommand}" ToolTip.Tip="Anterior (←)" />
-            <Button Classes="bar icon" Content="▶" Command="{Binding Game.GoForwardCommand}" ToolTip.Tip="Siguiente (→)" />
-            <Button Classes="bar icon" Content="⏭" Command="{Binding Game.GoLastCommand}" ToolTip.Tip="Final (End)" />
+            <Button Classes="bar icon" Command="{Binding Game.GoFirstCommand}" ToolTip.Tip="Inicio (Home)"><c:HoshiIcon Icon="{DynamicResource Icon.First}" Size="18" /></Button>
+            <Button Classes="bar icon" Command="{Binding Game.GoBackCommand}" ToolTip.Tip="Anterior (←)"><c:HoshiIcon Icon="{DynamicResource Icon.Previous}" Size="18" /></Button>
+            <Button Classes="bar icon" Command="{Binding Game.GoForwardCommand}" ToolTip.Tip="Siguiente (→)"><c:HoshiIcon Icon="{DynamicResource Icon.Next}" Size="18" /></Button>
+            <Button Classes="bar icon" Command="{Binding Game.GoLastCommand}" ToolTip.Tip="Final (End)"><c:HoshiIcon Icon="{DynamicResource Icon.Last}" Size="18" /></Button>
           </StackPanel>
 
           <!-- Players, as in Sabaki's bar: black name · turn toggle · white name. -->
@@ -76,39 +77,40 @@
           </Grid>
 
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center" HorizontalAlignment="Center"
-                    IsVisible="{Binding Game.IsEditMode}" x:Name="EditBar">
-          <RadioButton Classes="tool" GroupName="tool" Content="●" ToolTip.Tip="Piedra negra"
+                    IsVisible="{Binding Game.IsEditMode}" x:Name="EditBar" Classes="appear">
+          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="Piedra negra"
                        IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.BlackStone}}"
-                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.BlackStone}" />
-          <RadioButton Classes="tool" GroupName="tool" Content="○" ToolTip.Tip="Piedra blanca"
+                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.BlackStone}"><Ellipse Width="14" Height="14" Fill="#141414" Stroke="#000" StrokeThickness="1" /></RadioButton>
+          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="Piedra blanca"
                        IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.WhiteStone}}"
-                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.WhiteStone}" />
-          <RadioButton Classes="tool" GroupName="tool" Content="△" ToolTip.Tip="Triángulo"
+                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.WhiteStone}"><Ellipse Width="14" Height="14" Fill="#F4F4F4" Stroke="#9A9A9A" StrokeThickness="1" /></RadioButton>
+          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="Triángulo"
                        IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.Triangle}}"
-                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Triangle}" />
-          <RadioButton Classes="tool" GroupName="tool" Content="□" ToolTip.Tip="Cuadrado"
+                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Triangle}"><c:HoshiIcon Icon="{DynamicResource Icon.Triangle}" Size="17" /></RadioButton>
+          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="Cuadrado"
                        IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.Square}}"
-                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Square}" />
-          <RadioButton Classes="tool" GroupName="tool" Content="◯" ToolTip.Tip="Círculo"
+                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Square}"><c:HoshiIcon Icon="{DynamicResource Icon.Square}" Size="17" /></RadioButton>
+          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="Círculo"
                        IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.Circle}}"
-                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Circle}" />
-          <RadioButton Classes="tool" GroupName="tool" Content="✕" ToolTip.Tip="Cruz"
+                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Circle}"><c:HoshiIcon Icon="{DynamicResource Icon.Circle}" Size="17" /></RadioButton>
+          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="Cruz"
                        IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.Cross}}"
-                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Cross}" />
-          <RadioButton Classes="tool" GroupName="tool" Content="A" ToolTip.Tip="Etiqueta"
+                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Cross}"><c:HoshiIcon Icon="{DynamicResource Icon.Cross}" Size="17" /></RadioButton>
+          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="Etiqueta"
                        IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.Label}}"
-                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Label}" />
+                       Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Label}"><c:HoshiIcon Icon="{DynamicResource Icon.Label}" Size="17" /></RadioButton>
         </StackPanel>
 
           <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-            <Button Classes="bar" Content="Pasar" Command="{Binding Game.PassCommand}" ToolTip.Tip="Pasar (P)" x:Name="PassButton"
-                    IsVisible="{Binding !Game.IsEditMode}" />
-            <Button Classes="bar" Content="Deshacer" Command="{Binding Game.UndoCommand}" ToolTip.Tip="Deshacer (Ctrl+Z)" x:Name="UndoButton"
-                    IsVisible="{Binding !Game.IsEditMode}" />
-            <Button Classes="bar" Content="En línea" Command="{Binding OpenLobbyCommand}" ToolTip.Tip="Jugar en OGS (Ctrl+L)" x:Name="OnlineButton"
-                    IsVisible="{Binding !Game.IsEditMode}" />
-            <Button Classes="bar" Content="Terminar edición" Command="{Binding Game.ToggleEditModeCommand}" IsVisible="{Binding Game.IsEditMode}" />
-            <Button Classes="bar icon" Content="☰" ToolTip.Tip="Menú: archivo, edición, en línea" x:Name="MenuButton">
+            <Button Classes="bar" Command="{Binding Game.PassCommand}" ToolTip.Tip="Pasar (P)" x:Name="PassButton"
+                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Pass}" Size="17" /><TextBlock Text="Pasar" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="bar" Command="{Binding Game.UndoCommand}" ToolTip.Tip="Deshacer (Ctrl+Z)" x:Name="UndoButton"
+                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Undo}" Size="17" /><TextBlock Text="Deshacer" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="bar" Command="{Binding OpenLobbyCommand}" ToolTip.Tip="Jugar en OGS (Ctrl+L)" x:Name="OnlineButton"
+                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Online}" Size="17" /><TextBlock Text="En línea" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="bar" Command="{Binding Game.ToggleEditModeCommand}" IsVisible="{Binding Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Check}" Size="17" /><TextBlock Text="Terminar edición" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="bar icon" ToolTip.Tip="Menú: archivo, edición, en línea, preferencias" x:Name="MenuButton">
+              <c:HoshiIcon Icon="{DynamicResource Icon.Menu}" Size="18" />
             <Button.Flyout>
               <MenuFlyout>
                 <MenuItem Header="Nueva 19 × 19" Command="{Binding Game.NewGameCommand}" InputGesture="Ctrl+N">
@@ -131,6 +133,8 @@
                 <Separator />
                 <MenuItem Header="Modo edición" Command="{Binding Game.ToggleEditModeCommand}" InputGesture="Ctrl+E" />
                 <MenuItem Header="Jugar en línea…" Command="{Binding OpenLobbyCommand}" InputGesture="Ctrl+L" />
+                <Separator />
+                <MenuItem Header="Preferencias…" Command="{Binding OpenPreferencesCommand}" InputGesture="Ctrl+OemComma" />
               </MenuFlyout>
             </Button.Flyout>
             </Button>
@@ -139,14 +143,16 @@
       </Border>
 
       <!-- Board area; single-letter shortcuts live here so they do not fire while typing a comment. -->
-      <Panel x:Name="BoardArea" Background="{DynamicResource Bg.Tatami.Base}">
-        <Border Background="{DynamicResource Bg.Tatami}" IsHitTestVisible="False" />
+      <Panel x:Name="BoardArea" Background="{DynamicResource Bg.Surround}">
+        <c:ThemeBackground x:Name="Backdrop" Kind="{DynamicResource Theme.Background}" Animate="{DynamicResource Theme.Animations}" />
         <Panel.KeyBindings>
           <KeyBinding Gesture="P" Command="{Binding Game.PassKeyCommand}" />
         </Panel.KeyBindings>
         <c:GoBoardControl x:Name="Board"
                           Margin="24"
                           Board="{Binding Game.Board}"
+                          BoardStyle="{DynamicResource Theme.Board}"
+                          Animate="{DynamicResource Theme.Animations}"
                           LastMove="{Binding Game.LastMove}"
                           Markers="{Binding Game.Markers}"
                           HoverPoint="{Binding Game.HoverPoint}"
@@ -161,12 +167,19 @@
     <!-- Sidebar: players, variation tree, comment. Width 220–420 (DESIGN.md). -->
       <Grid Grid.Column="2" x:Name="Sidebar" MinWidth="220" MaxWidth="420"
             Background="{DynamicResource Bg.Sidebar}" RowDefinitions="Auto,*,Auto,Auto,200">
+        <Border Grid.Row="0" Classes="game-header" IsVisible="{Binding IsLocal}" x:Name="GameHeader">
+          <StackPanel Spacing="3">
+            <TextBlock Text="{Binding Game.HeaderTitle}" FontFamily="{DynamicResource Font.Title}" FontSize="{DynamicResource Font.Size.Title}"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Classes="secondary" Text="{Binding Game.HeaderSubtitle}" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+        </Border>
         <Border Grid.Row="0" Classes="panel-header" Padding="12,10" IsVisible="{Binding IsOnline}">
           <Panel>
 
 
             <!-- Online game: names, clocks, actions (Phase 5). -->
-            <StackPanel x:Name="OnlinePanel" IsVisible="{Binding IsOnline}" Spacing="8">
+            <StackPanel x:Name="OnlinePanel" Classes="appear" IsVisible="{Binding IsOnline}" Spacing="8">
               <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
                 <Ellipse Grid.Row="0" Width="10" Height="10" Fill="#1A1A1A" Stroke="#9A9A9A" StrokeThickness="1" Margin="0,0,8,0" />
                 <TextBlock Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Online.BlackName}" TextTrimming="CharacterEllipsis"
@@ -221,7 +234,7 @@
                  AcceptsReturn="True" TextWrapping="Wrap" Watermark="Comentario"
                  Text="{Binding Game.Comment}" />
 
-        <DockPanel Grid.Row="4" x:Name="ChatPanel" Background="{DynamicResource Bg.Properties}" IsVisible="{Binding IsOnline}">
+        <DockPanel Grid.Row="4" x:Name="ChatPanel" Classes="appear" Background="{DynamicResource Bg.Properties}" IsVisible="{Binding IsOnline}">
           <TextBox DockPanel.Dock="Bottom" Classes="comment" Watermark="Escribe al rival (Enter)" Text="{Binding Online.ChatInput}" x:Name="ChatInput">
             <TextBox.KeyBindings>
               <KeyBinding Gesture="Enter" Command="{Binding Online.SendChatCommand}" />

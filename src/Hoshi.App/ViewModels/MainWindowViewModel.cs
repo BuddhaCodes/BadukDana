@@ -13,6 +13,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly IUiDispatcher? _ui;
     private readonly IDialogService? _dialogs;
     private readonly ILogger<MainWindowViewModel> _logger;
+    private readonly IPreferencesWindowService? _preferences;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsOnline), nameof(IsLocal))]
@@ -30,8 +31,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IOgsClient? ogs = null,
         IUiDispatcher? ui = null,
         IDialogService? dialogs = null,
-        ILogger<MainWindowViewModel>? logger = null)
+        ILogger<MainWindowViewModel>? logger = null,
+        IPreferencesWindowService? preferences = null)
     {
+        _preferences = preferences;
         Game = game;
         _lobbyWindow = lobbyWindow;
         _ogs = ogs;
@@ -93,6 +96,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     [RelayCommand(CanExecute = nameof(IsOnlineAvailable))]
     private void OpenLobby() => _lobbyWindow?.Show();
+
+    public bool HasPreferences => _preferences is not null;
+
+    [RelayCommand(CanExecute = nameof(HasPreferences))]
+    private Task OpenPreferences() => _preferences?.ShowAsync() ?? Task.CompletedTask;
 
     private void LeaveOnline() => Online?.LeaveCommand.Execute(null);
 }

@@ -124,6 +124,51 @@ public sealed partial class GameViewModel : ViewModelBase
 
     public bool IsBlackToMove => Board.ToMove == Stone.Black;
 
+    /// <summary>Sidebar header: the game's name, else the file name, else "Nueva partida".</summary>
+    public string HeaderTitle =>
+        Tree.Info.GameName is { Length: > 0 } n ? n
+        : FilePath is not null ? System.IO.Path.GetFileNameWithoutExtension(FilePath)
+        : "Nueva partida";
+
+    /// <summary>Sidebar header details, e.g. "19×19 · reglas japonesas · komi 6.5 · B+R".</summary>
+    public string HeaderSubtitle
+    {
+        get
+        {
+            var parts = new List<string> { string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{Board.Width}×{Board.Height}") };
+            if (Tree.Info.Rules is { } rules)
+            {
+                parts.Add("reglas " + rules.Name switch
+                {
+                    "japanese" => "japonesas",
+                    "chinese" => "chinas",
+                    "korean" => "coreanas",
+                    "aga" => "AGA",
+                    "nz" => "neozelandesas",
+                    "ing" => "Ing",
+                    var other => other,
+                });
+            }
+
+            if (Tree.Info.Komi is { } komi)
+            {
+                parts.Add(string.Create(System.Globalization.CultureInfo.InvariantCulture, $"komi {komi:0.#}"));
+            }
+
+            if (Tree.Info.Handicap > 0)
+            {
+                parts.Add(string.Create(System.Globalization.CultureInfo.InvariantCulture, $"H{Tree.Info.Handicap}"));
+            }
+
+            if (Tree.Info.Result is { Length: > 0 } result)
+            {
+                parts.Add(result);
+            }
+
+            return string.Join(" · ", parts);
+        }
+    }
+
     public bool IsGameOver =>
         _cursor.Current.GetMove(_cursor.BoardSize) is { IsPass: true }
         && _cursor.Current.Parent?.GetMove(_cursor.BoardSize) is { IsPass: true };
@@ -622,6 +667,8 @@ public sealed partial class GameViewModel : ViewModelBase
         OnPropertyChanged(nameof(BlackName));
         OnPropertyChanged(nameof(WhiteName));
         OnPropertyChanged(nameof(IsBlackToMove));
+        OnPropertyChanged(nameof(HeaderTitle));
+        OnPropertyChanged(nameof(HeaderSubtitle));
         OnPropertyChanged(nameof(IsGameOver));
         OnPropertyChanged(nameof(StatusText));
         OnPropertyChanged(nameof(MainLineMoveCount));
