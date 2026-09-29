@@ -45,7 +45,7 @@ internal sealed class FakeOgsClient : IOgsClient
 
     public (string User, string Password)? PasswordSignIn { get; private set; }
 
-    public int BrowserSignIns { get; private set; }
+    public List<OgsLoginProvider> BrowserSignIns { get; } = [];
 
     public Exception? SignInError { get; set; }
 
@@ -83,9 +83,9 @@ internal sealed class FakeOgsClient : IOgsClient
         return Task.FromResult(HasStoredSession);
     }
 
-    public Task SignInWithBrowserAsync(CancellationToken cancellationToken)
+    public Task SignInWithBrowserAsync(OgsLoginProvider provider, CancellationToken cancellationToken)
     {
-        BrowserSignIns++;
+        BrowserSignIns.Add(provider);
         if (SignInError is { } e)
         {
             throw e;
@@ -216,8 +216,30 @@ public sealed class LobbyViewModelTests
         vm.SignInCommand.CanExecute(null).Should().BeTrue();
         await vm.SignInCommand.ExecuteAsync(null);
 
-        _ogs.BrowserSignIns.Should().Be(1);
+        _ogs.BrowserSignIns.Should().Equal(OgsLoginProvider.Ogs);
         vm.IsSignedIn.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Google_button_starts_the_browser_flow_at_OGS_google_login()
+    {
+        _ogs.Options = new OgsOptions { AuthMode = OgsAuthMode.OAuth, ClientId = "id" };
+        _ogs.Games.Add(new OgsActiveGame(1, "Game", FakeOgsClient.Me, FakeOgsClient.Rival, 19, 19, 200, "play"));
+        LobbyViewModel vm = Create();
+
+        vm.SignInWithGoogleCommand.CanExecute(null).Should().BeTrue();
+        await vm.SignInWithGoogleCommand.ExecuteAsync(null);
+
+        _ogs.BrowserSignIns.Should().Equal(OgsLoginProvider.Google);
+        vm.IsSignedIn.Should().BeTrue();
+        vm.ActiveGames.Should().ContainSingle();
+        vm.SignInWithGoogleCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Google_is_not_offered_in_beta_password_mode()
+    {
+        Create().SignInWithGoogleCommand.CanExecute(null).Should().BeFalse();
     }
 
     [Fact]
@@ -386,6 +408,23 @@ public sealed class LobbyWindowTests
         window.FindControl<Button>("BrowserSignInButton")!.IsEffectivelyVisible.Should().BeFalse();
         window.FindControl<TabControl>("Tabs")!.IsVisible.Should().BeFalse();
         window.FindControl<TextBlock>("SocialAccountHint")!.IsEffectivelyVisible.Should().BeTrue();
+    }
+
+    [AvaloniaFact]
+    public void OAuth_mode_offers_Google_and_OGS_sign_in_and_is_saved_as_screenshot()
+    {
+        var ogs = new FakeOgsClient { Options = new OgsOptions { AuthMode = OgsAuthMode.OAuth, ClientId = "id" } };
+        var window = new LobbyWindow { DataContext = new LobbyViewModel(ogs, new ImmediateDispatcher()) };
+        window.Show();
+
+        window.FindControl<Button>("GoogleSignInButton")!.IsEffectivelyVisible.Should().BeTrue();
+        window.FindControl<Button>("BrowserSignInButton")!.IsEffectivelyVisible.Should().BeTrue();
+        window.FindControl<TextBox>("UsernameBox")!.IsEffectivelyVisible.Should().BeFalse();
+
+        using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
+        string outDir = Path.Combine(AppContext.BaseDirectory, "screenshots");
+        Directory.CreateDirectory(outDir);
+        frame.Save(Path.Combine(outDir, "phase4-lobby-signin.png"));
     }
 
     [AvaloniaFact]
