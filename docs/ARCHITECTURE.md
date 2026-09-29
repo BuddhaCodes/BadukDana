@@ -94,7 +94,8 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 - `IDialogService`, `IFileDialogService`; futuros `ISettingsService` (JSON en carpeta de datos), `ISoundService`.
 - `SecureTokenStore` → `ITokenStore` del SO con respaldo en memoria (implementa el `ISecureStore` de CLAUDE.md).
 - `IOgsClient` / `OgsClient` — fachada que une auth, REST, tiempo real y seek graph para el lobby; `LobbyViewModel` solo depende de ella (tests con un falso). `IUiDispatcher` lleva los eventos al hilo de UI.
-- `OgsServiceRegistration.AddOgs` — `HttpClient` con nombre `ogs` (`IHttpClientFactory`, `UseCookies=false`), opciones desde `appsettings.json` / `appsettings.Development.json`.
+- `OgsServerCatalog` — los dos servidores fijos: online-go.com (siempre OAuth, `Ogs:ClientId`) y beta (siempre contraseña); `Ogs:DefaultServer` elige el inicial. `OgsClient` crea bajo demanda una `OgsConnection` (auth + REST + tiempo real) por servidor mediante `IOgsConnectionFactory` y cambia de servidor solo sin sesión.
+- `OgsServiceRegistration.AddOgs` — `HttpClient` con nombre `ogs` (`IHttpClientFactory`, `UseCookies=false`; `BaseAddress` por conexión).
 - `ILobbyWindowService` — ventana "Jugar en línea" (no modal, única).
 - `AppPaths.DataDirectory`: `%LOCALAPPDATA%\Hoshi`, `~/Library/Application Support/Hoshi`, `~/.local/share/Hoshi`. Logs en `logs/hoshi-YYYYMMDD.log` (14 días).
 

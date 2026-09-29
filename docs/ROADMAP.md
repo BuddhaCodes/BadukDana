@@ -31,7 +31,7 @@ Cada tarea termina con: compila sin warnings, tests en verde, y una captura (si 
 
 ## Fase 4 — OGS: sesión y lobby ✅ (código; pendiente la prueba real)
 - [x] Login OAuth + PKCE en online-go.com, refresh, logout, almacenamiento seguro (DPAPI / Keychain / secret-tool).
-- [x] Login con usuario/contraseña solo para beta en modo `Development` (beta no admite apps OAuth).
+- [x] Selector de servidor en el lobby (online-go.com / beta), independiente del entorno; «Continuar con Google» siempre va a online-go.com; contraseña solo en beta (no admite apps OAuth).
 - [x] Cliente WebSocket con autenticación, ping/deriva, reconexión, `user/jwt`.
 - [x] Lobby (Ctrl+L): mis partidas activas, desafíos abiertos (seek graph), crear/aceptar/cancelar desafío con keepalive.
 **Aceptación:** iniciar sesión en beta (contraseña) y en online-go.com (OAuth), ver partidas activas y crear un desafío no clasificatorio visible desde la web de OGS.
