@@ -7,6 +7,15 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private string _title = "Hoshi";
 
-    [ObservableProperty]
-    private string _statusText = "Ready";
+    public MainWindowViewModel()
+        : this(new LocalGameViewModel())
+    {
+    }
+
+    public MainWindowViewModel(LocalGameViewModel game)
+    {
+        Game = game;
+    }
+
+    public LocalGameViewModel Game { get; }
 }
