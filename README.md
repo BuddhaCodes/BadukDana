@@ -1,13 +1,13 @@
 # Hoshi
 
-Cross-platform desktop client for Baduk / Go / Weiqi, built with **Avalonia** on **.NET 9**.
+Cross-platform desktop client for Baduk / Go / Weiqi, built with **Avalonia** on **.NET 10**.
 Local play and SGF editing with a Sabaki-inspired look, and online play through **OGS** (online-go.com).
 
 > Status: Phase 0 (skeleton). See `docs/ROADMAP.md`.
 
 ## Requirements
 
-- .NET SDK 9.0 or later (`global.json` pins the minimum)
+- .NET SDK 10.0 (`global.json` pins the minimum feature band 10.0.100)
 
 ## Build, test, run
 
