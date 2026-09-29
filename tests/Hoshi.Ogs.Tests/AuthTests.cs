@@ -180,6 +180,46 @@ public sealed class OgsAuthServiceTests
     }
 
     [Fact]
+    public async Task Google_sign_in_goes_through_OGS_social_login_and_then_the_same_PKCE_authorization()
+    {
+        (OgsAuthService auth, FakeHttpHandler http, _, _, _) = Create(OAuthOptions with { RedirectPort = FreePort() });
+        http.On("POST", "/oauth2/token/", HttpStatusCode.OK, Fixtures.Read("token_response.json"))
+            .On("GET", "/api/v1/ui/config", HttpStatusCode.OK, Fixtures.Read("ui_config.json"));
+        Uri? opened = null;
+
+        // The real browser signs in with Google on OGS, which then redirects to `next` (the authorize URL).
+        OgsSession session = await auth.SignInWithBrowserAsync(
+            OgsLoginProvider.Google,
+            (uri, ct) =>
+            {
+                opened = uri;
+                var next = new Uri(new Uri("https://online-go.com"), HttpUtility.ParseQueryString(uri.Query)["next"]!);
+                return Browser()(next, ct);
+            },
+            CancellationToken.None);
+
+        opened!.GetLeftPart(UriPartial.Path).Should().Be("https://online-go.com/login/google-oauth2/");
+        string next = HttpUtility.ParseQueryString(opened.Query)["next"]!;
+        next.Should().StartWith("/oauth2/authorize/?", "social login only accepts a same-site relative next");
+        var q = HttpUtility.ParseQueryString(new Uri(new Uri("https://online-go.com"), next).Query);
+        q["client_id"].Should().Be("test-client-id");
+        q["code_challenge_method"].Should().Be("S256");
+        q["state"].Should().NotBeNullOrEmpty();
+        session.User.Username.Should().Be("kuro_test");
+        opened.ToString().Should().NotContain("secret");
+    }
+
+    [Theory]
+    [InlineData(OgsLoginProvider.Google, "google-oauth2")]
+    [InlineData(OgsLoginProvider.GitHub, "github")]
+    [InlineData(OgsLoginProvider.Facebook, "facebook")]
+    [InlineData(OgsLoginProvider.Apple, "apple-id")]
+    public void Social_providers_map_to_the_OGS_login_routes(OgsLoginProvider provider, string slug)
+    {
+        OgsAuthService.SocialLoginPath(provider).Should().Be($"/login/{slug}/");
+    }
+
+    [Fact]
     public async Task Browser_sign_in_requires_a_client_id()
     {
         (OgsAuthService auth, _, _, _, _) = Create(OAuthOptions with { ClientId = null });

@@ -13,6 +13,20 @@ public enum OgsAuthMode
     Password,
 }
 
+/// <summary>
+/// Where the user proves who they are before authorizing Hoshi. Social providers are OGS's own
+/// (python-social-auth, <c>/login/{provider}/?next=</c>): Hoshi never talks to Google and never sees its tokens.
+/// </summary>
+public enum OgsLoginProvider
+{
+    /// <summary>OGS's own sign-in page (username/password, or any provider the user picks there).</summary>
+    Ogs,
+    Google,
+    Facebook,
+    GitHub,
+    Apple,
+}
+
 /// <summary>Configuration for one OGS server (bound from <c>Ogs</c> in appsettings).</summary>
 public sealed record OgsOptions
 {

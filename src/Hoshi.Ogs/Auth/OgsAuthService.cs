@@ -65,7 +65,16 @@ public sealed class OgsAuthService : IOgsCredentials
 
     // ---------------- OAuth ----------------
 
-    public async Task<OgsSession> SignInWithBrowserAsync(Func<Uri, CancellationToken, Task> openBrowser, CancellationToken cancellationToken)
+    public Task<OgsSession> SignInWithBrowserAsync(Func<Uri, CancellationToken, Task> openBrowser, CancellationToken cancellationToken) =>
+        SignInWithBrowserAsync(OgsLoginProvider.Ogs, openBrowser, cancellationToken);
+
+    /// <summary>
+    /// OAuth sign-in in the system browser. With a social <paramref name="provider"/> the browser first opens OGS's
+    /// social login (e.g. <c>/login/google-oauth2/</c>) whose <c>next</c> is the PKCE authorization, so the user goes
+    /// Google → OGS → "authorize Hoshi" → back to the loopback listener in one pass.
+    /// </summary>
+    public async Task<OgsSession> SignInWithBrowserAsync(
+        OgsLoginProvider provider, Func<Uri, CancellationToken, Task> openBrowser, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(openBrowser);
         if (_options.AuthMode != OgsAuthMode.OAuth)
@@ -94,8 +103,15 @@ public sealed class OgsAuthService : IOgsCredentials
 
         using LoopbackRedirectListener listener = LoopbackRedirectListener.Start(_options.RedirectPort, _options.RedirectPath);
         Task<string> codeTask = listener.WaitForCodeAsync(state, cancellationToken);
-        _logger.LogInformation("Opening the browser for OGS authorization at {Host}", _options.BaseUrl.Host);
-        await openBrowser(authorize, cancellationToken);
+        _logger.LogInformation("Opening the browser for OGS authorization at {Host} ({Provider})", _options.BaseUrl.Host, provider);
+        Uri start = provider == OgsLoginProvider.Ogs
+            ? authorize
+            : new UriBuilder(new Uri(_options.BaseUrl, SocialLoginPath(provider)))
+            {
+                // Relative, same-site next: social-auth rejects redirects to other hosts.
+                Query = Param("next", authorize.PathAndQuery),
+            }.Uri;
+        await openBrowser(start, cancellationToken);
         string code = await codeTask;
 
         await RequestTokensAsync(
@@ -112,6 +128,16 @@ public sealed class OgsAuthService : IOgsCredentials
         return await LoadSessionAsync(cancellationToken)
             ?? throw new OgsAuthException("OGS aceptó el inicio de sesión pero no devolvió los datos del usuario.");
     }
+
+    /// <summary>OGS's social-login route for a provider (as in the web client's SocialLoginButtons).</summary>
+    public static string SocialLoginPath(OgsLoginProvider provider) => provider switch
+    {
+        OgsLoginProvider.Google => "/login/google-oauth2/",
+        OgsLoginProvider.Facebook => "/login/facebook/",
+        OgsLoginProvider.GitHub => "/login/github/",
+        OgsLoginProvider.Apple => "/login/apple-id/",
+        _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, "Not a social provider."),
+    };
 
     /// <summary>Signs in silently with the stored refresh token; null when there is none or it was revoked.</summary>
     public async Task<OgsSession?> RestoreAsync(CancellationToken cancellationToken)
