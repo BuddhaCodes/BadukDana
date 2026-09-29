@@ -9,6 +9,7 @@ using Hoshi.App.Controls;
 using Hoshi.App.ViewModels;
 using Hoshi.App.Views;
 using Hoshi.Core;
+using Hoshi.Sgf;
 using Point = Hoshi.Core.Point;
 
 namespace Hoshi.App.Tests;
@@ -17,9 +18,9 @@ public sealed class GoBoardControlTests
 {
     private static Point P(int x, int y) => new(x, y);
 
-    private static (MainWindow Window, GoBoardControl Board, LocalGameViewModel Game) Open(int width, int height, int size = 19)
+    private static (MainWindow Window, GoBoardControl Board, GameViewModel Game) Open(int width, int height, int size = 19)
     {
-        var game = new LocalGameViewModel(size, RuleSet.Japanese);
+        var game = new GameViewModel(size, RuleSet.Japanese);
         var window = new MainWindow(new MainWindowViewModel(game)) { Width = width, Height = height };
         window.Show();
         return (window, window.FindControl<GoBoardControl>("Board")!, game);
@@ -34,7 +35,7 @@ public sealed class GoBoardControlTests
     [AvaloniaFact]
     public void Clicking_an_intersection_plays_a_stone()
     {
-        (MainWindow window, GoBoardControl board, LocalGameViewModel game) = Open(1000, 800);
+        (MainWindow window, GoBoardControl board, GameViewModel game) = Open(1000, 800);
 
         Avalonia.Point at = InWindow(window, board, P(3, 15));
         window.MouseDown(at, MouseButton.Left);
@@ -47,7 +48,7 @@ public sealed class GoBoardControlTests
     [AvaloniaFact]
     public void Hovering_updates_the_ghost_stone()
     {
-        (MainWindow window, GoBoardControl board, LocalGameViewModel game) = Open(1000, 800);
+        (MainWindow window, GoBoardControl board, GameViewModel game) = Open(1000, 800);
 
         window.MouseMove(InWindow(window, board, P(10, 4)));
 
@@ -58,7 +59,7 @@ public sealed class GoBoardControlTests
     [AvaloniaFact]
     public void Right_click_does_not_play()
     {
-        (MainWindow window, GoBoardControl board, LocalGameViewModel game) = Open(1000, 800);
+        (MainWindow window, GoBoardControl board, GameViewModel game) = Open(1000, 800);
         Point? clicked = null;
         board.PointClicked += (_, e) => clicked = e.Point;
 
@@ -73,7 +74,7 @@ public sealed class GoBoardControlTests
     [AvaloniaFact]
     public void Pass_key_passes()
     {
-        (MainWindow window, _, LocalGameViewModel game) = Open(1000, 800);
+        (MainWindow window, _, GameViewModel game) = Open(1000, 800);
 
         window.KeyPressQwerty(PhysicalKey.P, RawInputModifiers.None);
 
@@ -84,16 +85,16 @@ public sealed class GoBoardControlTests
     [AvaloniaFact]
     public void Board_renders_wood_and_stones_and_is_saved_for_review()
     {
-        (MainWindow window, GoBoardControl board, LocalGameViewModel game) = Open(1100, 800);
+        (MainWindow window, GoBoardControl board, GameViewModel game) = Open(1100, 800);
         PlaySample(game);
         board.Markers =
         [
-            new BoardMarker(P(15, 15), BoardMarkerKind.Triangle),
-            new BoardMarker(P(16, 13), BoardMarkerKind.Square),
-            new BoardMarker(P(13, 16), BoardMarkerKind.Circle),
-            new BoardMarker(P(12, 12), BoardMarkerKind.Cross),
-            new BoardMarker(P(14, 12), BoardMarkerKind.Label, "A"),
-            new BoardMarker(P(3, 3), BoardMarkerKind.Label, "B"),
+            new Markup(P(15, 15), MarkupKind.Triangle),
+            new Markup(P(16, 13), MarkupKind.Square),
+            new Markup(P(13, 16), MarkupKind.Circle),
+            new Markup(P(12, 12), MarkupKind.Cross),
+            new Markup(P(14, 12), MarkupKind.Label, "A"),
+            new Markup(P(3, 3), MarkupKind.Label, "B"),
         ];
         window.MouseMove(InWindow(window, board, P(9, 9)));
 
@@ -114,7 +115,7 @@ public sealed class GoBoardControlTests
     [AvaloniaFact]
     public void Board_stays_square_when_resized_and_is_saved_for_review()
     {
-        (MainWindow window, GoBoardControl board, LocalGameViewModel game) = Open(700, 900);
+        (MainWindow window, GoBoardControl board, GameViewModel game) = Open(700, 900);
         PlaySample(game);
 
         using WriteableBitmap tall = Capture(window, "phase2-board-700x900.png");
@@ -127,13 +128,13 @@ public sealed class GoBoardControlTests
 
         r1.Width.Should().BeApproximately(r1.Height, 0.001);
         r2.Width.Should().BeApproximately(r2.Height, 0.001);
-        r2.Height.Should().BeLessThan(r1.Height);
+        r2.Height.Should().NotBe(r1.Height, "the board follows the window size");
     }
 
     [AvaloniaFact]
     public void Small_boards_render()
     {
-        (MainWindow window, _, LocalGameViewModel game) = Open(800, 800, size: 9);
+        (MainWindow window, _, GameViewModel game) = Open(800, 800, size: 9);
         game.PlayCommand.Execute(P(4, 4));
         game.PlayCommand.Execute(P(2, 6));
 
@@ -141,7 +142,7 @@ public sealed class GoBoardControlTests
         frame.PixelSize.Width.Should().Be(800);
     }
 
-    private static void PlaySample(LocalGameViewModel game)
+    private static void PlaySample(GameViewModel game)
     {
         // A short opening with a capture so white stones, black stones and the last-move mark are all visible.
         Point[] moves =

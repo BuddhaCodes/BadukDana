@@ -47,12 +47,17 @@ public sealed class MainWindowTests
     }
 
     [AvaloniaFact]
-    public void Title_is_bound_to_view_model()
+    public void Title_shows_the_file_name_and_unsaved_changes()
     {
-        var window = new MainWindow(new MainWindowViewModel { Title = "Hoshi test" });
+        var vm = new MainWindowViewModel();
+        var window = new MainWindow(vm);
         window.Show();
 
-        window.Title.Should().Be("Hoshi test");
+        window.Title.Should().Be("Sin título — Hoshi");
+
+        vm.Game.PlayCommand.Execute(new Hoshi.Core.Point(3, 3));
+
+        window.Title.Should().Be("Sin título * — Hoshi");
     }
 
     [Fact]
@@ -60,7 +65,7 @@ public sealed class MainWindowTests
     {
         var services = new ServiceCollection().AddAppServices().BuildServiceProvider(validateScopes: true);
 
-        services.GetRequiredService<MainWindowViewModel>().Should().NotBeNull();
+        services.GetRequiredService<MainWindowViewModel>().Game.Should().BeSameAs(services.GetRequiredService<GameViewModel>());
         services.GetRequiredService<MainWindowViewModel>()
             .Should().BeSameAs(services.GetRequiredService<MainWindowViewModel>());
     }

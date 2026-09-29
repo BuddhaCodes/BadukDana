@@ -23,4 +23,7 @@
     <ProjectReference Include="..\..\src\Hoshi.App\Hoshi.App.csproj" />
     <ProjectReference Include="..\..\src\Hoshi.Engines\Hoshi.Engines.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Hoshi.Sgf.Tests\Samples\variations.sgf" Link="Samples\variations.sgf" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
