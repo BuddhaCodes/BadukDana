@@ -74,7 +74,7 @@ Regla de dependencias: `App → Ogs, Sgf, Core` · `Ogs → Core` · `Sgf → Co
 
 ## 6. Qué NO hacer
 
-- No copiar código de Sabaki. Sus assets (texturas de piedras/tablero) están bajo licencia MIT: si se reutilizan, incluir el aviso de licencia en `THIRD_PARTY_NOTICES.md`; preferimos generar los nuestros.
+- No copiar código de Sabaki. Sus assets están bajo licencia MIT: el tema Clásico usa `board.png` (Shudan) y `tatami.png` con su aviso en `THIRD_PARTY_NOTICES.md`. Los demás temas usan arte generado por Hoshi, fuentes OFL e iconos MIT/ISC; todo recurso de terceros nuevo debe añadirse a `THIRD_PARTY_NOTICES.md` (y su licencia a `licenses/`) en el mismo commit.
 - No usar socket.io: OGS usa ahora un WebSocket JSON plano.
 - No implementar "bots" que jueguen automáticamente en OGS sin marcar la cuenta como bot (va contra sus términos).
 - No guardar la contraseña del usuario; solo tokens OAuth en el almacén seguro. El login con contraseña existe solo para beta y está bloqueado contra producción.

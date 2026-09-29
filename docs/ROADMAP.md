@@ -48,7 +48,8 @@ Cada tarea termina con: compila sin warnings, tests en verde, y una captura (si 
 **Aceptación:** jugar una partida completa en beta contra otra cuenta (navegador) de principio a conteo final, con relojes coincidiendo ±1 s.
 
 ## Fase 6 — Pulido
-- [ ] Preferencias (tema, sonidos, coordenadas, piedras "fuzzy", servidor).
+- [x] Temas con identidad propia (Cielo nocturno, Tinta y oro, Jardín zen, Minimal cálido, Clásico), fondos animados, fuentes, iconos, piedras y animaciones; Preferencias (Ctrl+,).
+- [ ] Más preferencias (sonidos, coordenadas, piedras "fuzzy", servidor por defecto).
 - [ ] Revisión de partidas OGS terminadas (descargar SGF y abrir en el editor).
 - [ ] Empaquetado: instalador Windows (MSIX/Velopack), `.app` macOS, AppImage Linux.
 - [ ] Localización es/en.
