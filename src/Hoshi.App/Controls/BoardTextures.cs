@@ -8,56 +8,68 @@ using Avalonia.Platform;
 namespace Hoshi.App.Controls;
 
 /// <summary>
-/// Procedurally generated textures (our own, no third-party assets): a light kaya-like wood and the stone brushes.
-/// Generated once and cached; everything here is deterministic.
+/// Board and stone look, after Sabaki's board component Shudan (MIT, see THIRD_PARTY_NOTICES.md): the board uses
+/// Shudan's <c>board.png</c> over <c>#F1B458</c>, and the stones reproduce the gradients of its
+/// <c>stone_1.svg</c> / <c>stone_-1.svg</c>. The procedural wood below is only a fallback if the asset cannot be loaded.
 /// </summary>
 internal static class BoardTextures
 {
     public const int WoodSize = 512;
 
-    private static readonly Lazy<Bitmap> LazyWood = new(CreateWood);
+    public static readonly Color BoardBackground = Color.FromRgb(0xF1, 0xB4, 0x58);
+    public static readonly Color BoardBorder = Color.FromRgb(0xCA, 0x93, 0x3A);
+    public static readonly Color BoardForeground = Color.FromRgb(0x5E, 0x2E, 0x0C);
+
+    private static readonly Lazy<Bitmap> LazyWood = new(LoadBoard);
 
     public static Bitmap Wood => LazyWood.Value;
 
-    public static IBrush BlackStone { get; } = new RadialGradientBrush
+    /// <summary>Stone body: brownish slate at the top to near-black at the bottom (Shudan stone_1.svg).</summary>
+    public static IBrush BlackStone { get; } = Vertical(
+        (0, Color.FromRgb(0x44, 0x34, 0x32)), (1, Color.FromRgb(0x0B, 0x0B, 0x0B)));
+
+    /// <summary>Soft grey sheen over the upper half of black stones.</summary>
+    public static IBrush BlackHighlight { get; } = Vertical(
+        (0, Color.FromArgb(0x66, 0x63, 0x63, 0x63)), (0.44, Color.FromArgb(0x00, 0x63, 0x63, 0x63)));
+
+    public static IPen BlackEdge { get; } = new ImmutablePen(new ImmutableSolidColorBrush(Colors.Black), 1);
+
+    /// <summary>White body: pure white at the top to a cool blue-white at the bottom (Shudan stone_-1.svg).</summary>
+    public static IBrush WhiteStone { get; } = Vertical(
+        (0, Color.FromRgb(0xFF, 0xFF, 0xFF)), (1, Color.FromRgb(0xC9, 0xD1, 0xFF)));
+
+    /// <summary>Reflected light along the lower rim of white stones.</summary>
+    public static IBrush WhiteHighlight { get; } = Vertical(
+        (0.747, Color.FromArgb(0x00, 0xEE, 0xEE, 0xEE)), (1, Color.FromArgb(0xCC, 0xEE, 0xEE, 0xEE)));
+
+    public static IPen WhiteEdge { get; } = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromRgb(0xC3, 0xC3, 0xC3)), 1);
+
+    /// <summary>The dark disc under every stone and its drop shadow (Shudan: rgba(23,10,2,.4), 0 .1em .2em).</summary>
+    public static readonly Color ShadowColor = Color.FromArgb(0x66, 23, 10, 2);
+
+    private static IBrush Vertical((double Offset, Color Color) top, (double Offset, Color Color) bottom) => new LinearGradientBrush
     {
-        GradientOrigin = new RelativePoint(0.35, 0.3, RelativeUnit.Relative),
-        Center = new RelativePoint(0.45, 0.42, RelativeUnit.Relative),
-        RadiusX = new RelativeScalar(0.62, RelativeUnit.Relative),
-        RadiusY = new RelativeScalar(0.62, RelativeUnit.Relative),
+        StartPoint = new RelativePoint(0.5, 0, RelativeUnit.Relative),
+        EndPoint = new RelativePoint(0.5, 1, RelativeUnit.Relative),
         GradientStops =
         {
-            new GradientStop(Color.FromRgb(0x5E, 0x5E, 0x5E), 0),
-            new GradientStop(Color.FromRgb(0x2B, 0x2B, 0x2B), 0.35),
-            new GradientStop(Color.FromRgb(0x0E, 0x0E, 0x0E), 1),
+            new GradientStop(top.Color, top.Offset),
+            new GradientStop(bottom.Color, bottom.Offset),
         },
     }.ToImmutable();
 
-    public static IBrush WhiteStone { get; } = new RadialGradientBrush
+    private static Bitmap LoadBoard()
     {
-        GradientOrigin = new RelativePoint(0.35, 0.3, RelativeUnit.Relative),
-        Center = new RelativePoint(0.45, 0.42, RelativeUnit.Relative),
-        RadiusX = new RelativeScalar(0.65, RelativeUnit.Relative),
-        RadiusY = new RelativeScalar(0.65, RelativeUnit.Relative),
-        GradientStops =
+        try
         {
-            new GradientStop(Color.FromRgb(0xFF, 0xFF, 0xFF), 0),
-            new GradientStop(Color.FromRgb(0xEE, 0xEC, 0xE6), 0.55),
-            new GradientStop(Color.FromRgb(0xC6, 0xC3, 0xB8), 1),
-        },
-    }.ToImmutable();
-
-    public static IBrush Shadow { get; } = new RadialGradientBrush
-    {
-        GradientStops =
+            using Stream s = AssetLoader.Open(new Uri("avares://Hoshi/Assets/Sabaki/board.png"));
+            return new Bitmap(s);
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or FileNotFoundException)
         {
-            new GradientStop(Color.FromArgb(0x70, 0, 0, 0), 0.55),
-            new GradientStop(Color.FromArgb(0x00, 0, 0, 0), 1),
-        },
-    }.ToImmutable();
-
-    /// <summary>Faint shell veins for white stones (5 variants, chosen by point hash).</summary>
-    public static IPen ShellVein { get; } = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromArgb(0x16, 0x5A, 0x50, 0x3C)), 1);
+            return CreateWood();
+        }
+    }
 
     private static Bitmap CreateWood()
     {
