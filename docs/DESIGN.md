@@ -100,7 +100,7 @@ Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su compo
 
 ## Pendiente de estilo
 
-- Sonidos de piedra (Sabaki no incluye audio propio con licencia clara: buscar CC0).
+- Sonidos de piedra: Sabaki trae `data/*.mp3` (5 piedras, 5 capturas, pase, nueva partida) dentro de su repo MIT, pero sin origen documentado de las grabaciones; confirmar la procedencia antes de incluirlos, o usar grabaciones CC0.
 - Animación al colocar piedra, gráfico de winrate (con motores, fase posterior), modo zen, tema claro.
 
 ## Accesibilidad
