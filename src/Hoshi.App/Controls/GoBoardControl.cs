@@ -8,6 +8,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Hoshi.Core;
+using Hoshi.Sgf;
 using AvPoint = Avalonia.Point;
 using Point = Hoshi.Core.Point;
 
@@ -33,8 +34,8 @@ public sealed class GoBoardControl : Control
     public static readonly StyledProperty<Point?> LastMoveProperty =
         AvaloniaProperty.Register<GoBoardControl, Point?>(nameof(LastMove));
 
-    public static readonly StyledProperty<IReadOnlyList<BoardMarker>?> MarkersProperty =
-        AvaloniaProperty.Register<GoBoardControl, IReadOnlyList<BoardMarker>?>(nameof(Markers));
+    public static readonly StyledProperty<IReadOnlyList<Markup>?> MarkersProperty =
+        AvaloniaProperty.Register<GoBoardControl, IReadOnlyList<Markup>?>(nameof(Markers));
 
     public static readonly StyledProperty<bool> ShowCoordinatesProperty =
         AvaloniaProperty.Register<GoBoardControl, bool>(nameof(ShowCoordinates), defaultValue: true);
@@ -52,6 +53,10 @@ public sealed class GoBoardControl : Control
 
     public static readonly StyledProperty<ICommand?> PointClickedCommandProperty =
         AvaloniaProperty.Register<GoBoardControl, ICommand?>(nameof(PointClickedCommand));
+
+    /// <summary>Executed on mouse-wheel over the board with -1 (towards the start) or +1 (forward).</summary>
+    public static readonly StyledProperty<ICommand?> ScrollCommandProperty =
+        AvaloniaProperty.Register<GoBoardControl, ICommand?>(nameof(ScrollCommand));
 
     private static readonly Typeface CoordinateTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.Medium);
     private static readonly Typeface LabelTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.SemiBold);
@@ -92,7 +97,7 @@ public sealed class GoBoardControl : Control
         set => SetValue(LastMoveProperty, value);
     }
 
-    public IReadOnlyList<BoardMarker>? Markers
+    public IReadOnlyList<Markup>? Markers
     {
         get => GetValue(MarkersProperty);
         set => SetValue(MarkersProperty, value);
@@ -126,6 +131,12 @@ public sealed class GoBoardControl : Control
     {
         get => GetValue(PointClickedCommandProperty);
         set => SetValue(PointClickedCommandProperty, value);
+    }
+
+    public ICommand? ScrollCommand
+    {
+        get => GetValue(ScrollCommandProperty);
+        set => SetValue(ScrollCommandProperty, value);
     }
 
     /// <summary>Geometry for the current bounds and board, or null when there is no board.</summary>
@@ -173,6 +184,23 @@ public sealed class GoBoardControl : Control
         HoverPoint = IsInteractive ? CurrentGeometry?.HitTest(e.GetPosition(this)) : null;
     }
 
+    protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+    {
+        base.OnPointerWheelChanged(e);
+        if (e.Delta.Y == 0 || ScrollCommand is not { } command)
+        {
+            return;
+        }
+
+        int direction = e.Delta.Y > 0 ? -1 : 1;
+        if (command.CanExecute(direction))
+        {
+            command.Execute(direction);
+        }
+
+        e.Handled = true;
+    }
+
     protected override void OnPointerExited(PointerEventArgs e)
     {
         base.OnPointerExited(e);
@@ -187,6 +215,7 @@ public sealed class GoBoardControl : Control
             return;
         }
 
+        Focus();
         MouseButton button = e.InitialPressMouseButton;
         PointClicked?.Invoke(this, new BoardPointEventArgs(point, button));
         if (button == MouseButton.Left && PointClickedCommand is { } command && command.CanExecute(point))
@@ -340,8 +369,10 @@ public sealed class GoBoardControl : Control
 
     private void DrawLastMove(DrawingContext context, BoardGeometry g, BoardState board)
     {
-        if (LastMove is not { } p || !board.IsOnBoard(p) || board[p] == Stone.Empty)
+        if (LastMove is not { } p || !board.IsOnBoard(p) || board[p] == Stone.Empty
+            || (Markers?.Any(m => m.Point == p) ?? false))
         {
+            // No last-move ring where SGF markup already marks the point (as in Sabaki).
             return;
         }
 
@@ -357,7 +388,7 @@ public sealed class GoBoardControl : Control
             return;
         }
 
-        foreach (BoardMarker m in markers)
+        foreach (Markup m in markers)
         {
             if (!board.IsOnBoard(m.Point))
             {
@@ -377,7 +408,7 @@ public sealed class GoBoardControl : Control
 
             switch (m.Kind)
             {
-                case BoardMarkerKind.Triangle:
+                case MarkupKind.Triangle:
                     {
                         double rr = s * 0.3;
                         var tri = new StreamGeometry();
@@ -393,18 +424,18 @@ public sealed class GoBoardControl : Control
                         break;
                     }
 
-                case BoardMarkerKind.Square:
+                case MarkupKind.Square:
                     {
                         double h = s * 0.21;
                         context.DrawRectangle(null, pen, new Rect(c.X - h, c.Y - h, 2 * h, 2 * h));
                         break;
                     }
 
-                case BoardMarkerKind.Circle:
+                case MarkupKind.Circle:
                     context.DrawEllipse(null, pen, c, s * 0.25, s * 0.25);
                     break;
 
-                case BoardMarkerKind.Cross:
+                case MarkupKind.Cross:
                     {
                         double h = s * 0.2;
                         context.DrawLine(pen, new AvPoint(c.X - h, c.Y - h), new AvPoint(c.X + h, c.Y + h));
@@ -412,7 +443,7 @@ public sealed class GoBoardControl : Control
                         break;
                     }
 
-                case BoardMarkerKind.Label when !string.IsNullOrEmpty(m.Text):
+                case MarkupKind.Label when !string.IsNullOrEmpty(m.Text):
                     if (under == Stone.Empty)
                     {
                         context.DrawEllipse(LabelBackground, null, c, s * 0.4, s * 0.4);
