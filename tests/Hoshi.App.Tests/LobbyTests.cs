@@ -157,6 +157,14 @@ internal sealed class FakeOgsClient : IOgsClient
         return Task.FromResult(9001L);
     }
 
+    public List<long> OpenedGames { get; } = [];
+
+    public IOnlineGame OpenGame(long gameId)
+    {
+        OpenedGames.Add(gameId);
+        return new FakeOnlineGame(gameId, Me.Id);
+    }
+
     private void SignIn()
     {
         _session = new OgsSession(Me, "jwt");

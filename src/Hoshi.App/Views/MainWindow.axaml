@@ -123,7 +123,7 @@
       <!-- Board area; single-letter shortcuts live here so they do not fire while typing a comment. -->
       <Panel x:Name="BoardArea" Grid.Column="0">
         <Panel.KeyBindings>
-          <KeyBinding Gesture="P" Command="{Binding Game.PassCommand}" />
+          <KeyBinding Gesture="P" Command="{Binding Game.PassKeyCommand}" />
         </Panel.KeyBindings>
         <c:GoBoardControl x:Name="Board"
                           Margin="16"
@@ -142,16 +142,49 @@
       <Grid Grid.Column="2" x:Name="Sidebar" MinWidth="220" MaxWidth="420"
             Background="{DynamicResource Bg.Panel}" RowDefinitions="Auto,*,Auto,200">
         <Border Grid.Row="0" Classes="panel-header" Padding="12,10">
-          <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" x:Name="PlayerInfo">
-            <Ellipse Grid.Row="0" Width="10" Height="10" Fill="#111" Stroke="#888" StrokeThickness="1" Margin="0,0,8,0" />
-            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Game.BlackName}"
-                       FontWeight="{Binding Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
-            <TextBlock Grid.Row="0" Grid.Column="2" Classes="secondary" Text="{Binding Game.Board.BlackCaptures, StringFormat='{}{0} cap.'}" />
-            <Ellipse Grid.Row="1" Width="10" Height="10" Fill="#EEE" Stroke="#888" StrokeThickness="1" Margin="0,6,8,0" />
-            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Game.WhiteName}" Margin="0,6,0,0"
-                       FontWeight="{Binding !Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
-            <TextBlock Grid.Row="1" Grid.Column="2" Classes="secondary" Margin="0,6,0,0" Text="{Binding Game.Board.WhiteCaptures, StringFormat='{}{0} cap.'}" />
-          </Grid>
+          <Panel>
+            <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" x:Name="PlayerInfo" IsVisible="{Binding IsLocal}">
+              <Ellipse Grid.Row="0" Width="10" Height="10" Fill="#111" Stroke="#888" StrokeThickness="1" Margin="0,0,8,0" />
+              <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Game.BlackName}"
+                         FontWeight="{Binding Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
+              <TextBlock Grid.Row="0" Grid.Column="2" Classes="secondary" Text="{Binding Game.Board.BlackCaptures, StringFormat='{}{0} cap.'}" />
+              <Ellipse Grid.Row="1" Width="10" Height="10" Fill="#EEE" Stroke="#888" StrokeThickness="1" Margin="0,6,8,0" />
+              <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Game.WhiteName}" Margin="0,6,0,0"
+                         FontWeight="{Binding !Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
+              <TextBlock Grid.Row="1" Grid.Column="2" Classes="secondary" Margin="0,6,0,0" Text="{Binding Game.Board.WhiteCaptures, StringFormat='{}{0} cap.'}" />
+            </Grid>
+
+            <!-- Online game: names, clocks, actions (Phase 5). -->
+            <StackPanel x:Name="OnlinePanel" IsVisible="{Binding IsOnline}" Spacing="8">
+              <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+                <Ellipse Grid.Row="0" Width="10" Height="10" Fill="#111" Stroke="#888" StrokeThickness="1" Margin="0,0,8,0" />
+                <TextBlock Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Online.BlackName}" TextTrimming="CharacterEllipsis"
+                           FontWeight="{Binding Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
+                <TextBlock Grid.Row="1" Grid.Column="1" Classes="clock" Classes.low="{Binding Online.IsBlackClockLow}"
+                           Text="{Binding Online.BlackClock}" x:Name="BlackClock" />
+                <TextBlock Grid.Row="1" Grid.Column="2" Classes="secondary" VerticalAlignment="Center" Text="{Binding Game.Board.BlackCaptures, StringFormat='{}{0} cap.'}" />
+                <Ellipse Grid.Row="2" Width="10" Height="10" Fill="#EEE" Stroke="#888" StrokeThickness="1" Margin="0,10,8,0" />
+                <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Online.WhiteName}" TextTrimming="CharacterEllipsis" Margin="0,10,0,0"
+                           FontWeight="{Binding !Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
+                <TextBlock Grid.Row="3" Grid.Column="1" Classes="clock" Classes.low="{Binding Online.IsWhiteClockLow}"
+                           Text="{Binding Online.WhiteClock}" x:Name="WhiteClock" />
+                <TextBlock Grid.Row="3" Grid.Column="2" Classes="secondary" VerticalAlignment="Center" Text="{Binding Game.Board.WhiteCaptures, StringFormat='{}{0} cap.'}" />
+              </Grid>
+              <TextBlock Text="{Binding Online.StatusText}" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" x:Name="OnlineStatus" />
+              <WrapPanel Orientation="Horizontal">
+                <WrapPanel.Styles>
+                  <Style Selector="Button"><Setter Property="Margin" Value="0,0,6,6" /></Style>
+                </WrapPanel.Styles>
+                <Button Content="Pasar" Command="{Binding Online.PassCommand}" IsVisible="{Binding Online.IsPlayPhase}" x:Name="OnlinePassButton" />
+                <Button Content="Abandonar" Command="{Binding Online.ResignCommand}" IsVisible="{Binding Online.IsPlayPhase}" x:Name="ResignButton" />
+                <Button Content="Pedir deshacer" Command="{Binding Online.RequestUndoCommand}" IsVisible="{Binding Online.IsPlayPhase}" />
+                <Button Classes="accent" Content="Aceptar deshacer" Command="{Binding Online.AcceptUndoCommand}" IsVisible="{Binding Online.IsUndoRequested}" />
+                <Button Classes="accent" Content="Aceptar conteo" Command="{Binding Online.AcceptScoreCommand}" IsVisible="{Binding Online.IsStoneRemoval}" x:Name="AcceptScoreButton" />
+                <Button Content="Reanudar partida" Command="{Binding Online.RejectScoreCommand}" IsVisible="{Binding Online.IsStoneRemoval}" />
+                <Button Content="Salir" Command="{Binding Online.LeaveCommand}" ToolTip.Tip="Deja de mostrar la partida (sigue en OGS)" x:Name="LeaveButton" />
+              </WrapPanel>
+            </StackPanel>
+          </Panel>
         </Border>
 
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" x:Name="TreeScroll">
@@ -166,9 +199,27 @@
 
         <GridSplitter Grid.Row="2" Height="1" Background="{DynamicResource Border.Subtle}" ResizeDirection="Rows" />
 
-        <TextBox Grid.Row="3" x:Name="CommentBox" Classes="comment"
+        <TextBox Grid.Row="3" x:Name="CommentBox" Classes="comment" IsVisible="{Binding IsLocal}"
                  AcceptsReturn="True" TextWrapping="Wrap" Watermark="Comentario"
                  Text="{Binding Game.Comment}" />
+
+        <DockPanel Grid.Row="3" x:Name="ChatPanel" IsVisible="{Binding IsOnline}">
+          <TextBox DockPanel.Dock="Bottom" Classes="comment" Watermark="Escribe al rival (Enter)" Text="{Binding Online.ChatInput}" x:Name="ChatInput">
+            <TextBox.KeyBindings>
+              <KeyBinding Gesture="Enter" Command="{Binding Online.SendChatCommand}" />
+            </TextBox.KeyBindings>
+          </TextBox>
+          <ListBox ItemsSource="{Binding Online.ChatLines}" Background="Transparent" x:Name="ChatList">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:ChatLineItem">
+                <StackPanel>
+                  <TextBlock Classes="secondary" Text="{Binding Header}" />
+                  <TextBlock Text="{Binding Body}" TextWrapping="Wrap" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
       </Grid>
     </Grid>
   </DockPanel>
