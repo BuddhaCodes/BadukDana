@@ -1,28 +1,98 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Hoshi.App.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Hoshi.App.ViewModels;
 
 public sealed partial class MainWindowViewModel : ViewModelBase
 {
-    private readonly ILobbyWindowService? _lobby;
+    private readonly ILobbyWindowService? _lobbyWindow;
+    private readonly IOgsClient? _ogs;
+    private readonly IUiDispatcher? _ui;
+    private readonly IDialogService? _dialogs;
+    private readonly ILogger<MainWindowViewModel> _logger;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsOnline), nameof(IsLocal))]
+    private OnlineGameViewModel? _online;
 
     public MainWindowViewModel()
         : this(new GameViewModel())
     {
     }
 
-    public MainWindowViewModel(GameViewModel game, ILobbyWindowService? lobby = null)
+    public MainWindowViewModel(
+        GameViewModel game,
+        ILobbyWindowService? lobbyWindow = null,
+        LobbyViewModel? lobby = null,
+        IOgsClient? ogs = null,
+        IUiDispatcher? ui = null,
+        IDialogService? dialogs = null,
+        ILogger<MainWindowViewModel>? logger = null)
     {
         Game = game;
-        _lobby = lobby;
+        _lobbyWindow = lobbyWindow;
+        _ogs = ogs;
+        _ui = ui;
+        _dialogs = dialogs;
+        _logger = logger ?? NullLogger<MainWindowViewModel>.Instance;
+        if (lobby is not null)
+        {
+            lobby.GameStarted += async (_, id) => await OpenOnlineGameAsync(id);
+        }
     }
 
     public GameViewModel Game { get; }
 
     /// <summary>False in design/test contexts without OGS services.</summary>
-    public bool IsOnlineAvailable => _lobby is not null;
+    public bool IsOnlineAvailable => _lobbyWindow is not null;
+
+    public bool IsOnline => Online is not null;
+
+    public bool IsLocal => Online is null;
+
+    /// <summary>Shows an OGS game on the board (from the lobby: a started or an active game).</summary>
+    public async Task OpenOnlineGameAsync(long gameId)
+    {
+        if (_ogs is null || _ui is null)
+        {
+            return;
+        }
+
+        if (Online?.GameId == gameId)
+        {
+            return;
+        }
+
+        if (Online is null && Game.IsDirty && _dialogs is not null
+            && !await _dialogs.ConfirmAsync("Cambios sin guardar", "La partida local tiene cambios sin guardar. ¿Descartarlos y abrir la partida en línea?"))
+        {
+            return;
+        }
+
+        LeaveOnline();
+        try
+        {
+            IOnlineGame game = _ogs.OpenGame(gameId);
+            var online = new OnlineGameViewModel(game, Game, _ui, _dialogs, TimeProvider.System);
+            online.Left += (_, _) => { if (ReferenceEquals(Online, online)) { Online = null; } };
+            Online = online;
+            online.Connect();
+            _logger.LogInformation("Opened online game {GameId}", gameId);
+        }
+        catch (InvalidOperationException ex)
+        {
+            if (_dialogs is not null)
+            {
+                await _dialogs.ShowErrorAsync("No se pudo abrir la partida", ex.Message);
+            }
+        }
+    }
 
     [RelayCommand(CanExecute = nameof(IsOnlineAvailable))]
-    private void OpenLobby() => _lobby?.Show();
+    private void OpenLobby() => _lobbyWindow?.Show();
+
+    private void LeaveOnline() => Online?.LeaveCommand.Execute(null);
 }

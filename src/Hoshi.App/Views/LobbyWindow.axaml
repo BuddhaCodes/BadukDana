@@ -120,13 +120,19 @@
                        IsVisible="{Binding !!ActiveGames.Count}">
                 <ListBox.ItemTemplate>
                   <DataTemplate x:DataType="vm:ActiveGameItem">
-                    <Grid ColumnDefinitions="*,Auto,Auto">
+                    <Grid ColumnDefinitions="*,Auto,Auto,Auto" Background="Transparent"
+                          ToolTip.Tip="Doble clic para abrir en el tablero">
+                      <Grid.KeyBindings>
+                        <KeyBinding Gesture="Enter" Command="{Binding #Root.((vm:LobbyViewModel)DataContext).OpenGameCommand}" CommandParameter="{Binding}" />
+                      </Grid.KeyBindings>
                       <StackPanel>
                         <TextBlock Text="{Binding Opponent}" />
                         <TextBlock Classes="secondary" Text="{Binding Game.Name}" />
                       </StackPanel>
                       <TextBlock Grid.Column="1" Classes="secondary" Text="{Binding Board}" VerticalAlignment="Center" Margin="12,0" />
                       <TextBlock Grid.Column="2" Text="{Binding TurnText}" VerticalAlignment="Center" MinWidth="80" TextAlignment="Right" />
+                      <Button Grid.Column="3" Content="Abrir" Margin="12,0,0,0"
+                              Command="{Binding #Root.((vm:LobbyViewModel)DataContext).OpenGameCommand}" CommandParameter="{Binding}" />
                     </Grid>
                   </DataTemplate>
                 </ListBox.ItemTemplate>

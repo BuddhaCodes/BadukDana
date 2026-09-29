@@ -145,7 +145,7 @@ public sealed partial class LobbyViewModel : ViewModelBase
         UpdateConnectionText();
     }
 
-    /// <summary>Raised when a game this user plays in has started (accepted or created challenge).</summary>
+    /// <summary>Raised when a game should be shown on the board (started from a challenge or opened from the list).</summary>
     public event EventHandler<long>? GameStarted;
 
     public ObservableCollection<ActiveGameItem> ActiveGames { get; } = [];
@@ -326,6 +326,16 @@ public sealed partial class LobbyViewModel : ViewModelBase
                 g.IsTurnOf(me)));
         }
     });
+
+    /// <summary>Opens one of the user's active games on the board.</summary>
+    [RelayCommand]
+    private void OpenGame(ActiveGameItem? item)
+    {
+        if (item is not null)
+        {
+            GameStarted?.Invoke(this, item.Game.Id);
+        }
+    }
 
     private bool CanAccept(OpenChallengeItem? item) => CanUseSession() && !IsWaiting && item is { CanAccept: true };
 

@@ -10,6 +10,13 @@ public partial class LobbyWindow : Window
     {
         InitializeComponent();
         CloseCommand = new RelayCommand(Close);
+        this.FindControl<ListBox>("ActiveGamesList")!.DoubleTapped += (_, _) =>
+        {
+            if (DataContext is LobbyViewModel vm && this.FindControl<ListBox>("ActiveGamesList")!.SelectedItem is ActiveGameItem item)
+            {
+                vm.OpenGameCommand.Execute(item);
+            }
+        };
         Opened += async (_, _) =>
         {
             if (DataContext is LobbyViewModel vm)
