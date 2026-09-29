@@ -8,6 +8,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Media.Imaging;
+using Hoshi.App.Themes;
 using Hoshi.Core;
 using Hoshi.Sgf;
 using AvPoint = Avalonia.Point;
@@ -59,6 +60,25 @@ public sealed class GoBoardControl : Control
     public static readonly StyledProperty<ICommand?> ScrollCommandProperty =
         AvaloniaProperty.Register<GoBoardControl, ICommand?>(nameof(ScrollCommand));
 
+    /// <summary>The theme's board look (bind to <c>{DynamicResource Theme.Board}</c>); null = Classic.</summary>
+    public static readonly StyledProperty<BoardStyle?> BoardStyleProperty =
+        AvaloniaProperty.Register<GoBoardControl, BoardStyle?>(nameof(BoardStyle));
+
+    /// <summary>Animate stone placement (bind to <c>{DynamicResource Theme.Animations}</c>).</summary>
+    public static readonly StyledProperty<bool> AnimateProperty =
+        AvaloniaProperty.Register<GoBoardControl, bool>(nameof(Animate));
+
+    /// <summary>Duration of the stone settling and of the theme's ring effect.</summary>
+    public static readonly TimeSpan SettleDuration = TimeSpan.FromMilliseconds(200);
+    public static readonly TimeSpan EffectDuration = TimeSpan.FromMilliseconds(650);
+
+    private static readonly BoardStyle ClassicStyle = new() { ShudanTexture = true };
+
+    private readonly System.Diagnostics.Stopwatch _animClock = new();
+    private Avalonia.Threading.DispatcherTimer? _animTimer;
+    private Point? _animPoint;
+    private BoardState? _before;
+
     private static readonly Typeface CoordinateTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.Medium);
     private static readonly Typeface LabelTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.SemiBold);
     // Colours after Shudan's goban.css (MIT, see THIRD_PARTY_NOTICES.md).
@@ -87,7 +107,7 @@ public sealed class GoBoardControl : Control
     {
         AffectsRender<GoBoardControl>(
             BoardProperty, LastMoveProperty, MarkersProperty, ShowCoordinatesProperty,
-            HoverPointProperty, GhostStoneProperty, IsInteractiveProperty);
+            HoverPointProperty, GhostStoneProperty, IsInteractiveProperty, BoardStyleProperty);
         FocusableProperty.OverrideDefaultValue<GoBoardControl>(true);
         // Not clipped: the board's drop shadow falls on the tatami around it.
         ClipToBoundsProperty.OverrideDefaultValue<GoBoardControl>(false);
@@ -100,6 +120,21 @@ public sealed class GoBoardControl : Control
         get => GetValue(BoardProperty);
         set => SetValue(BoardProperty, value);
     }
+
+    public BoardStyle? BoardStyle
+    {
+        get => GetValue(BoardStyleProperty);
+        set => SetValue(BoardStyleProperty, value);
+    }
+
+    public bool Animate
+    {
+        get => GetValue(AnimateProperty);
+        set => SetValue(AnimateProperty, value);
+    }
+
+    /// <summary>Point whose placement is being animated (for tests).</summary>
+    public Point? AnimatingPoint => _animPoint;
 
     public Point? LastMove
     {
@@ -162,23 +197,36 @@ public sealed class GoBoardControl : Control
         }
 
         double scale = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1.0;
+        BoardStyle style = BoardStyle ?? ClassicStyle;
+        var lines = new ImmutableSolidColorBrush(style.ShudanTexture ? BoardTextures.BoardForeground : style.Lines);
 
-        DrawWood(context, g);
-        DrawGrid(context, g, board, scale);
+        DrawWood(context, g, style);
+        DrawGrid(context, g, board, scale, lines);
         if (ShowCoordinates)
         {
-            DrawCoordinates(context, g);
+            DrawCoordinates(context, g, style.ShudanTexture ? CoordinateBrush : new ImmutableSolidColorBrush(style.Coordinates));
         }
 
-        DrawStones(context, g, board);
-        DrawLastMove(context, g, board);
-        DrawMarkers(context, g, board);
+        DrawStones(context, g, board, style);
+        DrawEffect(context, g, board, style);
+        DrawLastMove(context, g, board, style);
+        DrawMarkers(context, g, board, lines, style);
         DrawGhost(context, g, board);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == BoardProperty)
+        {
+            _before = change.OldValue as BoardState;
+        }
+
+        if (change.Property == BoardProperty || change.Property == LastMoveProperty)
+        {
+            TryStartPlacementAnimation();
+        }
+
         if (change.Property == LastMoveProperty || change.Property == BoardProperty)
         {
             string name = Board is { } b && LastMove is { } p
@@ -236,21 +284,22 @@ public sealed class GoBoardControl : Control
         e.Handled = true;
     }
 
-    private static void DrawWood(DrawingContext context, BoardGeometry g)
+    private static void DrawWood(DrawingContext context, BoardGeometry g, BoardStyle style)
     {
         Rect outer = g.BoardRect;
-        double border = Math.Max(2, g.Cell * 0.15);
+        double border = style.ShudanTexture ? Math.Max(2, g.Cell * 0.15) : style.BorderWidth * g.Cell;
         Rect rect = outer.Deflate(border);
+        Color frame = style.ShudanTexture ? BoardTextures.BoardBorder : (border > 0 ? style.Border : style.Wood);
 
-        // Sabaki: the goban floats over the tatami with a deep, soft shadow.
+        // The goban floats over the background with a deep, soft shadow.
         context.DrawRectangle(
-            new ImmutableSolidColorBrush(BoardTextures.BoardBorder), null, outer, 0, 0,
-            new BoxShadows(new BoxShadow { OffsetX = 0, OffsetY = 5, Blur = 20, Color = Color.FromArgb(0xCC, 20, 0, 15) }));
+            new ImmutableSolidColorBrush(frame), null, outer, 0, 0,
+            new BoxShadows(new BoxShadow { OffsetX = 0, OffsetY = 5, Blur = style.BoardShadowBlur, Color = style.BoardShadow }));
 
         using (context.PushClip(rect))
         {
-            context.DrawRectangle(BoardBackgroundBrush, null, rect);
-            Bitmap wood = BoardTextures.Wood;
+            context.DrawRectangle(style.ShudanTexture ? BoardBackgroundBrush : new ImmutableSolidColorBrush(style.Wood), null, rect);
+            Bitmap wood = style.ShudanTexture ? BoardTextures.Wood : BoardTextures.KayaFor(style.Wood);
             Size src = wood.Size;
 
             // Cover the board with the texture, keeping its aspect ratio (the grain runs vertically).
@@ -266,7 +315,7 @@ public sealed class GoBoardControl : Control
         context.DrawRectangle(BoardSheen, null, outer);
     }
 
-    private static void DrawGrid(DrawingContext context, BoardGeometry g, BoardState board, double scale)
+    private static void DrawGrid(DrawingContext context, BoardGeometry g, BoardState board, double scale, IBrush LineBrush)
     {
         double thin = Math.Max(1, Math.Round(scale)) / scale;
         double thick = Math.Max(1, Math.Round(1.5 * scale)) / scale;
@@ -307,7 +356,7 @@ public sealed class GoBoardControl : Control
         return (Math.Floor(value * scale) + offset) / scale;
     }
 
-    private static void DrawCoordinates(DrawingContext context, BoardGeometry g)
+    private static void DrawCoordinates(DrawingContext context, BoardGeometry g, IBrush CoordinateBrush)
     {
         double size = Math.Clamp(g.Cell * 0.34, 7, 18);
         double gap = g.Cell * 0.9;
@@ -330,17 +379,16 @@ public sealed class GoBoardControl : Control
         }
     }
 
-    private static void DrawStones(DrawingContext context, BoardGeometry g, BoardState board)
+    private void DrawStones(DrawingContext context, BoardGeometry g, BoardState board, BoardStyle style)
     {
         double r = g.Cell * StoneRadius;
-        var shadow = new BoxShadows(new BoxShadow
-        {
-            OffsetX = 0,
-            OffsetY = g.Cell * 0.1,
-            Blur = g.Cell * 0.2,
-            Color = BoardTextures.ShadowColor,
-        });
-        var shadowBrush = new ImmutableSolidColorBrush(BoardTextures.ShadowColor);
+        Color shadowColor = style.ShudanTexture ? BoardTextures.ShadowColor : style.StoneShadow;
+        var shadow = new BoxShadows(new BoxShadow { OffsetX = 0, OffsetY = g.Cell * 0.1, Blur = g.Cell * 0.2, Color = shadowColor });
+        var shadowBrush = new ImmutableSolidColorBrush(shadowColor);
+
+        // A newly placed stone settles: it starts a little large and lifted, then lands.
+        double settle = SettleProgress();
+        double lift = 1 + (0.14 * (1 - settle) * (1 - settle));
 
         // Shadows first so no stone's shadow falls on a neighbouring stone.
         foreach (Point p in board.AllPoints)
@@ -348,7 +396,15 @@ public sealed class GoBoardControl : Control
             if (board[p] != Stone.Empty)
             {
                 AvPoint c = StoneCenter(g, p);
-                context.DrawRectangle(shadowBrush, null, new Rect(c.X - r, c.Y - r, 2 * r, 2 * r), r, r, shadow);
+                double k = p == _animPoint ? lift : 1;
+                var s = new BoxShadows(new BoxShadow
+                {
+                    OffsetX = 0,
+                    OffsetY = g.Cell * 0.1 * k * k,
+                    Blur = g.Cell * 0.2 * k * k,
+                    Color = shadowColor,
+                });
+                context.DrawRectangle(shadowBrush, null, new Rect(c.X - r, c.Y - r, 2 * r, 2 * r), r, r, p == _animPoint ? s : shadow);
             }
         }
 
@@ -357,9 +413,101 @@ public sealed class GoBoardControl : Control
             Stone s = board[p];
             if (s != Stone.Empty)
             {
-                DrawStone(context, StoneCenter(g, p), r, s);
+                DrawStone(context, StoneCenter(g, p), r * (p == _animPoint ? lift : 1), s, style.ShudanTexture ? StoneStyle.Shudan : style.Stones, p);
             }
         }
+    }
+
+    /// <summary>The theme's ring effect around a newly placed stone (halo, ink or sand ripple).</summary>
+    private void DrawEffect(DrawingContext context, BoardGeometry g, BoardState board, BoardStyle style)
+    {
+        if (_animPoint is not { } p || style.Effect is PlacementEffect.None or PlacementEffect.Settle || !board.IsOnBoard(p))
+        {
+            return;
+        }
+
+        double k = Math.Clamp(_animClock.Elapsed / EffectDuration, 0, 1);
+        if (k >= 1)
+        {
+            return;
+        }
+
+        double ease = 1 - Math.Pow(1 - k, 3);
+        double radius = g.Cell * StoneRadius * (1.05 + (1.5 * ease));
+        byte alpha = (byte)(style.EffectColor.A * (1 - k) * (style.Effect == PlacementEffect.InkRipple ? 0.7 : 0.85));
+        var color = Color.FromArgb(alpha, style.EffectColor.R, style.EffectColor.G, style.EffectColor.B);
+        AvPoint c = StoneCenter(g, p);
+        if (style.Effect == PlacementEffect.GoldHalo)
+        {
+            // A soft glow plus a fine ring.
+            var glow = new RadialGradientBrush
+            {
+                GradientStops =
+                {
+                    new GradientStop(Color.FromArgb(0, color.R, color.G, color.B), 0.55),
+                    new GradientStop(Color.FromArgb((byte)(alpha / 2), color.R, color.G, color.B), 0.8),
+                    new GradientStop(Color.FromArgb(0, color.R, color.G, color.B), 1),
+                },
+            };
+            context.DrawEllipse(glow, null, c, radius * 1.15, radius * 1.15);
+        }
+
+        double width = Math.Max(1, g.Cell * (style.Effect == PlacementEffect.InkRipple ? 0.09 : 0.05) * (1 - (0.6 * k)));
+        context.DrawEllipse(null, new Pen(new ImmutableSolidColorBrush(color), width), c, radius, radius);
+    }
+
+    private double SettleProgress()
+    {
+        if (_animPoint is null)
+        {
+            return 1;
+        }
+
+        double k = Math.Clamp(_animClock.Elapsed / SettleDuration, 0, 1);
+        return 1 - Math.Pow(1 - k, 3);
+    }
+
+    /// <summary>
+    /// Animates only when exactly one stone appeared, at the last move (a move played, or one step forward) —
+    /// not when jumping through the game or loading a position.
+    /// </summary>
+    private void TryStartPlacementAnimation()
+    {
+        if (!Animate || _before is not { } before || Board is not { } after || LastMove is not { } p
+            || before.Width != after.Width || before.Height != after.Height || !after.IsOnBoard(p)
+            || before[p] != Stone.Empty || after[p] == Stone.Empty)
+        {
+            return;
+        }
+
+        int added = 0;
+        foreach (Point q in after.AllPoints)
+        {
+            if (before[q] == Stone.Empty && after[q] != Stone.Empty && ++added > 1)
+            {
+                return;
+            }
+        }
+
+        _before = null;
+        StartPlacementAnimation(p);
+    }
+
+    private void StartPlacementAnimation(Point p)
+    {
+        _animPoint = p;
+        _animClock.Restart();
+        _animTimer ??= new Avalonia.Threading.DispatcherTimer(TimeSpan.FromMilliseconds(16), Avalonia.Threading.DispatcherPriority.Render, (_, _) =>
+        {
+            if (_animClock.Elapsed > EffectDuration && _animClock.Elapsed > SettleDuration)
+            {
+                _animPoint = null;
+                _animTimer!.Stop();
+            }
+
+            InvalidateVisual();
+        });
+        _animTimer.Start();
     }
 
     /// <summary>
@@ -381,21 +529,78 @@ public sealed class GoBoardControl : Control
         return new AvPoint(c.X + (Math.Cos(angle) * d), c.Y + (Math.Sin(angle) * d));
     }
 
+    /// <summary>Draws one stone in the theme's style.</summary>
+    private static void DrawStone(DrawingContext context, AvPoint c, double r, Stone color, StoneStyle style, Point p)
+    {
+        bool black = color == Stone.Black;
+        switch (style)
+        {
+            case StoneStyle.Pearl:
+                context.DrawEllipse(black ? BoardTextures.PearlBlack : BoardTextures.PearlWhite, null, c, r * 0.97, r * 0.97);
+                if (!black)
+                {
+                    context.DrawEllipse(null, new Pen(new ImmutableSolidColorBrush(Color.FromArgb(0x50, 0x9A, 0xA0, 0xB8)), Math.Max(0.5, r * 0.035)), c, r * 0.97, r * 0.97);
+                }
+
+                return;
+
+            case StoneStyle.SlateShell:
+                context.DrawEllipse(black ? BoardTextures.SlateBlack : BoardTextures.ShellWhite, null, c, r * 0.97, r * 0.97);
+                if (!black)
+                {
+                    DrawShellLines(context, c, r * 0.97, p);
+                    context.DrawEllipse(null, new Pen(new ImmutableSolidColorBrush(Color.FromArgb(0x48, 0x5A, 0x50, 0x3C)), Math.Max(0.5, r * 0.035)), c, r * 0.97, r * 0.97);
+                }
+
+                return;
+
+            case StoneStyle.Soft:
+                context.DrawEllipse(black ? BoardTextures.SoftBlack : BoardTextures.SoftWhite, null, c, r * 0.96, r * 0.96);
+                return;
+
+            default:
+                DrawShudanStone(context, c, r, black);
+                return;
+        }
+    }
+
     /// <summary>Shudan's stone in vector form: 20.5/21.5 body with a 1-unit rim, plus an 18.5/21.5 highlight.</summary>
-    private static void DrawStone(DrawingContext context, AvPoint c, double r, Stone color)
+    private static void DrawShudanStone(DrawingContext context, AvPoint c, double r, bool black)
     {
         double body = r * 20.5 / 21.5;
         double inner = r * 18.5 / 21.5;
         double rim = Math.Max(0.5, r / 21.5);
-        bool black = color == Stone.Black;
-
         context.DrawEllipse(black ? BoardTextures.BlackStone : BoardTextures.WhiteStone, null, c, body, body);
         context.DrawEllipse(black ? BoardTextures.BlackHighlight : BoardTextures.WhiteHighlight, null, c, inner, inner);
         IPen edge = black ? BoardTextures.BlackEdge : BoardTextures.WhiteEdge;
         context.DrawEllipse(null, new Pen(edge.Brush, rim), c, body, body);
     }
 
-    private void DrawLastMove(DrawingContext context, BoardGeometry g, BoardState board)
+    /// <summary>Clam-shell growth lines: a few gentle arcs, orientation stable per intersection.</summary>
+    private static void DrawShellLines(DrawingContext context, AvPoint c, double r, Point p)
+    {
+        int variant = Math.Abs((p.X * 7) + (p.Y * 13) + (p.X * p.Y)) % 6;
+        double tilt = (variant - 2.5) * 0.22;
+        var pen = new Pen(BoardTextures.ShellLine.Brush, Math.Max(0.5, r * 0.05));
+        using (context.PushGeometryClip(new EllipseGeometry(new Rect(c.X - r, c.Y - r, 2 * r, 2 * r))))
+        {
+            for (int i = -2; i <= 2; i++)
+            {
+                double offset = (i * r * 0.3) + (variant * r * 0.04);
+                var g = new StreamGeometry();
+                using (StreamGeometryContext ctx = g.Open())
+                {
+                    ctx.BeginFigure(new AvPoint(c.X - r, c.Y + offset + (tilt * r)), false);
+                    ctx.QuadraticBezierTo(new AvPoint(c.X, c.Y + offset - (r * 0.25)), new AvPoint(c.X + r, c.Y + offset - (tilt * r)));
+                    ctx.EndFigure(false);
+                }
+
+                context.DrawGeometry(null, pen, g);
+            }
+        }
+    }
+
+    private void DrawLastMove(DrawingContext context, BoardGeometry g, BoardState board, BoardStyle style)
     {
         if (LastMove is not { } p || !board.IsOnBoard(p) || board[p] == Stone.Empty
             || (Markers?.Any(m => m.Point == p) ?? false))
@@ -404,13 +609,16 @@ public sealed class GoBoardControl : Control
             return;
         }
 
-        IBrush brush = board[p] == Stone.Black ? Brushes.White : Brushes.Black;
+        IBrush brush = style.LastMove.A > 0
+            ? new ImmutableSolidColorBrush(style.LastMove)
+            : board[p] == Stone.Black ? Brushes.White : Brushes.Black;
         double radius = g.Cell * 0.2;
         context.DrawEllipse(null, new Pen(brush, Math.Max(1, g.Cell * 0.06)), StoneCenter(g, p), radius, radius);
     }
 
-    private void DrawMarkers(DrawingContext context, BoardGeometry g, BoardState board)
+    private void DrawMarkers(DrawingContext context, BoardGeometry g, BoardState board, IBrush LineBrush, BoardStyle style)
     {
+        IBrush labelBackground = style.ShudanTexture ? LabelBackground : new ImmutableSolidColorBrush(style.Wood);
         if (Markers is not { Count: > 0 } markers)
         {
             return;
@@ -474,7 +682,7 @@ public sealed class GoBoardControl : Control
                 case MarkupKind.Label when !string.IsNullOrEmpty(m.Text):
                     if (under == Stone.Empty)
                     {
-                        context.DrawEllipse(LabelBackground, null, c, s * 0.4, s * 0.4);
+                        context.DrawEllipse(labelBackground, null, c, s * 0.4, s * 0.4);
                     }
 
                     DrawCentredText(context, m.Text, Math.Max(7, s * (m.Text.Length > 2 ? 0.36 : 0.48)), LabelTypeface, brush, c.X, c.Y);
@@ -492,7 +700,8 @@ public sealed class GoBoardControl : Control
 
         using (context.PushOpacity(0.4))
         {
-            DrawStone(context, g.Center(p), g.Cell * StoneRadius, GhostStone);
+            BoardStyle style = BoardStyle ?? ClassicStyle;
+            DrawStone(context, g.Center(p), g.Cell * StoneRadius, GhostStone, style.ShudanTexture ? StoneStyle.Shudan : style.Stones, p);
         }
     }
 

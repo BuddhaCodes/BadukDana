@@ -21,8 +21,25 @@ internal static class BoardTextures
     public static readonly Color BoardForeground = Color.FromRgb(0x5E, 0x2E, 0x0C);
 
     private static readonly Lazy<Bitmap> LazyWood = new(LoadBoard);
+    private static readonly Dictionary<Color, Bitmap> Kaya = [];
 
+    /// <summary>Shudan's board texture (Classic theme).</summary>
     public static Bitmap Wood => LazyWood.Value;
+
+    /// <summary>Hoshi's own procedural kaya, tinted to <paramref name="baseColor"/> (cached per colour).</summary>
+    public static Bitmap KayaFor(Color baseColor)
+    {
+        lock (Kaya)
+        {
+            if (!Kaya.TryGetValue(baseColor, out Bitmap? bitmap))
+            {
+                bitmap = CreateWood(baseColor);
+                Kaya[baseColor] = bitmap;
+            }
+
+            return bitmap;
+        }
+    }
 
     /// <summary>Stone body: brownish slate at the top to near-black at the bottom (Shudan stone_1.svg).</summary>
     public static IBrush BlackStone { get; } = Vertical(
@@ -43,6 +60,45 @@ internal static class BoardTextures
         (0.747, Color.FromArgb(0x00, 0xEE, 0xEE, 0xEE)), (1, Color.FromArgb(0xCC, 0xEE, 0xEE, 0xEE)));
 
     public static IPen WhiteEdge { get; } = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromRgb(0xC3, 0xC3, 0xC3)), 1);
+
+    // ---- Hoshi's own stone styles ----
+
+    private static IBrush Radial(double ox, double oy, double radius, params (Color Color, double Offset)[] stops)
+    {
+        var b = new RadialGradientBrush
+        {
+            GradientOrigin = new RelativePoint(ox, oy, RelativeUnit.Relative),
+            Center = new RelativePoint(0.5, 0.5, RelativeUnit.Relative),
+            RadiusX = new RelativeScalar(radius, RelativeUnit.Relative),
+            RadiusY = new RelativeScalar(radius, RelativeUnit.Relative),
+        };
+        foreach ((Color c, double o) in stops)
+        {
+            b.GradientStops.Add(new GradientStop(c, o));
+        }
+
+        return b.ToImmutable();
+    }
+
+    public static IBrush PearlBlack { get; } = Radial(0.32, 0.26, 0.62,
+        (Color.Parse("#5A6178"), 0), (Color.Parse("#1C1F2A"), 0.38), (Color.Parse("#07080C"), 1));
+
+    public static IBrush PearlWhite { get; } = Radial(0.34, 0.28, 0.66,
+        (Color.Parse("#FFFFFF"), 0), (Color.Parse("#F2F1F6"), 0.5), (Color.Parse("#CFD3E2"), 0.92), (Color.Parse("#E9DDBF"), 1));
+
+    public static IBrush SlateBlack { get; } = Radial(0.36, 0.3, 0.64,
+        (Color.Parse("#4A4A48"), 0), (Color.Parse("#232322"), 0.42), (Color.Parse("#0C0C0B"), 1));
+
+    public static IBrush ShellWhite { get; } = Radial(0.36, 0.3, 0.66,
+        (Color.Parse("#FFFEFA"), 0), (Color.Parse("#F1EDE3"), 0.55), (Color.Parse("#CFC8B7"), 1));
+
+    public static IBrush SoftBlack { get; } = Radial(0.4, 0.34, 0.7,
+        (Color.Parse("#3C3835"), 0), (Color.Parse("#191716"), 1));
+
+    public static IBrush SoftWhite { get; } = Radial(0.4, 0.34, 0.72,
+        (Color.Parse("#FFFDF8"), 0), (Color.Parse("#E5DED1"), 1));
+
+    public static IPen ShellLine { get; } = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromArgb(0x1C, 0x6A, 0x5E, 0x46)), 1);
 
     /// <summary>The dark disc under every stone and its drop shadow (Shudan: rgba(23,10,2,.4), 0 .1em .2em).</summary>
     public static readonly Color ShadowColor = Color.FromArgb(0x66, 23, 10, 2);
@@ -67,11 +123,11 @@ internal static class BoardTextures
         }
         catch (Exception ex) when (ex is IOException or InvalidOperationException or FileNotFoundException)
         {
-            return CreateWood();
+            return CreateWood(Color.FromRgb(0xE0, 0xB9, 0x68));
         }
     }
 
-    private static Bitmap CreateWood()
+    private static Bitmap CreateWood(Color baseColor)
     {
         const int n = WoodSize;
         var pixels = new int[n * n];
@@ -89,12 +145,13 @@ internal static class BoardTextures
                 double fine = Fbm(u * 60.0, v * 4.0, 2) - 0.5;
                 double blotch = Fbm(u * 2.0, v * 2.0, 3) - 0.5;
 
-                double shade = 1.0 + (0.022 * grain) + (0.035 * fine) + (0.05 * blotch);
+                // Masame (straight-grain) kaya: thin, slightly irregular dark lines running top to bottom.
+                double thin = Math.Pow(Math.Abs(Math.Sin(((u * 150.0) + (warp * 0.7) + (Fbm(u * 8, v * 0.3, 2) * 1.5)) * Math.PI)), 14);
+                double shade = 1.0 + (0.02 * grain) + (0.03 * fine) + (0.045 * blotch) - (0.075 * thin);
 
-                // Base kaya colour (DESIGN.md Board.Wood #DCB35C), slightly lighter.
-                double r = 0xE0 * shade;
-                double g = 0xB9 * shade;
-                double b = 0x68 * shade;
+                double r = baseColor.R * shade;
+                double g = baseColor.G * shade;
+                double b = baseColor.B * shade;
 
                 pixels[(y * n) + x] = unchecked((int)0xFF000000)
                     | (Clamp(r) << 16) | (Clamp(g) << 8) | Clamp(b);
