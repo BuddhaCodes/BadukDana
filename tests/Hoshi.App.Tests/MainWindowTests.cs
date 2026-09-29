@@ -4,6 +4,7 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Hoshi.App.ViewModels;
 using Hoshi.App.Views;
 using Microsoft.Extensions.DependencyInjection;
@@ -72,7 +73,7 @@ public sealed class MainWindowTests
             byte* row = (byte*)fb.Address + (y * fb.RowBytes);
             uint px = ((uint*)row)[x];
             // Headless Skia frames are BGRA8888 premultiplied; opaque pixels are unaffected by premultiplication.
-            return fb.Format == Avalonia.Platform.PixelFormat.Rgba8888
+            return fb.Format == PixelFormat.Rgba8888
                 ? Color.FromArgb((byte)(px >> 24), (byte)px, (byte)(px >> 8), (byte)(px >> 16))
                 : Color.FromArgb((byte)(px >> 24), (byte)(px >> 16), (byte)(px >> 8), (byte)px);
         }
