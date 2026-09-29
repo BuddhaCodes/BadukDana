@@ -1,6 +1,7 @@
 using Avalonia.Threading;
 using Hoshi.Ogs;
 using Hoshi.Ogs.Auth;
+using Hoshi.Ogs.Games;
 using Hoshi.Ogs.Realtime;
 using Hoshi.Ogs.Rest;
 using Microsoft.Extensions.Logging;
@@ -59,6 +60,9 @@ public interface IOgsClient
 
     /// <summary>Accepts an open challenge; returns the new game's id (0 when the server does not say).</summary>
     Task<long> AcceptChallengeAsync(long challengeId, CancellationToken cancellationToken);
+
+    /// <summary>Joins a game on the current server (not yet connected: call <see cref="IOnlineGame.Connect"/>).</summary>
+    IOnlineGame OpenGame(long gameId);
 }
 
 /// <summary>Opens a URL in the user's browser.</summary>
@@ -214,6 +218,17 @@ public sealed class OgsClient : IOgsClient, IAsyncDisposable
 
     public Task<long> AcceptChallengeAsync(long challengeId, CancellationToken cancellationToken) =>
         _current.Rest.AcceptChallengeAsync(challengeId, cancellationToken);
+
+    public IOnlineGame OpenGame(long gameId)
+    {
+        if (Session is null)
+        {
+            throw new InvalidOperationException("Inicia sesión en OGS para abrir la partida.");
+        }
+
+        var session = new OgsGameSession(_current.Realtime, gameId, _logger);
+        return new OgsOnlineGame(session, _current.Realtime, Session.User.Id);
+    }
 
     public async ValueTask DisposeAsync()
     {

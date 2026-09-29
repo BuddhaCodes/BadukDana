@@ -78,6 +78,28 @@ public sealed partial class GameViewModel : ViewModelBase
 
     public GameCursor Cursor => _cursor;
 
+    /// <summary>The online game shown on the board, or null for a local game.</summary>
+    public OnlineGameViewModel? Online { get; private set; }
+
+    public bool IsOnline => Online is not null;
+
+    /// <summary>Last node of the main line (where online moves are appended).</summary>
+    public GameNode MainLineEnd
+    {
+        get
+        {
+            GameNode n = Tree.Root;
+            while (n.Children.Count > 0)
+            {
+                n = n.Children[0];
+            }
+
+            return n;
+        }
+    }
+
+    public int MainLineMoveCount => GameCursor.Path(MainLineEnd).Count(n => n.HasMove);
+
     public GameTree Tree => _cursor.Tree;
 
     public GameNode CurrentNode => _cursor.Current;
@@ -86,7 +108,9 @@ public sealed partial class GameViewModel : ViewModelBase
 
     public Point? LastMove => _cursor.LastMove;
 
-    public IReadOnlyList<Markup> Markers => _cursor.Current.GetMarkup();
+    public IReadOnlyList<Markup> Markers => Online is { } online
+        ? [.. _cursor.Current.GetMarkup(), .. online.Overlay]
+        : _cursor.Current.GetMarkup();
 
     public int MoveNumber => _cursor.MoveNumber;
 
@@ -104,7 +128,7 @@ public sealed partial class GameViewModel : ViewModelBase
         _cursor.Current.GetMove(_cursor.BoardSize) is { IsPass: true }
         && _cursor.Current.Parent?.GetMove(_cursor.BoardSize) is { IsPass: true };
 
-    public string Title =>
+    public string Title => Online is { } o ? $"{o.Title} — Hoshi" :
         $"{(FilePath is null ? "Sin título" : System.IO.Path.GetFileName(FilePath))}{(IsDirty ? " *" : string.Empty)} — Hoshi";
 
     public string? Comment
@@ -127,6 +151,11 @@ public sealed partial class GameViewModel : ViewModelBase
             if (_statusOverride is { } s)
             {
                 return s;
+            }
+
+            if (Online is { } online)
+            {
+                return online.StatusText;
             }
 
             if (IsEditMode)
@@ -161,11 +190,122 @@ public sealed partial class GameViewModel : ViewModelBase
         Refresh();
     }
 
+    // ---------- Online games (driven by OnlineGameViewModel) ----------
+
+    /// <summary>Shows an online game: its tree replaces the current one and clicks go to OGS.</summary>
+    public void LoadOnline(GameTree tree, OnlineGameViewModel online)
+    {
+        ArgumentNullException.ThrowIfNull(online);
+        if (!ReferenceEquals(Online, online))
+        {
+            if (Online is not null)
+            {
+                Online.PropertyChanged -= OnOnlinePropertyChanged;
+            }
+
+            Online = online;
+            online.PropertyChanged += OnOnlinePropertyChanged;
+            IsEditMode = false;
+        }
+
+        Load(tree, path: null);
+        _cursor.Last();
+        OnlineChanged();
+    }
+
+    /// <summary>Stops routing to the online game; the tree stays as a normal game that can be saved.</summary>
+    public void DetachOnline()
+    {
+        if (Online is null)
+        {
+            return;
+        }
+
+        Online.PropertyChanged -= OnOnlinePropertyChanged;
+        Online = null;
+        IsDirty = true;
+        OnlineChanged();
+    }
+
+    /// <summary>Appends a move to the main line; the view follows it only if the user was at the last move.</summary>
+    public void AppendOnlineMove(Stone color, Point? point)
+    {
+        GameNode end = MainLineEnd;
+        bool follow = _cursor.Current == end;
+        GameNode node = end.AddChild();
+        node.SetValue(color == Stone.White ? "W" : "B", point?.ToSgf() ?? string.Empty);
+        if (follow)
+        {
+            _cursor.GoTo(node);
+        }
+        else
+        {
+            _cursor.NotifyEdited();
+        }
+    }
+
+    /// <summary>After an accepted undo: keeps the first <paramref name="moveCount"/> moves of the main line.</summary>
+    public void TruncateOnlineMoves(int moveCount)
+    {
+        GameNode n = Tree.Root;
+        int moves = 0;
+        while (n.Children.Count > 0 && moves < moveCount)
+        {
+            n = n.Children[0];
+            if (n.HasMove)
+            {
+                moves++;
+            }
+        }
+
+        foreach (GameNode child in n.Children.ToList())
+        {
+            child.Detach();
+        }
+
+        _cursor.GoTo(n);
+        _cursor.NotifyEdited();
+    }
+
+    /// <summary>Re-evaluates board state derived from the online game (overlay, ghost, commands, status).</summary>
+    public void RefreshOnline() => Refresh();
+
+    private void OnOnlinePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(OnlineGameViewModel.StatusText) or nameof(OnlineGameViewModel.Title))
+        {
+            OnPropertyChanged(nameof(StatusText));
+            OnPropertyChanged(nameof(Title));
+        }
+
+        if (e.PropertyName is nameof(OnlineGameViewModel.IsSending) or nameof(OnlineGameViewModel.Phase))
+        {
+            PassCommand.NotifyCanExecuteChanged();
+            UpdateGhost();
+        }
+    }
+
+    private void OnlineChanged()
+    {
+        OnPropertyChanged(nameof(Online));
+        OnPropertyChanged(nameof(IsOnline));
+        OnPropertyChanged(nameof(Title));
+        ToggleEditModeCommand.NotifyCanExecuteChanged();
+        SelectToolCommand.NotifyCanExecuteChanged();
+        Refresh();
+    }
+
     // ---------- Play and edit ----------
 
     [RelayCommand(CanExecute = nameof(CanPlay))]
     private void Play(Point point)
     {
+        if (Online is { } online)
+        {
+            online.OnBoardClicked(point);
+            return;
+        }
+
         if (IsEditMode)
         {
             ApplyTool(point);
@@ -185,12 +325,24 @@ public sealed partial class GameViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanPass))]
     private void Pass()
     {
+        if (Online is { } online)
+        {
+            online.PassCommand.Execute(null);
+            return;
+        }
+
         _cursor.Play(null);
         IsDirty = true;
     }
 
+    /// <summary>The P shortcut: local games only, so a stray key press never passes in an online game.</summary>
+    [RelayCommand(CanExecute = nameof(CanPassWithKey))]
+    private void PassKey() => Pass();
+
+    private bool CanPassWithKey() => Online is null && CanPass();
+
     /// <summary>Takes back the last move: removes it if it ends the line, otherwise just steps back.</summary>
-    [RelayCommand(CanExecute = nameof(CanGoBack))]
+    [RelayCommand(CanExecute = nameof(CanUndo))]
     private void Undo()
     {
         if (_cursor.Current.Children.Count == 0)
@@ -204,24 +356,24 @@ public sealed partial class GameViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanEdit))]
     private void ToggleEditMode() => IsEditMode = !IsEditMode;
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanEdit))]
     private void SelectTool(EditTool tool)
     {
         EditTool = tool;
         IsEditMode = true;
     }
 
-    [RelayCommand(CanExecute = nameof(CanGoBack))]
+    [RelayCommand(CanExecute = nameof(CanUndo))]
     private void DeleteNode()
     {
         _cursor.DeleteCurrent();
         IsDirty = true;
     }
 
-    [RelayCommand(CanExecute = nameof(CanGoBack))]
+    [RelayCommand(CanExecute = nameof(CanUndo))]
     private void PromoteVariation()
     {
         _cursor.PromoteToMainLine();
@@ -281,6 +433,7 @@ public sealed partial class GameViewModel : ViewModelBase
             return;
         }
 
+        Online?.LeaveCommand.Execute(null);
         int n = size is >= BoardState.MinSize and <= BoardState.MaxSize ? size : 19;
         Load(GameTree.Create(n, Board.Rules), path: null);
     }
@@ -314,6 +467,7 @@ public sealed partial class GameViewModel : ViewModelBase
                 throw new FormatException("El archivo no contiene ninguna partida SGF.");
             }
 
+            Online?.LeaveCommand.Execute(null);
             Load(parsed.Games[0], path);
             int warnings = parsed.Warnings.Count + _cursor.Warnings.Count;
             _logger.LogInformation("Opened {File} ({Nodes} nodes, {Warnings} warnings)",
@@ -396,9 +550,13 @@ public sealed partial class GameViewModel : ViewModelBase
 
     // ---------- Internals ----------
 
-    private bool CanPlay() => IsEditMode || !IsGameOver;
+    private bool CanPlay() => Online is not null || IsEditMode || !IsGameOver;
 
-    private bool CanPass() => !IsEditMode && !IsGameOver;
+    private bool CanUndo() => Online is null && _cursor.CanGoBack;
+
+    private bool CanEdit() => Online is null;
+
+    private bool CanPass() => Online is { } online ? online.PassCommand.CanExecute(null) : !IsEditMode && !IsGameOver;
 
     private bool CanGoBack() => _cursor.CanGoBack;
 
@@ -466,10 +624,12 @@ public sealed partial class GameViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsBlackToMove));
         OnPropertyChanged(nameof(IsGameOver));
         OnPropertyChanged(nameof(StatusText));
+        OnPropertyChanged(nameof(MainLineMoveCount));
         TreeVersion++;
 
         PlayCommand.NotifyCanExecuteChanged();
         PassCommand.NotifyCanExecuteChanged();
+        PassKeyCommand.NotifyCanExecuteChanged();
         UndoCommand.NotifyCanExecuteChanged();
         DeleteNodeCommand.NotifyCanExecuteChanged();
         PromoteVariationCommand.NotifyCanExecuteChanged();
@@ -496,6 +656,10 @@ public sealed partial class GameViewModel : ViewModelBase
         if (HoverPoint is not { } p || !Board.IsOnBoard(p))
         {
             GhostStone = Stone.Empty;
+        }
+        else if (Online is { } online)
+        {
+            GhostStone = online.CanPlayAt(p) ? online.MyColor : Stone.Empty;
         }
         else if (IsEditMode)
         {
