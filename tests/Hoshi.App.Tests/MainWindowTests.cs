@@ -37,8 +37,8 @@ public sealed class MainWindowTests
         using WriteableBitmap frame = window.CaptureRenderedFrame()
             ?? throw new InvalidOperationException("No frame rendered");
 
-        // Centre of the board area must be exactly Bg.Window.
-        ReadPixel(frame, (int)(frame.PixelSize.Width / 2), (int)(frame.PixelSize.Height / 3))
+        // Outside the wooden board (the board control has a 16 px margin) the window must be exactly Bg.Window.
+        Pixels.Read(frame, 6, 6)
             .Should().Be(BgWindow);
 
         string outDir = Path.Combine(AppContext.BaseDirectory, "screenshots");
@@ -63,19 +63,5 @@ public sealed class MainWindowTests
         services.GetRequiredService<MainWindowViewModel>().Should().NotBeNull();
         services.GetRequiredService<MainWindowViewModel>()
             .Should().BeSameAs(services.GetRequiredService<MainWindowViewModel>());
-    }
-
-    private static Color ReadPixel(WriteableBitmap bitmap, int x, int y)
-    {
-        using ILockedFramebuffer fb = bitmap.Lock();
-        unsafe
-        {
-            byte* row = (byte*)fb.Address + (y * fb.RowBytes);
-            uint px = ((uint*)row)[x];
-            // Headless Skia frames are BGRA8888 premultiplied; opaque pixels are unaffected by premultiplication.
-            return fb.Format == PixelFormat.Rgba8888
-                ? Color.FromArgb((byte)(px >> 24), (byte)px, (byte)(px >> 8), (byte)(px >> 16))
-                : Color.FromArgb((byte)(px >> 24), (byte)(px >> 16), (byte)(px >> 8), (byte)px);
-        }
     }
 }
