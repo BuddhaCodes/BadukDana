@@ -1,0 +1,21 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{StaticResource Bg.Window}" />
+    <Setter Property="Foreground" Value="{StaticResource Text.Primary}" />
+    <Setter Property="FontSize" Value="{StaticResource Font.Size.Normal}" />
+  </Style>
+
+  <Style Selector="Border.bottom-bar">
+    <Setter Property="Background" Value="{StaticResource Bg.Panel}" />
+    <Setter Property="BorderBrush" Value="{StaticResource Border.Subtle}" />
+    <Setter Property="BorderThickness" Value="0,1,0,0" />
+    <Setter Property="Height" Value="{StaticResource BottomBar.Height}" />
+    <Setter Property="Padding" Value="12,0" />
+  </Style>
+
+  <Style Selector="TextBlock.secondary">
+    <Setter Property="Foreground" Value="{StaticResource Text.Secondary}" />
+    <Setter Property="FontSize" Value="{StaticResource Font.Size.Small}" />
+  </Style>
+</Styles>
