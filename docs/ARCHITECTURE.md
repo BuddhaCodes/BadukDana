@@ -102,10 +102,12 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 
 ### Análisis (Fase 7)
 - `AnalysisViewModel` (en `MainWindowViewModel.Analysis`): en cada cambio de posición pide a KataGo los turnos `n−1` y `n` que falten en su caché (clave = setup + jugadas), valora la jugada, muestra sugerencias y rellena la gráfica de la línea en tandas de 25 turnos a ¼ de las visitas. Se bloquea con `Online.IsPlayer && !IsFinished`.
-- `IAnalysisEngine` / `AnalysisEngineHost`: KataGo según Preferencias; `GoBoardControl.Territory` y `.Suggestions` dibujan las capas; `ScoreGraph` la gráfica.
+- `IAnalysisEngine` / `AnalysisEngineHost`: KataGo según Preferencias; `GoBoardControl.Territory` y `.Suggestions` dibujan las capas; `ScoreGraph` la gráfica. `Activity` informa de la carga/calibración de KataGo (leída de su stderr).
+- Celebración: `GameViewModel.MovePlayed` marca la jugada; cuando llega su valoración, `AnalysisViewModel` publica `Impact` (`BoardImpact`: punto, fuerza 1–3, id) que `GoBoardControl` anima con `ImpactEffect`, y pide el sonido a `ISoundService`.
 
 ### Servicios de App
-- `IDialogService`, `IFileDialogService`; futuros `ISettingsService` (JSON en carpeta de datos), `ISoundService`.
+- `IDialogService`, `IFileDialogService`, `ISettingsService` (JSON en carpeta de datos).
+- `ISoundService` / `SystemSoundService`: sin librerías de audio; usa lo que trae el SO (MCI de winmm en Windows, `afplay` en macOS, `paplay`/`aplay` en Linux). Los WAV integrados se copian a `cache/sounds/`; un archivo con el mismo nombre (`.wav`/`.mp3`) en `sounds/` de la carpeta de datos los sustituye.
 - `SecureTokenStore` → `ITokenStore` del SO con respaldo en memoria (implementa el `ISecureStore` de CLAUDE.md).
 - `IOgsClient` / `OgsClient` — fachada que une auth, REST, tiempo real y seek graph para el lobby; `LobbyViewModel` solo depende de ella (tests con un falso). `IUiDispatcher` lleva los eventos al hilo de UI.
 - `OgsServerCatalog` — los dos servidores fijos: online-go.com (siempre OAuth, `Ogs:ClientId`) y beta (siempre contraseña); `Ogs:DefaultServer` elige el inicial. `OgsClient` crea bajo demanda una `OgsConnection` (auth + REST + tiempo real) por servidor mediante `IOgsConnectionFactory` y cambia de servidor solo sin sesión.

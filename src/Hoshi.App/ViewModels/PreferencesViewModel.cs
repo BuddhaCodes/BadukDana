@@ -39,6 +39,14 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     private readonly Services.ISettingsService? _settings;
     private readonly Services.AnalysisEngineHost? _engine;
     private readonly Services.IFilePickerService? _picker;
+    private readonly Services.ISoundService? _sounds;
+    private readonly bool _loaded;
+
+    [ObservableProperty]
+    private bool _moveEffects = true;
+
+    [ObservableProperty]
+    private int _soundVolume = 70;
 
     [ObservableProperty]
     private string _kataGoExecutable = string.Empty;
@@ -68,8 +76,10 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         ThemeService themes,
         Services.ISettingsService? settings = null,
         Services.AnalysisEngineHost? engine = null,
-        Services.IFilePickerService? picker = null)
+        Services.IFilePickerService? picker = null,
+        Services.ISoundService? sounds = null)
     {
+        _sounds = sounds;
         _themes = themes ?? throw new ArgumentNullException(nameof(themes));
         _settings = settings;
         _engine = engine;
@@ -80,6 +90,8 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             _kataGoModel = s.KataGoModel ?? string.Empty;
             _kataGoConfig = s.KataGoConfig ?? string.Empty;
             _analysisVisits = s.AnalysisVisits;
+            _moveEffects = s.MoveEffects;
+            _soundVolume = s.SoundVolume;
         }
 
         _engineStatus = engine?.Problem ?? (engine is null ? null : "KataGo configurado.");
@@ -87,7 +99,27 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         _selected = Cards.First(c => c.Theme.Id == themes.Current.Id);
         _selected.IsSelected = true;
         _animations = themes.Animations;
+        _loaded = true;
     }
+
+    /// <summary>Folder where the user can put their own impact_small / explosion_medium / explosion_big (.wav or .mp3).</summary>
+    public string? CustomSoundFolder => (_sounds as Services.SystemSoundService)?.CustomDirectory;
+
+    partial void OnMoveEffectsChanged(bool value) => SaveEffects();
+
+    partial void OnSoundVolumeChanged(int value) => SaveEffects();
+
+    private void SaveEffects()
+    {
+        if (_loaded && _settings is not null)
+        {
+            _settings.Save(_settings.Current with { MoveEffects = MoveEffects, SoundVolume = Math.Clamp(SoundVolume, 0, 100) });
+        }
+    }
+
+    /// <summary>Plays the best-move explosion at the chosen volume.</summary>
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void TestSound() => _sounds?.Play(Services.SoundEffect.ExplosionBig, Math.Clamp(SoundVolume, 0, 100) / 100.0);
 
     public IReadOnlyList<ThemeCard> Cards { get; }
 

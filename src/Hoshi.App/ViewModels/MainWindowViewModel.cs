@@ -33,10 +33,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IDialogService? dialogs = null,
         ILogger<MainWindowViewModel>? logger = null,
         IPreferencesWindowService? preferences = null,
-        IAnalysisEngine? engine = null)
+        IAnalysisEngine? engine = null,
+        ISoundService? sounds = null,
+        ISettingsService? settings = null)
     {
         _preferences = preferences;
-        Analysis = new AnalysisViewModel(game, engine, ui);
+        Analysis = new AnalysisViewModel(game, engine, ui, sounds, settings);
         Game = game;
         _lobbyWindow = lobbyWindow;
         _ogs = ogs;

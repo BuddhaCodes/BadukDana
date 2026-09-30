@@ -365,7 +365,11 @@ public sealed partial class GameViewModel : ViewModelBase
         }
 
         IsDirty = true;
+        MovePlayed?.Invoke(this, CurrentNode);
     }
+
+    /// <summary>A stone was just played on the board by the user (not navigation, not an edit, not a pass).</summary>
+    public event EventHandler<GameNode>? MovePlayed;
 
     [RelayCommand(CanExecute = nameof(CanPass))]
     private void Pass()
