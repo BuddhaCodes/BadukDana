@@ -30,6 +30,9 @@ ICONS = {  # key: (phosphor, lucide, tabler)
     "Star": ("star-four", "sparkle", "sparkles"),
     "Check": ("check", "check", "check"),
     "Close": ("x", "x", "x"),
+    "Territory": ("squares-four", "grid-2x2", "layout-grid"),
+    "Analysis": ("brain", "brain", "brain"),
+    "Folder": ("folder-open", "folder-open", "folder-open"),
 }
 
 def num(v): return float(v)
