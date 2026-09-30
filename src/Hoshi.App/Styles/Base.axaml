@@ -81,6 +81,36 @@
     <Setter Property="BorderThickness" Value="0,0,0,1" />
   </Style>
 
+  <!-- Analysis panel (sidebar). -->
+  <Style Selector="Border.analysis">
+    <Setter Property="Padding" Value="14,10" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+  </Style>
+  <Style Selector="ProgressBar.winrate">
+    <Setter Property="MinHeight" Value="6" />
+    <Setter Property="Height" Value="6" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Foreground" Value="#141418" />
+    <Setter Property="Background" Value="#F2F2EE" />
+  </Style>
+  <Style Selector="TextBlock.assessment">
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="TextBlock.assessment.good"><Setter Property="Foreground" Value="#6CC47A" /></Style>
+  <Style Selector="TextBlock.assessment.ok"><Setter Property="Foreground" Value="#A8C86A" /></Style>
+  <Style Selector="TextBlock.assessment.warn"><Setter Property="Foreground" Value="#E6B450" /></Style>
+  <Style Selector="TextBlock.assessment.bad"><Setter Property="Foreground" Value="#E0664F" /></Style>
+
+  <!-- Toggle buttons in the bar (territory, analysis): accent underline when on. -->
+  <Style Selector="Button.bar.toggle.on /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+    <Setter Property="BorderThickness" Value="0,0,0,2" />
+  </Style>
+  <Style Selector="Button.bar.toggle.on">
+    <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+  </Style>
+
   <Style Selector="Border.properties-header">
     <Setter Property="Background" Value="{DynamicResource Bg.Properties}" />
     <Setter Property="Padding" Value="12,8,12,0" />
