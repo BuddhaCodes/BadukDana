@@ -28,6 +28,9 @@ public sealed record AppSettings
     /// <summary>Sound effects volume, 0–100 (0 = silent; the board effect still plays).</summary>
     public int SoundVolume { get; init; } = 70;
 
+    /// <summary>A soft "pachi" when a stone is placed (also when stepping forward through a game).</summary>
+    public bool StoneSounds { get; init; } = true;
+
     /// <summary>Adaptive lo-fi music that heats up with streaks of good moves (needs the analysis for that).</summary>
     public bool Music { get; init; } = true;
 

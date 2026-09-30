@@ -42,6 +42,17 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Analysis = new AnalysisViewModel(game, engine, ui, sounds, settings);
         _music = music;
         _settings = settings;
+        if (sounds is not null)
+        {
+            game.StonePlaced += (_, _) =>
+            {
+                AppSettings current = settings?.Current ?? new AppSettings();
+                if (current.StoneSounds)
+                {
+                    sounds.Play(SoundEffect.Stone, current.SoundVolume / 100.0 * 0.8);
+                }
+            };
+        }
         if (music is not null)
         {
             Analysis.MoveJudged += (_, verdict) => music.OnVerdict(verdict.Quality);

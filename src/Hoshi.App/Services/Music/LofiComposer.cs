@@ -8,8 +8,10 @@ namespace Hoshi.App.Services.Music;
 /// <item>bass and a soft kick;</item>
 /// <item>drums: rim/snare on 2 and 4, swung hats;</item>
 /// <item>a plucked pentatonic arpeggio with echo;</item>
-/// <item>hype: pumping detuned-saw stabs, 16th hats and claps, a bright lead.</item>
+/// <item>hype: pumping detuned-saw stabs, 16th hats and claps, a bright lead;</item>
+/// <item>overdrive: four-on-the-floor kick, rolling 16th bass, a supersaw 16th arpeggio, snare fills and crashes.</item>
 /// </list>
+/// Plus a one-shot "level up" hit (<see cref="RenderLevelUp"/>) played when a new layer comes in.
 /// Each layer is stereo interleaved float at <see cref="SampleRate"/>. Loops are seamless: every layer is rendered
 /// twice in a row and the second pass is kept, so reverb and echo tails wrap around.
 /// </summary>
@@ -18,7 +20,7 @@ public static class LofiComposer
     public const int SampleRate = 44100;
     public const double Bpm = 80;
     public const int Bars = 8;
-    public const int LayerCount = 5;
+    public const int LayerCount = 6;
 
     private const double Beat = 60.0 / Bpm;
     private const double Bar = 4 * Beat;
@@ -44,13 +46,46 @@ public static class LofiComposer
     /// <summary>Renders the five layers (index 0 = calmest).</summary>
     public static float[][] Render(int seed = 7)
     {
+        // Layers are independent (each has its own random stream), so they render in parallel.
+        Func<int, float[]>[] renderers = [Keys, Bass, Drums, Arp, Hype, Overdrive];
         var layers = new float[LayerCount][];
-        layers[0] = Keys(seed);
-        layers[1] = Bass(seed);
-        layers[2] = Drums(seed);
-        layers[3] = Arp(seed);
-        layers[4] = Hype(seed);
+        Parallel.For(0, LayerCount, i => layers[i] = renderers[i](seed));
         return layers;
+    }
+
+    /// <summary>A short cinematic hit: sub boom, bright crash and a quick reverse swell into it (stereo, 2.2 s).</summary>
+    public static float[] RenderLevelUp(int seed = 7)
+    {
+        var rng = new Random(seed + 21);
+        int n = (int)(2.2 * SampleRate);
+        var output = new float[n * 2];
+        int hit = (int)(0.25 * SampleRate); // the swell leads into the hit
+        double phase = 0;
+        double prev = 0;
+        for (int i = 0; i < n; i++)
+        {
+            double white = (rng.NextDouble() * 2) - 1;
+            double hp = white - prev;
+            prev = white;
+            double v = 0;
+            if (i < hit)
+            {
+                double k = (double)i / hit;
+                v += hp * k * k * k * 0.35; // reverse-cymbal swell
+            }
+            else
+            {
+                double t = (double)(i - hit) / SampleRate;
+                phase += 2 * Math.PI * (40 + (90 * Math.Exp(-t * 20))) / SampleRate;
+                v += Math.Tanh(2 * Math.Sin(phase)) * Math.Exp(-t * 3.5) * 0.55; // boom
+                v += hp * Math.Exp(-t * 2.2) * 0.3; // crash
+            }
+
+            output[2 * i] = (float)v;
+            output[(2 * i) + 1] = (float)(v * 0.97);
+        }
+
+        return output;
     }
 
     private static double Freq(double midi) => 440 * Math.Pow(2, (midi - 69) / 12);
@@ -388,6 +423,87 @@ public static class LofiComposer
         track.Process((l, r) => Echo(l, r, 0.5 * Beat, 0.28));
         track.Process((l, r) => Reverb(l, r, 0.18, 0.75));
         return track.Loop(0.55);
+    }
+
+    private static float[] Overdrive(int seed)
+    {
+        var rng = new Random(seed + 17);
+        var track = new Track();
+        ForEachPass(offset =>
+        {
+            for (int bar = 0; bar < Bars; bar++)
+            {
+                int[] chord = Chords[bar / 2];
+                int root = Roots[bar / 2];
+                double b0 = offset + (bar * Bar);
+
+                for (int beat = 0; beat < 4; beat++)
+                {
+                    Kick(track, b0 + (beat * Beat), 0.85);
+                    Hat(track, rng, b0 + ((beat + 0.5) * Beat), 0.45, 0.12, beat % 2 == 0 ? 0.3 : -0.3);
+                }
+
+                // Rolling bass: root / octave in 16ths, off-beats up an octave.
+                for (int s16 = 0; s16 < 16; s16++)
+                {
+                    int note = root + 12 + (s16 % 2 == 1 ? 12 : 0) + (s16 >= 12 && bar % 2 == 1 ? 7 : 0);
+                    SynthBass(track, b0 + (s16 * Beat / 4), Beat / 4 * 0.8, note, s16 % 4 == 0 ? 0.8 : 0.55);
+                }
+
+                // Supersaw arpeggio two octaves up.
+                int[] up = [.. chord.Skip(1).Select(m => m + 12)];
+                int[] pattern = [0, 1, 2, 3, 2, 1, 3, 2, 0, 1, 2, 3, 2, 3, 1, 2];
+                for (int s16 = 0; s16 < 16; s16++)
+                {
+                    SawStab(track, b0 + (s16 * Beat / 4), Beat / 4 * 0.7, [up[pattern[s16] % up.Length] + 12], 0.9);
+                }
+
+                // Snare on 2 and 4, fills at the end of phrases, crash at the top of every four bars.
+                Snare(track, rng, b0 + Beat, 0.85);
+                Snare(track, rng, b0 + (3 * Beat), 0.85);
+                if (bar % 4 == 3)
+                {
+                    for (int f = 0; f < 8; f++)
+                    {
+                        Snare(track, rng, b0 + (2 * Beat) + (f * Beat / 4), 0.3 + (0.08 * f));
+                    }
+                }
+                else if (bar % 2 == 1)
+                {
+                    for (int f = 0; f < 4; f++)
+                    {
+                        Snare(track, rng, b0 + (3 * Beat) + (f * Beat / 4), 0.35 + (0.12 * f));
+                    }
+                }
+
+                if (bar % 4 == 0)
+                {
+                    Hat(track, rng, b0, 1.3, 0.35, 0);
+                }
+            }
+        });
+        track.Process((l, r) => Reverb(l, r, 0.15, 0.7));
+        return track.Loop(0.5);
+    }
+
+    private static void SynthBass(Track track, double start, double length, int midi, double vel)
+    {
+        double f = Freq(midi);
+        int s0 = (int)(start * SampleRate);
+        int n = (int)((length + 0.02) * SampleRate);
+        double phase = 0;
+        double lp = 0;
+        for (int k = 0; k < n; k++)
+        {
+            double t = (double)k / SampleRate;
+            phase = (phase + (f / SampleRate)) % 1;
+            double saw = (2 * phase) - 1;
+            double cutoff = 0.05 + (0.25 * Math.Exp(-t * 30)); // plucky filter envelope
+            lp += cutoff * (saw - lp);
+            double env = Math.Min(1, t / 0.003) * (t < length ? 1 : Math.Exp(-(t - length) / 0.008));
+            double v = Math.Tanh(2 * lp) * env * vel * 0.2;
+            track.Add(s0 + k, v, v);
+        }
     }
 
     private static void SawStab(Track track, double start, double length, int[] chord, double vel)

@@ -160,7 +160,27 @@ def explosion_big() -> np.ndarray:
     return finish(reverb(rng, mix, 2.8, 0.35), 0.89)
 
 
+def stone(variant: int) -> np.ndarray:
+    """A stone placed on the board: the "pachi" click of slate on kaya, a short wooden knock and a faint,
+    soft chime in D minor pentatonic (so it sits with the music). Three variants to avoid machine-gun repetition."""
+    rng = np.random.default_rng(100 + variant)
+    t = t_axis(0.9)
+    noise = rng.standard_normal(len(t))
+    click = bandpass(noise, 1800, 7000) * env(t, 0.0003, 0.004)
+    ring = sum(a * np.sin(2 * np.pi * f * (1 + 0.02 * variant) * t) * env(t, 0.0005, d)
+               for f, a, d in ((2350, 0.5, 0.018), (3620, 0.35, 0.012), (5100, 0.2, 0.008)))
+    knock = sum(a * np.sin(2 * np.pi * f * t) * env(t, 0.001, d)
+                for f, a, d in ((420 + 30 * variant, 0.8, 0.05), (870 + 40 * variant, 0.45, 0.035)))
+    thump = np.sin(2 * np.pi * 150 * t) * env(t, 0.001, 0.02) * 0.5
+    chime_f = (587.33, 698.46, 880.0)[variant % 3]  # D5, F5, A5
+    chime = (np.sin(2 * np.pi * chime_f * t) + 0.25 * np.sin(2 * np.pi * 2 * chime_f * t)) * env(t, 0.004, 0.22) * 0.12
+    mix = 0.9 * click + ring + knock + thump + chime
+    return finish(reverb(rng, mix, 0.5, 0.12), 0.62)
+
+
 if __name__ == "__main__":
+    for i in range(3):
+        write(f"stone_{i + 1}.wav", stone(i))
     write("impact_small.wav", impact_small())
     write("explosion_medium.wav", explosion_medium())
     write("explosion_big.wav", explosion_big())

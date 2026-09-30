@@ -253,7 +253,7 @@ public sealed class KataGoProcess : IEngineProcess
             if (!_process.HasExited)
             {
                 _process.StandardInput.Close();
-                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(1.5)); // KataGo may finish searches first
                 try
                 {
                     await _process.WaitForExitAsync(timeout.Token);

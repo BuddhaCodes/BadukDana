@@ -106,6 +106,9 @@
               <Button Content="Probar sonido" Command="{Binding TestSoundCommand}" />
             </StackPanel>
 
+            <CheckBox IsChecked="{Binding StoneSounds}" x:Name="StoneSoundsBox"
+                      Content="Sonido suave al colocar cada piedra (también al avanzar jugada a jugada)" />
+
             <TextBlock Classes="label" Text="Música adaptativa" Margin="0,14,0,0" />
             <CheckBox IsChecked="{Binding Music}" x:Name="MusicBox"
                       Content="Lo-fi tranquilo que se anima con rachas de buenas jugadas y se calma con el tiempo o con un error (tecla M)" />

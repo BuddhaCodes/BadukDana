@@ -3,7 +3,7 @@ using Hoshi.Engines.KataGo;
 namespace Hoshi.App.Services.Music;
 
 /// <summary>
-/// Decides how excited the music is. "Heat" (0–4) rises with every good move — more for better moves and for
+/// Decides how excited the music is. "Heat" (0–5) rises with every good move — more for better moves and for
 /// streaks of good moves in quick succession — drops on inaccuracies and mistakes, falls to zero on a blunder
 /// (with a tape-stop), and cools down by itself when nothing good happens for a while.
 /// Heat maps to layer gains (each layer fades in one heat step after the previous) and to a low-pass filter that
@@ -11,7 +11,7 @@ namespace Hoshi.App.Services.Music;
 /// </summary>
 public sealed class MusicDirector
 {
-    public const double MaxHeat = 4.2;
+    public const double MaxHeat = 5.3;
 
     /// <summary>Seconds without a good move before the music starts cooling down.</summary>
     public const double CoolDelay = 12;
@@ -46,8 +46,8 @@ public sealed class MusicDirector
             case MoveQuality.Best or MoveQuality.Excellent or MoveQuality.Good:
                 Streak = now - _lastGood <= StreakWindow ? Streak + 1 : 1;
                 _lastGood = now;
-                double gain = quality switch { MoveQuality.Best => 1.2, MoveQuality.Excellent => 0.9, _ => 0.6 };
-                _heat = Math.Min(MaxHeat, _heat + gain + Math.Min(0.6, 0.15 * (Streak - 1)));
+                double gain = quality switch { MoveQuality.Best => 1.3, MoveQuality.Excellent => 1.0, _ => 0.7 };
+                _heat = Math.Min(MaxHeat, _heat + gain + Math.Min(0.8, 0.2 * (Streak - 1)));
                 break;
             case MoveQuality.Inaccuracy:
                 Streak = 0;
@@ -75,10 +75,16 @@ public sealed class MusicDirector
     /// <summary>Target gain of each layer for a heat value (layer 0 always plays).</summary>
     public static double LayerGain(int layer, double heat) => layer == 0
         ? 1.0 - (0.15 * Math.Clamp(heat - 3, 0, 1))
-        : Math.Clamp(heat - ((layer - 1) * 0.9) - 0.3, 0, 1);
+        : Math.Clamp(heat - ((layer - 1) * LayerSpacing) - 0.3, 0, 1);
+
+    /// <summary>Heat between one layer coming in and the next.</summary>
+    public const double LayerSpacing = 0.85;
+
+    /// <summary>Depth (0–0.45) of the whole-beat "sidechain" pump on the melodic layers once the music is hot.</summary>
+    public static double PumpDepth(double heat) => 0.45 * Math.Clamp((heat - 3.2) / 1.8, 0, 1);
 
     /// <summary>Master low-pass cutoff in Hz: muffled and cosy when calm, fully open at full heat.</summary>
-    public static double Cutoff(double heat) => Math.Min(18000, 900 * Math.Pow(2, heat * 1.1));
+    public static double Cutoff(double heat) => Math.Min(18000, 900 * Math.Pow(2, heat * 1.15));
 
     private void Advance(double now)
     {

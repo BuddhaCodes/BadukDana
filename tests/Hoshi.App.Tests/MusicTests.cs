@@ -15,7 +15,7 @@ public sealed class MusicDirectorTests
         _director.OnVerdict(MoveQuality.Best, 10);
 
         _director.Streak.Should().Be(3);
-        _director.HeatAt(10).Should().BeApproximately(0.6 + (0.9 + 0.15) + (1.2 + 0.3), 1e-9);
+        _director.HeatAt(10).Should().BeApproximately(0.7 + (1.0 + 0.2) + (1.3 + 0.4), 1e-9);
 
         var spaced = new MusicDirector();
         spaced.OnVerdict(MoveQuality.Good, 0);
@@ -69,6 +69,8 @@ public sealed class MusicDirectorTests
         Enumerable.Range(1, 4).Select(l => MusicDirector.LayerGain(l, MusicDirector.MaxHeat)).Should().OnlyContain(g => g == 1);
         MusicDirector.Cutoff(0).Should().Be(900);
         MusicDirector.Cutoff(4).Should().BeGreaterThan(15000);
+        MusicDirector.PumpDepth(2).Should().Be(0);
+        MusicDirector.PumpDepth(MusicDirector.MaxHeat).Should().BeApproximately(0.45, 1e-9);
     }
 }
 
@@ -99,7 +101,7 @@ public sealed class LofiMusicTests
     [Fact]
     public void The_mixer_glides_layers_in_and_saves_a_demo_of_a_hot_streak()
     {
-        var mixer = new MusicMixer(Layers.Value) { Volume = 0.6 };
+        var mixer = new MusicMixer(Layers.Value, LofiComposer.RenderLevelUp()) { Volume = 0.6 };
         var director = new MusicDirector();
         director.TapeStop += (_, _) => mixer.StartTapeStop();
         const int rate = LofiComposer.SampleRate;
@@ -136,6 +138,7 @@ public sealed class LofiMusicTests
         }
 
         mixer.Gains.Skip(1).Should().OnlyContain(g => g < 0.2, "after the blunder the music is calm again");
+        mixer.LevelUps.Should().BeGreaterThanOrEqualTo(4, "each new layer arrives with a hit");
         pcm.Max(s => Math.Abs((int)s)).Should().BeLessThan(32767).And.BeGreaterThan(2000);
 
         string dir = Path.Combine(AppContext.BaseDirectory, "screenshots");

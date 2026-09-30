@@ -13,7 +13,7 @@ public interface IMusicService
     /// <summary>Why music cannot play here, or null.</summary>
     string? Problem { get; }
 
-    /// <summary>Current heat, 0–4 (for a small indicator).</summary>
+    /// <summary>Current heat, 0–5 (for a small indicator).</summary>
     double Heat { get; }
 
     void Start();
@@ -40,6 +40,7 @@ public sealed class MusicService : IMusicService, IDisposable
     private readonly MusicDirector _director = new();
     private readonly object _gate = new();
     private Task<float[][]>? _layers;
+    private Task<float[]>? _levelUp;
     private CancellationTokenSource? _cts;
     private Thread? _thread;
     private MusicMixer? _mixer;
@@ -79,6 +80,7 @@ public sealed class MusicService : IMusicService, IDisposable
             }
 
             _layers ??= Task.Run(() => LofiComposer.Render());
+            _levelUp ??= Task.Run(() => LofiComposer.RenderLevelUp());
             _cts = new CancellationTokenSource();
             CancellationToken token = _cts.Token;
             _thread = new Thread(() => Run(token)) { IsBackground = true, Name = "Hoshi music", Priority = ThreadPriority.AboveNormal };
@@ -138,7 +140,7 @@ public sealed class MusicService : IMusicService, IDisposable
             }
 
             Problem = null;
-            var mixer = new MusicMixer(layers) { Volume = _volume };
+            var mixer = new MusicMixer(layers, _levelUp!.GetAwaiter().GetResult()) { Volume = _volume };
             _mixer = mixer;
             var buffer = new short[FramesPerBuffer * 2];
             while (!token.IsCancellationRequested)
