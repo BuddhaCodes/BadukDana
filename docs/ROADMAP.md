@@ -54,5 +54,10 @@ Cada tarea termina con: compila sin warnings, tests en verde, y una captura (si 
 - [ ] Empaquetado: instalador Windows (MSIX/Velopack), `.app` macOS, AppImage Linux.
 - [ ] Localización es/en.
 
-## Fase 7 (opcional) — Motores
-- [ ] Cliente GTP (KataGo): jugar contra motor, análisis con winrate y mapa de calor sobre el tablero.
+## Fase 7 — Motores y análisis
+- [x] Estimación de territorio propia (`TerritoryEstimator`, sin motor): territorio seguro (regiones cerradas) y potencial (influencia), con estimación del resultado. Tecla T / botón «Territorio».
+- [x] Cliente del motor de análisis JSON de KataGo (`Hoshi.Engines`), configurable en Preferencias → Análisis.
+- [x] Análisis en segundo plano (tecla A / botón «Análisis»): valora la última jugada frente a la mejor de KataGo (mejor · excelente · buena · imprecisa · error · error grave, con puntos perdidos), winrate, ventaja, sugerencias sobre el tablero, gráfica de la partida (clic para navegar) y territorio con el mapa de propiedad de KataGo.
+- [x] Desactivado en partidas de OGS en curso (normas de OGS).
+- [ ] Marcar en el árbol las jugadas malas; exportar la revisión al SGF (comentarios).
+- [ ] Jugar contra el motor (GTP) en partidas locales.
