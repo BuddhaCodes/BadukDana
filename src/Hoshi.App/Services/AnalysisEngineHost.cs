@@ -121,7 +121,8 @@ public sealed class AnalysisEngineHost : IAnalysisEngine, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (_engine is { } e)
+        KataGoAnalysisEngine? e = Interlocked.Exchange(ref _engine, null);
+        if (e is not null)
         {
             await e.DisposeAsync();
         }

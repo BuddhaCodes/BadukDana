@@ -126,9 +126,13 @@ Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su compo
 
 ## Música adaptativa
 
-- Lo-fi tranquilo (Dm9 – G13 – Cmaj9 – Am9, 80 BPM, vinilo y cinta). Capas: 0 piano eléctrico (siempre), 1 bajo y bombo, 2 batería con swing, 3 arpegio pulsado con eco, 4 «hype» (acordes con bombeo, hi-hats a semicorcheas, palmas, melodía brillante).
-- Calor: buena +0,6, excelente +0,9, la mejor +1,2, más +0,15 por jugada de racha (≤ 25 s entre buenas, máx. +0,6). Imprecisa −1, error −2, error grave → 0 con tape-stop. Tras 12 s sin buenas jugadas se enfría 0,06/s.
-- Cada capa entra ~0,9 de calor después de la anterior; el filtro se abre de 900 Hz (apagado, acogedor) a ~18 kHz.
+- Lo-fi tranquilo (Dm9 – G13 – Cmaj9 – Am9, 80 BPM, vinilo y cinta). Capas: 0 piano eléctrico (siempre), 1 bajo y bombo, 2 batería con swing, 3 arpegio pulsado con eco, 4 «hype» (acordes con bombeo, hi-hats a semicorcheas, palmas, melodía brillante), 5 «overdrive» (bombo a negras, bajo rodante a semicorcheas, arpegio supersaw, redobles y platos). Cada capa nueva entra con un golpe («level up»: barrido inverso, boom y plato); con el calor alto las capas melódicas bombean con el bombo (sidechain).
+- Calor (0–5,3): buena +0,7, excelente +1,0, la mejor +1,3, más +0,2 por jugada de racha (≤ 25 s entre buenas, máx. +0,8). Imprecisa −1, error −2, error grave → 0 con tape-stop. Tras 12 s sin buenas jugadas se enfría 0,06/s.
+- Cada capa entra 0,85 de calor después de la anterior; el filtro se abre de 900 Hz (apagado, acogedor) a ~18 kHz.
+
+## Sonido de piedras
+
+- Cada piedra nueva (jugada, recibida de OGS o al avanzar una jugada) suena con un «pachi» suave: clic de pizarra sobre kaya, golpe de madera corto y una campanita tenue en re menor pentatónico (re, fa, la; tres variantes que rotan). En Windows va por `PlaySound` desde memoria, con poca latencia. Se desactiva en Preferencias → Análisis.
 
 ## Atajos de teclado (mínimo)
 

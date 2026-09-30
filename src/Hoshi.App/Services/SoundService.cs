@@ -18,6 +18,9 @@ public enum SoundEffect
 
     /// <summary>The engine's best move: a cinematic explosion.</summary>
     ExplosionBig,
+
+    /// <summary>Any stone placed: a soft "pachi" with a faint chime (three variants, rotated).</summary>
+    Stone,
 }
 
 public interface ISoundService
@@ -38,6 +41,10 @@ public sealed class SystemSoundService : ISoundService
     private readonly string _cacheDirectory;
     private readonly HashSet<string> _reported = [];
     private int _nextAlias;
+    private int _stoneVariant;
+
+    // Volume-scaled copies of the stone clicks, pinned because PlaySound reads them asynchronously.
+    private readonly Dictionary<(string File, int Volume), GCHandle> _pinned = [];
 
     public SystemSoundService(ILogger<SystemSoundService>? logger = null, string? dataDirectory = null)
     {
@@ -54,6 +61,7 @@ public sealed class SystemSoundService : ISoundService
     {
         SoundEffect.ImpactSmall => "impact_small",
         SoundEffect.ExplosionMedium => "explosion_medium",
+        SoundEffect.Stone => "stone",
         _ => "explosion_big",
     };
 
@@ -67,8 +75,14 @@ public sealed class SystemSoundService : ISoundService
 
         try
         {
-            string file = Resolve(effect);
-            if (OperatingSystem.IsWindows())
+            string file = effect == SoundEffect.Stone
+                ? ResolveName("stone", $"stone_{(Interlocked.Increment(ref _stoneVariant) % 3) + 1}")
+                : Resolve(effect);
+            if (OperatingSystem.IsWindows() && effect == SoundEffect.Stone && file.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
+            {
+                PlayQuickWindows(file, volume);
+            }
+            else if (OperatingSystem.IsWindows())
             {
                 PlayWindows(file, volume);
             }
@@ -88,12 +102,14 @@ public sealed class SystemSoundService : ISoundService
     }
 
     /// <summary>The user's replacement file if there is one, otherwise the built-in WAV (copied out of the assembly once).</summary>
-    internal string Resolve(SoundEffect effect)
+    internal string Resolve(SoundEffect effect) =>
+        effect == SoundEffect.Stone ? ResolveName("stone", "stone_1") : ResolveName(FileName(effect), FileName(effect));
+
+    internal string ResolveName(string customName, string name)
     {
-        string name = FileName(effect);
         foreach (string ext in (string[])[".wav", ".mp3"])
         {
-            string custom = Path.Combine(CustomDirectory, name + ext);
+            string custom = Path.Combine(CustomDirectory, customName + ext);
             if (File.Exists(custom))
             {
                 return custom;
@@ -115,6 +131,57 @@ public sealed class SystemSoundService : ISoundService
         }
 
         return cached;
+    }
+
+    /// <summary>
+    /// Low-latency path for the short, frequent stone click: PlaySound from memory (a few ms instead of MCI's file
+    /// open), with the volume baked into a cached copy of the samples. PlaySound plays one sound at a time, which
+    /// is right for clicks; the explosions use MCI and overlap freely.
+    /// </summary>
+    private void PlayQuickWindows(string file, double volume)
+    {
+        int level = (int)Math.Round(volume * 20); // 5 % steps keep the cache tiny
+        if (!_pinned.TryGetValue((file, level), out GCHandle handle))
+        {
+            byte[] wav = File.ReadAllBytes(file);
+            ScalePcm16(wav, level / 20.0);
+            handle = GCHandle.Alloc(wav, GCHandleType.Pinned);
+            _pinned[(file, level)] = handle;
+        }
+
+        const uint SndAsync = 0x0001;
+        const uint SndNoDefault = 0x0002;
+        const uint SndMemory = 0x0004;
+        if (!NativeMethods.PlaySoundW(handle.AddrOfPinnedObject(), IntPtr.Zero, SndAsync | SndNoDefault | SndMemory))
+        {
+            Report("playsound", "PlaySound failed for the stone sound");
+        }
+    }
+
+    /// <summary>Scales the 16-bit PCM samples of a canonical WAV file in place.</summary>
+    internal static void ScalePcm16(byte[] wav, double gain)
+    {
+        // Find the "data" chunk (our WAVs are canonical, but be tolerant of extra chunks).
+        int i = 12;
+        while (i + 8 <= wav.Length)
+        {
+            int size = BitConverter.ToInt32(wav, i + 4);
+            if (wav[i] == 'd' && wav[i + 1] == 'a' && wav[i + 2] == 't' && wav[i + 3] == 'a')
+            {
+                int end = Math.Min(wav.Length, i + 8 + size);
+                for (int p = i + 8; p + 1 < end; p += 2)
+                {
+                    int v = (int)Math.Round(BitConverter.ToInt16(wav, p) * gain);
+                    short c = (short)Math.Clamp(v, short.MinValue, short.MaxValue);
+                    wav[p] = (byte)(c & 0xFF);
+                    wav[p + 1] = (byte)((c >> 8) & 0xFF);
+                }
+
+                return;
+            }
+
+            i += 8 + size + (size & 1);
+        }
     }
 
     private void PlayWindows(string file, double volume)
@@ -179,6 +246,10 @@ public sealed class SystemSoundService : ISoundService
         [DllImport("winmm.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
 #pragma warning disable SYSLIB1054 // LibraryImport would need unsafe code for a single, rarely called function.
         internal static extern int mciSendStringW(string command, System.Text.StringBuilder? returnValue, int returnLength, IntPtr callback);
+
+        [DllImport("winmm.dll", ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool PlaySoundW(IntPtr sound, IntPtr module, uint flags);
 #pragma warning restore SYSLIB1054
     }
 }

@@ -237,4 +237,50 @@ public sealed class MoveEffectsTests
         service.Resolve(SoundEffect.ImpactSmall).Should().EndWith("impact_small.wav");
         Directory.Delete(root, recursive: true);
     }
+
+    [AvaloniaFact]
+    public void A_stone_sound_plays_for_each_new_stone_but_not_for_jumps_or_edits()
+    {
+        var game = new GameViewModel();
+        var placed = new List<Stone>();
+        game.StonePlaced += (_, color) => placed.Add(color);
+
+        game.PlayCommand.Execute(new Point(3, 3));
+        game.PlayCommand.Execute(new Point(15, 15));
+        placed.Should().Equal(Stone.Black, Stone.White);
+
+        game.PassCommand.Execute(null);
+        game.GoFirstCommand.Execute(null);
+        game.GoForwardCommand.Execute(null);
+        placed.Should().HaveCount(3, "stepping forward places a stone; a pass and jumping back do not");
+
+        game.GoLastCommand.Execute(null);
+        game.Comment = "nice";
+        placed.Should().HaveCount(3);
+    }
+
+    [AvaloniaFact]
+    public void The_stone_click_is_built_in_and_its_volume_is_baked_into_the_samples()
+    {
+        string root = Directory.CreateTempSubdirectory("hoshi-stone").FullName;
+        var service = new SystemSoundService(dataDirectory: root);
+        service.Resolve(SoundEffect.Stone).Should().EndWith("stone_1.wav");
+        byte[] wav = File.ReadAllBytes(service.ResolveName("stone", "stone_2"));
+        short loudest = Loudest(wav);
+        loudest.Should().BeGreaterThan(10000);
+        SystemSoundService.ScalePcm16(wav, 0.5);
+        Loudest(wav).Should().BeCloseTo((short)(loudest / 2), 2);
+        Directory.Delete(root, recursive: true);
+
+        static short Loudest(byte[] w)
+        {
+            short max = 0;
+            for (int i = 44; i + 1 < w.Length; i += 2)
+            {
+                max = Math.Max(max, Math.Abs(BitConverter.ToInt16(w, i)));
+            }
+
+            return max;
+        }
+    }
 }

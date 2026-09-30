@@ -49,6 +49,9 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     private int _soundVolume = 70;
 
     [ObservableProperty]
+    private bool _stoneSounds = true;
+
+    [ObservableProperty]
     private bool _music = true;
 
     [ObservableProperty]
@@ -103,6 +106,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             _moveEffects = s.MoveEffects;
             _soundVolume = s.SoundVolume;
             _music = s.Music;
+            _stoneSounds = s.StoneSounds;
             _musicVolume = s.MusicVolume;
         }
 
@@ -120,6 +124,8 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     partial void OnMoveEffectsChanged(bool value) => SaveEffects();
 
     partial void OnSoundVolumeChanged(int value) => SaveEffects();
+
+    partial void OnStoneSoundsChanged(bool value) => SaveEffects();
 
     /// <summary>Why the music cannot play on this system, if so.</summary>
     public string? MusicProblem => _musicService?.Problem;
@@ -154,6 +160,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
                 MoveEffects = MoveEffects,
                 SoundVolume = Math.Clamp(SoundVolume, 0, 100),
                 Music = Music,
+                StoneSounds = StoneSounds,
                 MusicVolume = Math.Clamp(MusicVolume, 0, 100),
             });
         }

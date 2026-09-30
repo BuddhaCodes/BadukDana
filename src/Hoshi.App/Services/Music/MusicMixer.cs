@@ -23,9 +23,14 @@ public sealed class MusicMixer
     private double _r1;
     private double _r2;
     private double _tapeStop = -1; // seconds into the tape-stop, or -1
+    private readonly float[]? _levelUp;
+    private int _levelUpAt = -1;
+    private double _pump;
+    private double _targetPump;
 
-    public MusicMixer(float[][] layers)
+    public MusicMixer(float[][] layers, float[]? levelUp = null)
     {
+        _levelUp = levelUp;
         _layers = layers ?? throw new ArgumentNullException(nameof(layers));
         _frames = layers[0].Length / 2;
         _gains = new double[layers.Length];
@@ -38,12 +43,25 @@ public sealed class MusicMixer
 
     public IReadOnlyList<double> Gains => _gains;
 
+    /// <summary>How many times a new layer has come in (the level-up hit plays each time).</summary>
+    public int LevelUps { get; private set; }
+
     public void SetHeat(double heat)
     {
         for (int i = 0; i < _targets.Length; i++)
         {
-            _targets[i] = MusicDirector.LayerGain(i, heat);
+            double target = MusicDirector.LayerGain(i, heat);
+            if (i >= 2 && _targets[i] < 0.5 && target >= 0.5)
+            {
+                // A new layer arrives: mark it with a hit.
+                LevelUps++;
+                _levelUpAt = _levelUp is null ? -1 : 0;
+            }
+
+            _targets[i] = target;
         }
+
+        _targetPump = MusicDirector.PumpDepth(heat);
 
         _targetCutoff = MusicDirector.Cutoff(heat);
     }
@@ -67,6 +85,11 @@ public sealed class MusicMixer
             }
 
             _cutoff += (_targetCutoff - _cutoff) * cutoffGlide;
+            _pump += (_targetPump - _pump) * cutoffGlide;
+
+            // Sidechain pump on keys, arpeggio and stabs, following the kick on every beat.
+            double beatPhase = (_position % (LofiComposer.SampleRate * 60.0 / LofiComposer.Bpm)) / LofiComposer.SampleRate;
+            double pumpGain = 1 - (_pump * Math.Min(1, beatPhase / 0.008) * Math.Exp(-beatPhase / 0.11));
 
             double rate = 1;
             double duck = 1;
@@ -96,9 +119,24 @@ public sealed class MusicMixer
                     continue;
                 }
 
+                if (layer is 0 or 3 or 4)
+                {
+                    g *= pumpGain;
+                }
+
                 float[] x = _layers[layer];
                 left += g * ((x[2 * i0] * (1 - u)) + (x[2 * i1] * u));
                 right += g * ((x[(2 * i0) + 1] * (1 - u)) + (x[(2 * i1) + 1] * u));
+            }
+
+            if (_levelUpAt >= 0 && _levelUp is { } hit)
+            {
+                left += hit[2 * _levelUpAt] * 0.8;
+                right += hit[(2 * _levelUpAt) + 1] * 0.8;
+                if (++_levelUpAt * 2 >= hit.Length)
+                {
+                    _levelUpAt = -1;
+                }
             }
 
             // Two cascaded one-pole low-passes (12 dB/oct).

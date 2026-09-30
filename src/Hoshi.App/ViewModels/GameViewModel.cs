@@ -229,6 +229,7 @@ public sealed partial class GameViewModel : ViewModelBase
 
         _cursor = new GameCursor(tree);
         _cursor.Changed += OnCursorChanged;
+        _shownNode = _cursor.Current;
         FilePath = path;
         IsDirty = false;
         _statusOverride = null;
@@ -648,8 +649,22 @@ public sealed partial class GameViewModel : ViewModelBase
     private void OnCursorChanged(object? sender, EventArgs e)
     {
         _statusOverride = null;
+        GameNode now = _cursor.Current;
+        GameNode? before = _shownNode;
+        _shownNode = now;
         Refresh();
+
+        // One stone more on the board: played here, received from OGS, or one step forward through the game.
+        if (now != before && now.Parent == before && now.GetMove(_cursor.BoardSize) is { IsPass: false, Point: { } p } move)
+        {
+            StonePlaced?.Invoke(this, move.Color);
+        }
     }
+
+    private GameNode? _shownNode;
+
+    /// <summary>A stone appeared one move after the previous position (for the placement sound).</summary>
+    public event EventHandler<Stone>? StonePlaced;
 
     private void SetStatus(string text)
     {
