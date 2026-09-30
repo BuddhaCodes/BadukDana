@@ -59,5 +59,7 @@ Cada tarea termina con: compila sin warnings, tests en verde, y una captura (si 
 - [x] Cliente del motor de análisis JSON de KataGo (`Hoshi.Engines`), configurable en Preferencias → Análisis.
 - [x] Análisis en segundo plano (tecla A / botón «Análisis»): valora la última jugada frente a la mejor de KataGo (mejor · excelente · buena · imprecisa · error · error grave, con puntos perdidos), winrate, ventaja, sugerencias sobre el tablero, gráfica de la partida (clic para navegar) y territorio con el mapa de propiedad de KataGo.
 - [x] Desactivado en partidas de OGS en curso (normas de OGS).
+- [x] Celebración de jugadas fuertes (2026-09-30): cuando KataGo valora como buena/excelente/la mejor una jugada que acabas de hacer, sonido de explosión cinemática (sintetizado por Hoshi, `tools/gen_sounds.py`) e impacto en el tablero (destello, ondas expansivas, chispas, temblor y, para la mejor, grietas incandescentes). Configurable en Preferencias → Análisis (activar, volumen, sonidos propios).
+- [x] Progreso de arranque de KataGo (carga de la red, calibración OpenCL) en el panel y en «Probar KataGo»; motivo del cierre (código de salida y última línea de error) y rechazo de configuraciones GTP.
 - [ ] Marcar en el árbol las jugadas malas; exportar la revisión al SGF (comentarios).
 - [ ] Jugar contra el motor (GTP) en partidas locales.

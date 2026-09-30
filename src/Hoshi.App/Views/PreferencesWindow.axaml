@@ -95,6 +95,18 @@
             <TextBlock Text="{Binding EngineStatus}" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" x:Name="EngineStatus" />
             <TextBlock Classes="secondary" TextWrapping="Wrap"
                        Text="Más visitas = análisis más fuerte pero más lento. En partidas de OGS en curso el análisis y el territorio se desactivan: sus normas no permiten ayuda de IA mientras juegas." />
+
+            <TextBlock Classes="label" Text="Celebrar las jugadas fuertes" Margin="0,14,0,0" />
+            <CheckBox IsChecked="{Binding MoveEffects}" x:Name="MoveEffectsBox"
+                      Content="Sonido e impacto en el tablero cuando KataGo juzga tu jugada como buena, excelente o la mejor" />
+            <StackPanel Orientation="Horizontal" Spacing="10" IsEnabled="{Binding MoveEffects}">
+              <TextBlock Text="Volumen" VerticalAlignment="Center" />
+              <Slider Minimum="0" Maximum="100" Value="{Binding SoundVolume}" Width="220" x:Name="VolumeSlider" />
+              <TextBlock Text="{Binding SoundVolume, StringFormat={}{0} %}" VerticalAlignment="Center" MinWidth="44" />
+              <Button Content="Probar sonido" Command="{Binding TestSoundCommand}" />
+            </StackPanel>
+            <TextBlock Classes="secondary" TextWrapping="Wrap"
+                       Text="{Binding CustomSoundFolder, StringFormat='Buena: golpe seco · Excelente: explosión con onda expansiva y temblor · La mejor: explosión cinemática, grietas incandescentes y temblor fuerte. Los sonidos son de Hoshi; para usar los tuyos, pon impact_small, explosion_medium o explosion_big (.wav o .mp3) en {0}. El impacto visual necesita las animaciones activadas (Apariencia).'}" />
           </StackPanel>
         </ScrollViewer>
       </TabItem>

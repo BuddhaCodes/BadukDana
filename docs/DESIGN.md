@@ -118,6 +118,11 @@ Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su compo
 - **Territorio (T):** cuadraditos del color del dueño probable; su tamaño y opacidad crecen con la seguridad. Territorio seguro y piedras muertas: cuadrado grande opaco. Resumen en la barra lateral: seguro (+potencial) de cada color y ventaja estimada, indicando si viene de la estimación rápida o de KataGo.
 - **Análisis (A):** panel en la barra lateral con winrate (barra negro/blanco), ventaja, valoración de la última jugada en color (verde = mejor/excelente, verde oliva = buena, ámbar = imprecisa, rojo = error), la mejor alternativa y la gráfica de ventaja por jugada (arriba = negras; clic para ir). Sobre el tablero, hasta 3 sugerencias como discos azules con el % de victoria de quien juega y el cambio de puntos; la mejor con borde blanco.
 - Botones de la barra con subrayado de acento cuando están activos.
+- **Celebración de jugadas fuertes** (solo con análisis activo, al jugar; no al navegar). Llega cuando KataGo termina de valorar la jugada:
+  - *Buena* (fuerza 1): golpe seco (`impact_small`) y una onda pequeña.
+  - *Excelente* (2): explosión (`explosion_medium`), destello, onda expansiva, chispas, temblor suave y grietas cortas.
+  - *La mejor* (3): explosión cinemática (`explosion_big`: caída de subgraves, «braam» grave, cola de escombros y reverberación), destello grande, dos ondas, ~56 chispas con estela, temblor fuerte y grietas incandescentes que se enfrían a grietas oscuras con una marca chamuscada y se desvanecen en ~2,6 s.
+  - Las grietas se dibujan bajo las piedras y recortadas al tablero; el resto encima. Todo determinista a partir de una semilla (`ImpactEffect`). Sin animaciones (Apariencia) solo suena.
 
 ## Atajos de teclado (mínimo)
 

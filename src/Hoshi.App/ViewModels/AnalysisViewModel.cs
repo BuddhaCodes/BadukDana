@@ -13,6 +13,9 @@ namespace Hoshi.App.ViewModels;
 /// <summary>A move suggestion drawn on the board.</summary>
 public sealed record BoardSuggestion(Point Point, string Label, string Detail, bool IsBest, double Strength);
 
+/// <summary>A strong move to celebrate on the board: strength 3 = the engine's best, 2 = excellent, 1 = good.</summary>
+public sealed record BoardImpact(Point Point, int Strength, int Id);
+
 /// <summary>
 /// The "AI in the background": while analysis is on, every change of the shown position asks the engine for the
 /// position and the one before it, to judge the last move (<see cref="MoveReview"/>), show the best continuations and
@@ -28,6 +31,10 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     private readonly IAnalysisEngine? _engine;
     private readonly IUiDispatcher _ui;
     private readonly Dictionary<string, TurnAnalysis> _cache = [];
+    private readonly ISoundService? _sounds;
+    private readonly ISettingsService? _settings;
+    private GameNode? _awaitingJudgement;
+    private int _impacts;
     private CancellationTokenSource? _current;
     private CancellationTokenSource? _graphCts;
 
@@ -44,6 +51,9 @@ public sealed partial class AnalysisViewModel : ViewModelBase
 
     [ObservableProperty]
     private MoveAssessment? _assessment;
+
+    [ObservableProperty]
+    private BoardImpact? _impact;
 
     [ObservableProperty]
     private TerritoryEstimate? _territory;
@@ -65,12 +75,20 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(StatusText))]
     private string? _error;
 
-    public AnalysisViewModel(GameViewModel game, IAnalysisEngine? engine = null, IUiDispatcher? ui = null)
+    public AnalysisViewModel(
+        GameViewModel game,
+        IAnalysisEngine? engine = null,
+        IUiDispatcher? ui = null,
+        ISoundService? sounds = null,
+        ISettingsService? settings = null)
     {
         _game = game ?? throw new ArgumentNullException(nameof(game));
         _engine = engine;
         _ui = ui ?? new AvaloniaUiDispatcher();
+        _sounds = sounds;
+        _settings = settings;
         _game.PropertyChanged += OnGamePropertyChanged;
+        _game.MovePlayed += OnMovePlayed;
         if (_engine is not null)
         {
             _engine.Changed += (_, _) => _ui.Post(() =>
@@ -243,6 +261,11 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         // TreeVersion changes once per navigation or edit (after CurrentNode, Board…).
         if (e.PropertyName is nameof(GameViewModel.TreeVersion))
         {
+            if (_awaitingJudgement is not null && _awaitingJudgement != _game.CurrentNode)
+            {
+                _awaitingJudgement = null; // navigated away before the engine answered
+            }
+
             Refresh();
         }
         else if (e.PropertyName is nameof(GameViewModel.Online) or nameof(GameViewModel.IsOnline))
@@ -353,6 +376,47 @@ public sealed partial class AnalysisViewModel : ViewModelBase
             : null;
         Suggestions = now is null ? [] : [.. now.Candidates.Where(c => c.Point is not null).Take(3).Select((c, i) => Suggest(c, i, now))];
         UpdateGraph(pos);
+        if (Assessment is { } judged && _awaitingJudgement is { } node && node == _game.CurrentNode)
+        {
+            _awaitingJudgement = null;
+            Celebrate(judged);
+        }
+    }
+
+    private void OnMovePlayed(object? sender, GameNode node)
+    {
+        _awaitingJudgement = IsAnalysisActive ? node : null;
+        if (_awaitingJudgement is not null && Assessment is { } known)
+        {
+            // A line already analysed (e.g. replaying a variation): the verdict is known right away.
+            _awaitingJudgement = null;
+            Celebrate(known);
+        }
+    }
+
+    /// <summary>Effect strength for a move quality: only good moves are celebrated.</summary>
+    public static int ImpactStrength(MoveQuality quality) => quality switch
+    {
+        MoveQuality.Best => 3,
+        MoveQuality.Excellent => 2,
+        MoveQuality.Good => 1,
+        _ => 0,
+    };
+
+    /// <summary>Sound and board impact for a move the user just played, once the engine has judged it.</summary>
+    private void Celebrate(MoveAssessment judged)
+    {
+        AppSettings settings = _settings?.Current ?? new AppSettings();
+        int strength = ImpactStrength(judged.Quality);
+        if (!settings.MoveEffects || strength == 0 || judged.Played.Point is not { } point || !IsAnalysisActive)
+        {
+            return;
+        }
+
+        Impact = new BoardImpact(point, strength, ++_impacts);
+        _sounds?.Play(
+            strength switch { 3 => SoundEffect.ExplosionBig, 2 => SoundEffect.ExplosionMedium, _ => SoundEffect.ImpactSmall },
+            settings.SoundVolume / 100.0);
     }
 
     private void UpdateGraph(Position pos)
