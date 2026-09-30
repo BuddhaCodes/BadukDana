@@ -44,6 +44,9 @@ public static class AppHost
         services.AddSingleton<IDialogService, AvaloniaDialogService>();
         services.AddSingleton<ISettingsService, JsonSettingsService>();
         services.AddSingleton<Themes.ThemeService>();
+        services.AddSingleton<AnalysisEngineHost>();
+        services.AddSingleton<IAnalysisEngine>(sp => sp.GetRequiredService<AnalysisEngineHost>());
+        services.AddSingleton<IFilePickerService, AvaloniaFilePickerService>();
         services.AddSingleton<PreferencesViewModel>();
         services.AddSingleton<IPreferencesWindowService, PreferencesWindowService>();
         services.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
