@@ -106,6 +106,12 @@
                     IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Pass}" Size="17" /><TextBlock Text="Pasar" VerticalAlignment="Center" /></StackPanel></Button>
             <Button Classes="bar" Command="{Binding Game.UndoCommand}" ToolTip.Tip="Deshacer (Ctrl+Z)" x:Name="UndoButton"
                     IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Undo}" Size="17" /><TextBlock Text="Deshacer" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="bar toggle" Classes.on="{Binding Analysis.IsTerritoryOn}" Command="{Binding Analysis.ToggleTerritoryCommand}"
+                    ToolTip.Tip="Territorio actual y potencial (T)" x:Name="TerritoryButton"
+                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Territory}" Size="17" /><TextBlock Text="Territorio" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="bar toggle" Classes.on="{Binding Analysis.IsAnalysisOn}" Command="{Binding Analysis.ToggleAnalysisCommand}"
+                    ToolTip.Tip="Análisis con IA (KataGo) en segundo plano (A)" x:Name="AnalysisButton"
+                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Analysis}" Size="17" /><TextBlock Text="Análisis" VerticalAlignment="Center" /></StackPanel></Button>
             <Button Classes="bar" Command="{Binding OpenLobbyCommand}" ToolTip.Tip="Jugar en OGS (Ctrl+L)" x:Name="OnlineButton"
                     IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Online}" Size="17" /><TextBlock Text="En línea" VerticalAlignment="Center" /></StackPanel></Button>
             <Button Classes="bar" Command="{Binding Game.ToggleEditModeCommand}" IsVisible="{Binding Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Check}" Size="17" /><TextBlock Text="Terminar edición" VerticalAlignment="Center" /></StackPanel></Button>
@@ -147,11 +153,15 @@
         <c:ThemeBackground x:Name="Backdrop" Kind="{DynamicResource Theme.Background}" Animate="{DynamicResource Theme.Animations}" />
         <Panel.KeyBindings>
           <KeyBinding Gesture="P" Command="{Binding Game.PassKeyCommand}" />
+          <KeyBinding Gesture="T" Command="{Binding Analysis.ToggleTerritoryCommand}" />
+          <KeyBinding Gesture="A" Command="{Binding Analysis.ToggleAnalysisCommand}" />
         </Panel.KeyBindings>
         <c:GoBoardControl x:Name="Board"
                           Margin="24"
                           Board="{Binding Game.Board}"
                           BoardStyle="{DynamicResource Theme.Board}"
+                          Territory="{Binding Analysis.Territory}"
+                          Suggestions="{Binding Analysis.Suggestions}"
                           Animate="{DynamicResource Theme.Animations}"
                           LastMove="{Binding Game.LastMove}"
                           Markers="{Binding Game.Markers}"
@@ -166,7 +176,7 @@
 
     <!-- Sidebar: players, variation tree, comment. Width 220–420 (DESIGN.md). -->
       <Grid Grid.Column="2" x:Name="Sidebar" MinWidth="220" MaxWidth="420"
-            Background="{DynamicResource Bg.Sidebar}" RowDefinitions="Auto,*,Auto,Auto,200">
+            Background="{DynamicResource Bg.Sidebar}" RowDefinitions="Auto,Auto,*,Auto,Auto,200">
         <Border Grid.Row="0" Classes="game-header" IsVisible="{Binding IsLocal}" x:Name="GameHeader">
           <StackPanel Spacing="3">
             <TextBlock Text="{Binding Game.HeaderTitle}" FontFamily="{DynamicResource Font.Title}" FontSize="{DynamicResource Font.Size.Title}"
@@ -211,7 +221,44 @@
           </Panel>
         </Border>
 
-        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" x:Name="TreeScroll">
+        <!-- Analysis: territory summary, engine evaluation of the last move, score graph. -->
+        <Border Grid.Row="1" Classes="analysis" x:Name="AnalysisPanel"
+                IsVisible="{Binding Analysis.IsAnalysisOn}">
+          <StackPanel Spacing="6">
+            <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding Analysis.Analysis, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <TextBlock Text="{Binding Analysis.WinrateText}" FontWeight="SemiBold" x:Name="WinrateText" />
+              <TextBlock Grid.Column="1" Classes="secondary" Text="{Binding Analysis.LeadText}" VerticalAlignment="Center" x:Name="LeadText" />
+            </Grid>
+            <ProgressBar Classes="winrate" Minimum="0" Maximum="1" Value="{Binding Analysis.BlackWinrate}"
+                         IsVisible="{Binding Analysis.Analysis, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            <TextBlock Classes="assessment" Classes.good="{Binding Analysis.AssessmentClass, Converter={x:Static c:StringEqualsConverter.Instance}, ConverterParameter=good}"
+                       Classes.ok="{Binding Analysis.AssessmentClass, Converter={x:Static c:StringEqualsConverter.Instance}, ConverterParameter=ok}"
+                       Classes.warn="{Binding Analysis.AssessmentClass, Converter={x:Static c:StringEqualsConverter.Instance}, ConverterParameter=warn}"
+                       Classes.bad="{Binding Analysis.AssessmentClass, Converter={x:Static c:StringEqualsConverter.Instance}, ConverterParameter=bad}"
+                       Text="{Binding Analysis.AssessmentText}" TextWrapping="Wrap" x:Name="AssessmentText"
+                       IsVisible="{Binding Analysis.AssessmentText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <TextBlock Classes="secondary" Text="{Binding Analysis.BestText}" TextWrapping="Wrap"
+                       IsVisible="{Binding Analysis.BestText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <c:ScoreGraph Height="64" Values="{Binding Analysis.Graph}" CurrentIndex="{Binding Analysis.GraphIndex}"
+                          LineBrush="{DynamicResource Text.Primary}" Accent="{DynamicResource Accent}"
+                          MoveClickedCommand="{Binding Analysis.GoToMoveCommand}" x:Name="ScoreGraph"
+                          ToolTip.Tip="Ventaja estimada de negras por jugada (arriba = negras). Clic para ir a esa jugada." />
+            <TextBlock Classes="secondary" Text="{Binding Analysis.StatusText}" TextWrapping="Wrap" Foreground="{DynamicResource Accent}"
+                       IsVisible="{Binding Analysis.StatusText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" x:Name="AnalysisStatus" />
+            <TextBlock Classes="secondary" Text="{Binding Analysis.TerritoryText}" TextWrapping="Wrap" x:Name="TerritoryText"
+                       IsVisible="{Binding Analysis.TerritoryText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Row="1" Classes="analysis" IsVisible="{Binding !Analysis.IsAnalysisOn}">
+          <StackPanel IsVisible="{Binding Analysis.IsTerritoryOn}" Spacing="4">
+            <TextBlock Classes="secondary" Text="{Binding Analysis.TerritoryText}" TextWrapping="Wrap"
+                       IsVisible="{Binding Analysis.TerritoryText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <TextBlock Classes="secondary" Text="{Binding Analysis.StatusText}" TextWrapping="Wrap" Foreground="{DynamicResource Accent}"
+                       IsVisible="{Binding Analysis.StatusText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" x:Name="TreeScroll">
           <c:GameTreeControl x:Name="GameTree"
                              Root="{Binding Game.Tree.Root}"
                              Current="{Binding Game.CurrentNode}"
@@ -221,20 +268,20 @@
                              HorizontalAlignment="Left" VerticalAlignment="Top" />
         </ScrollViewer>
 
-        <GridSplitter Grid.Row="2" Height="3" Background="{DynamicResource Border.Subtle}" ResizeDirection="Rows" />
+        <GridSplitter Grid.Row="3" Height="3" Background="{DynamicResource Border.Subtle}" ResizeDirection="Rows" />
 
-        <Border Grid.Row="3" Classes="properties-header">
+        <Border Grid.Row="4" Classes="properties-header">
           <Grid ColumnDefinitions="*,Auto">
             <TextBlock Classes="secondary" Text="{Binding Game.StatusText}" TextTrimming="CharacterEllipsis" x:Name="StatusText" />
             <TextBlock Grid.Column="1" Classes="secondary" Text="{Binding Game.MoveNumberText}" Margin="8,0,0,0" x:Name="MoveNumber" />
           </Grid>
         </Border>
 
-        <TextBox Grid.Row="4" x:Name="CommentBox" Classes="comment" IsVisible="{Binding IsLocal}"
+        <TextBox Grid.Row="5" x:Name="CommentBox" Classes="comment" IsVisible="{Binding IsLocal}"
                  AcceptsReturn="True" TextWrapping="Wrap" Watermark="Comentario"
                  Text="{Binding Game.Comment}" />
 
-        <DockPanel Grid.Row="4" x:Name="ChatPanel" Classes="appear" Background="{DynamicResource Bg.Properties}" IsVisible="{Binding IsOnline}">
+        <DockPanel Grid.Row="5" x:Name="ChatPanel" Classes="appear" Background="{DynamicResource Bg.Properties}" IsVisible="{Binding IsOnline}">
           <TextBox DockPanel.Dock="Bottom" Classes="comment" Watermark="Escribe al rival (Enter)" Text="{Binding Online.ChatInput}" x:Name="ChatInput">
             <TextBox.KeyBindings>
               <KeyBinding Gesture="Enter" Command="{Binding Online.SendChatCommand}" />

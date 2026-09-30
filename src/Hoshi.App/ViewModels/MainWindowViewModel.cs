@@ -32,9 +32,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IUiDispatcher? ui = null,
         IDialogService? dialogs = null,
         ILogger<MainWindowViewModel>? logger = null,
-        IPreferencesWindowService? preferences = null)
+        IPreferencesWindowService? preferences = null,
+        IAnalysisEngine? engine = null)
     {
         _preferences = preferences;
+        Analysis = new AnalysisViewModel(game, engine, ui);
         Game = game;
         _lobbyWindow = lobbyWindow;
         _ogs = ogs;
@@ -48,6 +50,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     }
 
     public GameViewModel Game { get; }
+
+    /// <summary>Territory estimate and the background engine review.</summary>
+    public AnalysisViewModel Analysis { get; }
 
     /// <summary>False in design/test contexts without OGS services.</summary>
     public bool IsOnlineAvailable => _lobbyWindow is not null;
