@@ -27,3 +27,15 @@ public sealed class BoolToFontWeightConverter : IValueConverter
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         Avalonia.Data.BindingOperations.DoNothing;
 }
+
+/// <summary>True when the bound string equals the converter parameter (for style classes).</summary>
+public sealed class StringEqualsConverter : IValueConverter
+{
+    public static StringEqualsConverter Instance { get; } = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is string s && parameter is string p && s == p;
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        Avalonia.Data.BindingOperations.DoNothing;
+}

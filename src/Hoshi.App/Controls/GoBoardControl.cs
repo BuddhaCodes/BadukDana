@@ -68,6 +68,14 @@ public sealed class GoBoardControl : Control
     public static readonly StyledProperty<bool> AnimateProperty =
         AvaloniaProperty.Register<GoBoardControl, bool>(nameof(Animate));
 
+    /// <summary>Territory overlay (current and potential ownership); null hides it.</summary>
+    public static readonly StyledProperty<TerritoryEstimate?> TerritoryProperty =
+        AvaloniaProperty.Register<GoBoardControl, TerritoryEstimate?>(nameof(Territory));
+
+    /// <summary>Engine suggestions drawn as labelled discs on empty points.</summary>
+    public static readonly StyledProperty<IReadOnlyList<ViewModels.BoardSuggestion>?> SuggestionsProperty =
+        AvaloniaProperty.Register<GoBoardControl, IReadOnlyList<ViewModels.BoardSuggestion>?>(nameof(Suggestions));
+
     /// <summary>Duration of the stone settling and of the theme's ring effect.</summary>
     public static readonly TimeSpan SettleDuration = TimeSpan.FromMilliseconds(200);
     public static readonly TimeSpan EffectDuration = TimeSpan.FromMilliseconds(650);
@@ -107,7 +115,7 @@ public sealed class GoBoardControl : Control
     {
         AffectsRender<GoBoardControl>(
             BoardProperty, LastMoveProperty, MarkersProperty, ShowCoordinatesProperty,
-            HoverPointProperty, GhostStoneProperty, IsInteractiveProperty, BoardStyleProperty);
+            HoverPointProperty, GhostStoneProperty, IsInteractiveProperty, BoardStyleProperty, TerritoryProperty, SuggestionsProperty);
         FocusableProperty.OverrideDefaultValue<GoBoardControl>(true);
         // Not clipped: the board's drop shadow falls on the tatami around it.
         ClipToBoundsProperty.OverrideDefaultValue<GoBoardControl>(false);
@@ -125,6 +133,18 @@ public sealed class GoBoardControl : Control
     {
         get => GetValue(BoardStyleProperty);
         set => SetValue(BoardStyleProperty, value);
+    }
+
+    public TerritoryEstimate? Territory
+    {
+        get => GetValue(TerritoryProperty);
+        set => SetValue(TerritoryProperty, value);
+    }
+
+    public IReadOnlyList<ViewModels.BoardSuggestion>? Suggestions
+    {
+        get => GetValue(SuggestionsProperty);
+        set => SetValue(SuggestionsProperty, value);
     }
 
     public bool Animate
@@ -207,8 +227,11 @@ public sealed class GoBoardControl : Control
             DrawCoordinates(context, g, style.ShudanTexture ? CoordinateBrush : new ImmutableSolidColorBrush(style.Coordinates));
         }
 
+        DrawInfluence(context, g, board);
         DrawStones(context, g, board, style);
+        DrawTerritoryMarks(context, g, board);
         DrawEffect(context, g, board, style);
+        DrawSuggestions(context, g, board);
         DrawLastMove(context, g, board, style);
         DrawMarkers(context, g, board, lines, style);
         DrawGhost(context, g, board);
@@ -415,6 +438,99 @@ public sealed class GoBoardControl : Control
             {
                 DrawStone(context, StoneCenter(g, p), r * (p == _animPoint ? lift : 1), s, style.ShudanTexture ? StoneStyle.Shudan : style.Stones, p);
             }
+        }
+    }
+
+    /// <summary>
+    /// Potential territory: small squares of the likely owner's colour whose size and opacity grow with the
+    /// estimate's confidence (a "score estimator" look that stays readable on any wood).
+    /// </summary>
+    private void DrawInfluence(DrawingContext context, BoardGeometry g, BoardState board)
+    {
+        if (Territory is not { } t || t.Width != board.Width || t.Height != board.Height)
+        {
+            return;
+        }
+
+        var whiteEdge = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromArgb(0x50, 0, 0, 0)), Math.Max(0.5, g.Cell * 0.015));
+        foreach (Point p in board.AllPoints)
+        {
+            double o = t.OwnershipAt(p);
+            double k = Math.Min(1, Math.Abs(o) / TerritoryEstimate.SecureThreshold);
+            if (board[p] != Stone.Empty || k < 0.2 || t.SecureOwner(p) != Stone.Empty)
+            {
+                continue;
+            }
+
+            double h = g.Cell * (0.05 + (0.12 * k));
+            AvPoint c = g.Center(p);
+            var rect = new Rect(c.X - h, c.Y - h, 2 * h, 2 * h);
+            if (o > 0)
+            {
+                context.DrawRectangle(new ImmutableSolidColorBrush(Color.FromArgb((byte)(90 + (110 * k)), 0x14, 0x14, 0x18)), null, rect);
+            }
+            else
+            {
+                context.DrawRectangle(new ImmutableSolidColorBrush(Color.FromArgb((byte)(120 + (110 * k)), 0xFA, 0xFA, 0xF8)), whiteEdge, rect);
+            }
+        }
+    }
+
+    /// <summary>Secure territory (and dead stones): a small square of the owner's colour, as in scoring.</summary>
+    private void DrawTerritoryMarks(DrawingContext context, BoardGeometry g, BoardState board)
+    {
+        if (Territory is not { } t || t.Width != board.Width || t.Height != board.Height)
+        {
+            return;
+        }
+
+        double h = g.Cell * 0.2;
+        var blackFill = new ImmutableSolidColorBrush(Color.FromArgb(0xE6, 0x12, 0x12, 0x14));
+        var whiteFill = new ImmutableSolidColorBrush(Color.FromArgb(0xF2, 0xFA, 0xFA, 0xF8));
+        var whiteEdge = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromArgb(0x90, 0, 0, 0)), Math.Max(0.6, g.Cell * 0.02));
+        foreach (Point p in board.AllPoints)
+        {
+            Stone owner = t.SecureOwner(p);
+            if (owner == Stone.Empty)
+            {
+                continue;
+            }
+
+            AvPoint c = board[p] != Stone.Empty ? StoneCenter(g, p) : g.Center(p);
+            var rect = new Rect(c.X - h, c.Y - h, 2 * h, 2 * h);
+            if (owner == Stone.Black)
+            {
+                context.DrawRectangle(blackFill, null, rect);
+            }
+            else
+            {
+                context.DrawRectangle(whiteFill, whiteEdge, rect);
+            }
+        }
+    }
+
+    /// <summary>Engine suggestions: blue discs with the winrate for the player to move and the score change.</summary>
+    private void DrawSuggestions(DrawingContext context, BoardGeometry g, BoardState board)
+    {
+        if (Suggestions is not { Count: > 0 } list)
+        {
+            return;
+        }
+
+        foreach (ViewModels.BoardSuggestion s in list)
+        {
+            if (!board.IsOnBoard(s.Point) || board[s.Point] != Stone.Empty)
+            {
+                continue;
+            }
+
+            AvPoint c = g.Center(s.Point);
+            double r = g.Cell * StoneRadius;
+            Color fill = s.IsBest ? Color.FromArgb(0xE0, 0x2F, 0x8F, 0xE8) : Color.FromArgb((byte)(0x70 + (0x50 * s.Strength)), 0x5A, 0x9F, 0xD8);
+            context.DrawEllipse(new ImmutableSolidColorBrush(fill), s.IsBest ? new Pen(Brushes.White, Math.Max(1, g.Cell * 0.05)) : null, c, r, r);
+            double size = Math.Max(7, g.Cell * 0.34);
+            DrawCentredText(context, s.Label, size, LabelTypeface, Brushes.White, c.X, c.Y - (g.Cell * 0.09));
+            DrawCentredText(context, s.Detail, Math.Max(6, g.Cell * 0.22), CoordinateTypeface, Brushes.White, c.X, c.Y + (g.Cell * 0.2));
         }
     }
 
