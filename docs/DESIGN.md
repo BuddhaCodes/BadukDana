@@ -120,8 +120,8 @@ Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su compo
 - Botones de la barra con subrayado de acento cuando están activos.
 - **Celebración de jugadas fuertes** (solo con análisis activo, al jugar; no al navegar). Llega cuando KataGo termina de valorar la jugada:
   - *Buena* (fuerza 1): golpe seco (`impact_small`) y una onda pequeña.
-  - *Excelente* (2): explosión (`explosion_medium`), destello, onda expansiva, chispas, temblor suave y grietas cortas.
-  - *La mejor* (3): explosión cinemática (`explosion_big`: caída de subgraves, «braam» grave, cola de escombros y reverberación), destello grande, dos ondas, ~56 chispas con estela, temblor fuerte y grietas incandescentes que se enfrían a grietas oscuras con una marca chamuscada y se desvanecen en ~2,6 s.
+  - *Excelente* (2): explosión (`explosion_medium`), destello, onda expansiva, chispas, temblor suave y un cráter pequeño con 5 fracturas.
+  - *La mejor* (3): explosión cinemática (`explosion_big`: caída de subgraves, «braam» grave, cola de escombros y reverberación), destello grande, dos ondas, ~56 chispas con estela, temblor fuerte y **suelo dañado**: cráter irregular con fondo astillado y labio levantado, 8 fracturas radiales en facetas (anchas en el cráter, afinándose hasta un hilo, con bifurcaciones), fracturas en anillo que las unen y astillas de madera despedidas. Relieve con luz desde arriba a la izquierda (halo oscuro de oclusión y labio claro abajo a la derecha). Las fracturas nacen incandescentes (metal fundido) y se enfrían a grietas oscuras; todo se desvanece en ~3,2 s.
   - Las grietas se dibujan bajo las piedras y recortadas al tablero; el resto encima. Todo determinista a partir de una semilla (`ImpactEffect`). Sin animaciones (Apariencia) solo suena.
 
 ## Atajos de teclado (mínimo)
