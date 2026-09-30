@@ -12,7 +12,17 @@ public interface IAnalysisEngine
 
     int Visits { get; }
 
+    /// <summary>What the engine is busy with before it can answer (loading, GPU tuning), or null.</summary>
+    string? Activity => null;
+
     event EventHandler? Changed;
+
+    /// <summary>Raised (on any thread) when <see cref="Activity"/> changes.</summary>
+    event EventHandler? ActivityChanged
+    {
+        add { }
+        remove { }
+    }
 
     Task<IReadOnlyList<TurnAnalysis>> AnalyzeAsync(AnalysisQuery query, CancellationToken cancellationToken);
 }
@@ -35,6 +45,10 @@ public sealed class AnalysisEngineHost : IAnalysisEngine, IAsyncDisposable
     }
 
     public event EventHandler? Changed;
+
+    public event EventHandler? ActivityChanged;
+
+    public string? Activity { get; private set; }
 
     public string? Problem { get; private set; }
 
@@ -60,7 +74,7 @@ public sealed class AnalysisEngineHost : IAnalysisEngine, IAsyncDisposable
         if (Problem is null)
         {
             ILogger logger = _loggers.CreateLogger("KataGo");
-            _engine = new KataGoAnalysisEngine(() => KataGoProcess.Start(options, logger), logger);
+            _engine = new KataGoAnalysisEngine(() => KataGoProcess.Start(options, logger, SetActivity), logger);
         }
 
         if (old is not null)
@@ -71,10 +85,22 @@ public sealed class AnalysisEngineHost : IAnalysisEngine, IAsyncDisposable
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
-    public Task<IReadOnlyList<TurnAnalysis>> AnalyzeAsync(AnalysisQuery query, CancellationToken cancellationToken) =>
-        _engine is { } engine
-            ? engine.AnalyzeAsync(query, cancellationToken)
-            : Task.FromException<IReadOnlyList<TurnAnalysis>>(new EngineException(Problem ?? "KataGo no está disponible."));
+    public async Task<IReadOnlyList<TurnAnalysis>> AnalyzeAsync(AnalysisQuery query, CancellationToken cancellationToken)
+    {
+        KataGoAnalysisEngine engine = _engine ?? throw new EngineException(Problem ?? "KataGo no está disponible.");
+        IReadOnlyList<TurnAnalysis> result = await engine.AnalyzeAsync(query, cancellationToken);
+        SetActivity(null); // An answer means KataGo is ready, whatever its log said.
+        return result;
+    }
+
+    private void SetActivity(string? activity)
+    {
+        if (Activity != activity)
+        {
+            Activity = activity;
+            ActivityChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
 
     public async ValueTask DisposeAsync()
     {

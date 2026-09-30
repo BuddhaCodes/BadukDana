@@ -145,10 +145,14 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         }
 
         IsTesting = true;
-        EngineStatus = "Probando KataGo (la primera vez puede tardar mientras prepara la GPU)…";
+        EngineStatus = "Probando KataGo…";
+        void ShowActivity(object? sender, EventArgs e) =>
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => EngineStatus = _engine.Activity ?? "Probando KataGo…");
+        _engine.ActivityChanged += ShowActivity;
         try
         {
-            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+            // The first OpenCL run tunes the GPU, which can take many minutes on integrated graphics.
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(20));
             IReadOnlyList<Hoshi.Engines.KataGo.TurnAnalysis> r = await _engine.AnalyzeAsync(
                 new Hoshi.Engines.KataGo.AnalysisQuery { Width = 9, Height = 9, Komi = 7, MaxVisits = 16, IncludeOwnership = false },
                 timeout.Token);
@@ -161,6 +165,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         }
         finally
         {
+            _engine.ActivityChanged -= ShowActivity;
             IsTesting = false;
         }
     }
