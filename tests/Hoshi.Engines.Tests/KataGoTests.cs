@@ -258,4 +258,22 @@ public sealed class MoveReviewTests
     {
         KataGoProcess.Describe(unchecked((int)0xC0000135), []).Should().StartWith("código 0xC0000135: falta una DLL");
     }
+
+    [Fact]
+    public void A_GTP_config_is_rejected_before_starting_KataGo()
+    {
+        string dir = Directory.CreateTempSubdirectory("hoshi-katago").FullName;
+        string exe = Path.Combine(dir, "katago.exe");
+        string model = Path.Combine(dir, "model.bin.gz");
+        string gtp = Path.Combine(dir, "gtp_human5k_example.cfg");
+        string analysis = Path.Combine(dir, "analysis_example.cfg");
+        File.WriteAllText(exe, string.Empty);
+        File.WriteAllText(model, string.Empty);
+        File.WriteAllText(gtp, "numSearchThreads = 8\n");
+        File.WriteAllText(analysis, "# Analysis\nnumAnalysisThreads = 2\nnumSearchThreadsPerAnalysisThread = 16\n");
+
+        new KataGoOptions(exe, model, gtp).Validate().Should().Contain("gtp_human5k_example.cfg").And.Contain("analysis_example.cfg");
+        new KataGoOptions(exe, model, analysis).Validate().Should().BeNull();
+        Directory.Delete(dir, recursive: true);
+    }
 }

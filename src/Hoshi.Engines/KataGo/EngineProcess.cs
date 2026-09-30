@@ -33,9 +33,31 @@ public sealed record KataGoOptions(string Executable, string Model, string Confi
             return "No se encuentra la red neuronal (.bin.gz) de KataGo.";
         }
 
-        return string.IsNullOrWhiteSpace(Config) || !File.Exists(Config)
-            ? "No se encuentra el archivo de configuración de análisis (analysis_example.cfg)."
-            : null;
+        if (string.IsNullOrWhiteSpace(Config) || !File.Exists(Config))
+        {
+            return "No se encuentra el archivo de configuración de análisis (analysis_example.cfg).";
+        }
+
+        return IsAnalysisConfig(Config)
+            ? null
+            : $"«{Path.GetFileName(Config)}» no es una configuración de análisis (es para GTP). Elige analysis_example.cfg, en la misma carpeta de KataGo.";
+    }
+
+    /// <summary>KataGo's analysis engine requires <c>numAnalysisThreads</c>; GTP configs (gtp_*.cfg) do not have it.</summary>
+    internal static bool IsAnalysisConfig(string path)
+    {
+        try
+        {
+            return File.ReadLines(path).Any(l => l.TrimStart().StartsWith("numAnalysisThreads", StringComparison.Ordinal));
+        }
+        catch (IOException)
+        {
+            return true; // Let KataGo report it.
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return true;
+        }
     }
 }
 
