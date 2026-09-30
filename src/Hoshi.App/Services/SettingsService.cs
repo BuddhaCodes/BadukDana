@@ -27,6 +27,12 @@ public sealed record AppSettings
 
     /// <summary>Sound effects volume, 0–100 (0 = silent; the board effect still plays).</summary>
     public int SoundVolume { get; init; } = 70;
+
+    /// <summary>Adaptive lo-fi music that heats up with streaks of good moves (needs the analysis for that).</summary>
+    public bool Music { get; init; } = true;
+
+    /// <summary>Music volume, 0–100.</summary>
+    public int MusicVolume { get; init; } = 35;
 }
 
 public interface ISettingsService

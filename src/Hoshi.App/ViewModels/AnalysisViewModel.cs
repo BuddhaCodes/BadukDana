@@ -414,6 +414,9 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         TryCelebrate(pos);
     }
 
+    /// <summary>The engine's (trusted) verdict on a move the user just played; drives the adaptive music.</summary>
+    public event EventHandler<MoveAssessment>? MoveJudged;
+
     private void OnMovePlayed(object? sender, GameNode node)
     {
         // Usually instant: the position before the move was being analysed while the user thought, so the move is
@@ -439,6 +442,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         if (beforeSolid && afterSolid)
         {
             _awaitingJudgement = null;
+            MoveJudged?.Invoke(this, judged);
             Celebrate(judged);
         }
     }

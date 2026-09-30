@@ -49,6 +49,14 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     private int _soundVolume = 70;
 
     [ObservableProperty]
+    private bool _music = true;
+
+    [ObservableProperty]
+    private int _musicVolume = 35;
+
+    private readonly Services.Music.IMusicService? _musicService;
+
+    [ObservableProperty]
     private string _kataGoExecutable = string.Empty;
 
     [ObservableProperty]
@@ -77,9 +85,11 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         Services.ISettingsService? settings = null,
         Services.AnalysisEngineHost? engine = null,
         Services.IFilePickerService? picker = null,
-        Services.ISoundService? sounds = null)
+        Services.ISoundService? sounds = null,
+        Services.Music.IMusicService? music = null)
     {
         _sounds = sounds;
+        _musicService = music;
         _themes = themes ?? throw new ArgumentNullException(nameof(themes));
         _settings = settings;
         _engine = engine;
@@ -92,6 +102,8 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             _analysisVisits = s.AnalysisVisits;
             _moveEffects = s.MoveEffects;
             _soundVolume = s.SoundVolume;
+            _music = s.Music;
+            _musicVolume = s.MusicVolume;
         }
 
         _engineStatus = engine?.Problem ?? (engine is null ? null : "KataGo configurado.");
@@ -109,11 +121,41 @@ public sealed partial class PreferencesViewModel : ViewModelBase
 
     partial void OnSoundVolumeChanged(int value) => SaveEffects();
 
+    /// <summary>Why the music cannot play on this system, if so.</summary>
+    public string? MusicProblem => _musicService?.Problem;
+
+    partial void OnMusicChanged(bool value)
+    {
+        if (value)
+        {
+            _musicService?.Start();
+        }
+        else
+        {
+            _musicService?.Stop();
+        }
+
+        SaveEffects();
+        OnPropertyChanged(nameof(MusicProblem));
+    }
+
+    partial void OnMusicVolumeChanged(int value)
+    {
+        _musicService?.SetVolume(Math.Clamp(value, 0, 100) / 100.0);
+        SaveEffects();
+    }
+
     private void SaveEffects()
     {
         if (_loaded && _settings is not null)
         {
-            _settings.Save(_settings.Current with { MoveEffects = MoveEffects, SoundVolume = Math.Clamp(SoundVolume, 0, 100) });
+            _settings.Save(_settings.Current with
+            {
+                MoveEffects = MoveEffects,
+                SoundVolume = Math.Clamp(SoundVolume, 0, 100),
+                Music = Music,
+                MusicVolume = Math.Clamp(MusicVolume, 0, 100),
+            });
         }
     }
 

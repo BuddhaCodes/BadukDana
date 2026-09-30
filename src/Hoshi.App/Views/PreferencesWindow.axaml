@@ -105,6 +105,17 @@
               <TextBlock Text="{Binding SoundVolume, StringFormat={}{0} %}" VerticalAlignment="Center" MinWidth="44" />
               <Button Content="Probar sonido" Command="{Binding TestSoundCommand}" />
             </StackPanel>
+
+            <TextBlock Classes="label" Text="Música adaptativa" Margin="0,14,0,0" />
+            <CheckBox IsChecked="{Binding Music}" x:Name="MusicBox"
+                      Content="Lo-fi tranquilo que se anima con rachas de buenas jugadas y se calma con el tiempo o con un error (tecla M)" />
+            <StackPanel Orientation="Horizontal" Spacing="10" IsEnabled="{Binding Music}">
+              <TextBlock Text="Volumen" VerticalAlignment="Center" />
+              <Slider Minimum="0" Maximum="100" Value="{Binding MusicVolume}" Width="220" />
+              <TextBlock Text="{Binding MusicVolume, StringFormat={}{0} %}" VerticalAlignment="Center" MinWidth="44" />
+            </StackPanel>
+            <TextBlock Classes="secondary" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" Text="{Binding MusicProblem}"
+                       IsVisible="{Binding MusicProblem, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
             <TextBlock Classes="secondary" TextWrapping="Wrap"
                        Text="{Binding CustomSoundFolder, StringFormat='Buena: golpe seco · Excelente: explosión con onda expansiva y temblor · La mejor: explosión cinemática, grietas incandescentes y temblor fuerte. Los sonidos son de Hoshi; para usar los tuyos, pon impact_small, explosion_medium o explosion_big (.wav o .mp3) en {0}. El impacto visual necesita las animaciones activadas (Apariencia).'}" />
           </StackPanel>
