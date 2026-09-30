@@ -73,6 +73,10 @@ public sealed class GoBoardControl : Control
         AvaloniaProperty.Register<GoBoardControl, TerritoryEstimate?>(nameof(Territory));
 
     /// <summary>Engine suggestions drawn as labelled discs on empty points.</summary>
+    /// <summary>A strong move to celebrate (flash, shockwave, embers, shake, cracks); a new value starts the effect.</summary>
+    public static readonly StyledProperty<ViewModels.BoardImpact?> ImpactProperty =
+        AvaloniaProperty.Register<GoBoardControl, ViewModels.BoardImpact?>(nameof(Impact));
+
     public static readonly StyledProperty<IReadOnlyList<ViewModels.BoardSuggestion>?> SuggestionsProperty =
         AvaloniaProperty.Register<GoBoardControl, IReadOnlyList<ViewModels.BoardSuggestion>?>(nameof(Suggestions));
 
@@ -86,6 +90,9 @@ public sealed class GoBoardControl : Control
     private Avalonia.Threading.DispatcherTimer? _animTimer;
     private Point? _animPoint;
     private BoardState? _before;
+    private readonly System.Diagnostics.Stopwatch _impactClock = new();
+    private Avalonia.Threading.DispatcherTimer? _impactTimer;
+    private ImpactEffect? _impact;
 
     private static readonly Typeface CoordinateTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.Medium);
     private static readonly Typeface LabelTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.SemiBold);
@@ -122,6 +129,18 @@ public sealed class GoBoardControl : Control
     }
 
     public event EventHandler<BoardPointEventArgs>? PointClicked;
+
+    public ViewModels.BoardImpact? Impact
+    {
+        get => GetValue(ImpactProperty);
+        set => SetValue(ImpactProperty, value);
+    }
+
+    /// <summary>The impact being animated, for tests.</summary>
+    internal bool IsImpactRunning => _impact is not null;
+
+    /// <summary>Freezes the impact at this many seconds (tests take screenshots of chosen frames).</summary>
+    internal double? ImpactTime { get; set; }
 
     public BoardState? Board
     {
@@ -220,6 +239,11 @@ public sealed class GoBoardControl : Control
         BoardStyle style = BoardStyle ?? ClassicStyle;
         var lines = new ImmutableSolidColorBrush(style.ShudanTexture ? BoardTextures.BoardForeground : style.Lines);
 
+        double t = ImpactTime ?? _impactClock.Elapsed.TotalSeconds;
+        ImpactEffect? impact = _impact is { } fx && board.IsOnBoard(fx.Point) ? fx : null;
+        AvPoint shake = impact?.Shake(t, g.Cell) ?? default;
+        using DrawingContext.PushedState shaken = context.PushTransform(Matrix.CreateTranslation(shake.X, shake.Y));
+
         DrawWood(context, g, style);
         DrawGrid(context, g, board, scale, lines);
         if (ShowCoordinates)
@@ -227,10 +251,19 @@ public sealed class GoBoardControl : Control
             DrawCoordinates(context, g, style.ShudanTexture ? CoordinateBrush : new ImmutableSolidColorBrush(style.Coordinates));
         }
 
+        if (impact is not null)
+        {
+            using (context.PushClip(g.BoardRect))
+            {
+                impact.DrawCracks(context, StoneCenter(g, impact.Point), g.Cell, t);
+            }
+        }
+
         DrawInfluence(context, g, board);
         DrawStones(context, g, board, style);
         DrawTerritoryMarks(context, g, board);
         DrawEffect(context, g, board, style);
+        impact?.DrawBurst(context, StoneCenter(g, impact.Point), g.Cell, t);
         DrawSuggestions(context, g, board);
         DrawLastMove(context, g, board, style);
         DrawMarkers(context, g, board, lines, style);
@@ -248,6 +281,11 @@ public sealed class GoBoardControl : Control
         if (change.Property == BoardProperty || change.Property == LastMoveProperty)
         {
             TryStartPlacementAnimation();
+        }
+
+        if (change.Property == ImpactProperty && change.NewValue is ViewModels.BoardImpact impact)
+        {
+            StartImpact(impact);
         }
 
         if (change.Property == LastMoveProperty || change.Property == BoardProperty)
@@ -607,6 +645,29 @@ public sealed class GoBoardControl : Control
 
         _before = null;
         StartPlacementAnimation(p);
+    }
+
+    private void StartImpact(ViewModels.BoardImpact impact)
+    {
+        if (!Animate || impact.Strength <= 0)
+        {
+            return;
+        }
+
+        _impact = new ImpactEffect(impact.Point, impact.Strength, impact.Id);
+        _impactClock.Restart();
+        _impactTimer ??= new Avalonia.Threading.DispatcherTimer(TimeSpan.FromMilliseconds(16), Avalonia.Threading.DispatcherPriority.Render, (_, _) =>
+        {
+            if (_impact is null || _impact.IsDone(_impactClock.Elapsed.TotalSeconds))
+            {
+                _impact = null;
+                _impactTimer!.Stop();
+            }
+
+            InvalidateVisual();
+        });
+        _impactTimer.Start();
+        InvalidateVisual();
     }
 
     private void StartPlacementAnimation(Point p)
