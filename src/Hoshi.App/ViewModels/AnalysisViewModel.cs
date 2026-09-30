@@ -79,6 +79,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
                 OnPropertyChanged(nameof(StatusText));
                 Refresh();
             });
+            _engine.ActivityChanged += (_, _) => _ui.Post(() => OnPropertyChanged(nameof(StatusText)));
         }
     }
 
@@ -96,7 +97,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         : !IsAnalysisOn ? string.Empty
         : _engine?.Problem is { } problem ? problem
         : Error is { } e ? e
-        : IsBusy ? "Analizando…"
+        : IsBusy ? _engine?.Activity ?? "Analizando…"
         : string.Empty;
 
     /// <summary>"Negras 62 %" from the engine's winrate.</summary>

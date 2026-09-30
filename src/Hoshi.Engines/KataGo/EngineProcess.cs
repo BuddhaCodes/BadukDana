@@ -106,7 +106,7 @@ public sealed class KataGoProcess : IEngineProcess
 
     public bool HasExited => _process.HasExited;
 
-    public static KataGoProcess Start(KataGoOptions options, ILogger? logger = null)
+    public static KataGoProcess Start(KataGoOptions options, ILogger? logger = null, Action<string?>? onActivity = null)
     {
         ArgumentNullException.ThrowIfNull(options);
         ILogger log = logger ?? NullLogger.Instance;
@@ -140,11 +140,25 @@ public sealed class KataGoProcess : IEngineProcess
         }
 
         var result = new KataGoProcess(process);
+        string? activity = null;
         process.ErrorDataReceived += (_, e) =>
         {
+            if (e.Data is null)
+            {
+                onActivity?.Invoke(null);
+                return;
+            }
+
             if (e.Data is { Length: > 0 } line)
             {
                 log.LogInformation("KataGo stderr: {Line}", line);
+                string? next = ActivityFrom(line, activity);
+                if (next != activity)
+                {
+                    activity = next;
+                    onActivity?.Invoke(activity);
+                }
+
                 lock (result._stderr)
                 {
                     result._stderr.Enqueue(line);
@@ -158,6 +172,39 @@ public sealed class KataGoProcess : IEngineProcess
         process.BeginErrorReadLine();
         log.LogInformation("KataGo analysis engine started (pid {Pid}): {Executable}", process.Id, options.Executable);
         return result;
+    }
+
+    private const string Tuning = "KataGo está calibrando la tarjeta gráfica. Solo pasa la primera vez y puede tardar varios minutos";
+
+    /// <summary>
+    /// What KataGo is busy with before it can answer, from a stderr line: loading the network, or the one-time
+    /// OpenCL autotuning (which can take minutes). Null once it is ready for queries.
+    /// </summary>
+    internal static string? ActivityFrom(string line, string? current)
+    {
+        if (line.Contains("ready to begin handling requests", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        if (line.Contains("Performing autotuning", StringComparison.Ordinal) || line.StartsWith("Beginning GPU tuning", StringComparison.Ordinal))
+        {
+            return Tuning + "…";
+        }
+
+        if (current?.StartsWith(Tuning, StringComparison.Ordinal) == true)
+        {
+            if (line.StartsWith("Tuning ", StringComparison.Ordinal) && line.Split(' ', 3) is [_, var step, ..] && step.Contains('/', StringComparison.Ordinal))
+            {
+                return $"{Tuning} (paso {step})…";
+            }
+
+            return current;
+        }
+
+        return line.Contains("Initializing neural net", StringComparison.Ordinal) || line.Contains("nnModelFile", StringComparison.Ordinal)
+            ? "KataGo está cargando la red neuronal…"
+            : current;
     }
 
     /// <summary>Turns an exit code and KataGo's last stderr lines into a message for the user.</summary>

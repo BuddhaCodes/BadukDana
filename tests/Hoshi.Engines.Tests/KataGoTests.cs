@@ -276,4 +276,17 @@ public sealed class MoveReviewTests
         new KataGoOptions(exe, model, analysis).Validate().Should().BeNull();
         Directory.Delete(dir, recursive: true);
     }
+
+    [Fact]
+    public void Stderr_lines_show_loading_and_GPU_tuning_until_KataGo_is_ready()
+    {
+        string? a = KataGoProcess.ActivityFrom("2026-09-30 09:48:24-0400: Initializing neural net buffer to be size 19 * 19", null);
+        a.Should().Be("KataGo está cargando la red neuronal…");
+        a = KataGoProcess.ActivityFrom("2026-09-30 09:48:26-0400: Performing autotuning", a);
+        a.Should().StartWith("KataGo está calibrando la tarjeta gráfica");
+        a = KataGoProcess.ActivityFrom("Tuning 40/69 ...", a);
+        a.Should().EndWith("(paso 40/69)…");
+        KataGoProcess.ActivityFrom("Testing 69 different configs", a).Should().Be(a);
+        KataGoProcess.ActivityFrom("2026-09-30 09:52:00-0400: Started, ready to begin handling requests", a).Should().BeNull();
+    }
 }
