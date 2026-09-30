@@ -11,6 +11,16 @@ public sealed record AppSettings
 
     /// <summary>Animated backgrounds and stone/UI animations (off = static, for low-power machines or preference).</summary>
     public bool Animations { get; init; } = true;
+
+    /// <summary>KataGo analysis engine: executable, neural network (.bin.gz) and analysis config (.cfg).</summary>
+    public string? KataGoExecutable { get; init; }
+
+    public string? KataGoModel { get; init; }
+
+    public string? KataGoConfig { get; init; }
+
+    /// <summary>Search visits per analysed position (more = stronger and slower).</summary>
+    public int AnalysisVisits { get; init; } = 200;
 }
 
 public interface ISettingsService

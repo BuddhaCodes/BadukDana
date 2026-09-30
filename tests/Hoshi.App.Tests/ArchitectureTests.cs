@@ -4,7 +4,7 @@ namespace Hoshi.App.Tests;
 
 /// <summary>
 /// Enforces the dependency rule from CLAUDE.md §3:
-/// App → Ogs, Sgf, Core · Ogs → Core · Sgf → Core · Engines → Core · Core → (nothing).
+/// App → Ogs, Sgf, Engines, Core · Ogs → Core · Sgf → Core · Engines → Core · Core → (nothing).
 /// </summary>
 public sealed class ArchitectureTests
 {
@@ -14,7 +14,7 @@ public sealed class ArchitectureTests
         { "Hoshi.Sgf", ["Hoshi.Core"] },
         { "Hoshi.Ogs", ["Hoshi.Core"] },
         { "Hoshi.Engines", ["Hoshi.Core"] },
-        { "Hoshi", ["Hoshi.Core", "Hoshi.Sgf", "Hoshi.Ogs"] },
+        { "Hoshi", ["Hoshi.Core", "Hoshi.Sgf", "Hoshi.Ogs", "Hoshi.Engines"] },
     };
 
     [Theory]

@@ -33,6 +33,7 @@
     <ProjectReference Include="..\Hoshi.Core\Hoshi.Core.csproj" />
     <ProjectReference Include="..\Hoshi.Sgf\Hoshi.Sgf.csproj" />
     <ProjectReference Include="..\Hoshi.Ogs\Hoshi.Ogs.csproj" />
+    <ProjectReference Include="..\Hoshi.Engines\Hoshi.Engines.csproj" />
   </ItemGroup>
 
   <ItemGroup>

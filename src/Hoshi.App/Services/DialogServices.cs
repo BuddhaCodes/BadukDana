@@ -15,6 +15,33 @@ public interface IFileDialogService
     Task<string?> PickSgfToSaveAsync(string suggestedName);
 }
 
+/// <summary>Picks any existing file (e.g. the KataGo executable or network).</summary>
+public interface IFilePickerService
+{
+    Task<string?> PickFileAsync(string title);
+}
+
+public sealed class AvaloniaFilePickerService : IFilePickerService
+{
+    public async Task<string?> PickFileAsync(string title)
+    {
+        TopLevel? top = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Windows
+            .FirstOrDefault(w => w.IsActive) ?? MainWindowLocator.MainWindow;
+        if (top?.StorageProvider is not { } storage)
+        {
+            return null;
+        }
+
+        IReadOnlyList<IStorageFile> files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = title,
+            AllowMultiple = false,
+            FileTypeFilter = [FilePickerFileTypes.All],
+        });
+        return files.Count > 0 ? files[0].TryGetLocalPath() : null;
+    }
+}
+
 /// <summary>Modal dialogs owned by the main window.</summary>
 public interface IDialogService
 {
