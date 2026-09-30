@@ -107,6 +107,7 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 
 ### Servicios de App
 - `IDialogService`, `IFileDialogService`, `ISettingsService` (JSON en carpeta de datos).
+- Música (`Services/Music`): `LofiComposer` sintetiza al arrancar un bucle de 8 compases (80 BPM, 24 s) en 5 capas sincronizadas; `MusicDirector` (lógica pura con reloj explícito) convierte los veredictos (`AnalysisViewModel.MoveJudged`) en «calor» 0–4; `MusicMixer` mezcla las capas con ganancias suaves, filtro paso bajo según el calor y efecto tape-stop; `MusicService` lo envía en un hilo propio a un `IPcmSink` del SO (waveOut de winmm en Windows; `pacat`/`aplay` en Linux; sin salida en macOS por ahora). Sin veredictos (partidas de OGS en curso) la música se queda tranquila: no revela nada del motor.
 - `ISoundService` / `SystemSoundService`: sin librerías de audio; usa lo que trae el SO (MCI de winmm en Windows, `afplay` en macOS, `paplay`/`aplay` en Linux). Los WAV integrados se copian a `cache/sounds/`; un archivo con el mismo nombre (`.wav`/`.mp3`) en `sounds/` de la carpeta de datos los sustituye.
 - `SecureTokenStore` → `ITokenStore` del SO con respaldo en memoria (implementa el `ISecureStore` de CLAUDE.md).
 - `IOgsClient` / `OgsClient` — fachada que une auth, REST, tiempo real y seek graph para el lobby; `LobbyViewModel` solo depende de ella (tests con un falso). `IUiDispatcher` lleva los eventos al hilo de UI.

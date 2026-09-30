@@ -35,10 +35,23 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IPreferencesWindowService? preferences = null,
         IAnalysisEngine? engine = null,
         ISoundService? sounds = null,
-        ISettingsService? settings = null)
+        ISettingsService? settings = null,
+        Services.Music.IMusicService? music = null)
     {
         _preferences = preferences;
         Analysis = new AnalysisViewModel(game, engine, ui, sounds, settings);
+        _music = music;
+        _settings = settings;
+        if (music is not null)
+        {
+            Analysis.MoveJudged += (_, verdict) => music.OnVerdict(verdict.Quality);
+            AppSettings s = settings?.Current ?? new AppSettings();
+            music.SetVolume(s.MusicVolume / 100.0);
+            if (s.Music)
+            {
+                music.Start();
+            }
+        }
         Game = game;
         _lobbyWindow = lobbyWindow;
         _ogs = ogs;
@@ -105,6 +118,34 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private void OpenLobby() => _lobbyWindow?.Show();
 
     public bool HasPreferences => _preferences is not null;
+
+    private readonly Services.Music.IMusicService? _music;
+    private readonly ISettingsService? _settings;
+
+    /// <summary>M: music on/off (saved).</summary>
+    [RelayCommand]
+    private void ToggleMusic()
+    {
+        if (_music is null)
+        {
+            return;
+        }
+
+        bool on = !_music.IsPlaying;
+        if (on)
+        {
+            _music.Start();
+        }
+        else
+        {
+            _music.Stop();
+        }
+
+        if (_settings is not null)
+        {
+            _settings.Save(_settings.Current with { Music = on });
+        }
+    }
 
     [RelayCommand(CanExecute = nameof(HasPreferences))]
     private Task OpenPreferences() => _preferences?.ShowAsync() ?? Task.CompletedTask;

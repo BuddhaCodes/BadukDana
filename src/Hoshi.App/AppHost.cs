@@ -45,6 +45,7 @@ public static class AppHost
         services.AddSingleton<ISettingsService, JsonSettingsService>();
         services.AddSingleton<Themes.ThemeService>();
         services.AddSingleton<ISoundService, SystemSoundService>();
+        services.AddSingleton<Services.Music.IMusicService, Services.Music.MusicService>();
         services.AddSingleton<AnalysisEngineHost>();
         services.AddSingleton<IAnalysisEngine>(sp => sp.GetRequiredService<AnalysisEngineHost>());
         services.AddSingleton<IFilePickerService, AvaloniaFilePickerService>();

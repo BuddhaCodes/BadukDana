@@ -155,6 +155,7 @@
           <KeyBinding Gesture="P" Command="{Binding Game.PassKeyCommand}" />
           <KeyBinding Gesture="T" Command="{Binding Analysis.ToggleTerritoryCommand}" />
           <KeyBinding Gesture="A" Command="{Binding Analysis.ToggleAnalysisCommand}" />
+          <KeyBinding Gesture="M" Command="{Binding ToggleMusicCommand}" />
         </Panel.KeyBindings>
         <c:GoBoardControl x:Name="Board"
                           Margin="24"

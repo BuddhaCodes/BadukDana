@@ -124,6 +124,12 @@ Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su compo
   - *La mejor* (3): explosión cinemática (`explosion_big`: caída de subgraves, «braam» grave, cola de escombros y reverberación), destello grande, dos ondas, ~56 chispas con estela, temblor fuerte y **suelo dañado**: cráter irregular con fondo astillado y labio levantado, 8 fracturas radiales en facetas (anchas en el cráter, afinándose hasta un hilo, con bifurcaciones), fracturas en anillo que las unen y astillas de madera despedidas. Relieve con luz desde arriba a la izquierda (halo oscuro de oclusión y labio claro abajo a la derecha). Las fracturas nacen incandescentes (metal fundido) y se enfrían a grietas oscuras; todo se desvanece en ~3,2 s.
   - Las grietas se dibujan bajo las piedras y recortadas al tablero; el resto encima. Todo determinista a partir de una semilla (`ImpactEffect`). Sin animaciones (Apariencia) solo suena.
 
+## Música adaptativa
+
+- Lo-fi tranquilo (Dm9 – G13 – Cmaj9 – Am9, 80 BPM, vinilo y cinta). Capas: 0 piano eléctrico (siempre), 1 bajo y bombo, 2 batería con swing, 3 arpegio pulsado con eco, 4 «hype» (acordes con bombeo, hi-hats a semicorcheas, palmas, melodía brillante).
+- Calor: buena +0,6, excelente +0,9, la mejor +1,2, más +0,15 por jugada de racha (≤ 25 s entre buenas, máx. +0,6). Imprecisa −1, error −2, error grave → 0 con tape-stop. Tras 12 s sin buenas jugadas se enfría 0,06/s.
+- Cada capa entra ~0,9 de calor después de la anterior; el filtro se abre de 900 Hz (apagado, acogedor) a ~18 kHz.
+
 ## Atajos de teclado (mínimo)
 
 | Atajo | Acción |
@@ -137,6 +143,7 @@ Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su compo
 | P | Pasar (solo partidas locales) |
 | T | Territorio actual y potencial |
 | A | Análisis con IA (KataGo) |
+| M | Música adaptativa on/off |
 | Ctrl+L | Jugar en línea |
 | F11 | Modo zen *(pendiente)* |
 
