@@ -28,6 +28,12 @@ public sealed record AnalysisQuery
     public int MaxVisits { get; init; } = 200;
 
     public bool IncludeOwnership { get; init; } = true;
+
+    /// <summary>KataGo serves queries with a higher priority first (e.g. the shown position before the game graph).</summary>
+    public int Priority { get; init; }
+
+    /// <summary>When set, KataGo also reports partial results every this many seconds while it searches.</summary>
+    public double? ReportDuringSearchEvery { get; init; }
 }
 
 /// <summary>A candidate move. Winrate and score are from black's point of view.</summary>

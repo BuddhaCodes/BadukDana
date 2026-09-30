@@ -101,7 +101,7 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 - Atajos de una letra (P) solo en el área del tablero, para que no se disparen al escribir un comentario.
 
 ### Análisis (Fase 7)
-- `AnalysisViewModel` (en `MainWindowViewModel.Analysis`): en cada cambio de posición pide a KataGo los turnos `n−1` y `n` que falten en su caché (clave = setup + jugadas), valora la jugada, muestra sugerencias y rellena la gráfica de la línea en tandas de 25 turnos a ¼ de las visitas. Se bloquea con `Online.IsPlayer && !IsFinished`.
+- `AnalysisViewModel` (en `MainWindowViewModel.Analysis`): en cada cambio de posición pide a KataGo, **en vivo**, los turnos `n−1` y `n` que no estén completos (clave = setup + jugadas): prioridad 10 y `reportDuringSearchEvery` 0,25 s, así que el panel y las sugerencias se actualizan con resultados parciales mientras KataGo profundiza hasta las visitas máximas. Los parciales quedan en caché aunque la búsqueda se cancele al jugar; por eso la valoración de una jugada suele ser instantánea (la jugada ya estaba entre los candidatos de `n−1`). La celebración exige ≥ 40 visitas. La gráfica se rellena en tandas de 25 turnos a ¼ de las visitas con prioridad −10. Se bloquea con `Online.IsPlayer && !IsFinished`.
 - `IAnalysisEngine` / `AnalysisEngineHost`: KataGo según Preferencias; `GoBoardControl.Territory` y `.Suggestions` dibujan las capas; `ScoreGraph` la gráfica. `Activity` informa de la carga/calibración de KataGo (leída de su stderr).
 - Celebración: `GameViewModel.MovePlayed` marca la jugada; cuando llega su valoración, `AnalysisViewModel` publica `Impact` (`BoardImpact`: punto, fuerza 1–3, id) que `GoBoardControl` anima con `ImpactEffect`, y pide el sonido a `ISoundService`.
 
