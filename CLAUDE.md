@@ -39,17 +39,18 @@ src/
   Hoshi.Core/        # Reglas de Go puras: tablero, capturas, ko, superko, conteo. Sin dependencias de UI ni red.
   Hoshi.Sgf/         # Parser/serializer SGF (FF[4]), árbol de juego, propiedades, GameCursor.
   Hoshi.Ogs/         # Cliente OGS: auth, REST, WebSocket, DTOs, mapeo a modelos de Core. Emite eventos de dominio.
-  Hoshi.Engines/     # (fase posterior) Cliente GTP para KataGo/Leela.
+  Hoshi.Engines/     # Cliente del motor de análisis de KataGo (JSON); más adelante GTP para jugar.
   Hoshi.App/         # Avalonia: Views, ViewModels, controles, estilos, assets. Une Ogs con Sgf.
 tests/
   Hoshi.Core.Tests/
   Hoshi.Sgf.Tests/
   Hoshi.Ogs.Tests/   # Con fixtures JSON grabados; nunca contra el servidor real en CI.
+  Hoshi.Engines.Tests/ # Con un proceso KataGo simulado; nunca KataGo real en CI.
   Hoshi.App.Tests/   # Incluye ArchitectureTests, que hacen cumplir la regla de dependencias.
 docs/
 ```
 
-Regla de dependencias: `App → Ogs, Sgf, Core` · `Ogs → Core` · `Sgf → Core` · `Engines → Core` · `Core → (nada)`.
+Regla de dependencias: `App → Ogs, Sgf, Engines, Core` · `Ogs → Core` · `Sgf → Core` · `Engines → Core` · `Core → (nada)`.
 
 `Hoshi.Ogs` **no** conoce `GameCursor` ni el árbol SGF: expone eventos (jugada recibida, reloj, fase, chat…) con modelos de Core, y es `Hoshi.App` quien los aplica al cursor (decisión 2026-09-29, ver `docs/ARCHITECTURE.md`).
 
@@ -77,6 +78,7 @@ Regla de dependencias: `App → Ogs, Sgf, Core` · `Ogs → Core` · `Sgf → Co
 - No copiar código de Sabaki. Sus assets están bajo licencia MIT: el tema Clásico usa `board.png` (Shudan) y `tatami.png` con su aviso en `THIRD_PARTY_NOTICES.md`. Los demás temas usan arte generado por Hoshi, fuentes OFL e iconos MIT/ISC; todo recurso de terceros nuevo debe añadirse a `THIRD_PARTY_NOTICES.md` (y su licencia a `licenses/`) en el mismo commit.
 - No usar socket.io: OGS usa ahora un WebSocket JSON plano.
 - No implementar "bots" que jueguen automáticamente en OGS sin marcar la cuenta como bot (va contra sus términos).
+- No ofrecer análisis de IA ni estimación de territorio al jugador durante sus partidas de OGS en curso (ayuda de motor prohibida por OGS); solo tras terminar o en partidas locales.
 - No guardar la contraseña del usuario; solo tokens OAuth en el almacén seguro. El login con contraseña existe solo para beta y está bloqueado contra producción.
 - No poner `client_secret` ni ningún secreto en el repositorio: la app OAuth es un cliente público con PKCE.
 

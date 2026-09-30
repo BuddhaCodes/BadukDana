@@ -64,6 +64,14 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
   - Solo usa tipos de Core (`Point`, `Stone`, `RuleSet`); valida localmente con `BoardState` para detectar desincronizaciones.
 - Los DTO de OGS **no salen** de este proyecto: se mapean a modelos de Core.
 
+## Hoshi.Core — territorio
+- `TerritoryEstimator.Estimate(board, komi)`: regiones vacías cerradas por un solo color (≤ 1/3 del tablero) = seguro (±1); el resto recibe la influencia de las piedras (exponencial, alcance 6), acotada a ±0.75 para no confundirse con lo seguro. No lee: no detecta piedras muertas.
+- `TerritoryEstimate`: propiedad por punto en [-1, 1] (+ = negras), seguro (|o| ≥ 0.8), potencial (valor esperado), piedras muertas si el mapa las da al rival, y `Lead` (territorio + capturas − komi). `FromOwnership` lo construye desde el mapa de KataGo.
+
+## Hoshi.Engines
+- `KataGoAnalysisEngine`: motor de análisis JSON de KataGo (una consulta por línea, una respuesta por turno, por `id`; `terminate` al cancelar; reinicia el proceso si muere). `KataGoProcess` lanza `katago analysis … -override-config reportAnalysisWinratesAs=BLACK`: todos los valores llegan desde el punto de vista de negras.
+- `MoveReview.Assess(antes, después, jugada)`: puntos y winrate perdidos respecto a la mejor candidata, desde el punto de vista de quien juega.
+
 ## Hoshi.App
 
 ### Ventanas y vistas
@@ -91,6 +99,10 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 - `GameTreeLayout` (filas = profundidad; línea principal en la columna 0; cada variante en la primera columna libre para todo su subárbol) y `GameTreeControl` (dibujo, clic para navegar, auto-scroll al nodo actual).
 - Barra lateral: jugadores/capturas, árbol, comentario. Barra inferior con navegación, menú Archivo y, en modo edición, herramientas.
 - Atajos de una letra (P) solo en el área del tablero, para que no se disparen al escribir un comentario.
+
+### Análisis (Fase 7)
+- `AnalysisViewModel` (en `MainWindowViewModel.Analysis`): en cada cambio de posición pide a KataGo los turnos `n−1` y `n` que falten en su caché (clave = setup + jugadas), valora la jugada, muestra sugerencias y rellena la gráfica de la línea en tandas de 25 turnos a ¼ de las visitas. Se bloquea con `Online.IsPlayer && !IsFinished`.
+- `IAnalysisEngine` / `AnalysisEngineHost`: KataGo según Preferencias; `GoBoardControl.Territory` y `.Suggestions` dibujan las capas; `ScoreGraph` la gráfica.
 
 ### Servicios de App
 - `IDialogService`, `IFileDialogService`; futuros `ISettingsService` (JSON en carpeta de datos), `ISoundService`.

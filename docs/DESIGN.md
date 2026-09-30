@@ -113,6 +113,12 @@ Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su compo
 - «Pista actual» (raíz → nodo actual → primeros hijos) a pleno color con aristas `#CCC` de 2 px; el resto al 50 % con
   aristas `#777` de 1 px; variantes unidas en diagonal. Nodo actual con contorno `#EEE` de 2 px.
 
+## Territorio y análisis
+
+- **Territorio (T):** cuadraditos del color del dueño probable; su tamaño y opacidad crecen con la seguridad. Territorio seguro y piedras muertas: cuadrado grande opaco. Resumen en la barra lateral: seguro (+potencial) de cada color y ventaja estimada, indicando si viene de la estimación rápida o de KataGo.
+- **Análisis (A):** panel en la barra lateral con winrate (barra negro/blanco), ventaja, valoración de la última jugada en color (verde = mejor/excelente, verde oliva = buena, ámbar = imprecisa, rojo = error), la mejor alternativa y la gráfica de ventaja por jugada (arriba = negras; clic para ir). Sobre el tablero, hasta 3 sugerencias como discos azules con el % de victoria de quien juega y el cambio de puntos; la mejor con borde blanco.
+- Botones de la barra con subrayado de acento cuando están activos.
+
 ## Atajos de teclado (mínimo)
 
 | Atajo | Acción |
@@ -124,6 +130,8 @@ Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su compo
 | Ctrl+E | Modo edición |
 | Ctrl+I | Información de la partida |
 | P | Pasar (solo partidas locales) |
+| T | Territorio actual y potencial |
+| A | Análisis con IA (KataGo) |
 | Ctrl+L | Jugar en línea |
 | F11 | Modo zen *(pendiente)* |
 
