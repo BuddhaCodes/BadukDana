@@ -36,6 +36,10 @@ Converted to path data by `tools/gen_icons.py` into `src/Hoshi.App/Themes/IconSe
 The night sky, ink wash and ensō, raked sand, washi paper, the procedural kaya wood and the Pearl / Slate & shell /
 Soft stones are generated in code by Hoshi (`ThemeBackground`, `BoardTextures`) and need no attribution.
 
+The sound effects in `src/Hoshi.App/Assets/Sounds/` (`impact_small`, `explosion_medium`, `explosion_big`) are
+synthesised by `tools/gen_sounds.py` (noise, oscillators and filters; no samples) and are Hoshi's own. Sounds a user
+places in their own `sounds/` folder are not distributed with Hoshi.
+
 ### Sabaki / Shudan
 
 Hoshi's stone rendering reproduces the colours and gradients of Shudan's `stone_1.svg` / `stone_-1.svg`

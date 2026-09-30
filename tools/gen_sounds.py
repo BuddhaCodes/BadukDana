@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+"""Synthesises Hoshi's cinematic impact sounds (our own work, no third-party samples).
+
+Writes 16-bit stereo 44.1 kHz WAVs to src/Hoshi.App/Assets/Sounds/:
+
+  impact_small.wav     a good move: a soft wooden thump with a short bloom
+  explosion_medium.wav an excellent move: a boom with debris and a short tail
+  explosion_big.wav    the engine's best move: a cinematic hit (sub drop, low "braam",
+                       crackling body, rumbling debris and a long hall reverb)
+
+Deterministic (fixed seeds), so regenerating gives the same files.
+Usage: python3 tools/gen_sounds.py
+"""
+from __future__ import annotations
+
+import os
+import wave
+
+import numpy as np
+from scipy import signal
+
+SR = 44100
+OUT = os.path.join(os.path.dirname(__file__), "..", "src", "Hoshi.App", "Assets", "Sounds")
+
+
+def t_axis(seconds: float) -> np.ndarray:
+    return np.arange(int(seconds * SR)) / SR
+
+
+def env(t: np.ndarray, attack: float, decay: float) -> np.ndarray:
+    """Fast linear attack, exponential decay (decay = time constant in seconds)."""
+    a = np.clip(t / max(attack, 1e-4), 0, 1)
+    return a * np.exp(-np.maximum(t - attack, 0) / decay)
+
+
+def lowpass(x: np.ndarray, hz: float, order: int = 4) -> np.ndarray:
+    return signal.sosfilt(signal.butter(order, hz, "low", fs=SR, output="sos"), x)
+
+
+def highpass(x: np.ndarray, hz: float, order: int = 2) -> np.ndarray:
+    return signal.sosfilt(signal.butter(order, hz, "high", fs=SR, output="sos"), x)
+
+
+def bandpass(x: np.ndarray, lo: float, hi: float) -> np.ndarray:
+    return signal.sosfilt(signal.butter(2, [lo, hi], "band", fs=SR, output="sos"), x)
+
+
+def sweeping_lowpass(x: np.ndarray, start: float, end: float, tau: float) -> np.ndarray:
+    """Low-pass whose cutoff glides from start to end Hz (block-wise, smooth enough for noise)."""
+    out = np.zeros_like(x)
+    block = 512
+    zi = None
+    for i in range(0, len(x), block):
+        tt = i / SR
+        fc = end + (start - end) * np.exp(-tt / tau)
+        sos = signal.butter(2, min(fc, SR / 2 - 100), "low", fs=SR, output="sos")
+        if zi is None:
+            zi = np.zeros((sos.shape[0], 2))
+        out[i:i + block], zi = signal.sosfilt(sos, x[i:i + block], zi=zi)
+    return out
+
+
+def sub_drop(t: np.ndarray, f0: float, f1: float, glide: float, decay: float) -> np.ndarray:
+    freq = f1 + (f0 - f1) * np.exp(-t / glide)
+    phase = 2 * np.pi * np.cumsum(freq) / SR
+    return np.tanh(1.6 * np.sin(phase)) * env(t, 0.004, decay)
+
+
+def crackle(rng: np.random.Generator, t: np.ndarray, rate: float, decay: float) -> np.ndarray:
+    """Sparse random clicks (burning debris), band-limited."""
+    x = np.zeros_like(t)
+    density = rate * np.exp(-t / decay) / SR
+    hits = rng.random(len(t)) < density
+    x[hits] = rng.uniform(-1, 1, hits.sum())
+    return bandpass(x, 1500, 7000) * 3
+
+
+def reverb(rng: np.random.Generator, x: np.ndarray, seconds: float, mix: float) -> np.ndarray:
+    """Stereo hall: convolution with decaying, darkening noise (different per channel)."""
+    n = int(seconds * SR)
+    tt = np.arange(n) / SR
+    taper = int(len(x) * 0.3)
+    x = x.copy()
+    x[-taper:] *= np.cos(np.linspace(0, np.pi / 2, taper)) ** 2  # no abrupt end before the tail
+    chans = []
+    for _ in range(2):
+        ir = rng.standard_normal(n) * np.exp(-tt * (6.9 / seconds))
+        ir = lowpass(ir, 3500)
+        ir[: int(0.012 * SR)] = 0  # pre-delay
+        ir /= np.sqrt(np.sum(ir**2))
+        wet = np.pad(signal.fftconvolve(x, ir), (0, 1))[: len(x) + n]
+        dry = np.pad(x, (0, n))
+        chans.append((1 - mix) * dry + mix * wet)
+    return np.stack(chans, axis=1)
+
+
+def finish(stereo: np.ndarray, peak: float = 0.89) -> np.ndarray:
+    stereo = np.stack([highpass(c, 28, 4) for c in stereo.T], axis=1)  # no DC or sub-audible drift
+    # Gentle limiter, then normalise; short fade to silence at the end.
+    stereo = np.tanh(stereo / np.max(np.abs(stereo)) * 1.4)
+    stereo *= peak / np.max(np.abs(stereo))
+    # Trim the reverb tail once it is inaudible (-50 dB over 50 ms windows).
+    win = int(0.05 * SR)
+    rms = np.sqrt(np.convolve(np.mean(stereo**2, axis=1), np.ones(win) / win, "same"))
+    loud = np.nonzero(rms > peak * 0.012)[0]
+    stereo = stereo[: min(len(stereo), loud[-1] + win)]
+    fade = int(0.25 * SR)
+    stereo[-fade:] *= np.linspace(1, 0, fade)[:, None]
+    return stereo
+
+
+def write(name: str, stereo: np.ndarray) -> None:
+    os.makedirs(OUT, exist_ok=True)
+    path = os.path.join(OUT, name)
+    data = (np.clip(stereo, -1, 1) * 32767).astype("<i2")
+    with wave.open(path, "wb") as w:
+        w.setnchannels(2)
+        w.setsampwidth(2)
+        w.setframerate(SR)
+        w.writeframes(data.tobytes())
+    print(f"{name}: {len(stereo) / SR:.2f} s, {os.path.getsize(path) // 1024} KiB")
+
+
+def impact_small() -> np.ndarray:
+    rng = np.random.default_rng(11)
+    t = t_axis(1.1)
+    thump = sub_drop(t, 160, 70, 0.05, 0.16)
+    knock = bandpass(rng.standard_normal(len(t)), 300, 2400) * env(t, 0.001, 0.025)
+    bloom = lowpass(rng.standard_normal(len(t)), 900) * env(t, 0.01, 0.18) * 0.5
+    return finish(reverb(rng, thump + 0.7 * knock + bloom, 0.9, 0.22), 0.7)
+
+
+def explosion_medium() -> np.ndarray:
+    rng = np.random.default_rng(23)
+    t = t_axis(2.6)
+    noise = rng.standard_normal(len(t))
+    boom = sub_drop(t, 120, 42, 0.12, 0.55)
+    transient = highpass(noise, 2000) * env(t, 0.0005, 0.012)
+    body = sweeping_lowpass(noise, 5000, 250, 0.25) * env(t, 0.003, 0.4)
+    rumble = lowpass(np.cumsum(rng.standard_normal(len(t))) * 0.02, 180) * env(t, 0.05, 0.6)
+    debris = crackle(rng, t, 900, 0.5)
+    mix = 1.0 * boom + 0.6 * transient + 0.9 * body + 0.5 * rumble / (np.max(np.abs(rumble)) + 1e-9) + 0.35 * debris
+    return finish(reverb(rng, mix, 1.8, 0.3), 0.82)
+
+
+def explosion_big() -> np.ndarray:
+    rng = np.random.default_rng(42)
+    t = t_axis(4.8)
+    noise = rng.standard_normal(len(t))
+    boom = sub_drop(t, 95, 30, 0.2, 1.3)
+    transient = highpass(noise, 1800) * env(t, 0.0005, 0.018)
+    body = sweeping_lowpass(noise, 7000, 180, 0.35) * env(t, 0.004, 0.75)
+    # Low cinematic "braam": detuned saws, filtered, swelling in just after the hit.
+    braam = sum(signal.sawtooth(2 * np.pi * f * t) for f in (54.0, 54.6, 81.3, 108.9))
+    braam = lowpass(braam, 420) * env(t, 0.06, 1.6) * 0.22
+    rumble = lowpass(np.cumsum(rng.standard_normal(len(t))) * 0.02, 150)
+    rumble = rumble / (np.max(np.abs(rumble)) + 1e-9) * env(t, 0.1, 1.2)
+    debris = crackle(rng, t, 1400, 0.9) + 0.5 * crackle(rng, t, 300, 2.2)
+    mix = 1.1 * boom + 0.7 * transient + 1.0 * body + braam + 0.6 * rumble + 0.35 * debris
+    return finish(reverb(rng, mix, 2.8, 0.35), 0.89)
+
+
+if __name__ == "__main__":
+    write("impact_small.wav", impact_small())
+    write("explosion_medium.wav", explosion_medium())
+    write("explosion_big.wav", explosion_big())

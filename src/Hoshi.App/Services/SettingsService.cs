@@ -21,6 +21,12 @@ public sealed record AppSettings
 
     /// <summary>Search visits per analysed position (more = stronger and slower).</summary>
     public int AnalysisVisits { get; init; } = 200;
+
+    /// <summary>Celebrate strong moves (by KataGo's judgement) with a sound and a board impact.</summary>
+    public bool MoveEffects { get; init; } = true;
+
+    /// <summary>Sound effects volume, 0–100 (0 = silent; the board effect still plays).</summary>
+    public int SoundVolume { get; init; } = 70;
 }
 
 public interface ISettingsService
