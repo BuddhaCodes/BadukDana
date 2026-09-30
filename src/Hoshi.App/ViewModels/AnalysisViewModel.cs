@@ -27,10 +27,22 @@ public sealed partial class AnalysisViewModel : ViewModelBase
 {
     public const int GraphBatch = 25;
 
+    /// <summary>KataGo reports the shown position this often while it keeps searching (live analysis).</summary>
+    public const double LiveReportSeconds = 0.25;
+
+    /// <summary>Visits a partial analysis needs before its verdict on a move is trusted enough to celebrate.</summary>
+    public const int JudgeVisits = 40;
+
+    private const int LivePriority = 10;
+    private const int GraphPriority = -10;
+
     private readonly GameViewModel _game;
     private readonly IAnalysisEngine? _engine;
     private readonly IUiDispatcher _ui;
     private readonly Dictionary<string, TurnAnalysis> _cache = [];
+
+    // Positions whose search reached the configured visits; the others in the cache are partial (live or graph).
+    private readonly HashSet<string> _complete = [];
     private readonly ISoundService? _sounds;
     private readonly ISettingsService? _settings;
     private GameNode? _awaitingJudgement;
@@ -94,6 +106,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
             _engine.Changed += (_, _) => _ui.Post(() =>
             {
                 _cache.Clear();
+                _complete.Clear();
                 OnPropertyChanged(nameof(StatusText));
                 Refresh();
             });
@@ -115,7 +128,9 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         : !IsAnalysisOn ? string.Empty
         : _engine?.Problem is { } problem ? problem
         : Error is { } e ? e
-        : IsBusy ? _engine?.Activity ?? "Analizando…"
+        : IsBusy ? _engine?.Activity ?? (Analysis is { } a
+            ? string.Create(CultureInfo.InvariantCulture, $"Analizando en vivo · {a.Visits} visitas")
+            : "Analizando…")
         : string.Empty;
 
     /// <summary>"Negras 62 %" from the engine's winrate.</summary>
@@ -209,6 +224,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
 
     partial void OnAnalysisChanged(TurnAnalysis? value)
     {
+        OnPropertyChanged(nameof(StatusText));
         OnPropertyChanged(nameof(WinrateText));
         OnPropertyChanged(nameof(BlackWinrate));
         OnPropertyChanged(nameof(LeadText));
@@ -241,7 +257,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
 
         Position pos = Position.Of(_game);
         int n = pos.Moves.Count;
-        int[] needed = [.. new[] { n - 1, n }.Where(t => t >= 0 && !_cache.ContainsKey(pos.Key(t)))];
+        int[] needed = [.. new[] { n - 1, n }.Where(t => t >= 0 && !_complete.Contains(pos.Key(t)))];
         ShowCached(pos);
         _current?.Cancel();
         if (needed.Length > 0)
@@ -291,17 +307,19 @@ public sealed partial class AnalysisViewModel : ViewModelBase
 
         try
         {
-            IReadOnlyList<TurnAnalysis> results = await _engine!.AnalyzeAsync(pos.Query(turns, visits), cts.Token);
+            AnalysisQuery query = pos.Query(turns, visits) with
+            {
+                Priority = isGraph ? GraphPriority : LivePriority,
+                ReportDuringSearchEvery = isGraph ? null : LiveReportSeconds,
+            };
+            IReadOnlyList<TurnAnalysis> results = isGraph
+                ? await _engine!.AnalyzeAsync(query, cts.Token)
+                : await _engine!.AnalyzeLiveAsync(query, partial => _ui.Post(() => Store(pos, partial, complete: false, cts)), cts.Token);
             _ui.Post(() =>
             {
                 foreach (TurnAnalysis t in results)
                 {
-                    string key = pos.Key(t.Turn);
-                    // Keep the stronger result when a turn is analysed twice.
-                    if (!_cache.TryGetValue(key, out TurnAnalysis? old) || old.Visits <= t.Visits)
-                    {
-                        _cache[key] = t;
-                    }
+                    Store(pos, t, complete: !isGraph, cts: null);
                 }
 
                 if (!cts.IsCancellationRequested)
@@ -311,22 +329,39 @@ public sealed partial class AnalysisViewModel : ViewModelBase
                     if (!isGraph)
                     {
                         IsBusy = false;
-                        StartGraph(now);
                     }
-                    else
-                    {
-                        StartGraph(now);
-                    }
+
+                    StartGraph(now);
                 }
             });
         }
         catch (OperationCanceledException)
         {
-            // Superseded by a newer position.
+            // Superseded by a newer position; its partial results stay in the cache.
         }
         catch (EngineException ex)
         {
             _ui.Post(() => { IsBusy = false; Error = ex.Message; });
+        }
+    }
+
+    /// <summary>Caches a result (keeping the deeper one) and, for live updates of the shown position, redraws.</summary>
+    private void Store(Position pos, TurnAnalysis t, bool complete, CancellationTokenSource? cts)
+    {
+        string key = pos.Key(t.Turn);
+        if (!_cache.TryGetValue(key, out TurnAnalysis? old) || old.Visits <= t.Visits || complete)
+        {
+            _cache[key] = t;
+        }
+
+        if (complete)
+        {
+            _complete.Add(key);
+        }
+
+        if (cts is { IsCancellationRequested: false })
+        {
+            ShowCached(Position.Of(_game));
         }
     }
 
@@ -376,21 +411,35 @@ public sealed partial class AnalysisViewModel : ViewModelBase
             : null;
         Suggestions = now is null ? [] : [.. now.Candidates.Where(c => c.Point is not null).Take(3).Select((c, i) => Suggest(c, i, now))];
         UpdateGraph(pos);
-        if (Assessment is { } judged && _awaitingJudgement is { } node && node == _game.CurrentNode)
-        {
-            _awaitingJudgement = null;
-            Celebrate(judged);
-        }
+        TryCelebrate(pos);
     }
 
     private void OnMovePlayed(object? sender, GameNode node)
     {
+        // Usually instant: the position before the move was being analysed while the user thought, so the move is
+        // already among KataGo's candidates there.
         _awaitingJudgement = IsAnalysisActive ? node : null;
-        if (_awaitingJudgement is not null && Assessment is { } known)
+        TryCelebrate(Position.Of(_game));
+    }
+
+    /// <summary>Celebrates the awaited move once its verdict rests on enough visits (partial results are fine).</summary>
+    private void TryCelebrate(Position pos)
+    {
+        int n = pos.Moves.Count;
+        if (Assessment is not { } judged || _awaitingJudgement is not { } node || node != _game.CurrentNode || n == 0
+            || !_cache.TryGetValue(pos.Key(n - 1), out TurnAnalysis? before))
         {
-            // A line already analysed (e.g. replaying a variation): the verdict is known right away.
+            return;
+        }
+
+        int enough = Math.Min(JudgeVisits, _engine?.Visits ?? JudgeVisits);
+        bool beforeSolid = before.Visits >= enough || _complete.Contains(pos.Key(n - 1));
+        bool afterSolid = judged.Rank is not null
+            || (_cache.TryGetValue(pos.Key(n), out TurnAnalysis? after) && (after.Visits >= enough || _complete.Contains(pos.Key(n))));
+        if (beforeSolid && afterSolid)
+        {
             _awaitingJudgement = null;
-            Celebrate(known);
+            Celebrate(judged);
         }
     }
 

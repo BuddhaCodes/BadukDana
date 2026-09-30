@@ -25,6 +25,10 @@ public interface IAnalysisEngine
     }
 
     Task<IReadOnlyList<TurnAnalysis>> AnalyzeAsync(AnalysisQuery query, CancellationToken cancellationToken);
+
+    /// <summary>Like <see cref="AnalyzeAsync"/>, also reporting partial results while the engine searches.</summary>
+    Task<IReadOnlyList<TurnAnalysis>> AnalyzeLiveAsync(AnalysisQuery query, Action<TurnAnalysis> onUpdate, CancellationToken cancellationToken) =>
+        AnalyzeAsync(query, cancellationToken);
 }
 
 /// <summary>
@@ -85,11 +89,24 @@ public sealed class AnalysisEngineHost : IAnalysisEngine, IAsyncDisposable
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
-    public async Task<IReadOnlyList<TurnAnalysis>> AnalyzeAsync(AnalysisQuery query, CancellationToken cancellationToken)
+    public Task<IReadOnlyList<TurnAnalysis>> AnalyzeAsync(AnalysisQuery query, CancellationToken cancellationToken) =>
+        RunAsync(query, null, cancellationToken);
+
+    public Task<IReadOnlyList<TurnAnalysis>> AnalyzeLiveAsync(AnalysisQuery query, Action<TurnAnalysis> onUpdate, CancellationToken cancellationToken) =>
+        RunAsync(query, onUpdate, cancellationToken);
+
+    private async Task<IReadOnlyList<TurnAnalysis>> RunAsync(AnalysisQuery query, Action<TurnAnalysis>? onUpdate, CancellationToken cancellationToken)
     {
         KataGoAnalysisEngine engine = _engine ?? throw new EngineException(Problem ?? "KataGo no está disponible.");
-        IReadOnlyList<TurnAnalysis> result = await engine.AnalyzeAsync(query, cancellationToken);
-        SetActivity(null); // An answer means KataGo is ready, whatever its log said.
+        IReadOnlyList<TurnAnalysis> result = await engine.AnalyzeAsync(
+            query,
+            cancellationToken,
+            onUpdate is null ? null : t =>
+            {
+                SetActivity(null); // Partial results mean KataGo is ready, whatever its log said.
+                onUpdate(t);
+            });
+        SetActivity(null);
         return result;
     }
 

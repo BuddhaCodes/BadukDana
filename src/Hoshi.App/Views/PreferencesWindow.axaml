@@ -84,7 +84,7 @@
               <TextBlock Grid.Row="2" Classes="label" Text="Configuración" VerticalAlignment="Center" />
               <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding KataGoConfig}" Watermark="analysis_example.cfg" />
               <Button Grid.Row="2" Grid.Column="2" Content="Examinar…" Command="{Binding BrowseConfigCommand}" />
-              <TextBlock Grid.Row="3" Classes="label" Text="Visitas por jugada" VerticalAlignment="Center" />
+              <TextBlock Grid.Row="3" Classes="label" Text="Visitas máximas" VerticalAlignment="Center" />
               <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding AnalysisVisits}" Minimum="10" Maximum="100000" Increment="50"
                              FormatString="0" HorizontalAlignment="Left" Width="160" Margin="0,3" />
             </Grid>
@@ -94,7 +94,7 @@
             </StackPanel>
             <TextBlock Text="{Binding EngineStatus}" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" x:Name="EngineStatus" />
             <TextBlock Classes="secondary" TextWrapping="Wrap"
-                       Text="Más visitas = análisis más fuerte pero más lento. En partidas de OGS en curso el análisis y el territorio se desactivan: sus normas no permiten ayuda de IA mientras juegas." />
+                       Text="El análisis es en vivo: KataGo muestra resultados parciales enseguida y sigue profundizando en la posición hasta las visitas máximas. Más visitas = más fuerte, pero más uso de la GPU (con una gráfica integrada, 200–500 y una red ligera como b18c384 o b10c128). En partidas de OGS en curso el análisis y el territorio se desactivan: sus normas no permiten ayuda de IA mientras juegas." />
 
             <TextBlock Classes="label" Text="Celebrar las jugadas fuertes" Margin="0,14,0,0" />
             <CheckBox IsChecked="{Binding MoveEffects}" x:Name="MoveEffectsBox"

@@ -31,13 +31,17 @@ public sealed class KataGoAnalysisEngine : IAsyncDisposable
     }
 
     /// <summary>Analyses the requested turns. Results are ordered by turn.</summary>
-    public async Task<IReadOnlyList<TurnAnalysis>> AnalyzeAsync(AnalysisQuery query, CancellationToken cancellationToken)
+    /// <param name="onUpdate">
+    /// Receives partial results while KataGo searches (needs <see cref="AnalysisQuery.ReportDuringSearchEvery"/>);
+    /// called on the reader thread.
+    /// </param>
+    public async Task<IReadOnlyList<TurnAnalysis>> AnalyzeAsync(AnalysisQuery query, CancellationToken cancellationToken, Action<TurnAnalysis>? onUpdate = null)
     {
         ArgumentNullException.ThrowIfNull(query);
         IEngineProcess process = await EnsureStartedAsync(cancellationToken);
         string id = "hoshi-" + Interlocked.Increment(ref _nextId).ToString(CultureInfo.InvariantCulture);
         int expected = query.Turns.Count == 0 ? 1 : query.Turns.Count;
-        var pending = new Pending(expected, query.Width, query.Height);
+        var pending = new Pending(expected, query.Width, query.Height, onUpdate);
         _pending[id] = pending;
         try
         {
@@ -112,6 +116,16 @@ public sealed class KataGoAnalysisEngine : IAsyncDisposable
         if (q.Moves.Count == 0 || q.InitialPlayer == Stone.White)
         {
             json["initialPlayer"] = Player(q.InitialPlayer);
+        }
+
+        if (q.Priority != 0)
+        {
+            json["priority"] = q.Priority;
+        }
+
+        if (q.ReportDuringSearchEvery is { } every)
+        {
+            json["reportDuringSearchEvery"] = every;
         }
 
         if (q.Turns.Count > 0)
@@ -273,10 +287,18 @@ public sealed class KataGoAnalysisEngine : IAsyncDisposable
                 return;
             }
 
-            if (id is null || !_pending.TryGetValue(id, out Pending? pending)
-                || (r.TryGetProperty("isDuringSearch", out JsonElement during) && during.GetBoolean())
-                || !r.TryGetProperty("turnNumber", out _))
+            if (id is null || !_pending.TryGetValue(id, out Pending? pending) || !r.TryGetProperty("turnNumber", out _))
             {
+                return;
+            }
+
+            if (r.TryGetProperty("isDuringSearch", out JsonElement during) && during.GetBoolean())
+            {
+                if (pending.OnUpdate is { } update && r.TryGetProperty("moveInfos", out _))
+                {
+                    update(ParseResponse(r, pending.Width, pending.Height));
+                }
+
                 return;
             }
 
@@ -303,8 +325,10 @@ public sealed class KataGoAnalysisEngine : IAsyncDisposable
         }
     }
 
-    private sealed class Pending(int expected, int width, int height)
+    private sealed class Pending(int expected, int width, int height, Action<TurnAnalysis>? onUpdate)
     {
+        public Action<TurnAnalysis>? OnUpdate { get; } = onUpdate;
+
         private readonly List<TurnAnalysis> _results = [];
 
         public int Width { get; } = width;

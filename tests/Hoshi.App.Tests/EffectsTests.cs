@@ -26,6 +26,79 @@ internal sealed class TestSettings : ISettingsService
     public void Save(AppSettings settings) => Current = settings;
 }
 
+/// <summary>Streams one partial result per turn at once, then keeps "searching" until cancelled (like pondering).</summary>
+internal sealed class PonderingEngine : IAnalysisEngine
+{
+    public string? Problem => null;
+
+    public int Visits => 500;
+
+    public Point BestMove { get; set; } = new(15, 3);
+
+    public int PartialVisits { get; set; } = 60;
+
+    public List<AnalysisQuery> Queries { get; } = [];
+
+    public event EventHandler? Changed;
+
+    public void RaiseChanged() => Changed?.Invoke(this, EventArgs.Empty);
+
+    public Task<IReadOnlyList<TurnAnalysis>> AnalyzeAsync(AnalysisQuery query, CancellationToken cancellationToken) =>
+        Task.Delay(Timeout.Infinite, cancellationToken).ContinueWith<IReadOnlyList<TurnAnalysis>>(_ => [], TaskScheduler.Default);
+
+    public async Task<IReadOnlyList<TurnAnalysis>> AnalyzeLiveAsync(AnalysisQuery query, Action<TurnAnalysis> onUpdate, CancellationToken cancellationToken)
+    {
+        Queries.Add(query);
+        foreach (int t in query.Turns.Count == 0 ? [query.Moves.Count] : query.Turns)
+        {
+            Stone toMove = t % 2 == 0 ? Stone.Black : Stone.White;
+            onUpdate(new TurnAnalysis(t, toMove, 0.5, 0.5, PartialVisits, [new MoveCandidate(BestMove, 0, PartialVisits, 0.5, 0.5, 0.4, [])], null));
+        }
+
+        await Task.Delay(Timeout.Infinite, cancellationToken);
+        return [];
+    }
+}
+
+public sealed class LiveAnalysisTests
+{
+    [AvaloniaFact]
+    public async Task The_shown_position_is_analysed_live_and_a_prepared_move_is_judged_instantly()
+    {
+        var game = new GameViewModel();
+        var engine = new PonderingEngine();
+        var sounds = new FakeSoundService();
+        var vm = new AnalysisViewModel(game, engine, new ImmediateDispatcher(), sounds, new TestSettings()) { IsAnalysisOn = true };
+        await Task.Delay(300);
+
+        engine.Queries.Should().ContainSingle().Which.Should().Match<AnalysisQuery>(q => q.Priority == 10 && q.ReportDuringSearchEvery == AnalysisViewModel.LiveReportSeconds && q.MaxVisits == 500);
+        vm.Suggestions.Should().ContainSingle(s => s.Point == new Point(15, 3), "partial results are shown while KataGo keeps searching");
+        vm.StatusText.Should().Be("Analizando en vivo · 60 visitas");
+
+        // The user thinks, then plays KataGo's choice: the verdict is ready before any new analysis.
+        game.PlayCommand.Execute(new Point(15, 3));
+        vm.Assessment!.Quality.Should().Be(MoveQuality.Best);
+        sounds.Played.Should().Equal((SoundEffect.ExplosionBig, 0.7));
+        vm.Impact.Should().NotBeNull();
+    }
+
+    [AvaloniaFact]
+    public async Task A_shallow_partial_result_is_shown_but_not_celebrated()
+    {
+        var game = new GameViewModel();
+        var engine = new PonderingEngine { PartialVisits = 5 };
+        var sounds = new FakeSoundService();
+        var vm = new AnalysisViewModel(game, engine, new ImmediateDispatcher(), sounds, new TestSettings()) { IsAnalysisOn = true };
+        await Task.Delay(300);
+
+        game.PlayCommand.Execute(new Point(15, 3));
+        await Task.Delay(300);
+
+        vm.Assessment!.Quality.Should().Be(MoveQuality.Best);
+        sounds.Played.Should().BeEmpty("5 visits are too few to trust");
+    }
+}
+
 public sealed class MoveEffectsTests
 {
     private readonly GameViewModel _game = new();

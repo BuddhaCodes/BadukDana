@@ -134,6 +134,30 @@ public sealed class KataGoAnalysisEngineTests : IAsyncDisposable
     }
 
     [Fact]
+    public async Task Partial_results_are_reported_while_KataGo_searches()
+    {
+        var updates = new List<TurnAnalysis>();
+        Task<IReadOnlyList<TurnAnalysis>> task = _engine.AnalyzeAsync(
+            Query() with { Priority = 10, ReportDuringSearchEvery = 0.25 },
+            CancellationToken.None,
+            t => { lock (updates) { updates.Add(t); } });
+        FakeEngineProcess p = await WaitForProcessAsync();
+        JsonElement q = await p.NextQueryAsync();
+        q.GetProperty("priority").GetInt32().Should().Be(10);
+        q.GetProperty("reportDuringSearchEvery").GetDouble().Should().Be(0.25);
+        string id = q.GetProperty("id").GetString()!;
+
+        p.Reply(Response(id, 3, "W", 0.5, 0.52, ("D4", 0.5, 0.52)).Replace("\"isDuringSearch\":false", "\"isDuringSearch\":true", StringComparison.Ordinal));
+        await WaitUntil(() => { lock (updates) { return updates.Count == 1; } });
+        task.IsCompleted.Should().BeFalse();
+        p.Reply(Response(id, 3, "W", 0.7, 0.55, ("D4", 0.7, 0.55)));
+
+        (await task.WaitAsync(TimeSpan.FromSeconds(5)))[0].ScoreLead.Should().Be(0.7);
+        updates[0].ScoreLead.Should().Be(0.5);
+        KataGoAnalysisEngine.ToJson(Query(), "x").Should().NotContain("priority").And.NotContain("reportDuringSearchEvery");
+    }
+
+    [Fact]
     public async Task Errors_fail_the_query()
     {
         Task<IReadOnlyList<TurnAnalysis>> task = _engine.AnalyzeAsync(Query(), CancellationToken.None);
