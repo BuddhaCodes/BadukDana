@@ -41,7 +41,15 @@ public sealed class KataGoAnalysisEngine : IAsyncDisposable
         _pending[id] = pending;
         try
         {
-            await process.WriteLineAsync(ToJson(query, id), cancellationToken);
+            try
+            {
+                await process.WriteLineAsync(ToJson(query, id), cancellationToken);
+            }
+            catch (IOException ex)
+            {
+                throw new EngineException(ExitedMessage(process), ex);
+            }
+
             return await pending.Completion.Task.WaitAsync(cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -217,11 +225,18 @@ public sealed class KataGoAnalysisEngine : IAsyncDisposable
             _logger.LogInformation("KataGo output closed: {Error}", ex.Message);
         }
 
+        string message = ExitedMessage(process);
+        _logger.LogWarning("KataGo stopped: {Reason}", message);
         foreach (Pending p in _pending.Values)
         {
-            p.Completion.TrySetException(new EngineException("KataGo se cerró inesperadamente. Revisa su configuración y el log."));
+            p.Completion.TrySetException(new EngineException(message));
         }
     }
+
+    private static string ExitedMessage(IEngineProcess process) =>
+        process.ExitReason is { } reason
+            ? "KataGo se cerró (" + reason + ")"
+            : "KataGo se cerró inesperadamente. Revisa su configuración y el log.";
 
     private void Dispatch(string line)
     {

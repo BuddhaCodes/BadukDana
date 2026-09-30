@@ -12,6 +12,8 @@ internal sealed class FakeEngineProcess : IEngineProcess
 
     public bool HasExited { get; private set; }
 
+    public string? ExitReason { get; set; }
+
     public Task WriteLineAsync(string line, CancellationToken cancellationToken)
     {
         _toEngine.Writer.TryWrite(line);
@@ -167,8 +169,10 @@ public sealed class KataGoAnalysisEngineTests : IAsyncDisposable
         FakeEngineProcess p = await WaitForProcessAsync();
         await p.NextQueryAsync();
 
+        p.ExitReason = "código 1: Could not open model file";
         p.Exit();
-        await FluentActions.Awaiting(() => first.WaitAsync(TimeSpan.FromSeconds(5))).Should().ThrowAsync<EngineException>();
+        await FluentActions.Awaiting(() => first.WaitAsync(TimeSpan.FromSeconds(5))).Should().ThrowAsync<EngineException>()
+            .WithMessage("KataGo se cerró (código 1: Could not open model file)");
 
         _ = _engine.AnalyzeAsync(Query(), CancellationToken.None);
         await WaitUntil(() => _processes.Count == 2);
@@ -239,5 +243,19 @@ public sealed class MoveReviewTests
         a.Quality.Should().Be(quality);
         a.Rank.Should().BeNull();
         a.Best.Point.Should().Be(new Point(3, 3));
+    }
+
+    [Fact]
+    public void Exit_reasons_show_KataGo_s_last_error_line()
+    {
+        KataGoProcess.Describe(1, ["KataGo v1.16.0", "Loading model", "Uncaught exception: Could not open file model.bin.gz"])
+            .Should().Be("código 1: Uncaught exception: Could not open file model.bin.gz");
+        KataGoProcess.Describe(0, []).Should().Be("código 0, sin mensaje de KataGo.");
+    }
+
+    [Fact]
+    public void Missing_dll_exit_codes_explain_the_CUDA_builds()
+    {
+        KataGoProcess.Describe(unchecked((int)0xC0000135), []).Should().StartWith("código 0xC0000135: falta una DLL");
     }
 }
