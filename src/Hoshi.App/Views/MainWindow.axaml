@@ -110,7 +110,7 @@
                     ToolTip.Tip="Territorio actual y potencial (T)" x:Name="TerritoryButton"
                     IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Territory}" Size="17" /><TextBlock Text="Territorio" VerticalAlignment="Center" /></StackPanel></Button>
             <Button Classes="bar toggle" Classes.on="{Binding Analysis.IsAnalysisOn}" Command="{Binding Analysis.ToggleAnalysisCommand}"
-                    ToolTip.Tip="Análisis con IA (KataGo) en segundo plano (A)" x:Name="AnalysisButton"
+                    ToolTip.Tip="Mostrar el análisis de la IA: panel y sugerencias en el tablero (A). KataGo trabaja siempre de fondo." x:Name="AnalysisButton"
                     IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Analysis}" Size="17" /><TextBlock Text="Análisis" VerticalAlignment="Center" /></StackPanel></Button>
             <Button Classes="bar" Command="{Binding OpenLobbyCommand}" ToolTip.Tip="Jugar en OGS (Ctrl+L)" x:Name="OnlineButton"
                     IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Online}" Size="17" /><TextBlock Text="En línea" VerticalAlignment="Center" /></StackPanel></Button>
@@ -162,7 +162,7 @@
                           Board="{Binding Game.Board}"
                           BoardStyle="{DynamicResource Theme.Board}"
                           Territory="{Binding Analysis.Territory}"
-                          Suggestions="{Binding Analysis.Suggestions}"
+                          Suggestions="{Binding Analysis.BoardSuggestions}"
                           Impact="{Binding Analysis.Impact}"
                           AtariGroups="{Binding Analysis.AtariGroups}"
                           Animate="{DynamicResource Theme.Animations}"
@@ -172,6 +172,15 @@
                           GhostStone="{Binding Game.GhostStone}"
                           PointClickedCommand="{Binding Game.PlayCommand}"
                           ScrollCommand="{Binding Game.ScrollCommand}" />
+        <!-- KataGo warming up in the background (first launch can take minutes while it tunes the GPU). -->
+        <Border Classes="warmup" x:Name="WarmupPill" IsHitTestVisible="False"
+                HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,30"
+                Opacity="{Binding Analysis.IsWarmingUp, Converter={x:Static c:BoolToOpacityConverter.Instance}}">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <ProgressBar IsIndeterminate="True" Width="56" MinWidth="56" Height="3" MinHeight="3" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding Analysis.WarmupText}" VerticalAlignment="Center" FontSize="12.5" MaxWidth="520" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+        </Border>
       </Panel>
     </DockPanel>
 

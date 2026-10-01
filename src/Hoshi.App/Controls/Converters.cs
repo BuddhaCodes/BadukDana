@@ -39,3 +39,14 @@ public sealed class StringEqualsConverter : IValueConverter
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         Avalonia.Data.BindingOperations.DoNothing;
 }
+
+/// <summary>1 for true, 0 for false (fades elements in and out with an Opacity transition).</summary>
+public sealed class BoolToOpacityConverter : IValueConverter
+{
+    public static BoolToOpacityConverter Instance { get; } = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value is true ? 1.0 : 0.0;
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        Avalonia.Data.BindingOperations.DoNothing;
+}
