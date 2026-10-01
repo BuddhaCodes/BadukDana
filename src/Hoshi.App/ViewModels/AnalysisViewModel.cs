@@ -285,6 +285,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     public void Refresh()
     {
         AtariGroups = IsAtariAlertActive ? Atari.Groups(_game.Board) : [];
+        OnPropertyChanged(nameof(IsBlocked));
         OnPropertyChanged(nameof(IsAnalysisActive));
         OnPropertyChanged(nameof(IsEngineActive));
         OnPropertyChanged(nameof(IsWarmingUp));

@@ -1,10 +1,11 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:Hoshi.App.Localization"
         xmlns:vm="using:Hoshi.App.ViewModels"
         x:Class="Hoshi.App.Views.LobbyWindow"
         x:DataType="vm:LobbyViewModel"
         x:Name="Root"
-        Title="Jugar en línea"
+        Title="{l:T Lobby.Title}"
         Width="640" Height="560" MinWidth="520" MinHeight="420"
         Background="{DynamicResource Bg.Window}"
         WindowStartupLocation="CenterOwner">
@@ -55,7 +56,7 @@
                  Text="{Binding ConnectionText}" x:Name="ConnectionLabel" />
       <TextBlock Grid.Column="3" VerticalAlignment="Center" Margin="0,0,10,0"
                  Text="{Binding UserText}" IsVisible="{Binding IsSignedIn}" x:Name="UserLabel" />
-      <Button Grid.Column="4" Content="Cerrar sesión" Command="{Binding SignOutCommand}"
+      <Button Grid.Column="4" Content="{l:T Lobby.SignOut}" Command="{Binding SignOutCommand}"
               IsVisible="{Binding IsSignedIn}" x:Name="SignOutButton" />
     </Grid>
 
@@ -72,12 +73,12 @@
       <!-- Signed out -->
       <StackPanel IsVisible="{Binding IsSignedOut}" VerticalAlignment="Center" HorizontalAlignment="Center"
                   Width="320" Spacing="10" x:Name="SignInPanel">
-        <TextBlock Text="Inicia sesión en OGS" FontSize="18" HorizontalAlignment="Center" />
+        <TextBlock Text="{l:T Lobby.SignInHeading}" FontSize="18" HorizontalAlignment="Center" />
         <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                Content="Continuar con Google" Command="{Binding SignInWithGoogleCommand}" x:Name="GoogleSignInButton"
-                ToolTip.Tip="Se abre OGS en el navegador (online-go.com); Hoshi nunca ve tu cuenta de Google" />
+                Content="{l:T Lobby.Google}" Command="{Binding SignInWithGoogleCommand}" x:Name="GoogleSignInButton"
+                ToolTip.Tip="{l:T Lobby.GoogleTip}" />
         <Grid ColumnDefinitions="Auto,*" Margin="0,6,0,0">
-          <TextBlock Classes="secondary" Text="Servidor" VerticalAlignment="Center" Margin="0,0,10,0" />
+          <TextBlock Classes="secondary" Text="{l:T Lobby.Server}" VerticalAlignment="Center" Margin="0,0,10,0" />
           <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding Servers}"
                     SelectedItem="{Binding SelectedServer}" x:Name="ServerBox">
             <ComboBox.ItemTemplate>
@@ -87,41 +88,41 @@
         </Grid>
         <StackPanel IsVisible="{Binding IsOAuthMode}" Spacing="10">
           <Button Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                  Content="Iniciar sesión con OGS" Command="{Binding SignInCommand}" x:Name="BrowserSignInButton" />
+                  Content="{l:T Lobby.SignInOAuth}" Command="{Binding SignInCommand}" x:Name="BrowserSignInButton" />
           <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center"
-                     Text="Se abre tu navegador: entras en OGS y autorizas a Hoshi. Hoshi nunca ve tus credenciales." />
+                     Text="{l:T Lobby.OAuthHint}" />
         </StackPanel>
         <StackPanel IsVisible="{Binding IsPasswordMode}" Spacing="8">
           <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center"
-                     Text="Servidor de pruebas: usuario y contraseña de beta. La contraseña se envía una sola vez y no se guarda." />
-          <TextBox Watermark="Usuario" Text="{Binding Username}" x:Name="UsernameBox" />
-          <TextBox Watermark="Contraseña" PasswordChar="•" Text="{Binding Password}" x:Name="PasswordBox">
+                     Text="{l:T Lobby.BetaHint}" />
+          <TextBox Watermark="{l:T Lobby.Username}" Text="{Binding Username}" x:Name="UsernameBox" />
+          <TextBox Watermark="{l:T Lobby.Password}" PasswordChar="•" Text="{Binding Password}" x:Name="PasswordBox">
             <TextBox.KeyBindings>
               <KeyBinding Gesture="Enter" Command="{Binding SignInCommand}" />
             </TextBox.KeyBindings>
           </TextBox>
           <Button Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                  Content="Iniciar sesión" Command="{Binding SignInCommand}" x:Name="PasswordSignInButton" />
+                  Content="{l:T Lobby.SignIn}" Command="{Binding SignInCommand}" x:Name="PasswordSignInButton" />
           <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center" x:Name="SocialAccountHint"
-                     Text="¿Cuenta de Google? «Continuar con Google» entra en online-go.com. Para beta necesitas contraseña (Configuración → Cuenta en beta.online-go.com) o una cuenta de pruebas." />
+                     Text="{l:T Lobby.GoogleBetaHint}" />
         </StackPanel>
       </StackPanel>
 
       <!-- Signed in -->
       <TabControl IsVisible="{Binding IsSignedIn}" x:Name="Tabs">
-        <TabItem Header="Mis partidas">
+        <TabItem Header="{l:T Lobby.MyGames}">
           <DockPanel Margin="0,8,0,0">
             <Button DockPanel.Dock="Top" HorizontalAlignment="Right" Margin="0,0,0,8"
-                    Content="Actualizar" Command="{Binding RefreshGamesCommand}" ToolTip.Tip="F5" />
+                    Content="{l:T Lobby.Refresh}" Command="{Binding RefreshGamesCommand}" ToolTip.Tip="F5" />
             <Panel>
-              <TextBlock Classes="secondary" Text="No tienes partidas en curso." HorizontalAlignment="Center" VerticalAlignment="Center"
+              <TextBlock Classes="secondary" Text="{l:T Lobby.NoGames}" HorizontalAlignment="Center" VerticalAlignment="Center"
                          IsVisible="{Binding !ActiveGames.Count}" />
               <ListBox ItemsSource="{Binding ActiveGames}" x:Name="ActiveGamesList"
                        IsVisible="{Binding !!ActiveGames.Count}">
                 <ListBox.ItemTemplate>
                   <DataTemplate x:DataType="vm:ActiveGameItem">
                     <Grid ColumnDefinitions="*,Auto,Auto,Auto" Background="Transparent"
-                          ToolTip.Tip="Doble clic para abrir en el tablero">
+                          ToolTip.Tip="{l:T Lobby.DoubleClickOpen}">
                       <Grid.KeyBindings>
                         <KeyBinding Gesture="Enter" Command="{Binding #Root.((vm:LobbyViewModel)DataContext).OpenGameCommand}" CommandParameter="{Binding}" />
                       </Grid.KeyBindings>
@@ -131,7 +132,7 @@
                       </StackPanel>
                       <TextBlock Grid.Column="1" Classes="secondary" Text="{Binding Board}" VerticalAlignment="Center" Margin="12,0" />
                       <TextBlock Grid.Column="2" Text="{Binding TurnText}" VerticalAlignment="Center" MinWidth="80" TextAlignment="Right" />
-                      <Button Grid.Column="3" Content="Abrir" Margin="12,0,0,0"
+                      <Button Grid.Column="3" Content="{l:T Lobby.Open}" Margin="12,0,0,0"
                               Command="{Binding #Root.((vm:LobbyViewModel)DataContext).OpenGameCommand}" CommandParameter="{Binding}" />
                     </Grid>
                   </DataTemplate>
@@ -141,9 +142,9 @@
           </DockPanel>
         </TabItem>
 
-        <TabItem Header="Desafíos abiertos">
+        <TabItem Header="{l:T Lobby.OpenChallenges}">
           <Panel Margin="0,8,0,0">
-            <TextBlock Classes="secondary" Text="No hay desafíos abiertos ahora mismo." HorizontalAlignment="Center" VerticalAlignment="Center"
+            <TextBlock Classes="secondary" Text="{l:T Lobby.NoChallenges}" HorizontalAlignment="Center" VerticalAlignment="Center"
                        IsVisible="{Binding !OpenChallenges.Count}" />
             <ListBox ItemsSource="{Binding OpenChallenges}" x:Name="OpenChallengesList"
                      IsVisible="{Binding !!OpenChallenges.Count}">
@@ -155,10 +156,10 @@
                       <TextBlock Classes="secondary" Text="{Binding Details}" />
                     </StackPanel>
                     <TextBlock Grid.Column="1" Classes="secondary" Text="{Binding Board}" VerticalAlignment="Center" Margin="12,0" />
-                    <Button Grid.Column="2" Content="Aceptar"
+                    <Button Grid.Column="2" Content="{l:T Common.Ok}"
                             Command="{Binding #Root.((vm:LobbyViewModel)DataContext).AcceptCommand}"
                             CommandParameter="{Binding}"
-                            ToolTip.Tip="Hoshi no acepta partidas clasificatorias" ToolTip.ShowOnDisabled="True" />
+                            ToolTip.Tip="{l:T Lobby.NoRanked}" ToolTip.ShowOnDisabled="True" />
                   </Grid>
                 </DataTemplate>
               </ListBox.ItemTemplate>
@@ -166,7 +167,7 @@
           </Panel>
         </TabItem>
 
-        <TabItem Header="Crear desafío">
+        <TabItem Header="{l:T Lobby.CreateChallenge}">
           <StackPanel Margin="0,12,0,0" Spacing="10" MaxWidth="440" HorizontalAlignment="Left">
             <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" x:Name="ChallengeForm"
                   IsEnabled="{Binding !IsWaiting}">
@@ -176,42 +177,42 @@
                   <Setter Property="HorizontalAlignment" Value="Stretch" />
                 </Style>
               </Grid.Styles>
-              <TextBlock Classes="label" Text="Rival" />
-              <TextBox Grid.Column="1" Text="{Binding OpponentUsername}" Watermark="Vacío = desafío abierto" x:Name="OpponentBox" />
+              <TextBlock Classes="label" Text="{l:T Lobby.Opponent}" />
+              <TextBox Grid.Column="1" Text="{Binding OpponentUsername}" Watermark="{l:T Lobby.OpponentHint}" x:Name="OpponentBox" />
 
-              <TextBlock Grid.Row="1" Classes="label" Text="Tablero" />
+              <TextBlock Grid.Row="1" Classes="label" Text="{l:T Lobby.Board}" />
               <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding BoardSizes}" SelectedItem="{Binding BoardSize}" />
 
-              <TextBlock Grid.Row="2" Classes="label" Text="Tiempo" />
+              <TextBlock Grid.Row="2" Classes="label" Text="{l:T Lobby.Time}" />
               <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding TimePresets}" SelectedItem="{Binding SelectedTimePreset}">
                 <ComboBox.ItemTemplate>
                   <DataTemplate x:DataType="vm:TimePreset"><TextBlock Text="{Binding Label}" /></DataTemplate>
                 </ComboBox.ItemTemplate>
               </ComboBox>
 
-              <TextBlock Grid.Row="3" Classes="label" Text="Color" />
+              <TextBlock Grid.Row="3" Classes="label" Text="{l:T Lobby.Color}" />
               <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding Colors}" SelectedItem="{Binding SelectedColor}">
                 <ComboBox.ItemTemplate>
                   <DataTemplate x:DataType="vm:ColorChoice"><TextBlock Text="{Binding Label}" /></DataTemplate>
                 </ComboBox.ItemTemplate>
               </ComboBox>
 
-              <TextBlock Grid.Row="4" Classes="label" Text="Reglas" />
+              <TextBlock Grid.Row="4" Classes="label" Text="{l:T GameInfo.Rules}" />
               <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding RulesChoices}" SelectedItem="{Binding SelectedRules}">
                 <ComboBox.ItemTemplate>
                   <DataTemplate x:DataType="vm:RulesChoice"><TextBlock Text="{Binding Label}" /></DataTemplate>
                 </ComboBox.ItemTemplate>
               </ComboBox>
 
-              <TextBlock Grid.Row="5" Classes="label" Text="Hándicap" />
+              <TextBlock Grid.Row="5" Classes="label" Text="{l:T Lobby.Handicap}" />
               <NumericUpDown Grid.Row="5" Grid.Column="1" Minimum="0" Maximum="9" Increment="1" FormatString="0"
                              Value="{Binding Handicap}" />
             </Grid>
             <TextBlock Classes="secondary" TextWrapping="Wrap"
-                       Text="Las partidas creadas desde Hoshi son siempre no clasificatorias. Un desafío directo es privado." />
+                       Text="{l:T Lobby.UnrankedNote}" />
             <StackPanel Orientation="Horizontal" Spacing="8">
-              <Button Classes="accent" Content="Crear desafío" Command="{Binding CreateChallengeCommand}" x:Name="CreateChallengeButton" />
-              <Button Content="Cancelar desafío" Command="{Binding CancelWaitingCommand}" IsVisible="{Binding IsWaiting}" x:Name="CancelWaitingButton" />
+              <Button Classes="accent" Content="{l:T Lobby.CreateChallenge}" Command="{Binding CreateChallengeCommand}" x:Name="CreateChallengeButton" />
+              <Button Content="{l:T Lobby.CancelChallenge}" Command="{Binding CancelWaitingCommand}" IsVisible="{Binding IsWaiting}" x:Name="CancelWaitingButton" />
             </StackPanel>
             <TextBlock Text="{Binding WaitingText}" IsVisible="{Binding IsWaiting}" Foreground="{DynamicResource Accent}" />
           </StackPanel>
@@ -219,7 +220,7 @@
 
         <TabItem Header="Automatch">
           <TextBlock Classes="secondary" Margin="0,24" HorizontalAlignment="Center" TextWrapping="Wrap"
-                     Text="El emparejamiento automático llegará junto con el tablero en línea (fase 5)." />
+                     Text="{l:T Lobby.AutomatchSoon}" />
         </TabItem>
       </TabControl>
     </Panel>
