@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hoshi — a Go board that feels every move</title>
+<link rel="canonical" href="https://buddhacodes.github.io/BadukDana/">
+<link rel="icon" type="image/png" href="icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Hoshi — a Go board that feels every move">
+<meta property="og:description" content="A free desktop Go app: live KataGo analysis, joseki guidance, cinematic effects, adaptive music and online play on OGS.">
+<meta property="og:url" content="https://buddhacodes.github.io/BadukDana/">
+<meta property="og:image" content="https://buddhacodes.github.io/BadukDana/img/night-analysis.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="description" content="Hoshi is a free desktop Go (Baduk, Weiqi) app: beautiful boards, live KataGo analysis, cinematic effects for great moves, adaptive lo-fi music and online play on OGS.">
 <link rel="icon" href="icon.png">
 <style>
@@ -196,6 +204,7 @@
       <div class="cta">
         <a class="btn primary" href="#download" data-i18n="hero.cta">Get Hoshi</a>
         <a class="btn ghost" href="#features" data-i18n="hero.more">See what it does</a>
+        <a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana" data-i18n="hero.github">Source on GitHub</a>
       </div>
       <div class="badges">
         <span class="badge">Windows · macOS · Linux</span>
@@ -337,7 +346,9 @@
     </div>
     <div class="steps">
       <div class="card"><h3 data-i18n="s1.t">Install .NET 10</h3><p class="muted" data-i18n="s1.d">Get the .NET 10 SDK from dot.net for your system.</p></div>
-      <div class="card"><h3 data-i18n="s2.t">Build and run</h3><p class="muted" data-i18n="s2.d">From the Hoshi folder:</p><pre>dotnet run --project src/Hoshi.App -c Release</pre></div>
+      <div class="card"><h3 data-i18n="s2.t">Build and run</h3><p class="muted" data-i18n="s2.d">Clone the repository and run:</p><pre>git clone https://github.com/BuddhaCodes/BadukDana.git
+cd BadukDana
+dotnet run --project src/Hoshi.App -c Release</pre></div>
       <div class="card"><h3 data-i18n="s3.t">Add KataGo (optional)</h3><p class="muted" data-i18n="s3.d">Download KataGo and a network (b18c384 is a good start), then pick them in Preferences → Analysis → Test KataGo.</p></div>
     </div>
   </div>
@@ -347,6 +358,7 @@
   <div class="wrap">
     <div class="row"><img src="icon.png" alt=""><strong style="color:var(--text)">Hoshi 星</strong></div>
     <p data-i18n="ft.credits">Analysis by KataGo (MIT). Classic theme textures from Sabaki and Shudan (MIT). Fonts under the SIL Open Font License; icons from Phosphor, Lucide and Tabler. Joseki ratings and comments come live from the OGS Joseki Explorer, a community project. Effects, sounds and music are Hoshi's own.</p>
+    <p><a href="https://github.com/BuddhaCodes/BadukDana" style="color:var(--gold-2)">github.com/BuddhaCodes/BadukDana</a></p>
     <p data-i18n="ft.ogs">Not affiliated with OGS (online-go.com) or KataGo.</p>
   </div>
 </footer>
@@ -357,7 +369,7 @@
     "hero.eyebrow": "Go · Baduk · Weiqi",
     "hero.title": "Un tablero de Go que <em>siente</em> cada jugada.",
     "hero.lead": "Hoshi es una app de escritorio gratuita para jugar y estudiar Go. Un tablero precioso, KataGo valorando cada jugada en vivo, guía de josekis en cada esquina, efectos de cine cuando das con la mejor jugada y música lo-fi que se anima con tus rachas.",
-    "hero.cta": "Consigue Hoshi", "hero.more": "Mira lo que hace", "hero.badge2": "Análisis con KataGo", "hero.badge3": "Juega en OGS", "hero.badge4": "Entrenador de josekis",
+    "hero.cta": "Consigue Hoshi", "hero.more": "Mira lo que hace", "hero.github": "Código en GitHub", "hero.badge2": "Análisis con KataGo", "hero.badge3": "Juega en OGS", "hero.badge4": "Entrenador de josekis",
     "feat.eyebrow": "Funciones", "feat.title": "Todo lo que necesitas frente al tablero.",
     "feat.lead": "Juega con amigos en la misma pantalla, revisa tus partidas con un motor o enfréntate al mundo en OGS.",
     "f1.t": "Análisis con IA en vivo", "f1.d": "KataGo trabaja de fondo desde que abres Hoshi y valora cada jugada: la mejor, excelente, buena, imprecisa, error o error grave, con los puntos perdidos.",
@@ -402,7 +414,7 @@
     "dl.eyebrow": "Consigue Hoshi", "dl.title": "En marcha en tres pasos.",
     "dl.lead": "Hoshi está hecho con .NET y Avalonia y funciona en Windows, macOS y Linux.",
     "s1.t": "Instala .NET 10", "s1.d": "Descarga el SDK de .NET 10 desde dot.net para tu sistema.",
-    "s2.t": "Compila y ejecuta", "s2.d": "Desde la carpeta de Hoshi:",
+    "s2.t": "Compila y ejecuta", "s2.d": "Clona el repositorio y ejecuta:",
     "s3.t": "Añade KataGo (opcional)", "s3.d": "Descarga KataGo y una red (b18c384 es un buen comienzo) y elígelos en Preferencias → Análisis → Probar KataGo.",
     "ft.credits": "Análisis de KataGo (MIT). Texturas del tema Clásico de Sabaki y Shudan (MIT). Fuentes con licencia SIL Open Font; iconos de Phosphor, Lucide y Tabler. Las valoraciones y comentarios de josekis llegan en vivo del Joseki Explorer de OGS, un proyecto comunitario. Los efectos, sonidos y la música son de Hoshi.",
     "ft.ogs": "Sin relación con OGS (online-go.com) ni con KataGo."

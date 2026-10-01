@@ -3,7 +3,9 @@
 Cross-platform desktop client for Baduk / Go / Weiqi, built with **Avalonia** on **.NET 10**.
 Local play and SGF editing with a Sabaki-inspired look, and online play through **OGS** (online-go.com).
 
-> Status: Phase 0 (skeleton). See `docs/ROADMAP.md`.
+**Website:** https://buddhacodes.github.io/BadukDana/ (source in `docs/site`, published by `.github/workflows/pages.yml`).
+
+> Status and plans: see `docs/ROADMAP.md`.
 
 ## Requirements
 
