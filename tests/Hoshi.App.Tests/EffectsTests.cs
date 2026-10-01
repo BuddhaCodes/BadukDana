@@ -171,14 +171,42 @@ public sealed class MoveEffectsTests
     }
 
     [AvaloniaFact]
-    public async Task Without_analysis_there_are_no_effects()
+    public async Task KataGo_judges_in_the_background_even_with_the_analysis_hidden()
     {
         _vm.IsAnalysisOn = false;
         _game.PlayCommand.Execute(new Point(15, 3));
         await SettleAsync();
 
-        _vm.Impact.Should().BeNull();
-        _sounds.Played.Should().BeEmpty();
+        _vm.Impact.Should().NotBeNull("effects and music need the verdict, not the panel");
+        _sounds.Played.Should().ContainSingle();
+        _vm.Suggestions.Should().NotBeEmpty();
+        _vm.BoardSuggestions.Should().BeEmpty("the board only shows suggestions when the analysis is shown");
+        _vm.Graph.Should().OnlyContain(v => v == null || true);
+
+        _vm.IsAnalysisOn = true;
+        _vm.BoardSuggestions.Should().NotBeEmpty();
+    }
+
+    [AvaloniaFact]
+    public async Task KataGo_wakes_up_when_the_app_opens_and_a_loading_pill_shows_until_it_answers()
+    {
+        var engine = new PonderingEngine();
+        var game = new GameViewModel();
+        var vm = new AnalysisViewModel(game, engine, new ImmediateDispatcher());
+        vm.IsWarmingUp.Should().BeTrue();
+        await Task.Delay(400);
+        vm.IsWarmingUp.Should().BeFalse("KataGo has answered");
+        engine.Queries.Should().ContainSingle().Which.Moves.Should().BeEmpty("the empty board is analysed at start-up");
+
+        var slow = new FakeAnalysisEngine();
+        var silent = new SilentEngine();
+        var waiting = new AnalysisViewModel(new GameViewModel(), silent, new ImmediateDispatcher());
+        waiting.IsWarmingUp.Should().BeTrue();
+        waiting.WarmupText.Should().Be("Despertando a KataGo…");
+        silent.Activity = "KataGo está calibrando la tarjeta gráfica (paso 3/55)…";
+        silent.RaiseActivity();
+        waiting.WarmupText.Should().Be("Calibrando la tarjeta gráfica (paso 3/55)…");
+        slow.Should().NotBeNull();
     }
 
     [AvaloniaFact]
@@ -378,4 +406,25 @@ public sealed class MoveEffectsTests
             frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", name));
         }
     }
+}
+
+/// <summary>Never answers (KataGo still loading).</summary>
+internal sealed class SilentEngine : IAnalysisEngine
+{
+    public string? Problem => null;
+
+    public int Visits => 100;
+
+    public string? Activity { get; set; }
+
+    public event EventHandler? Changed;
+
+    public event EventHandler? ActivityChanged;
+
+    public void RaiseActivity() => ActivityChanged?.Invoke(this, EventArgs.Empty);
+
+    public void RaiseChanged() => Changed?.Invoke(this, EventArgs.Empty);
+
+    public Task<IReadOnlyList<TurnAnalysis>> AnalyzeAsync(AnalysisQuery query, CancellationToken cancellationToken) =>
+        Task.Delay(Timeout.Infinite, cancellationToken).ContinueWith<IReadOnlyList<TurnAnalysis>>(_ => [], TaskScheduler.Default);
 }

@@ -46,6 +46,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     private readonly ISoundService? _sounds;
     private readonly ISettingsService? _settings;
     private GameNode? _awaitingJudgement;
+    private bool _engineReady;
     private int _impacts;
     private CancellationTokenSource? _current;
     private CancellationTokenSource? _graphCts;
@@ -114,17 +115,42 @@ public sealed partial class AnalysisViewModel : ViewModelBase
             {
                 _cache.Clear();
                 _complete.Clear();
+                _engineReady = false;
                 OnPropertyChanged(nameof(StatusText));
                 Refresh();
             });
-            _engine.ActivityChanged += (_, _) => _ui.Post(() => OnPropertyChanged(nameof(StatusText)));
+            _engine.ActivityChanged += (_, _) => _ui.Post(() =>
+            {
+                OnPropertyChanged(nameof(StatusText));
+                OnPropertyChanged(nameof(WarmupText));
+            });
+
+            // Wake KataGo up as soon as the app opens.
+            _ui.Post(Refresh);
         }
     }
 
     /// <summary>True while the user plays an OGS game: engine help is not allowed there.</summary>
     public bool IsBlocked => _game.Online is { IsPlayer: true, IsFinished: false };
 
+    /// <summary>The analysis panel and the suggestions on the board are shown (button "Análisis", key A).</summary>
     public bool IsAnalysisActive => IsAnalysisOn && !IsBlocked;
+
+    /// <summary>
+    /// KataGo runs in the background whenever it is configured and allowed (not in live OGS games), from the moment
+    /// the app opens, so verdicts, effects and music work even with the panel hidden.
+    /// </summary>
+    public bool IsEngineActive => HasEngine && !IsBlocked;
+
+    /// <summary>Suggestions to draw on the board: only while the analysis is shown.</summary>
+    public IReadOnlyList<BoardSuggestion> BoardSuggestions => IsAnalysisActive ? Suggestions : [];
+
+    /// <summary>KataGo is starting (loading the network, tuning the GPU) and has not answered yet.</summary>
+    public bool IsWarmingUp => IsEngineActive && !_engineReady && Error is null;
+
+    public string WarmupText => _engine?.Activity is { } activity
+        ? activity.Replace("KataGo está ", string.Empty, StringComparison.Ordinal) is var a && a.Length > 0 ? char.ToUpperInvariant(a[0]) + a[1..] : activity
+        : "Despertando a KataGo…";
 
     public bool IsTerritoryActive => IsTerritoryOn && !IsBlocked;
 
@@ -214,18 +240,24 @@ public sealed partial class AnalysisViewModel : ViewModelBase
 
     partial void OnIsAnalysisOnChanged(bool value)
     {
-        if (!value)
+        // Only what is shown changes: the engine keeps analysing in the background.
+        OnPropertyChanged(nameof(BoardSuggestions));
+        if (value && IsEngineActive)
         {
-            Cancel();
-            Analysis = null;
-            Assessment = null;
-            Suggestions = [];
-            Graph = [];
-            Error = null;
+            StartGraph(Position.Of(_game));
+        }
+        else
+        {
+            _graphCts?.Cancel();
+            _graphCts = null;
         }
 
         Refresh();
     }
+
+    partial void OnSuggestionsChanged(IReadOnlyList<BoardSuggestion> value) => OnPropertyChanged(nameof(BoardSuggestions));
+
+    partial void OnErrorChanged(string? value) => OnPropertyChanged(nameof(IsWarmingUp));
 
     partial void OnIsTerritoryOnChanged(bool value) => UpdateTerritory();
 
@@ -253,10 +285,13 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     {
         AtariGroups = IsAtariAlertActive ? Atari.Groups(_game.Board) : [];
         OnPropertyChanged(nameof(IsAnalysisActive));
+        OnPropertyChanged(nameof(IsEngineActive));
+        OnPropertyChanged(nameof(IsWarmingUp));
+        OnPropertyChanged(nameof(BoardSuggestions));
         OnPropertyChanged(nameof(IsTerritoryActive));
         OnPropertyChanged(nameof(StatusText));
         UpdateTerritory();
-        if (!IsAnalysisActive || !HasEngine)
+        if (!IsEngineActive)
         {
             Cancel();
             Suggestions = [];
@@ -339,7 +374,10 @@ public sealed partial class AnalysisViewModel : ViewModelBase
                         IsBusy = false;
                     }
 
-                    StartGraph(now);
+                    if (IsAnalysisActive)
+                    {
+                        StartGraph(now); // the game graph is only filled while it is shown
+                    }
                 }
             });
         }
@@ -356,6 +394,12 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     /// <summary>Caches a result (keeping the deeper one) and, for live updates of the shown position, redraws.</summary>
     private void Store(Position pos, TurnAnalysis t, bool complete, CancellationTokenSource? cts)
     {
+        if (!_engineReady)
+        {
+            _engineReady = true;
+            OnPropertyChanged(nameof(IsWarmingUp));
+        }
+
         string key = pos.Key(t.Turn);
         if (!_cache.TryGetValue(key, out TurnAnalysis? old) || old.Visits <= t.Visits || complete)
         {
@@ -401,7 +445,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
             if (ReferenceEquals(_graphCts, cts))
             {
                 _graphCts = null;
-                if (!cts.IsCancellationRequested && IsAnalysisActive)
+                if (!cts.IsCancellationRequested && IsAnalysisActive && IsEngineActive)
                 {
                     StartGraph(Position.Of(_game));
                 }
@@ -429,7 +473,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     {
         // Usually instant: the position before the move was being analysed while the user thought, so the move is
         // already among KataGo's candidates there.
-        _awaitingJudgement = IsAnalysisActive ? node : null;
+        _awaitingJudgement = IsEngineActive ? node : null;
         TryCelebrate(Position.Of(_game));
     }
 
@@ -469,7 +513,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     {
         AppSettings settings = _settings?.Current ?? new AppSettings();
         int strength = ImpactStrength(judged.Quality);
-        if (!settings.MoveEffects || strength == 0 || judged.Played.Point is not { } point || !IsAnalysisActive)
+        if (!settings.MoveEffects || strength == 0 || judged.Played.Point is not { } point || !IsEngineActive)
         {
             return;
         }
@@ -509,7 +553,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
 
         BoardState board = _game.Board;
         double komi = _game.Tree.Info.Komi ?? 0;
-        Territory = Analysis?.Ownership is { } own && own.Count == board.Width * board.Height && IsAnalysisActive
+        Territory = Analysis?.Ownership is { } own && own.Count == board.Width * board.Height && IsEngineActive
             ? TerritoryEstimate.FromOwnership(board, own, komi)
             : TerritoryEstimator.Estimate(board, komi);
     }

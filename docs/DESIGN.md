@@ -124,6 +124,12 @@ Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su compo
   - *La mejor* (3): explosión cinemática (`explosion_big`: caída de subgraves, «braam» grave, cola de escombros y reverberación), destello grande, dos ondas, ~56 chispas con estela, temblor fuerte y **suelo dañado**: cráter irregular con fondo astillado y labio levantado, 8 fracturas radiales en facetas (anchas en el cráter, afinándose hasta un hilo, con bifurcaciones), fracturas en anillo que las unen y astillas de madera despedidas. Relieve con luz desde arriba a la izquierda (halo oscuro de oclusión y labio claro abajo a la derecha). Las fracturas nacen incandescentes (metal fundido) y se enfrían a grietas oscuras; todo se desvanece en ~3,2 s.
   - Las grietas se dibujan bajo las piedras y recortadas al tablero; el resto encima. Todo determinista a partir de una semilla (`ImpactEffect`). Sin animaciones (Apariencia) solo suena.
 
+## IA siempre de fondo
+
+- Si KataGo está configurado, arranca al abrir Hoshi y analiza en todo momento (no en partidas de OGS en curso), para que las valoraciones, los efectos y la música funcionen aunque el análisis no se muestre.
+- Mientras KataGo carga o calibra la gráfica, una píldora discreta abajo del tablero («Despertando a KataGo…», «Cargando la red neuronal…», «Calibrando la tarjeta gráfica (paso n/m)…») con barra indeterminada; se desvanece al primer resultado.
+- El botón «Análisis» (A) solo muestra u oculta el panel, la gráfica y las sugerencias sobre el tablero. La gráfica de la partida solo se rellena mientras se muestra.
+
 ## Música adaptativa
 
 - Lo-fi tranquilo (Dm9 – G13 – Cmaj9 – Am9, 80 BPM, vinilo y cinta). Capas: 0 piano eléctrico (siempre), 1 bajo y bombo, 2 batería con swing, 3 arpegio pulsado con eco, 4 «hype» (acordes con bombeo, hi-hats a semicorcheas, palmas, melodía brillante), 5 «overdrive» (bombo a negras, bajo rodante a semicorcheas, arpegio supersaw, redobles y platos). Cada capa nueva entra con un golpe («level up»: barrido inverso, boom y plato); con el calor alto las capas melódicas bombean con el bombo (sidechain).
@@ -157,7 +163,7 @@ Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su compo
 | Ctrl+I | Información de la partida |
 | P | Pasar (solo partidas locales) |
 | T | Territorio actual y potencial |
-| A | Análisis con IA (KataGo) |
+| A | Mostrar el análisis de la IA (panel y sugerencias); KataGo trabaja siempre de fondo |
 | M | Música adaptativa on/off |
 | Ctrl+L | Jugar en línea |
 | F11 | Modo zen *(pendiente)* |

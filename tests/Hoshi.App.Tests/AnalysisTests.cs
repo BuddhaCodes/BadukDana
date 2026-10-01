@@ -129,8 +129,9 @@ public sealed class AnalysisViewModelTests
         await SettleAsync();
 
         _engine.Queries.Count.Should().Be(before, "both positions are cached");
-        _engine.Queries[0].Turns.Should().Equal(0, 1);
-        _engine.Queries[0].Moves.Should().ContainSingle().Which.Should().Be(new EngineMove(Stone.Black, new Point(15, 3)));
+        _engine.Queries[0].Moves.Should().BeEmpty("the empty board is analysed when the app opens");
+        _engine.Queries[1].Turns.Should().Contain(1);
+        _engine.Queries[1].Moves.Should().ContainSingle().Which.Should().Be(new EngineMove(Stone.Black, new Point(15, 3)));
     }
 
     [AvaloniaFact]
@@ -244,5 +245,20 @@ public sealed class AnalysisWindowTests
         vm.Analysis.IsAnalysisOn = false;
         using WriteableBitmap heuristic = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         heuristic.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "territory.png"));
+    }
+
+    [AvaloniaFact]
+    public async Task The_warm_up_pill_is_shown_while_KataGo_loads_and_saved_as_screenshot()
+    {
+        var engine = new SilentEngine { Activity = "KataGo está cargando la red neuronal…" };
+        var vm = new MainWindowViewModel(new GameViewModel(), engine: engine, ui: new ImmediateDispatcher());
+        var window = new MainWindow(vm) { Width = 1200, Height = 800 };
+        window.Show();
+        await Task.Delay(900);
+
+        window.FindControl<Border>("WarmupPill")!.Opacity.Should().BeApproximately(1, 0.01);
+        using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
+        Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
+        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "warmup.png"));
     }
 }

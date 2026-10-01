@@ -82,6 +82,18 @@
   </Style>
 
   <!-- Analysis panel (sidebar). -->
+  <Style Selector="Border.warmup">
+    <Setter Property="Padding" Value="16,8" />
+    <Setter Property="CornerRadius" Value="16" />
+    <Setter Property="Background" Value="{DynamicResource Bg.Bar}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.6" />
+      </Transitions>
+    </Setter>
+  </Style>
   <Style Selector="Border.analysis">
     <Setter Property="Padding" Value="14,10" />
     <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
