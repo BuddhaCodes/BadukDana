@@ -658,8 +658,18 @@ public sealed partial class GameViewModel : ViewModelBase
         if (now != before && now.Parent == before && now.GetMove(_cursor.BoardSize) is { IsPass: false, Point: { } p } move)
         {
             StonePlaced?.Invoke(this, move.Color);
+            BoardState was = _cursor.GetBoard(before!);
+            BoardState board = _cursor.Board;
+            int captured = was.AllPoints.Count(q => was[q] != Stone.Empty && board[q] == Stone.Empty);
+            if (captured > 0)
+            {
+                StonesCaptured?.Invoke(this, captured);
+            }
         }
     }
+
+    /// <summary>The stone just placed captured this many stones.</summary>
+    public event EventHandler<int>? StonesCaptured;
 
     private GameNode? _shownNode;
 

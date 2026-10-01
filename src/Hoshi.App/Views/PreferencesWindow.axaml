@@ -107,7 +107,7 @@
             </StackPanel>
 
             <CheckBox IsChecked="{Binding StoneSounds}" x:Name="StoneSoundsBox"
-                      Content="Sonido suave al colocar cada piedra (también al avanzar jugada a jugada)" />
+                      Content="Sonido suave al colocar cada piedra y al capturar (también al avanzar jugada a jugada)" />
 
             <TextBlock Classes="label" Text="Música adaptativa" Margin="0,14,0,0" />
             <CheckBox IsChecked="{Binding Music}" x:Name="MusicBox"

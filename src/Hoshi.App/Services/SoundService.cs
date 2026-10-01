@@ -21,6 +21,12 @@ public enum SoundEffect
 
     /// <summary>Any stone placed: a soft "pachi" with a faint chime (three variants, rotated).</summary>
     Stone,
+
+    /// <summary>One or two stones captured: crack, gathered clacks, a two-note chime.</summary>
+    CaptureSmall,
+
+    /// <summary>Three or more stones captured: a bigger shatter, more clacks, an arpeggio and a low thock.</summary>
+    CaptureBig,
 }
 
 public interface ISoundService
@@ -62,6 +68,8 @@ public sealed class SystemSoundService : ISoundService
         SoundEffect.ImpactSmall => "impact_small",
         SoundEffect.ExplosionMedium => "explosion_medium",
         SoundEffect.Stone => "stone",
+        SoundEffect.CaptureSmall => "capture_small",
+        SoundEffect.CaptureBig => "capture_big",
         _ => "explosion_big",
     };
 

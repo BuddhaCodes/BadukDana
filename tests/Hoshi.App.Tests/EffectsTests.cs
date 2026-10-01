@@ -283,4 +283,54 @@ public sealed class MoveEffectsTests
             return max;
         }
     }
+
+    [AvaloniaFact]
+    public void Captures_are_announced_with_the_number_of_stones()
+    {
+        var game = new GameViewModel();
+        var captures = new List<int>();
+        game.StonesCaptured += (_, n) => captures.Add(n);
+        // White D4 surrounded by black: C4, E4, D5, then D3 captures.
+        foreach ((int x, int y) in new[] { (2, 15), (3, 15), (4, 15), (10, 10), (3, 14), (10, 11) })
+        {
+            game.PlayCommand.Execute(new Point(x, y));
+        }
+
+        captures.Should().BeEmpty();
+        game.PlayCommand.Execute(new Point(3, 16));
+        captures.Should().Equal(1);
+
+        game.GoBackCommand.Execute(null);
+        game.GoForwardCommand.Execute(null);
+        captures.Should().Equal(1, 1);
+    }
+
+    [AvaloniaFact]
+    public void Captured_stones_shatter_on_the_board_and_frames_are_saved()
+    {
+        var board = new GoBoardControl { Animate = true, BoardStyle = HoshiThemes.NightSky.Board };
+        var window = new Window { Width = 600, Height = 600, Content = board };
+        window.Show();
+        // A white group of three in atari at C17/D17/E17 (row 2 from the top), black about to fill the last liberty.
+        BoardState before = BoardState.Create(19).Setup([
+            (new Point(2, 2), Stone.White), (new Point(3, 2), Stone.White), (new Point(4, 2), Stone.White),
+            (new Point(1, 2), Stone.Black), (new Point(5, 2), Stone.Black),
+            (new Point(2, 1), Stone.Black), (new Point(3, 1), Stone.Black), (new Point(4, 1), Stone.Black),
+            (new Point(2, 3), Stone.Black), (new Point(3, 3), Stone.Black)]);
+        board.Board = before;
+        MoveResult result = before.TryPlay(Stone.Black, new Point(4, 3));
+        result.IsLegal.Should().BeTrue();
+        board.Board = result.State!;
+        board.LastMove = new Point(4, 3);
+
+        board.CapturingStones.Should().Be(3);
+        Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
+        foreach ((double t, string name) in new[] { (0.05, "capture-1.png"), (0.2, "capture-2.png"), (0.4, "capture-3.png") })
+        {
+            board.CaptureTime = t;
+            board.InvalidateVisual();
+            using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
+            frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", name));
+        }
+    }
 }
