@@ -198,3 +198,43 @@ public sealed class JosekiTests
 
     private static JosekiLine Single(string sgf) => JosekiLibraryReader.ExtractLines(SgfParser.Parse(sgf), null).Single();
 }
+
+public sealed class JosekiMatcherTests
+{
+    private static Point P(string sgf) => Point.FromSgf(sgf);
+
+    private static readonly IReadOnlyList<JosekiLine> Lines = JosekiLibraryReader.ExtractLines(
+        SgfParser.Parse("(;SZ[19];B[pd](;W[qc];B[pc];W[qd])(;W[nc];B[qf]))"), null);
+
+    [Fact]
+    public void Finds_every_continuation_in_any_corner()
+    {
+        // The same start in the bottom-left corner.
+        CornerMove[] seq = [new(Stone.Black, P("dp"))];
+        IReadOnlyList<Point> next = JosekiMatcher.Continuations(Lines, seq, 19);
+
+        next.Should().Contain(P("cq"), "the 3-3 invasion");
+        next.Should().HaveCount(3, "the 3-3 point has one image, the approach two (one per side)");
+    }
+
+    [Fact]
+    public void Colours_may_be_swapped_and_tenuki_or_unknown_shapes_match_nothing()
+    {
+        JosekiMatcher.Continuations(Lines, [new(Stone.White, P("pd")), new(Stone.Black, P("qc"))], 19).Should().BeEquivalentTo([P("pc"), P("qd")]);
+        JosekiMatcher.Continuations(Lines, [new(Stone.Black, P("pd")), new(Stone.White, null)], 19).Should().BeEmpty();
+        JosekiMatcher.Continuations(Lines, [new(Stone.Black, P("aa"))], 19).Should().BeEmpty();
+        JosekiMatcher.Continuations(Lines, [], 19).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("pd", JosekiFamily.Hoshi)]
+    [InlineData("qd", JosekiFamily.Komoku)]
+    [InlineData("pc", JosekiFamily.Komoku)]
+    [InlineData("qc", JosekiFamily.SanSan)]
+    [InlineData("dp", JosekiFamily.Hoshi)]
+    [InlineData("pe", JosekiFamily.Takamoku)]
+    [InlineData("qe", JosekiFamily.Mokuhazushi)]
+    [InlineData("jj", JosekiFamily.Other)]
+    public void Families_come_from_the_first_stone(string point, JosekiFamily family) =>
+        JosekiFamilies.Of(P(point), 19).Should().Be(family);
+}

@@ -41,9 +41,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IReplayStore? replays = null,
         ReplaysViewModel? replaysList = null,
         IReplaysWindowService? replaysWindow = null,
-        IJosekiWindowService? joseki = null)
+        JosekiTrainerViewModel? joseki = null,
+        JosekiAssistantViewModel? josekiHints = null)
     {
-        _joseki = joseki;
+        Joseki = joseki ?? new JosekiTrainerViewModel(Services.Joseki.NullJosekiLibrary.Instance, game);
+        JosekiHints = josekiHints ?? new JosekiAssistantViewModel(game);
         _preferences = preferences;
         _replaysWindow = replaysWindow;
         _replayStore = replays;
@@ -165,13 +167,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     public bool HasPreferences => _preferences is not null;
 
-    private readonly IJosekiWindowService? _joseki;
+    /// <summary>The joseki trainer, shown on the main board (Ctrl+J).</summary>
+    public JosekiTrainerViewModel Joseki { get; }
 
-    public bool HasJoseki => _joseki is not null;
+    /// <summary>Known joseki continuations on the main board while you play (J).</summary>
+    public JosekiAssistantViewModel JosekiHints { get; }
 
-    /// <summary>Ctrl+J: the joseki trainer (spaced repetition).</summary>
-    [RelayCommand(CanExecute = nameof(HasJoseki))]
-    private void OpenJoseki() => _joseki?.Show();
+    [RelayCommand]
+    private void OpenJoseki() => Joseki.ToggleCommand.Execute(null);
 
     private readonly IReplaysWindowService? _replaysWindow;
     private readonly IReplayStore? _replayStore;

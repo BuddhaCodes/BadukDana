@@ -4,6 +4,7 @@ using Hoshi.App.Views;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Serilog;
 
 namespace Hoshi.App;
@@ -58,8 +59,13 @@ public static class AppHost
         services.AddSingleton<ReplaysViewModel>();
         services.AddSingleton<IReplaysWindowService, ReplaysWindowService>();
         services.AddSingleton<Services.Joseki.IJosekiLibrary, Services.Joseki.JosekiLibrary>();
+        services.AddSingleton<Hoshi.Ogs.Joseki.IJosekiExplorerSource>(sp => new Hoshi.Ogs.Joseki.OgsJosekiClient(
+            sp.GetRequiredService<IHttpClientFactory>().CreateClient(OgsServiceRegistration.HttpClientName),
+            cacheDirectory: Path.Combine(AppPaths.DataDirectory, "cache", "oje"),
+            logger: sp.GetRequiredService<ILogger<Hoshi.Ogs.Joseki.OgsJosekiClient>>()));
+        services.AddSingleton<Hoshi.Ogs.Joseki.JosekiExplorer>();
         services.AddSingleton<JosekiTrainerViewModel>();
-        services.AddSingleton<IJosekiWindowService, JosekiWindowService>();
+        services.AddSingleton<JosekiAssistantViewModel>();
         services.AddSingleton<GameViewModel>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddTransient<MainWindow>();

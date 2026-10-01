@@ -93,7 +93,7 @@ public sealed class JosekiTrainerTests : IDisposable
         var library = new JosekiLibrary(dataDirectory: _dir);
         var sounds = new FakeSoundService();
         JosekiTrainerViewModel vm = Trainer(library, sounds);
-        vm.Start();
+        vm.Open();
         JosekiDrill drill = vm.Drill!;
 
         while (!drill.IsComplete)
@@ -115,7 +115,7 @@ public sealed class JosekiTrainerTests : IDisposable
         string id = library.Lines[0].Id;
         library.Record(JosekiCard.New(id).Review(true, _now.AddDays(-30)).Review(true, _now.AddDays(-20)));
         JosekiTrainerViewModel vm = Trainer(library);
-        vm.Start();
+        vm.Open();
         JosekiDrill drill = vm.Drill!;
         drill.Line.Id.Should().Be(id, "it is the only line and it is due");
         vm.BoxText.Should().Be("Caja 3 de 6");
@@ -141,7 +141,7 @@ public sealed class JosekiTrainerTests : IDisposable
     {
         var library = new JosekiLibrary(dataDirectory: _dir);
         JosekiTrainerViewModel vm = Trainer(library);
-        vm.Start();
+        vm.Open();
         vm.ShowAnswerCommand.Execute(null);
         vm.Markers.Should().ContainSingle(m => m.Kind == MarkupKind.Circle && m.Point == vm.Drill!.Expected);
         JosekiDrill drill = vm.Drill!;
@@ -164,7 +164,7 @@ public sealed class JosekiTrainerTests : IDisposable
         }
 
         JosekiTrainerViewModel vm = Trainer(library);
-        vm.Start();
+        vm.Open();
 
         vm.Drill.Should().NotBeNull();
         vm.StatusText.Should().Be("Nada pendiente por ahora: práctica extra.");

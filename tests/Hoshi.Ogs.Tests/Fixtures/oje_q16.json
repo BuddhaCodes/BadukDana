@@ -1,0 +1,10 @@
+{"node_id": 10, "placement": "Q16", "play": ".root.Q16", "category": "IDEAL", "description": "The 4-4 point. White can approach at <A:R14> or invade at the 3-3 point, see <position: 20>.", "contributor": 1, "variation_label": "1",
+ "tags": [{"description": "Current", "group": 1, "id": 3}], "child_count": 20000, "comment_count": 2, "db_locked_down": false, "marks": "[{\"label\":\"A\",\"position\":\"R14\"}]", "parent": {"node_id": 1, "placement": "root"},
+ "next_moves": [
+  {"placement": "R17", "category": "IDEAL", "node_id": 20, "variation_label": "1"},
+  {"placement": "R14", "category": "IDEAL", "node_id": 21, "variation_label": "2"},
+  {"placement": "O17", "category": "GOOD", "node_id": 22, "variation_label": "3"},
+  {"placement": "Q17", "category": "MISTAKE", "node_id": 23, "variation_label": "_"},
+  {"placement": "S18", "category": "TRICK", "node_id": 24, "variation_label": "_"},
+  {"placement": "bogus", "category": "IDEAL", "node_id": 25, "variation_label": "_"}
+ ]}

@@ -1,0 +1,8 @@
+{"node_id": 1, "placement": "root", "play": ".root", "category": "IDEAL", "description": "## Welcome\nChoose a first move in the corner.", "contributor": 1, "variation_label": "_", "tags": [], "child_count": 50000, "comment_count": 0, "db_locked_down": false, "marks": "[]", "parent": null,
+ "next_moves": [
+  {"placement": "Q16", "category": "IDEAL", "node_id": 10, "variation_label": "1"},
+  {"placement": "R16", "category": "IDEAL", "node_id": 11, "variation_label": "2"},
+  {"placement": "Q17", "category": "IDEAL", "node_id": 12, "variation_label": "3"},
+  {"placement": "R17", "category": "GOOD", "node_id": 13, "variation_label": "4"},
+  {"placement": "pass", "category": "QUESTION", "node_id": 14, "variation_label": "_"}
+ ]}

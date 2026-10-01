@@ -81,6 +81,10 @@ public sealed class GoBoardControl : Control
     public static readonly StyledProperty<ViewModels.BoardImpact?> ImpactProperty =
         AvaloniaProperty.Register<GoBoardControl, ViewModels.BoardImpact?>(nameof(Impact));
 
+    /// <summary>Known joseki continuations: small discs coloured by how the explorer rates them.</summary>
+    public static readonly StyledProperty<IReadOnlyList<ViewModels.BoardJosekiHint>?> JosekiHintsProperty =
+        AvaloniaProperty.Register<GoBoardControl, IReadOnlyList<ViewModels.BoardJosekiHint>?>(nameof(JosekiHints));
+
     public static readonly StyledProperty<IReadOnlyList<ViewModels.BoardSuggestion>?> SuggestionsProperty =
         AvaloniaProperty.Register<GoBoardControl, IReadOnlyList<ViewModels.BoardSuggestion>?>(nameof(Suggestions));
 
@@ -132,7 +136,7 @@ public sealed class GoBoardControl : Control
     {
         AffectsRender<GoBoardControl>(
             BoardProperty, LastMoveProperty, MarkersProperty, ShowCoordinatesProperty,
-            HoverPointProperty, GhostStoneProperty, IsInteractiveProperty, BoardStyleProperty, TerritoryProperty, SuggestionsProperty);
+            HoverPointProperty, GhostStoneProperty, IsInteractiveProperty, BoardStyleProperty, TerritoryProperty, SuggestionsProperty, JosekiHintsProperty);
         FocusableProperty.OverrideDefaultValue<GoBoardControl>(true);
         // Not clipped: the board's drop shadow falls on the tatami around it.
         ClipToBoundsProperty.OverrideDefaultValue<GoBoardControl>(false);
@@ -177,6 +181,12 @@ public sealed class GoBoardControl : Control
     {
         get => GetValue(TerritoryProperty);
         set => SetValue(TerritoryProperty, value);
+    }
+
+    public IReadOnlyList<ViewModels.BoardJosekiHint>? JosekiHints
+    {
+        get => GetValue(JosekiHintsProperty);
+        set => SetValue(JosekiHintsProperty, value);
     }
 
     public IReadOnlyList<ViewModels.BoardSuggestion>? Suggestions
@@ -297,6 +307,7 @@ public sealed class GoBoardControl : Control
         DrawEffect(context, g, board, style);
         impact?.DrawBurst(context, StoneCenter(g, impact.Point), g.Cell, t);
         DrawSuggestions(context, g, board);
+        DrawJosekiHints(context, g, board);
         DrawLastMove(context, g, board, style);
         DrawMarkers(context, g, board, lines, style);
         DrawGhost(context, g, board);
@@ -606,6 +617,28 @@ public sealed class GoBoardControl : Control
             double size = Math.Max(7, g.Cell * 0.34);
             DrawCentredText(context, s.Label, size, LabelTypeface, Brushes.White, c.X, c.Y - (g.Cell * 0.09));
             DrawCentredText(context, s.Detail, Math.Max(6, g.Cell * 0.22), CoordinateTypeface, Brushes.White, c.X, c.Y + (g.Cell * 0.2));
+        }
+    }
+
+    /// <summary>Joseki continuations: a disc in the rating's colour (ideal green … mistake red) with a fine light ring.</summary>
+    private void DrawJosekiHints(DrawingContext context, BoardGeometry g, BoardState board)
+    {
+        if (JosekiHints is not { Count: > 0 } list)
+        {
+            return;
+        }
+
+        foreach (ViewModels.BoardJosekiHint h in list)
+        {
+            if (!board.IsOnBoard(h.Point) || board[h.Point] != Stone.Empty)
+            {
+                continue;
+            }
+
+            AvPoint c = g.Center(h.Point);
+            double r = g.Cell * (h.IsRecommended ? 0.27 : 0.2);
+            context.DrawEllipse(new ImmutableSolidColorBrush(ViewModels.BoardJosekiHint.ColorOf(h.Category)),
+                new Pen(new ImmutableSolidColorBrush(Color.FromArgb(0xD0, 0xFF, 0xFF, 0xFF)), Math.Max(1, g.Cell * 0.04)), c, r, r);
         }
     }
 
