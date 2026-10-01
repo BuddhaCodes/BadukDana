@@ -54,6 +54,9 @@ public static class AppHost
         services.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
         services.AddSingleton<LobbyViewModel>();
         services.AddSingleton<ILobbyWindowService, LobbyWindowService>();
+        services.AddSingleton<IReplayStore, ReplayStore>();
+        services.AddSingleton<ReplaysViewModel>();
+        services.AddSingleton<IReplaysWindowService, ReplaysWindowService>();
         services.AddSingleton<GameViewModel>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddTransient<MainWindow>();

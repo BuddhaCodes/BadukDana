@@ -78,7 +78,7 @@ Regla de dependencias: `App → Ogs, Sgf, Engines, Core` · `Ogs → Core` · `S
 - No copiar código de Sabaki. Sus assets están bajo licencia MIT: el tema Clásico usa `board.png` (Shudan) y `tatami.png` con su aviso en `THIRD_PARTY_NOTICES.md`. Los demás temas usan arte generado por Hoshi, fuentes OFL e iconos MIT/ISC; todo recurso de terceros nuevo debe añadirse a `THIRD_PARTY_NOTICES.md` (y su licencia a `licenses/`) en el mismo commit.
 - No usar socket.io: OGS usa ahora un WebSocket JSON plano.
 - No implementar "bots" que jueguen automáticamente en OGS sin marcar la cuenta como bot (va contra sus términos).
-- No ofrecer análisis de IA ni estimación de territorio al jugador durante sus partidas de OGS en curso (ayuda de motor prohibida por OGS); solo tras terminar o en partidas locales.
+- No usar KataGo de ninguna forma durante las partidas de OGS en curso del jugador (análisis, territorio con el mapa del motor, efectos o música basados en sus valoraciones): OGS prohíbe la ayuda de IA. Sí se permiten (decisión del usuario 2026-10-01) la estimación rápida de territorio propia de Hoshi (sin motor) y los efectos y la música basados en la intensidad de la pelea (`FightMeter`: contacto, libertades cortas, capturas). El aviso de atari sigue apagado online. Tras la partida, la revisión (biblioteca de partidas) usa KataGo con todos sus efectos.
 - No guardar la contraseña del usuario; solo tokens OAuth en el almacén seguro. El login con contraseña existe solo para beta y está bloqueado contra producción.
 - No poner `client_secret` ni ningún secreto en el repositorio: la app OAuth es un cliente público con PKCE.
 

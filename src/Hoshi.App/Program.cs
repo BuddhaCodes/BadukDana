@@ -50,6 +50,7 @@ internal static class Program
 
         try
         {
+            host.Services.GetService<ViewModels.MainWindowViewModel>()?.SaveCurrentGame();
             host.Services.GetService<Services.Music.IMusicService>()?.Stop();
             if (host.Services.GetService<Services.AnalysisEngineHost>() is { } engine)
             {

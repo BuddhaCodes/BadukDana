@@ -428,3 +428,85 @@ internal sealed class SilentEngine : IAnalysisEngine
     public Task<IReadOnlyList<TurnAnalysis>> AnalyzeAsync(AnalysisQuery query, CancellationToken cancellationToken) =>
         Task.Delay(Timeout.Infinite, cancellationToken).ContinueWith<IReadOnlyList<TurnAnalysis>>(_ => [], TaskScheduler.Default);
 }
+
+public sealed class BattleAndReplayTests
+{
+    [AvaloniaFact]
+    public void Without_an_engine_effects_and_music_follow_the_fight()
+    {
+        var game = new GameViewModel();
+        var sounds = new FakeSoundService();
+        var vm = new AnalysisViewModel(game, engine: null, new ImmediateDispatcher(), sounds, new TestSettings());
+        var heats = new List<double>();
+        vm.BattleHeat += (_, h) => heats.Add(h);
+
+        game.PlayCommand.Execute(new Point(15, 3)); // quiet opening: no effect
+        vm.Impact.Should().BeNull();
+
+        // A white stone surrounded and captured in a local fight.
+        foreach ((int x, int y) in new[] { (9, 9), (10, 9), (11, 9), (3, 3), (10, 10), (15, 15), (10, 8) })
+        {
+            game.PlayCommand.Execute(new Point(x, y));
+        }
+
+        heats.Should().HaveCount(8);
+        heats[^1].Should().BeGreaterThan(heats[1]);
+        vm.LastFight!.Strength.Should().BeGreaterThan(0, "a capture in a fight is celebrated");
+        vm.Impact.Should().NotBeNull();
+        sounds.Played.Should().NotBeEmpty();
+    }
+
+    [AvaloniaFact]
+    public void Played_games_are_kept_and_a_replay_is_reviewed_with_AI_effects()
+    {
+        string root = Directory.CreateTempSubdirectory("hoshi-replays").FullName;
+        var store = new ReplayStore(dataDirectory: root);
+        var game = new GameViewModel();
+        var engine = new FakeAnalysisEngine();
+        var sounds = new FakeSoundService();
+        var list = new ReplaysViewModel(store);
+        var main = new MainWindowViewModel(game, ui: new ImmediateDispatcher(), engine: engine, sounds: sounds, settings: new TestSettings(),
+            replays: store, replaysList: list);
+
+        foreach ((int x, int y) in Enumerable.Range(0, 12).Select(i => (i, i % 2 == 0 ? 3 : 15)))
+        {
+            game.PlayCommand.Execute(new Point(x, y));
+        }
+
+        game.Load(Hoshi.Sgf.GameTree.Create(9, Hoshi.Core.RuleSet.Japanese), path: null); // "New game"
+        list.Rows.Should().ContainSingle().Which.Entry.Moves.Should().Be(12);
+
+        game.PlayCommand.Execute(new Point(4, 4));
+        game.Load(Hoshi.Sgf.GameTree.Create(9, Hoshi.Core.RuleSet.Japanese), path: null);
+        list.Rows.Should().ContainSingle("games shorter than 10 moves are not kept");
+
+        list.Selected = list.Rows[0];
+        list.OpenCommand.Execute(null);
+        game.IsReview.Should().BeTrue();
+        game.MoveNumber.Should().Be(0, "a replay starts from the beginning");
+
+        sounds.Played.Clear();
+        engine.BestMove = new Point(0, 3); // the replay's first move
+        for (int i = 0; i < 20; i++)
+        {
+            System.Threading.Thread.Sleep(20);
+            Avalonia.Threading.Dispatcher.UIThread.RunJobs(); // the start position is analysed
+        }
+
+        game.GoForwardCommand.Execute(null);
+        for (int i = 0; i < 20 && !sounds.Played.Any(p => p.Effect == SoundEffect.ExplosionBig); i++)
+        {
+            System.Threading.Thread.Sleep(20);
+            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        }
+
+        sounds.Played.Should().Contain(p => p.Effect == SoundEffect.ExplosionBig, "reviewing a replay replays the AI effects");
+        main.Should().NotBeNull();
+
+        // Re-opening the replay unchanged does not create a second entry.
+        list.Selected = list.Rows[0];
+        list.OpenCommand.Execute(null);
+        list.Rows.Should().ContainSingle();
+        Directory.Delete(root, recursive: true);
+    }
+}

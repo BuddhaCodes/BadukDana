@@ -26,6 +26,9 @@ public interface IMusicService
 
     /// <summary>The engine's verdict on a move the user just played.</summary>
     void OnVerdict(MoveQuality quality);
+
+    /// <summary>The fight on the board, when there is no engine verdict (live OGS games, no KataGo).</summary>
+    void OnBattle(double heat);
 }
 
 /// <summary>
@@ -108,6 +111,14 @@ public sealed class MusicService : IMusicService, IDisposable
         if (_mixer is { } m)
         {
             m.Volume = _volume;
+        }
+    }
+
+    public void OnBattle(double heat)
+    {
+        lock (_gate)
+        {
+            _director.OnBattleHeat(heat, Now);
         }
     }
 

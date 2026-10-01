@@ -72,6 +72,17 @@ public sealed class MusicDirector
         _lastEvent = now;
     }
 
+    /// <summary>
+    /// Follows the battle on the board instead of the engine's verdicts (live OGS games, no KataGo): the music is as
+    /// hot as the fight, and falls back gently when the fight moves away.
+    /// </summary>
+    public void OnBattleHeat(double battleHeat, double now)
+    {
+        Advance(now);
+        _heat = Math.Clamp(Math.Max(battleHeat, _heat - 0.6), 0, MaxHeat);
+        _lastEvent = now;
+    }
+
     /// <summary>Target gain of each layer for a heat value (layer 0 always plays).</summary>
     public static double LayerGain(int layer, double heat) => layer == 0
         ? 1.0 - (0.15 * Math.Clamp(heat - 3, 0, 1))

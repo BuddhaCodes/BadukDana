@@ -373,10 +373,10 @@ public sealed partial class OnlineGameViewModel : ViewModelBase, IDisposable
 
     private void OnEnded(OgsGameResult result)
     {
+        _board.Tree.Info.Result = result.ToSgf(); // before the phase changes, so the saved replay has the result
         Phase = OgsGamePhase.Finished;
         ResultText = result.Describe();
         Message = null;
-        _board.Tree.Info.Result = result.ToSgf();
         _board.RefreshOnline();
         OnPropertyChanged(nameof(StatusText));
         Tick();
