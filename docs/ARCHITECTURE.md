@@ -105,6 +105,10 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 - `IAnalysisEngine` / `AnalysisEngineHost`: KataGo según Preferencias; `GoBoardControl.Territory` y `.Suggestions` dibujan las capas; `ScoreGraph` la gráfica. `Activity` informa de la carga/calibración de KataGo (leída de su stderr).
 - Celebración: `GameViewModel.MovePlayed` marca la jugada; cuando llega su valoración, `AnalysisViewModel` publica `Impact` (`BoardImpact`: punto, fuerza 1–3, id) que `GoBoardControl` anima con `ImpactEffect`, y pide el sonido a `ISoundService`.
 
+### Pelea y biblioteca de partidas
+- `Hoshi.Core.FightMeter`: lee cada jugada (contacto con piedras rivales, grupos con 1–3 libertades a ≤2 casillas, capturas) → `FightReading(Intensity, Heat, Strength)`; el calor sube mientras las jugadas siguen en la misma zona (radio 4) y se enfría con tenuki. `AnalysisViewModel` lo usa cuando KataGo no está activo (OGS en curso o sin configurar): impacto y sonido según `Strength`, y `BattleHeat` → `MusicDirector.OnBattleHeat`.
+- `GameViewModel.MoveSettled` (tableros antes/después, punto, nodo) y `TreeReplacing` (el árbol que se va). `ReplayRecorder` guarda en `IReplayStore` la partida que se va (local: id propio; OGS: `ogs-<id>`, también al terminar; réplica: solo si cambió). `MainWindowViewModel.OpenReplay` carga al principio con `Game.IsReview = true`: cada paso adelante espera la valoración de KataGo y celebra como una jugada.
+
 ### Localización
 - `Hoshi.Core.Localization.Tr`: tabla clave → (inglés, español), sin dependencias; cada capa añade sus textos en `Strings.<Capa>.cs` (Core, Engines, Ogs, App, Views). `Tr.T(clave)` / `Tr.F(clave, args)` (formato invariante). Idioma por defecto inglés (`AppSettings.Language`); `Tr.LanguageChanged` refresca la UI.
 - XAML: `{l:T Clave}` (`TExtension` → binding a `LocalizedStrings.Instance[clave]`), se actualiza en vivo. Los ViewModels refrescan todas sus propiedades al cambiar de idioma (`ViewModelBase`).

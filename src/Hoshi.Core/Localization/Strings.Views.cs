@@ -5,6 +5,16 @@ public static partial class Tr
     static partial void AddViews(Dictionary<string, (string En, string Es)> d)
     {
         Add(d, "Prefs.Language", "Language", "Idioma");
+        Add(d, "Main.Replays", "Played games…", "Partidas jugadas…");
+        Add(d, "Replays.Title", "Played games", "Partidas jugadas");
+        Add(d, "Replays.Hint", "Every game you play in Hoshi is kept here. Open one to review it: step forward with → and KataGo judges each move, with its effects and music.", "Aquí se guarda cada partida que juegas en Hoshi. Abre una para revisarla: avanza con → y KataGo valora cada jugada, con sus efectos y su música.");
+        Add(d, "Replays.Review", "Review", "Revisar");
+        Add(d, "Replays.Delete", "Delete", "Borrar");
+        Add(d, "Replays.Empty", "No games yet. Games of 10 moves or more are kept automatically.", "Aún no hay partidas. Se guardan solas las de 10 jugadas o más.");
+        Add(d, "Replays.Moves", "{0} moves", "{0} jugadas");
+        Add(d, "Replays.NoResult", "no result", "sin resultado");
+        Add(d, "Replays.Local", "local", "local");
+        Add(d, "Replays.CouldNotOpen", "Could not open the game", "No se pudo abrir la partida");
         Add(d, "Prefs.Animations", "Animations", "Animaciones");
         Add(d, "Prefs.SoundsHelp",
             "Good: a dry knock · Excellent: an explosion with a shockwave and a shake · Best: a cinematic explosion, glowing cracks and a strong shake. The sounds are Hoshi's own; to use yours, put impact_small, explosion_medium, explosion_big or stone (.wav or .mp3) in {0}. The board impact needs animations on (Appearance).",

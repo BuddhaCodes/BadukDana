@@ -9,6 +9,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Hoshi.App.ViewModels;
 
+/// <summary>A stone placed on the board: the positions before and after, the point, the colour and the new node.</summary>
+public sealed record PlacedMove(BoardState Before, BoardState After, Point Point, Stone Color, GameNode Node);
+
 public enum EditTool
 {
     BlackStone,
@@ -225,10 +228,16 @@ public sealed partial class GameViewModel : ViewModelBase
     {
         if (_cursor is not null)
         {
+            if (!ReferenceEquals(_cursor.Tree, tree))
+            {
+                TreeReplacing?.Invoke(this, _cursor.Tree);
+            }
+
             _cursor.Changed -= OnCursorChanged;
         }
 
         _cursor = new GameCursor(tree);
+        IsReview = false;
         _cursor.Changed += OnCursorChanged;
         _shownNode = _cursor.Current;
         FilePath = path;
@@ -672,8 +681,19 @@ public sealed partial class GameViewModel : ViewModelBase
             {
                 GroupsEnteredAtari?.Invoke(this, atari);
             }
+
+            MoveSettled?.Invoke(this, new PlacedMove(was, board, p, move.Color, now));
         }
     }
+
+    /// <summary>A replay opened from the local store: stepping forward replays the AI effects.</summary>
+    public bool IsReview { get; set; }
+
+    /// <summary>A stone was placed one move after the previous position, with both boards (battle effects).</summary>
+    public event EventHandler<PlacedMove>? MoveSettled;
+
+    /// <summary>The tree is about to be replaced (New, Open, a replay or an online game): the last chance to keep it.</summary>
+    public event EventHandler<GameTree>? TreeReplacing;
 
     /// <summary>The stone just placed left these groups (of either colour) newly in atari.</summary>
     public event EventHandler<IReadOnlyList<AtariGroup>>? GroupsEnteredAtari;

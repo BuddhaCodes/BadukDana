@@ -191,7 +191,7 @@ public sealed class AnalysisViewModelTests
     }
 
     [AvaloniaFact]
-    public async Task Analysis_and_territory_are_disabled_while_playing_on_OGS()
+    public async Task Analysis_is_disabled_and_territory_is_heuristic_while_playing_on_OGS()
     {
         _vm.IsAnalysisOn = true;
         _vm.IsTerritoryOn = true;
@@ -204,7 +204,8 @@ public sealed class AnalysisViewModelTests
 
         _game.IsOnline.Should().BeTrue();
         _vm.IsBlocked.Should().BeTrue();
-        _vm.Territory.Should().BeNull();
+        _vm.Territory.Should().NotBeNull("Hoshi's own quick estimate is allowed online");
+        _vm.Territory!.Source.Should().Be(EstimateSource.Heuristic, "never KataGo's ownership during a live OGS game");
         _vm.Suggestions.Should().BeEmpty();
         _vm.StatusText.Should().Contain("OGS");
         online.PassCommand.Execute(null);

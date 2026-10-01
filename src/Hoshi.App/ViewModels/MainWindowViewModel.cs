@@ -37,9 +37,24 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IAnalysisEngine? engine = null,
         ISoundService? sounds = null,
         ISettingsService? settings = null,
-        Services.Music.IMusicService? music = null)
+        Services.Music.IMusicService? music = null,
+        IReplayStore? replays = null,
+        ReplaysViewModel? replaysList = null,
+        IReplaysWindowService? replaysWindow = null)
     {
         _preferences = preferences;
+        _replaysWindow = replaysWindow;
+        _replayStore = replays;
+        if (replays is not null)
+        {
+            _recorder = new ReplayRecorder(game, replays);
+        }
+
+        if (replaysList is not null)
+        {
+            replaysList.OpenRequested += (_, entry) => OpenReplay(entry);
+        }
+
         Analysis = new AnalysisViewModel(game, engine, ui, sounds, settings);
         _music = music;
         _settings = settings;
@@ -73,6 +88,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         if (music is not null)
         {
             Analysis.MoveJudged += (_, verdict) => music.OnVerdict(verdict.Quality);
+            Analysis.BattleHeat += (_, heat) => music.OnBattle(heat);
             AppSettings s = settings?.Current ?? new AppSettings();
             music.SetVolume(s.MusicVolume / 100.0);
             if (s.Music)
@@ -146,6 +162,43 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private void OpenLobby() => _lobbyWindow?.Show();
 
     public bool HasPreferences => _preferences is not null;
+
+    private readonly IReplaysWindowService? _replaysWindow;
+    private readonly IReplayStore? _replayStore;
+    private readonly ReplayRecorder? _recorder;
+
+    public bool HasReplays => _replaysWindow is not null;
+
+    /// <summary>Ctrl+R: the library of played games.</summary>
+    [RelayCommand(CanExecute = nameof(HasReplays))]
+    private void OpenReplays() => _replaysWindow?.Show();
+
+    /// <summary>Shows a played game from the start, in review mode: stepping forward replays the AI effects.</summary>
+    public void OpenReplay(ReplayEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        if (_replayStore is null)
+        {
+            return;
+        }
+
+        try
+        {
+            Hoshi.Sgf.GameTree tree = _replayStore.Load(entry);
+            LeaveOnline();
+            Game.Load(tree, path: null);
+            Game.IsReview = true;
+            _recorder?.MarkReplay(entry);
+        }
+        catch (Exception ex) when (ex is IOException or FormatException or UnauthorizedAccessException)
+        {
+            _logger.LogWarning(ex, "Could not open replay {Id}", entry.Id);
+            _ = _dialogs?.ShowErrorAsync(Tr.T("Replays.CouldNotOpen"), ex.Message);
+        }
+    }
+
+    /// <summary>Keeps the game on the board in the replay library (called when the app closes).</summary>
+    public void SaveCurrentGame() => _recorder?.SaveCurrent();
 
     private readonly Services.Music.IMusicService? _music;
     private readonly ISettingsService? _settings;

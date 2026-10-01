@@ -30,6 +30,7 @@
     <KeyBinding Gesture="Down" Command="{Binding Game.NextVariationCommand}" />
     <KeyBinding Gesture="Ctrl+Z" Command="{Binding Game.UndoCommand}" />
     <KeyBinding Gesture="Ctrl+O" Command="{Binding Game.OpenCommand}" />
+    <KeyBinding Gesture="Ctrl+R" Command="{Binding OpenReplaysCommand}" />
     <KeyBinding Gesture="Ctrl+S" Command="{Binding Game.SaveCommand}" />
     <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding Game.SaveAsCommand}" />
     <KeyBinding Gesture="Ctrl+E" Command="{Binding Game.ToggleEditModeCommand}" />
@@ -114,7 +115,7 @@
               <Button.IsVisible>
                 <MultiBinding Converter="{x:Static BoolConverters.And}">
                   <Binding Path="!Game.IsEditMode" />
-                  <Binding Path="!Analysis.IsBlocked" />
+                  
                 </MultiBinding>
               </Button.IsVisible><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Territory}" Size="17" /><TextBlock Text="{l:T Main.Territory}" VerticalAlignment="Center" /></StackPanel></Button>
             <Button Classes="bar toggle" Classes.on="{Binding Analysis.IsAnalysisOn}" Command="{Binding Analysis.ToggleAnalysisCommand}"
@@ -153,6 +154,7 @@
                 <Separator />
                 <MenuItem Header="{l:T Main.EditMode}" Command="{Binding Game.ToggleEditModeCommand}" InputGesture="Ctrl+E" />
                 <MenuItem Header="{l:T Main.PlayOnline}" Command="{Binding OpenLobbyCommand}" InputGesture="Ctrl+L" />
+                <MenuItem Header="{l:T Main.Replays}" Command="{Binding OpenReplaysCommand}" InputGesture="Ctrl+R" />
                 <Separator />
                 <MenuItem Header="{l:T Main.Preferences}" Command="{Binding OpenPreferencesCommand}" InputGesture="Ctrl+OemComma" />
               </MenuFlyout>

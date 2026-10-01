@@ -1,0 +1,42 @@
+<Window Icon="/Assets/hoshi.ico"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:Hoshi.App.Localization"
+        xmlns:vm="using:Hoshi.App.ViewModels"
+        x:Class="Hoshi.App.Views.ReplaysWindow"
+        x:DataType="vm:ReplaysViewModel"
+        x:Name="Root"
+        Title="{l:T Replays.Title}"
+        Width="620" Height="540" MinWidth="460" MinHeight="360"
+        Background="{DynamicResource Bg.Window}"
+        WindowStartupLocation="CenterOwner">
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Escape" Command="{Binding #Root.CloseCommand}" />
+    <KeyBinding Gesture="Enter" Command="{Binding OpenCommand}" />
+    <KeyBinding Gesture="Delete" Command="{Binding DeleteCommand}" />
+  </Window.KeyBindings>
+  <DockPanel Margin="18">
+    <StackPanel DockPanel.Dock="Top" Spacing="4" Margin="0,0,0,12">
+      <TextBlock Text="{l:T Replays.Title}" FontSize="22" FontFamily="{DynamicResource Font.Title}" />
+      <TextBlock Classes="secondary" TextWrapping="Wrap" Text="{l:T Replays.Hint}" />
+    </StackPanel>
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,12,0,0">
+      <Button Content="{l:T Replays.Delete}" Command="{Binding DeleteCommand}" x:Name="DeleteButton" />
+      <Button Classes="accent" Content="{l:T Replays.Review}" Command="{Binding OpenCommand}" x:Name="OpenButton" />
+    </StackPanel>
+    <Panel>
+      <TextBlock Classes="secondary" Text="{l:T Replays.Empty}" IsVisible="{Binding IsEmpty}"
+                 HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" />
+      <ListBox ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}" x:Name="ReplayList" Background="Transparent">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:ReplayRow">
+            <StackPanel Margin="2,4" Spacing="2">
+              <TextBlock Text="{Binding Players}" FontWeight="SemiBold" />
+              <TextBlock Classes="secondary" Text="{Binding Details}" FontSize="12" />
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Panel>
+  </DockPanel>
+</Window>

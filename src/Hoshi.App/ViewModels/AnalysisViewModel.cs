@@ -48,6 +48,8 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     private readonly ISettingsService? _settings;
     private GameNode? _awaitingJudgement;
     private bool _engineReady;
+    private GameNode? _celebratedNode;
+    private readonly FightMeter _fight = new();
     private int _impacts;
     private CancellationTokenSource? _current;
     private CancellationTokenSource? _graphCts;
@@ -110,6 +112,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         _settings = settings;
         _game.PropertyChanged += OnGamePropertyChanged;
         _game.MovePlayed += OnMovePlayed;
+        _game.MoveSettled += OnMoveSettled;
         if (_engine is not null)
         {
             _engine.Changed += (_, _) => _ui.Post(() =>
@@ -153,12 +156,16 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         ? activity.Replace(Tr.T("Analysis.EnginePrefix"), string.Empty, StringComparison.Ordinal) is var a && a.Length > 0 ? char.ToUpperInvariant(a[0]) + a[1..] : activity
         : Tr.T("Analysis.WakingUp");
 
-    public bool IsTerritoryActive => IsTerritoryOn && !IsBlocked;
+    /// <summary>
+    /// Territory is allowed everywhere; during live OGS games it is always Hoshi's own quick estimate (no engine),
+    /// since KataGo is off there (decision 2026-10-01).
+    /// </summary>
+    public bool IsTerritoryActive => IsTerritoryOn;
 
     public bool HasEngine => _engine is not null && _engine.Problem is null;
 
     public string StatusText =>
-        IsBlocked && (IsAnalysisOn || IsTerritoryOn) ? Tr.T("Analysis.BlockedOnline")
+        IsBlocked && IsAnalysisOn ? Tr.T("Analysis.BlockedOnline")
         : !IsAnalysisOn ? string.Empty
         : _engine?.Problem is { } problem ? problem
         : Error is { } e ? e
@@ -471,8 +478,48 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     /// <summary>The engine's (trusted) verdict on a move the user just played; drives the adaptive music.</summary>
     public event EventHandler<MoveAssessment>? MoveJudged;
 
+    /// <summary>The battle heat (0–5) after a move, when effects follow the fight instead of the engine.</summary>
+    public event EventHandler<double>? BattleHeat;
+
+    /// <summary>The last fight reading (for tests and a possible indicator).</summary>
+    public FightReading? LastFight { get; private set; }
+
+    private void OnMoveSettled(object? sender, PlacedMove move)
+    {
+        if (IsEngineActive)
+        {
+            // Reviewing a replay: every step forward is judged by KataGo and celebrated like a move just played.
+            if (_game.IsReview && _awaitingJudgement != move.Node)
+            {
+                _awaitingJudgement = move.Node;
+                TryCelebrate(Position.Of(_game));
+            }
+
+            return;
+        }
+
+        // No engine (live OGS games, or KataGo not set up): effects and music follow the fight on the board —
+        // contact, short liberties and captures — never whether a move was good.
+        FightReading reading = _fight.OnMove(move.Before, move.After, move.Point);
+        LastFight = reading;
+        BattleHeat?.Invoke(this, reading.Heat);
+        AppSettings settings = _settings?.Current ?? new AppSettings();
+        if (settings.MoveEffects && reading.Strength > 0)
+        {
+            Impact = new BoardImpact(move.Point, reading.Strength, ++_impacts);
+            _sounds?.Play(
+                reading.Strength switch { 3 => SoundEffect.ExplosionBig, 2 => SoundEffect.ExplosionMedium, _ => SoundEffect.ImpactSmall },
+                settings.SoundVolume / 100.0);
+        }
+    }
+
     private void OnMovePlayed(object? sender, GameNode node)
     {
+        if (node == _celebratedNode)
+        {
+            return; // already judged as it was settled
+        }
+
         // Usually instant: the position before the move was being analysed while the user thought, so the move is
         // already among KataGo's candidates there.
         _awaitingJudgement = IsEngineActive ? node : null;
@@ -496,6 +543,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         if (beforeSolid && afterSolid)
         {
             _awaitingJudgement = null;
+            _celebratedNode = node;
             MoveJudged?.Invoke(this, judged);
             Celebrate(judged);
         }
