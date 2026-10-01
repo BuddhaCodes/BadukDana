@@ -44,11 +44,19 @@
       </KeyBinding.CommandParameter>
     </KeyBinding>
   </Window.KeyBindings>
+  <Window.Styles>
+    <Style Selector="TextBlock.good">
+      <Setter Property="Foreground" Value="#7FD08A" />
+    </Style>
+    <Style Selector="TextBlock.bad">
+      <Setter Property="Foreground" Value="#F08A7A" />
+    </Style>
+  </Window.Styles>
 
   <Grid ColumnDefinitions="*,Auto,280">
     <DockPanel Grid.Column="0">
       <!-- Bottom bar under the board only (Sabaki): navigation · players · actions. In edit mode it shows the tools. -->
-      <Border Classes="bottom-bar" Classes.edit="{Binding Game.IsEditMode}" DockPanel.Dock="Bottom" x:Name="BottomBar">
+      <Border Classes="bottom-bar" Classes.edit="{Binding Game.IsEditMode}" DockPanel.Dock="Bottom" x:Name="BottomBar" IsVisible="{Binding !Joseki.IsActive}">
         <Grid ColumnDefinitions="Auto,*,Auto">
           <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
             <Button Classes="bar icon" Command="{Binding Game.GoFirstCommand}" ToolTip.Tip="{l:T Main.First}"><c:HoshiIcon Icon="{DynamicResource Icon.First}" Size="18" /></Button>
@@ -119,6 +127,14 @@
                   
                 </MultiBinding>
               </Button.IsVisible><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Territory}" Size="17" /><TextBlock Text="{l:T Main.Territory}" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="bar toggle" Classes.on="{Binding JosekiHints.IsOn}" Command="{Binding JosekiHints.ToggleCommand}"
+                    ToolTip.Tip="{l:T Main.JosekiTip}" x:Name="JosekiButton">
+              <Button.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                  <Binding Path="!Game.IsEditMode" />
+                  <Binding Path="!JosekiHints.IsBlocked" />
+                </MultiBinding>
+              </Button.IsVisible><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Star}" Size="17" /><TextBlock Text="{l:T Main.JosekiHints}" VerticalAlignment="Center" /></StackPanel></Button>
             <Button Classes="bar toggle" Classes.on="{Binding Analysis.IsAnalysisOn}" Command="{Binding Analysis.ToggleAnalysisCommand}"
                     ToolTip.Tip="{l:T Main.AnalysisTip}" x:Name="AnalysisButton"
                     >
@@ -174,9 +190,16 @@
           <KeyBinding Gesture="T" Command="{Binding Analysis.ToggleTerritoryCommand}" />
           <KeyBinding Gesture="A" Command="{Binding Analysis.ToggleAnalysisCommand}" />
           <KeyBinding Gesture="M" Command="{Binding ToggleMusicCommand}" />
+          <KeyBinding Gesture="J" Command="{Binding JosekiHints.ToggleCommand}" />
+          <KeyBinding Gesture="N" Command="{Binding Joseki.NextCommand}" />
+          <KeyBinding Gesture="H" Command="{Binding Joseki.ShowAnswerCommand}" />
+          <KeyBinding Gesture="R" Command="{Binding Joseki.RestartCommand}" />
+          <KeyBinding Gesture="Escape" Command="{Binding Joseki.CloseCommand}" />
         </Panel.KeyBindings>
         <c:GoBoardControl x:Name="Board"
                           Margin="24"
+                          IsVisible="{Binding !Joseki.IsActive}"
+                          JosekiHints="{Binding JosekiHints.Hints}"
                           Board="{Binding Game.Board}"
                           BoardStyle="{DynamicResource Theme.Board}"
                           Territory="{Binding Analysis.Territory}"
@@ -190,6 +213,33 @@
                           GhostStone="{Binding Game.GhostStone}"
                           PointClickedCommand="{Binding Game.PlayCommand}"
                           ScrollCommand="{Binding Game.ScrollCommand}" />
+        <!-- The joseki trainer uses the same place on screen; the game stays as it was underneath. -->
+        <c:GoBoardControl x:Name="JosekiBoard"
+                          Margin="24"
+                          IsVisible="{Binding Joseki.IsActive}"
+                          Board="{Binding Joseki.Board}"
+                          BoardStyle="{DynamicResource Theme.Board}"
+                          Animate="{DynamicResource Theme.Animations}"
+                          LastMove="{Binding Joseki.LastMove}"
+                          Markers="{Binding Joseki.Markers}"
+                          HoverPoint="{Binding Joseki.HoverPoint}"
+                          GhostStone="{Binding Joseki.GhostStone}"
+                          PointClickedCommand="{Binding Joseki.PlayCommand}" />
+        <!-- Joseki hints: what the corner of the last move is, per the OGS Joseki Explorer or your library. -->
+        <Border Classes="warmup" x:Name="JosekiPill" IsHitTestVisible="False"
+                HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,6,0,0"
+                ToolTip.Tip="{Binding JosekiHints.Description}">
+          <Border.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.And}">
+              <Binding Path="JosekiHints.HasText" />
+              <Binding Path="!Joseki.IsActive" />
+            </MultiBinding>
+          </Border.IsVisible>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <ProgressBar IsIndeterminate="True" Width="28" MinWidth="28" Height="3" MinHeight="3" VerticalAlignment="Center" IsVisible="{Binding JosekiHints.IsSearching}" />
+            <TextBlock Text="{Binding JosekiHints.Text}" VerticalAlignment="Center" FontSize="12.5" MaxWidth="560" TextTrimming="CharacterEllipsis" x:Name="JosekiText" />
+          </StackPanel>
+        </Border>
         <!-- KataGo warming up in the background (first launch can take minutes while it tunes the GPU). -->
         <Border Classes="warmup" x:Name="WarmupPill" IsHitTestVisible="False"
                 HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,30"
@@ -328,6 +378,63 @@
             </ListBox.ItemTemplate>
           </ListBox>
         </DockPanel>
+        <!-- Joseki trainer panel, over the sidebar while the trainer is on the board. -->
+        <Border Grid.RowSpan="6" x:Name="JosekiPanel" IsVisible="{Binding Joseki.IsActive}"
+                Background="{DynamicResource Bg.Sidebar}" Padding="16,14">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Top" Spacing="8">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="{l:T Joseki.Title}" FontSize="12" Classes="secondary" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Classes="bar icon" Command="{Binding Joseki.CloseCommand}" ToolTip.Tip="{l:T Joseki.BackToGame}" x:Name="JosekiClose">
+                  <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="16" />
+                </Button>
+              </Grid>
+              <TextBlock Text="{Binding Joseki.LineName}" FontSize="20" FontFamily="{DynamicResource Font.Title}" TextWrapping="Wrap" x:Name="JosekiLineName" />
+              <TextBlock Classes="secondary" Text="{Binding Joseki.BoxText}" FontSize="12" />
+              <TextBlock Text="{Binding Joseki.ProgressText}" x:Name="JosekiProgress" />
+              <Border CornerRadius="6" Padding="10,8" Background="{DynamicResource Bg.PanelAlt}">
+                <TextBlock Text="{Binding Joseki.StatusText}" TextWrapping="Wrap" x:Name="JosekiStatus"
+                           Classes.good="{Binding Joseki.IsStatusGood}" Classes.bad="{Binding Joseki.IsStatusBad}" />
+              </Border>
+              <TextBlock Classes="secondary" Text="{Binding Joseki.Note}" IsVisible="{Binding Joseki.HasNote}" TextWrapping="Wrap" FontStyle="Italic" MaxHeight="120" />
+              <WrapPanel Orientation="Horizontal">
+                <Button Classes="accent" Content="{l:T Joseki.Next}" Command="{Binding Joseki.NextCommand}" ToolTip.Tip="N" Margin="0,0,6,6" x:Name="JosekiNext" />
+                <Button Content="{l:T Joseki.ShowAnswer}" Command="{Binding Joseki.ShowAnswerCommand}" ToolTip.Tip="H" Margin="0,0,6,6" />
+                <Button Content="{l:T Joseki.Restart}" Command="{Binding Joseki.RestartCommand}" ToolTip.Tip="R" Margin="0,0,6,6" />
+              </WrapPanel>
+              <ComboBox ItemsSource="{Binding Joseki.Families}" SelectedItem="{Binding Joseki.SelectedFamily}" HorizontalAlignment="Stretch" x:Name="JosekiFamily">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:JosekiFamilyOption">
+                    <TextBlock Text="{Binding Name}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+            <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0,10,0,0">
+              <TextBlock Classes="secondary" FontSize="12" TextWrapping="Wrap" Text="{Binding Joseki.LibraryText}" />
+              <Button HorizontalAlignment="Stretch" Classes="accent" Command="{Binding Joseki.FetchFromOgsCommand}" IsVisible="{Binding Joseki.HasExplorer}"
+                      ToolTip.Tip="{l:T Joseki.FetchTip}" x:Name="JosekiFetch">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <ProgressBar IsIndeterminate="True" Width="24" MinWidth="24" Height="3" MinHeight="3" VerticalAlignment="Center" IsVisible="{Binding Joseki.IsFetching}" />
+                  <TextBlock Text="{l:T Joseki.Fetch}" />
+                </StackPanel>
+              </Button>
+              <Button HorizontalAlignment="Stretch" Content="{l:T Joseki.AddFromBoard}" Command="{Binding Joseki.AddFromBoardCommand}" ToolTip.Tip="{l:T Joseki.AddFromBoardTip}" />
+              <Button HorizontalAlignment="Stretch" Content="{l:T Joseki.Import}" Command="{Binding Joseki.ImportCommand}" />
+              <TextBlock Classes="secondary" FontSize="11.5" TextWrapping="Wrap" Text="{l:T Joseki.Help}" />
+            </StackPanel>
+            <ListBox ItemsSource="{Binding Joseki.Rows}" SelectedItem="{Binding Joseki.SelectedLine}" Background="Transparent" Margin="0,8,0,0" x:Name="JosekiLines">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:JosekiLineRow">
+                  <StackPanel Margin="0,2" Spacing="1">
+                    <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Classes="secondary" Text="{Binding Detail}" FontSize="11.5" TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </DockPanel>
+        </Border>
       </Grid>
   </Grid>
 </Window>

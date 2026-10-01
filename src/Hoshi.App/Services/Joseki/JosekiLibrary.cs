@@ -22,8 +22,11 @@ public interface IJosekiLibrary
     /// <summary>Copies an SGF file of joseki into the library; returns how many new lines it brought.</summary>
     int Import(string sgfPath);
 
-    /// <summary>Adds one sequence (recorded from the board) to <c>my-lines.sgf</c>; null when it is too short or known.</summary>
-    JosekiLine? AddLine(IReadOnlyList<JosekiMove> moves, int size, string name);
+    /// <summary>
+    /// Adds one sequence to <paramref name="fileName"/> (default <c>my-lines.sgf</c>, merged with common prefixes);
+    /// null when it is too short or already known.
+    /// </summary>
+    JosekiLine? AddLine(IReadOnlyList<JosekiMove> moves, int size, string name, string? comment = null, string? fileName = null);
 
     void Record(JosekiCard card);
 }
@@ -35,6 +38,9 @@ public interface IJosekiLibrary
 public sealed class JosekiLibrary : IJosekiLibrary
 {
     public const string MyLinesFile = "my-lines.sgf";
+
+    /// <summary>Lines fetched from the OGS Joseki Explorer for practice (a personal cache, never shipped).</summary>
+    public const string OgsLinesFile = "ogs-explorer.sgf";
 
     private const string StarterResource = "Hoshi.Joseki.starter.sgf";
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
@@ -112,7 +118,7 @@ public sealed class JosekiLibrary : IJosekiLibrary
         return added;
     }
 
-    public JosekiLine? AddLine(IReadOnlyList<JosekiMove> moves, int size, string name)
+    public JosekiLine? AddLine(IReadOnlyList<JosekiMove> moves, int size, string name, string? comment = null, string? fileName = null)
     {
         ArgumentNullException.ThrowIfNull(moves);
         if (moves.Count < 2)
@@ -129,11 +135,12 @@ public sealed class JosekiLibrary : IJosekiLibrary
             }
 
             Directory.CreateDirectory(UserDirectory);
-            string path = Path.Combine(UserDirectory, MyLinesFile);
+            string file = string.IsNullOrWhiteSpace(fileName) ? MyLinesFile : Path.GetFileName(fileName);
+            string path = Path.Combine(UserDirectory, file);
             GameTree tree = File.Exists(path) ? SgfParser.Parse(File.ReadAllBytes(path)) : GameTree.Create(size);
             if (tree.Info.Width != size)
             {
-                path = Path.Combine(UserDirectory, $"my-lines-{size}.sgf");
+                path = Path.Combine(UserDirectory, $"{Path.GetFileNameWithoutExtension(file)}-{size}.sgf");
                 tree = File.Exists(path) ? SgfParser.Parse(File.ReadAllBytes(path)) : GameTree.Create(size);
             }
 
@@ -155,6 +162,11 @@ public sealed class JosekiLibrary : IJosekiLibrary
             if (!string.IsNullOrWhiteSpace(name))
             {
                 node.SetValue("N", name.Trim());
+            }
+
+            if (!string.IsNullOrWhiteSpace(comment))
+            {
+                node.Comment = comment.Trim();
             }
 
             File.WriteAllBytes(path, SgfWriter.WriteBytes(tree));
@@ -242,5 +254,31 @@ public sealed class JosekiLibrary : IJosekiLibrary
         }
 
         return [];
+    }
+}
+
+/// <summary>An empty library that keeps nothing (designer, tests, or no data folder).</summary>
+public sealed class NullJosekiLibrary : IJosekiLibrary
+{
+    public static NullJosekiLibrary Instance { get; } = new();
+
+    public event EventHandler? Changed
+    {
+        add { }
+        remove { }
+    }
+
+    public string UserDirectory => string.Empty;
+
+    public IReadOnlyList<JosekiLine> Lines => [];
+
+    public IReadOnlyDictionary<string, JosekiCard> Cards => new Dictionary<string, JosekiCard>();
+
+    public int Import(string sgfPath) => throw new FormatException(Core.Localization.Tr.T("Joseki.NoLinesInFile"));
+
+    public JosekiLine? AddLine(IReadOnlyList<JosekiMove> moves, int size, string name, string? comment = null, string? fileName = null) => null;
+
+    public void Record(JosekiCard card)
+    {
     }
 }

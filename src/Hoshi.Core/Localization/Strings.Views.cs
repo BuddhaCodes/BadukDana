@@ -6,7 +6,7 @@ public static partial class Tr
     {
         Add(d, "Prefs.Language", "Language", "Idioma");
         Add(d, "Main.Replays", "Played games…", "Partidas jugadas…");
-        Add(d, "Main.Joseki", "Joseki trainer…", "Entrenador de josekis…");
+        Add(d, "Main.Joseki", "Joseki trainer", "Entrenador de josekis");
 
         // Joseki trainer
         Add(d, "Joseki.Title", "Joseki trainer", "Entrenador de josekis");
@@ -16,7 +16,7 @@ public static partial class Tr
         Add(d, "Joseki.Import", "Import SGF…", "Importar SGF…");
         Add(d, "Joseki.AddFromBoard", "Add line from the main board", "Añadir la línea del tablero principal");
         Add(d, "Joseki.AddFromBoardTip", "Saves the moves from the start to the current position of the main board as a joseki line.", "Guarda las jugadas desde el inicio hasta la posición actual del tablero principal como línea de joseki.");
-        Add(d, "Joseki.Help", "Place every stone of the joseki, both colours. A mirror image is fine. Perfect lines come back later and later; missed ones come back soon. N next · H answer · R again.", "Coloca cada piedra del joseki, de los dos colores. Vale también su imagen en espejo. Las líneas perfectas vuelven cada vez más tarde; las falladas, pronto. N siguiente · H respuesta · R otra vez.");
+        Add(d, "Joseki.Help", "Place every stone of the joseki, both colours. A mirror image is fine. Pick a line from the list or let the trainer choose what is due: perfect lines come back later and later, missed ones soon. N next · H answer · R again · Esc back to the game.", "Coloca cada piedra del joseki, de los dos colores. Vale también su imagen en espejo. Elige una línea de la lista o deja que el entrenador elija lo pendiente: las perfectas vuelven cada vez más tarde, las falladas pronto. N siguiente · H respuesta · R otra vez · Esc volver a la partida.");
         Add(d, "Joseki.Progress", "Move {0} of {1} · {2} to play", "Jugada {0} de {1} · juegan {2}");
         Add(d, "Joseki.Box", "Box {0} of {1}", "Caja {0} de {1}");
         Add(d, "Joseki.NewLine", "New line", "Línea nueva");
@@ -39,6 +39,34 @@ public static partial class Tr
         Add(d, "Joseki.AddKnown", "That line is already in your library.", "Esa línea ya está en tu biblioteca.");
         Add(d, "Joseki.MyLineName", "My line {0}", "Mi línea {0}");
         Add(d, "Joseki.BlockedOnline", "The trainer is closed while you are playing a game on OGS, to keep your games fair.", "El entrenador está cerrado mientras juegas una partida en OGS, para que tus partidas sean limpias.");
+        Add(d, "Main.JosekiHints", "Joseki", "Joseki");
+        Add(d, "Main.JosekiTip", "Show known joseki continuations in each corner (J): green ideal, olive good, yellow trick, blue open question, red mistake, violet from your library. Off during your OGS games.", "Muestra las continuaciones de joseki conocidas en cada esquina (J): verde ideal, oliva buena, amarillo truco, azul dudosa, rojo error, violeta de tu biblioteca. Apagado durante tus partidas en OGS.");
+        Add(d, "Joseki.BackToGame", "Back to the game (Esc)", "Volver a la partida (Esc)");
+        Add(d, "Joseki.Fetch", "New line from OGS", "Nueva línea de OGS");
+        Add(d, "Joseki.FetchTip", "Builds a new line from the OGS Joseki Explorer (ideal and good moves only) in the chosen family, and keeps it in your library.", "Crea una línea nueva con el Joseki Explorer de OGS (solo jugadas ideales y buenas) de la familia elegida, y la guarda en tu biblioteca.");
+        Add(d, "Joseki.Fetching", "Asking the OGS Joseki Explorer…", "Consultando el Joseki Explorer de OGS…");
+        Add(d, "Joseki.Fetched", "New line from the OGS Joseki Explorer. Your move.", "Línea nueva del Joseki Explorer de OGS. Te toca.");
+        Add(d, "Joseki.FetchFailed", "Could not reach the OGS Joseki Explorer. Check your connection and try again.", "No se pudo consultar el Joseki Explorer de OGS. Revisa la conexión y prueba otra vez.");
+        Add(d, "Joseki.FetchNothingNew", "The explorer only gave lines you already have; try again or pick another family.", "El explorador solo dio líneas que ya tienes; prueba otra vez o elige otra familia.");
+        Add(d, "Joseki.OgsLineName", "OGS · {0} · {1} moves", "OGS · {0} · {1} jugadas");
+        Add(d, "Joseki.NoLinesInFamily", "No lines of this family yet. Fetch one from OGS or pick another family.", "Aún no hay líneas de esta familia. Trae una de OGS o elige otra familia.");
+        Add(d, "Joseki.Family.All", "All families", "Todas las familias");
+        Add(d, "Joseki.Family.Hoshi", "4-4 (hoshi)", "4-4 (hoshi)");
+        Add(d, "Joseki.Family.Komoku", "3-4 (komoku)", "3-4 (komoku)");
+        Add(d, "Joseki.Family.SanSan", "3-3 (san-san)", "3-3 (san-san)");
+        Add(d, "Joseki.Family.Takamoku", "4-5 (takamoku)", "4-5 (takamoku)");
+        Add(d, "Joseki.Family.Mokuhazushi", "3-5 (mokuhazushi)", "3-5 (mokuhazushi)");
+        Add(d, "Joseki.Family.Other", "Other", "Otras");
+        Add(d, "Joseki.Hint.Ogs", "Joseki (OGS): {0} · {1} continuations", "Joseki (OGS): {0} · {1} continuaciones");
+        Add(d, "Joseki.Hint.Library", "Joseki (your library) · {0} continuations", "Joseki (tu biblioteca) · {0} continuaciones");
+        Add(d, "Joseki.Hint.Unknown", "This corner has left the known joseki", "Esta esquina ya salió del joseki conocido");
+        Add(d, "Joseki.Hint.Offline", "OGS Joseki Explorer unreachable · {0} from your library", "Joseki Explorer de OGS no disponible · {0} de tu biblioteca");
+        Add(d, "Joseki.Category.Ideal", "ideal", "ideal");
+        Add(d, "Joseki.Category.Good", "good", "buena");
+        Add(d, "Joseki.Category.Mistake", "mistake", "error");
+        Add(d, "Joseki.Category.Trick", "trick play", "truco");
+        Add(d, "Joseki.Category.Question", "open question", "dudosa");
+        Add(d, "Joseki.Category.Unknown", "unrated", "sin valorar");
         Add(d, "Joseki.Starter.Invasion33", "3-3 invasion under the 4-4 point", "Invasión en 3-3 bajo el hoshi");
         Add(d, "Joseki.Starter.Invasion33.Note", "White lives in the corner; Black gets outside thickness and sente.", "Blancas viven en la esquina; Negras obtienen grosor exterior y sente.");
         Add(d, "Replays.Title", "Played games", "Partidas jugadas");

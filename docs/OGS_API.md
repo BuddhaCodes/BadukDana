@@ -180,6 +180,15 @@ Respuestas paginadas: `{ count, next, previous, results: [...] }`.
 | → | `seek_graph/connect` / `seek_graph/disconnect` | `{ channel: "global" }` |
 | ← | `seekgraph/global` | Array de mensajes: desafío nuevo, `{ challenge_id, delete: true }` o `{ challenge_id, game_started: true }` |
 
+### Joseki Explorer (OJE) — solo lectura
+
+Verificado contra online-go.com `src/views/Joseki/joseki-utils.ts` y `Joseki.tsx` (rama `main`, 2026-10-01); **no probado aún contra el servidor real** (bloqueado desde el entorno de desarrollo).
+
+- `GET https://online-go.com/oje/position?id=<node>&mode=0`, sin autenticación (`id=root` para la raíz). `positions?id=` devuelve una lista para precarga (no se usa).
+- Respuesta: `node_id`, `placement` (`"root"`, `"pass"` = tenuki, o coordenada humana `"Q16"`), `category` (`IDEAL`/`GOOD`/`MISTAKE`/`TRICK`/`QUESTION`), `description` (markdown con marcas `<A:Q16>` y enlaces `<position: 123>`), `tags[{description}]`, `play` (`".root.Q16.R17"`), `next_moves[{placement, category, node_id, variation_label}]`.
+- El árbol vive en una esquina (arriba a la derecha hoy); Hoshi la deduce de las primeras jugadas de la raíz y traslada cada esquina del tablero con `Corners.Mapping`.
+- Hoshi cachea cada posición (memoria + `cache/oje/<id>.json`, 7 días) y nunca la redistribuye. No se consulta durante las partidas de OGS en curso del jugador.
+
 ## 4. Reloj
 
 `game/{id}/clock` (`GameClock`):

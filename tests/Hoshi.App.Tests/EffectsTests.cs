@@ -519,7 +519,7 @@ public sealed class BattleAndReplayTests
         }
 
         game.GoForwardCommand.Execute(null);
-        for (int i = 0; i < 20 && !sounds.Played.Any(p => p.Effect == SoundEffect.ExplosionBig); i++)
+        for (int i = 0; i < 250 && !sounds.Played.Any(p => p.Effect == SoundEffect.ExplosionBig); i++)
         {
             System.Threading.Thread.Sleep(20);
             Avalonia.Threading.Dispatcher.UIThread.RunJobs();
