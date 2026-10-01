@@ -40,6 +40,8 @@ The sound effects in `src/Hoshi.App/Assets/Sounds/` (`impact_small`, `explosion_
 synthesised by `tools/gen_sounds.py` (noise, oscillators and filters; no samples) and are Hoshi's own. Sounds a user
 places in their own `sounds/` folder are not distributed with Hoshi.
 
+The app icon (`src/Hoshi.App/Assets/hoshi.ico`, `hoshi.png`) is drawn by `tools/gen_icon.py` and is Hoshi's own.
+
 ### Sabaki / Shudan
 
 Hoshi's stone rendering reproduces the colours and gradients of Shudan's `stone_1.svg` / `stone_-1.svg`
