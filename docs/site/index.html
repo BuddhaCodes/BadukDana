@@ -163,11 +163,18 @@
   .fair .seal { width: 46px; height: 46px; border-radius: 50%; background: var(--gold); color: #1b1408; display: grid; place-items: center; font: 600 22px Fraunces, "Shippori Mincho B1", Georgia, serif; }
 
   /* Download */
-  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: s; }
-  .steps .card::before { counter-increment: s; content: counter(s); display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--gold); color: #1b1408; font-weight: 600; margin-bottom: 12px; }
+  .dl-main { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 26px; }
+  .btn.big { font-size: 17px; padding: 15px 28px; }
+  .platforms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .platforms .card { display: flex; flex-direction: column; gap: 10px; }
+  .platforms .card.current { border-color: rgba(217, 180, 90, .55); box-shadow: 0 0 0 1px rgba(217, 180, 90, .25) inset; }
+  .platforms .arch { display: flex; gap: 8px; flex-wrap: wrap; }
+  .platforms .arch .btn { padding: 8px 16px; font-size: 14px; }
+  .platforms .note { font-size: 13px; color: var(--muted); margin: auto 0 0; padding-top: 8px; border-top: 1px solid var(--line); }
+  .extras { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
   .card { min-width: 0; }
   pre { background: #070a18; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; overflow-x: auto; font: 13px/1.6 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #e5dcc4; margin: 12px 0 0; }
-  @media (max-width: 900px) { .steps { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .platforms, .extras { grid-template-columns: 1fr; } }
 
   footer { border-top: 1px solid var(--line); padding: 40px 0 56px; color: var(--muted); font-size: 13px; }
   footer .wrap { display: grid; gap: 10px; }
@@ -341,15 +348,38 @@
   <div class="wrap">
     <div class="head">
       <p class="eyebrow" data-i18n="dl.eyebrow">Get Hoshi</p>
-      <h2 data-i18n="dl.title">Up and running in three steps.</h2>
-      <p data-i18n="dl.lead">Hoshi is built with .NET and Avalonia and runs on Windows, macOS and Linux.</p>
+      <h2 data-i18n="dl.title">Download and play.</h2>
+      <p data-i18n="dl.lead">Ready-to-run apps for Windows, macOS and Linux, built with Avalonia. Nothing else to install: .NET comes inside.</p>
     </div>
-    <div class="steps">
-      <div class="card"><h3 data-i18n="s1.t">Install .NET 10</h3><p class="muted" data-i18n="s1.d">Get the .NET 10 SDK from dot.net for your system.</p></div>
-      <div class="card"><h3 data-i18n="s2.t">Build and run</h3><p class="muted" data-i18n="s2.d">Clone the repository and run:</p><pre>git clone https://github.com/BuddhaCodes/BadukDana.git
+    <div class="dl-main">
+      <a class="btn primary big" id="dl-primary" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-windows-x64.zip">Download</a>
+      <p class="muted" id="dl-meta" data-i18n="dl.meta">Free · open source · other systems below</p>
+    </div>
+    <div class="platforms">
+      <div class="card" data-os="windows">
+        <h3>Windows</h3>
+        <p class="muted" data-i18n="pw.d">Windows 10 or 11. Unzip and run Hoshi.exe.</p>
+        <div class="arch"><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-windows-x64.zip">x64</a><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-windows-arm64.zip">ARM64</a></div>
+        <p class="note" data-i18n="pw.n">First launch: if SmartScreen warns about an unknown publisher, choose “More info” → “Run anyway”.</p>
+      </div>
+      <div class="card" data-os="macos">
+        <h3>macOS</h3>
+        <p class="muted" data-i18n="pm.d">macOS 12 or later. Unzip and drag Hoshi.app to Applications.</p>
+        <div class="arch"><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-macos-arm64.zip" data-i18n="pm.arm">Apple Silicon</a><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-macos-x64.zip">Intel</a></div>
+        <p class="note" data-i18n="pm.n">First launch: right-click Hoshi.app → Open → Open. Hoshi is not notarized by Apple yet.</p>
+      </div>
+      <div class="card" data-os="linux">
+        <h3>Linux</h3>
+        <p class="muted" data-i18n="pl.d">Any recent x64 or ARM64 distribution. Unpack, then run ./install.sh for a menu entry, or just ./Hoshi.</p>
+        <div class="arch"><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-linux-x64.tar.gz">x64</a><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-linux-arm64.tar.gz">ARM64</a></div>
+        <p class="note" data-i18n="pl.n">Music needs PulseAudio/PipeWire (pacat) or ALSA (aplay).</p>
+      </div>
+    </div>
+    <div class="extras">
+      <div class="card"><h3 data-i18n="s3.t">Add KataGo (optional)</h3><p class="muted" data-i18n="s3.d">Download KataGo and a network (b18c384 is a good start), then pick them in Preferences → Analysis → Test KataGo.</p></div>
+      <div class="card"><h3 data-i18n="s2.t">Build from source</h3><p class="muted" data-i18n="s2.d">With the .NET 10 SDK:</p><pre>git clone https://github.com/BuddhaCodes/BadukDana.git
 cd BadukDana
 dotnet run --project src/Hoshi.App -c Release</pre></div>
-      <div class="card"><h3 data-i18n="s3.t">Add KataGo (optional)</h3><p class="muted" data-i18n="s3.d">Download KataGo and a network (b18c384 is a good start), then pick them in Preferences → Analysis → Test KataGo.</p></div>
     </div>
   </div>
 </section>
@@ -411,10 +441,16 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
     "mu.demo": "Demo: calma, luego una racha de jugadas fuertes desde el 0:16 y un error grave al 1:10… ya lo oirás.",
     "fp.title": "Juego limpio de serie",
     "fp.text": "En las partidas en curso de OGS, KataGo se queda apagado: OGS prohíbe la ayuda de IA mientras juegas. Las sugerencias de joseki y el entrenador también se apagan. Los efectos y la música siguen entonces la pelea del tablero (contacto, libertades, capturas) y tienes la estimación rápida de territorio de Hoshi. Cada partida se guarda en tu biblioteca, donde te espera la revisión con IA, con todos sus efectos.",
-    "dl.eyebrow": "Consigue Hoshi", "dl.title": "En marcha en tres pasos.",
-    "dl.lead": "Hoshi está hecho con .NET y Avalonia y funciona en Windows, macOS y Linux.",
-    "s1.t": "Instala .NET 10", "s1.d": "Descarga el SDK de .NET 10 desde dot.net para tu sistema.",
-    "s2.t": "Compila y ejecuta", "s2.d": "Clona el repositorio y ejecuta:",
+    "dl.eyebrow": "Consigue Hoshi", "dl.title": "Descarga y juega.",
+    "dl.lead": "Apps listas para usar en Windows, macOS y Linux, hechas con Avalonia. No hay que instalar nada más: .NET va dentro.",
+    "dl.meta": "Gratis · código abierto · otros sistemas abajo",
+    "pw.d": "Windows 10 u 11. Descomprime y abre Hoshi.exe.",
+    "pw.n": "Primera vez: si SmartScreen avisa de un editor desconocido, elige «Más información» → «Ejecutar de todas formas».",
+    "pm.d": "macOS 12 o posterior. Descomprime y arrastra Hoshi.app a Aplicaciones.", "pm.arm": "Apple Silicon",
+    "pm.n": "Primera vez: clic derecho en Hoshi.app → Abrir → Abrir. Hoshi aún no está notarizado por Apple.",
+    "pl.d": "Cualquier distribución reciente x64 o ARM64. Descomprime y ejecuta ./install.sh para tenerlo en el menú, o simplemente ./Hoshi.",
+    "pl.n": "La música necesita PulseAudio/PipeWire (pacat) o ALSA (aplay).",
+    "s2.t": "Compilar desde el código", "s2.d": "Con el SDK de .NET 10:",
     "s3.t": "Añade KataGo (opcional)", "s3.d": "Descarga KataGo y una red (b18c384 es un buen comienzo) y elígelos en Preferencias → Análisis → Probar KataGo.",
     "ft.credits": "Análisis de KataGo (MIT). Texturas del tema Clásico de Sabaki y Shudan (MIT). Fuentes con licencia SIL Open Font; iconos de Phosphor, Lucide y Tabler. Las valoraciones y comentarios de josekis llegan en vivo del Joseki Explorer de OGS, un proyecto comunitario. Los efectos, sonidos y la música son de Hoshi.",
     "ft.ogs": "Sin relación con OGS (online-go.com) ni con KataGo."
@@ -423,6 +459,44 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
   document.querySelectorAll("[data-i18n]").forEach(el => EN[el.dataset.i18n] = el.textContent);
   document.querySelectorAll("[data-i18n-html]").forEach(el => EN[el.dataset.i18nHtml] = el.innerHTML);
 
+  // Download button for the visitor's system (latest GitHub release; asset names carry no version).
+  const DL = "https://github.com/BuddhaCodes/BadukDana/releases/latest/download/";
+  const OS_NAME = { windows: "Windows", macos: "macOS", linux: "Linux" };
+  const FOR = { en: "Download for {0}", es: "Descargar para {0}" };
+  const VER = { en: "Version {0} · free · open source", es: "Versión {0} · gratis · código abierto" };
+  const sys = { os: "windows", arch: "x64", version: null };
+  (function detect() {
+    const ua = navigator.userAgent || "";
+    const hint = /Windows/i.test(ua) ? "windows" : /Mac OS X|Macintosh/i.test(ua) ? "macos"
+      : /Linux|X11/i.test(ua) && !/Android/i.test(ua) ? "linux" : null;
+    const platform = navigator.platform || "";
+    sys.os = hint || (/Mac/i.test(platform) ? "macos" : /Linux/i.test(platform) ? "linux" : "windows");
+    if (sys.os === "macos") sys.arch = "arm64"; // most Macs today; Intel is one click away
+    else if (/arm64|aarch64/i.test(ua)) sys.arch = "arm64";
+    if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+      navigator.userAgentData.getHighEntropyValues(["architecture"]).then(v => {
+        if (v.architecture === "arm") sys.arch = "arm64";
+        else if (v.architecture === "x86") sys.arch = "x64";
+        renderDownload();
+      }).catch(() => {});
+    }
+    fetch("https://api.github.com/repos/BuddhaCodes/BadukDana/releases/latest")
+      .then(r => r.ok ? r.json() : null)
+      .then(r => { if (r && r.tag_name) { sys.version = r.tag_name.replace(/^v/, ""); renderDownload(); } })
+      .catch(() => {});
+  })();
+
+  function renderDownload() {
+    const lang = document.documentElement.lang === "es" ? "es" : "en";
+    const file = sys.os === "windows" ? `Hoshi-windows-${sys.arch}.zip`
+      : sys.os === "macos" ? `Hoshi-macos-${sys.arch}.zip` : `Hoshi-linux-${sys.arch}.tar.gz`;
+    const a = document.getElementById("dl-primary");
+    a.href = DL + file;
+    a.textContent = FOR[lang].replace("{0}", OS_NAME[sys.os]);
+    if (sys.version) document.getElementById("dl-meta").textContent = VER[lang].replace("{0}", sys.version);
+    document.querySelectorAll(".platforms .card").forEach(c => c.classList.toggle("current", c.dataset.os === sys.os));
+  }
+
   function setLang(lang) {
     const t = lang === "es" ? ES : EN;
     document.documentElement.lang = lang;
@@ -430,6 +504,7 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
     document.querySelectorAll("[data-i18n-html]").forEach(el => { const v = t[el.dataset.i18nHtml]; if (v) el.innerHTML = v; });
     document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
     try { localStorage.setItem("hoshi-lang", lang); } catch (e) { /* storage unavailable */ }
+    renderDownload();
   }
 
   document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));

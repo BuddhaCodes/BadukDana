@@ -1,0 +1,131 @@
+name: Release
+
+# Builds self-contained Hoshi apps (no .NET needed on the user's machine) and attaches them to a GitHub Release.
+# Run it by pushing a tag (git tag v0.2.0 && git push origin v0.2.0) or from the Actions tab.
+# Asset names carry no version, so https://github.com/BuddhaCodes/BadukDana/releases/latest/download/<asset>
+# always points at the newest build (the website links there).
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version (e.g. 0.2.0); a v-tag with it is created"
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build:
+    name: ${{ matrix.rid }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-latest, rid: win-x64,     asset: Hoshi-windows-x64.zip }
+          - { os: windows-latest, rid: win-arm64,   asset: Hoshi-windows-arm64.zip }
+          - { os: macos-latest,   rid: osx-arm64,   asset: Hoshi-macos-arm64.zip }
+          - { os: macos-latest,   rid: osx-x64,     asset: Hoshi-macos-x64.zip }
+          - { os: ubuntu-latest,  rid: linux-x64,   asset: Hoshi-linux-x64.tar.gz }
+          - { os: ubuntu-latest,  rid: linux-arm64, asset: Hoshi-linux-arm64.tar.gz }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Version
+        id: v
+        shell: bash
+        run: |
+          v="${{ github.event.inputs.version }}"
+          [ -z "$v" ] && v="${GITHUB_REF_NAME#v}"
+          echo "version=${v#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish
+        shell: bash
+        run: >
+          dotnet publish src/Hoshi.App/Hoshi.App.csproj -c Release -r ${{ matrix.rid }} --self-contained
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none
+          -p:Version=${{ steps.v.outputs.version }} -o out/Hoshi
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Remove-Item out/Hoshi/appsettings.Development.json -ErrorAction SilentlyContinue
+          Copy-Item THIRD_PARTY_NOTICES.md, licenses out/Hoshi -Recurse
+          Compress-Archive -Path out/Hoshi -DestinationPath ${{ matrix.asset }}
+
+      - name: Package (macOS app bundle)
+        if: runner.os == 'macOS'
+        run: |
+          set -e
+          app=out/Hoshi.app
+          mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
+          rm -f out/Hoshi/appsettings.Development.json
+          cp -R out/Hoshi/. "$app/Contents/MacOS/"
+          sed "s/__VERSION__/${{ steps.v.outputs.version }}/g" packaging/macos/Info.plist > "$app/Contents/Info.plist"
+          mkdir hoshi.iconset
+          for s in 16 32 128 256 512; do
+            sips -z $s $s src/Hoshi.App/Assets/hoshi.png --out hoshi.iconset/icon_${s}x${s}.png >/dev/null
+            d=$((s*2)); [ $d -le 512 ] && sips -z $d $d src/Hoshi.App/Assets/hoshi.png --out hoshi.iconset/icon_${s}x${s}@2x.png >/dev/null
+          done
+          iconutil -c icns hoshi.iconset -o "$app/Contents/Resources/hoshi.icns"
+          cp -R THIRD_PARTY_NOTICES.md licenses "$app/Contents/Resources/"
+          chmod +x "$app/Contents/MacOS/Hoshi"
+          # Ad-hoc signature: required for Apple Silicon to run it at all (not a Developer ID, see the website).
+          codesign --force --deep --sign - "$app"
+          ditto -c -k --keepParent "$app" ${{ matrix.asset }}
+
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          set -e
+          rm -f out/Hoshi/appsettings.Development.json
+          cp packaging/linux/hoshi.desktop packaging/linux/install.sh src/Hoshi.App/Assets/hoshi.png out/Hoshi/
+          cp -R THIRD_PARTY_NOTICES.md licenses out/Hoshi/
+          chmod +x out/Hoshi/Hoshi out/Hoshi/install.sh
+          tar -C out -czf ${{ matrix.asset }} Hoshi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: ${{ matrix.asset }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: assets
+          merge-multiple: true
+
+      - name: Tag
+        id: tag
+        run: |
+          v="${{ github.event.inputs.version }}"
+          [ -z "$v" ] && v="${GITHUB_REF_NAME#v}"
+          echo "tag=v${v#v}" >> "$GITHUB_OUTPUT"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: Hoshi ${{ steps.tag.outputs.tag }}
+          make_latest: true
+          generate_release_notes: true
+          files: assets/*
+          body: |
+            Download the file for your system, unpack it and run Hoshi — no .NET install needed.
+            Windows: Hoshi-windows-x64.zip → Hoshi.exe · macOS: Hoshi-macos-arm64.zip (Apple Silicon) or -x64 (Intel) → Hoshi.app · Linux: Hoshi-linux-x64.tar.gz → ./install.sh or ./Hoshi
+            The builds are not signed by Microsoft or Apple yet; the website explains the first-launch warning.

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Hoshi
+Comment=Play and study Go (Baduk, Weiqi)
+Exec=Hoshi %f
+Icon=hoshi
+Terminal=false
+Categories=Game;BoardGame;
+MimeType=application/x-go-sgf;
