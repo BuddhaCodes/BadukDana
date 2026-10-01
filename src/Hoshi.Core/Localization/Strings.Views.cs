@@ -6,6 +6,41 @@ public static partial class Tr
     {
         Add(d, "Prefs.Language", "Language", "Idioma");
         Add(d, "Main.Replays", "Played games…", "Partidas jugadas…");
+        Add(d, "Main.Joseki", "Joseki trainer…", "Entrenador de josekis…");
+
+        // Joseki trainer
+        Add(d, "Joseki.Title", "Joseki trainer", "Entrenador de josekis");
+        Add(d, "Joseki.Next", "Next line", "Siguiente línea");
+        Add(d, "Joseki.Restart", "Again", "Otra vez");
+        Add(d, "Joseki.ShowAnswer", "Show answer", "Ver respuesta");
+        Add(d, "Joseki.Import", "Import SGF…", "Importar SGF…");
+        Add(d, "Joseki.AddFromBoard", "Add line from the main board", "Añadir la línea del tablero principal");
+        Add(d, "Joseki.AddFromBoardTip", "Saves the moves from the start to the current position of the main board as a joseki line.", "Guarda las jugadas desde el inicio hasta la posición actual del tablero principal como línea de joseki.");
+        Add(d, "Joseki.Help", "Place every stone of the joseki, both colours. A mirror image is fine. Perfect lines come back later and later; missed ones come back soon. N next · H answer · R again.", "Coloca cada piedra del joseki, de los dos colores. Vale también su imagen en espejo. Las líneas perfectas vuelven cada vez más tarde; las falladas, pronto. N siguiente · H respuesta · R otra vez.");
+        Add(d, "Joseki.Progress", "Move {0} of {1} · {2} to play", "Jugada {0} de {1} · juegan {2}");
+        Add(d, "Joseki.Box", "Box {0} of {1}", "Caja {0} de {1}");
+        Add(d, "Joseki.NewLine", "New line", "Línea nueva");
+        Add(d, "Joseki.LibraryStats", "{0} lines · {1} due · {2} learned", "{0} líneas · {1} pendientes · {2} aprendidas");
+        Add(d, "Joseki.Start", "Your move: play the first stone of the joseki.", "Te toca: juega la primera piedra del joseki.");
+        Add(d, "Joseki.ExtraPractice", "Nothing due right now: extra practice.", "Nada pendiente por ahora: práctica extra.");
+        Add(d, "Joseki.Correct", "Right. Next stone.", "Bien. Siguiente piedra.");
+        Add(d, "Joseki.Mirror", "Right (the mirror image). Next stone.", "Bien (su imagen en espejo). Siguiente piedra.");
+        Add(d, "Joseki.AlsoJoseki", "That is joseki too, but this line goes another way. Try again.", "Eso también es joseki, pero esta línea sigue de otra forma. Prueba otra vez.");
+        Add(d, "Joseki.Wrong", "Not this one. Try again.", "Esa no. Prueba otra vez.");
+        Add(d, "Joseki.Revealed", "The circle shows the move.", "El círculo marca la jugada.");
+        Add(d, "Joseki.Done", "Perfect! This line comes back later.", "¡Perfecto! Esta línea volverá más adelante.");
+        Add(d, "Joseki.DoneWithMistakes", "Done, with mistakes: this line comes back soon.", "Terminada, con errores: esta línea volverá pronto.");
+        Add(d, "Joseki.NoLines", "No joseki lines yet. Import an SGF collection or add a line from the main board.", "Aún no hay líneas de joseki. Importa una colección SGF o añade una línea del tablero principal.");
+        Add(d, "Joseki.Imported", "Imported: {0} new lines.", "Importado: {0} líneas nuevas.");
+        Add(d, "Joseki.ImportFailed", "Could not import the file", "No se pudo importar el archivo");
+        Add(d, "Joseki.NoLinesInFile", "The file has no joseki lines (sequences of at least two moves from an empty board, up to 19×19).", "El archivo no tiene líneas de joseki (secuencias de al menos dos jugadas desde el tablero vacío, hasta 19×19).");
+        Add(d, "Joseki.Added", "Line added to your library.", "Línea añadida a tu biblioteca.");
+        Add(d, "Joseki.AddTooShort", "Play at least two moves on the main board first.", "Primero juega al menos dos jugadas en el tablero principal.");
+        Add(d, "Joseki.AddKnown", "That line is already in your library.", "Esa línea ya está en tu biblioteca.");
+        Add(d, "Joseki.MyLineName", "My line {0}", "Mi línea {0}");
+        Add(d, "Joseki.BlockedOnline", "The trainer is closed while you are playing a game on OGS, to keep your games fair.", "El entrenador está cerrado mientras juegas una partida en OGS, para que tus partidas sean limpias.");
+        Add(d, "Joseki.Starter.Invasion33", "3-3 invasion under the 4-4 point", "Invasión en 3-3 bajo el hoshi");
+        Add(d, "Joseki.Starter.Invasion33.Note", "White lives in the corner; Black gets outside thickness and sente.", "Blancas viven en la esquina; Negras obtienen grosor exterior y sente.");
         Add(d, "Replays.Title", "Played games", "Partidas jugadas");
         Add(d, "Replays.Hint", "Every game you play in Hoshi is kept here. Open one to review it: step forward with → and KataGo judges each move, with its effects and music.", "Aquí se guarda cada partida que juegas en Hoshi. Abre una para revisarla: avanza con → y KataGo valora cada jugada, con sus efectos y su música.");
         Add(d, "Replays.Review", "Review", "Revisar");

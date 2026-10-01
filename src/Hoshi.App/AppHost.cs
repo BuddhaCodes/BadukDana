@@ -57,6 +57,9 @@ public static class AppHost
         services.AddSingleton<IReplayStore, ReplayStore>();
         services.AddSingleton<ReplaysViewModel>();
         services.AddSingleton<IReplaysWindowService, ReplaysWindowService>();
+        services.AddSingleton<Services.Joseki.IJosekiLibrary, Services.Joseki.JosekiLibrary>();
+        services.AddSingleton<JosekiTrainerViewModel>();
+        services.AddSingleton<IJosekiWindowService, JosekiWindowService>();
         services.AddSingleton<GameViewModel>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddTransient<MainWindow>();

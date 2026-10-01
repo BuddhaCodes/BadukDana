@@ -105,6 +105,12 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 - `IAnalysisEngine` / `AnalysisEngineHost`: KataGo según Preferencias; `GoBoardControl.Territory` y `.Suggestions` dibujan las capas; `ScoreGraph` la gráfica. `Activity` informa de la carga/calibración de KataGo (leída de su stderr).
 - Celebración: `GameViewModel.MovePlayed` marca la jugada; cuando llega su valoración, `AnalysisViewModel` publica `Impact` (`BoardImpact`: punto, fuerza 1–3, id) que `GoBoardControl` anima con `ImpactEffect`, y pide el sonido a `ISoundService`.
 
+### Entrenador de josekis
+
+- `Hoshi.Sgf.Joseki` (puro, con tests): `Symmetry` (8 simetrías), `JosekiLine` (id canónico = la menor de sus 8 grafías), `JosekiLibraryReader.ExtractLines` (una línea por hoja, nombre del último `N[]`, sin pases), `JosekiDrill` (una práctica: `Attempt` → Correct/Completed/AlsoJoseki/Wrong/Ignored, sigue la imagen en espejo, `Hint` tras dos fallos) y `JosekiCard`/`Leitner` (cajas y elección de la siguiente línea con reloj explícito).
+- `Hoshi.App.Services.Joseki.JosekiLibrary`: recurso incrustado `Joseki/starter.sgf` (textos como claves `Joseki.Starter.*` traducidas por `Tr`) + `joseki/*.sgf` del usuario (importados y `my-lines.sgf`, que fusiona prefijos comunes) + `joseki/progress.json`.
+- `JosekiTrainerViewModel` + `JosekiTrainerWindow` (tablero propio, panel lateral), abierto por `IJosekiWindowService`; `IsBlocked` igual que el análisis (partida OGS en curso del jugador).
+
 ### Pelea y biblioteca de partidas
 - `Hoshi.Core.FightMeter`: lee cada jugada (contacto con piedras rivales, grupos con 1–3 libertades a ≤2 casillas, capturas) → `FightReading(Intensity, Heat, Strength)`; el calor sube mientras las jugadas siguen en la misma zona (radio 4) y se enfría con tenuki. `AnalysisViewModel` lo usa cuando KataGo no está activo (OGS en curso o sin configurar): impacto y sonido según `Strength`, y `BattleHeat` → `MusicDirector.OnBattleHeat`.
 - `GameViewModel.MoveSettled` (tableros antes/después, punto, nodo) y `TreeReplacing` (el árbol que se va). `ReplayRecorder` guarda en `IReplayStore` la partida que se va (local: id propio; OGS: `ogs-<id>`, también al terminar; réplica: solo si cambió). `MainWindowViewModel.OpenReplay` carga al principio con `Game.IsReview = true`: cada paso adelante espera la valoración de KataGo y celebra como una jugada.
