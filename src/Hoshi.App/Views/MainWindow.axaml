@@ -164,6 +164,7 @@
                           Territory="{Binding Analysis.Territory}"
                           Suggestions="{Binding Analysis.Suggestions}"
                           Impact="{Binding Analysis.Impact}"
+                          AtariGroups="{Binding Analysis.AtariGroups}"
                           Animate="{DynamicResource Theme.Animations}"
                           LastMove="{Binding Game.LastMove}"
                           Markers="{Binding Game.Markers}"

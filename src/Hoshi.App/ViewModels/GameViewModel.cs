@@ -665,8 +665,17 @@ public sealed partial class GameViewModel : ViewModelBase
             {
                 StonesCaptured?.Invoke(this, captured);
             }
+
+            IReadOnlyList<AtariGroup> atari = Atari.NewlyInAtari(was, board);
+            if (atari.Count > 0)
+            {
+                GroupsEnteredAtari?.Invoke(this, atari);
+            }
         }
     }
+
+    /// <summary>The stone just placed left these groups (of either colour) newly in atari.</summary>
+    public event EventHandler<IReadOnlyList<AtariGroup>>? GroupsEnteredAtari;
 
     /// <summary>The stone just placed captured this many stones.</summary>
     public event EventHandler<int>? StonesCaptured;

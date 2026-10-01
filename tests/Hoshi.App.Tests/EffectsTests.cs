@@ -333,4 +333,49 @@ public sealed class MoveEffectsTests
             frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", name));
         }
     }
+
+    [AvaloniaFact]
+    public void A_group_falling_into_atari_is_announced_once_and_shown_while_it_lasts()
+    {
+        var game = new GameViewModel();
+        var vm = new AnalysisViewModel(game, engine: null, new ImmediateDispatcher(), settings: new TestSettings());
+        var alerts = new List<int>();
+        game.GroupsEnteredAtari += (_, groups) => alerts.Add(groups.Count);
+
+        game.PlayCommand.Execute(new Point(3, 3));   // B
+        game.PlayCommand.Execute(new Point(3, 2));   // W
+        game.PlayCommand.Execute(new Point(2, 2));   // B
+        game.PlayCommand.Execute(new Point(15, 15)); // W elsewhere
+        alerts.Should().BeEmpty();
+        game.PlayCommand.Execute(new Point(4, 2));   // B: white D17 has one liberty left (D18)
+
+        alerts.Should().Equal(1);
+        vm.AtariGroups.Should().ContainSingle().Which.Liberty.Should().Be(new Point(3, 1));
+        game.PlayCommand.Execute(new Point(15, 3));  // W elsewhere: still in atari, not announced again
+        alerts.Should().Equal(1);
+        vm.AtariGroups.Should().HaveCount(1);
+    }
+
+    [AvaloniaFact]
+    public void A_group_in_atari_trembles_and_sweats_and_frames_are_saved()
+    {
+        var board = new GoBoardControl { Animate = true, BoardStyle = HoshiThemes.NightSky.Board };
+        var window = new Window { Width = 600, Height = 600, Content = board };
+        window.Show();
+        BoardState state = BoardState.Create(19).Setup([
+            (new Point(3, 2), Stone.White), (new Point(4, 2), Stone.White),
+            (new Point(2, 2), Stone.Black), (new Point(5, 2), Stone.Black), (new Point(3, 3), Stone.Black), (new Point(4, 3), Stone.Black), (new Point(4, 1), Stone.Black)]);
+        board.Board = state;
+        board.AtariGroups = Hoshi.Core.Atari.Groups(state);
+        board.AtariGroups.Should().ContainSingle();
+
+        Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
+        foreach ((double t, string name) in new[] { (0.2, "atari-1.png"), (1.2, "atari-2.png"), (1.85, "atari-3.png") })
+        {
+            board.AtariTime = t;
+            board.InvalidateVisual();
+            using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
+            frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", name));
+        }
+    }
 }

@@ -25,6 +25,9 @@ public enum SoundEffect
     /// <summary>One or two stones captured: crack, gathered clacks, a two-note chime.</summary>
     CaptureSmall,
 
+    /// <summary>A group just fell into atari: a soft, comic "uh-oh".</summary>
+    Atari,
+
     /// <summary>Three or more stones captured: a bigger shatter, more clacks, an arpeggio and a low thock.</summary>
     CaptureBig,
 }
@@ -70,6 +73,7 @@ public sealed class SystemSoundService : ISoundService
         SoundEffect.Stone => "stone",
         SoundEffect.CaptureSmall => "capture_small",
         SoundEffect.CaptureBig => "capture_big",
+        SoundEffect.Atari => "atari",
         _ => "explosion_big",
     };
 

@@ -67,6 +67,13 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     [ObservableProperty]
     private BoardImpact? _impact;
 
+    /// <summary>Groups in atari to tremble on the board (empty when the alert is off or during a live OGS game).</summary>
+    [ObservableProperty]
+    private IReadOnlyList<AtariGroup> _atariGroups = [];
+
+    /// <summary>The atari alert is on and allowed (not while the user plays a live OGS game).</summary>
+    public bool IsAtariAlertActive => (_settings?.Current ?? new AppSettings()).AtariAlerts && !IsBlocked;
+
     [ObservableProperty]
     private TerritoryEstimate? _territory;
 
@@ -244,6 +251,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     /// <summary>Re-evaluates the shown position (called on every navigation or edit).</summary>
     public void Refresh()
     {
+        AtariGroups = IsAtariAlertActive ? Atari.Groups(_game.Board) : [];
         OnPropertyChanged(nameof(IsAnalysisActive));
         OnPropertyChanged(nameof(IsTerritoryActive));
         OnPropertyChanged(nameof(StatusText));

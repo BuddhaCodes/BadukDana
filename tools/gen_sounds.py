@@ -216,7 +216,28 @@ def capture(big: bool) -> np.ndarray:
     return finish(reverb(rng, mix, 0.9, 0.2), 0.7 if big else 0.62)
 
 
+def atari() -> np.ndarray:
+    """A group in atari: a soft, comic "uh-oh" — two bouncy, round notes (a falling minor third), each sagging in
+    pitch at the end like a cartoon shrug, with a hint of wobble. Quiet and short."""
+    rng = np.random.default_rng(500)
+    t = t_axis(0.75)
+    out = np.zeros(len(t))
+    for start, f0, length in ((0.0, 740.0, 0.13), (0.17, 622.25, 0.24)):
+        tt = np.clip(t - start, 0, None)
+        gate = ((t >= start) & (t < start + length + 0.08)).astype(float)
+        sag = 1 - 0.18 * np.clip((tt - length * 0.45) / (length * 0.55), 0, 1) ** 2  # pitch droops at the end
+        wobble = 1 + 0.012 * np.sin(2 * np.pi * 9 * tt)
+        phase = 2 * np.pi * np.cumsum(f0 * sag * wobble) / SR
+        tone = np.sin(phase) + 0.25 * np.sin(2 * phase) + 0.08 * np.sin(3 * phase)
+        amp = np.clip(tt / 0.012, 0, 1) * np.clip((length + 0.08 - tt) / 0.08, 0, 1)
+        out += tone * amp * gate
+    # A tiny wooden "tok" under the first note for the bounce.
+    out += np.sin(2 * np.pi * 300 * t) * env(t, 0.001, 0.02) * 0.4
+    return finish(reverb(rng, lowpass(out, 5000), 0.5, 0.15), 0.42)
+
+
 if __name__ == "__main__":
+    write("atari.wav", atari())
     write("capture_small.wav", capture(False))
     write("capture_big.wav", capture(True))
     for i in range(3):

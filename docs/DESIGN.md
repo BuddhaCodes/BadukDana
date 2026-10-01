@@ -139,6 +139,12 @@ Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su compo
 - **Visual** (`CaptureEffect`, con animaciones activadas): cada piedra capturada destella al romperse y se parte en 5–6 cuñas con su propia textura que salen girando, alejándose de la piedra que captura, encogen y se desvanecen (0,6 s), con una nube de polvo. Las piedras caen en ola desde la captura (45 ms por casilla, máx. 0,4 s).
 - **Sonido**: `capture_small` (1–2 piedras: chasquido, escombros, dos clacs al recogerlas y campanita de dos notas) y `capture_big` (3 o más: más clacs, arpegio re–fa–la y un golpe grave). Suena junto con el «pachi» de la piedra; mismo interruptor que el sonido de piedras.
 
+## Aviso de atari
+
+- Discreto y cómico: cada grupo con una sola libertad tiembla un poco durante 0,45 s cada 2,4 s (cada grupo con su propio desfase) y a su piedra más alta le cae una gota de sudor azul que resbala por el lado y gotea.
+- Al entrar en atari (una vez por grupo, no en cada jugada mientras siga así) suena un «uh-oh» suave: dos notas redondas descendentes (tercera menor) que se caen de afinación al final.
+- No se marca la libertad. Desactivado en partidas de OGS en curso, como el análisis. Interruptor en Preferencias → Análisis.
+
 ## Atajos de teclado (mínimo)
 
 | Atajo | Acción |

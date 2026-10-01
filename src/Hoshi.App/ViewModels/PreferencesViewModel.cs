@@ -52,6 +52,9 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     private bool _stoneSounds = true;
 
     [ObservableProperty]
+    private bool _atariAlerts = true;
+
+    [ObservableProperty]
     private bool _music = true;
 
     [ObservableProperty]
@@ -107,6 +110,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             _soundVolume = s.SoundVolume;
             _music = s.Music;
             _stoneSounds = s.StoneSounds;
+            _atariAlerts = s.AtariAlerts;
             _musicVolume = s.MusicVolume;
         }
 
@@ -126,6 +130,8 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     partial void OnSoundVolumeChanged(int value) => SaveEffects();
 
     partial void OnStoneSoundsChanged(bool value) => SaveEffects();
+
+    partial void OnAtariAlertsChanged(bool value) => SaveEffects();
 
     /// <summary>Why the music cannot play on this system, if so.</summary>
     public string? MusicProblem => _musicService?.Problem;
@@ -161,6 +167,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
                 SoundVolume = Math.Clamp(SoundVolume, 0, 100),
                 Music = Music,
                 StoneSounds = StoneSounds,
+                AtariAlerts = AtariAlerts,
                 MusicVolume = Math.Clamp(MusicVolume, 0, 100),
             });
         }

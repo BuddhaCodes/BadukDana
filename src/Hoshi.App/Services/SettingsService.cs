@@ -31,6 +31,9 @@ public sealed record AppSettings
     /// <summary>A soft "pachi" when a stone is placed (also when stepping forward through a game).</summary>
     public bool StoneSounds { get; init; } = true;
 
+    /// <summary>Comic atari alert: groups with one liberty tremble and sweat, with an "uh-oh" when it happens.</summary>
+    public bool AtariAlerts { get; init; } = true;
+
     /// <summary>Adaptive lo-fi music that heats up with streaks of good moves (needs the analysis for that).</summary>
     public bool Music { get; init; } = true;
 
