@@ -260,7 +260,8 @@ public sealed class MoveEffectsTests
         var service = new SystemSoundService(dataDirectory: root);
 
         string builtIn = service.Resolve(SoundEffect.ExplosionBig);
-        builtIn.Should().EndWith(Path.Combine("cache", "sounds", "explosion_big.wav"));
+        Path.GetDirectoryName(builtIn).Should().EndWith(Path.Combine("cache", "sounds"));
+        Path.GetFileName(builtIn).Should().MatchRegex(@"^explosion_big-[0-9a-f]{12}\.wav$");
         new FileInfo(builtIn).Length.Should().BeGreaterThan(100_000);
         File.ReadAllBytes(builtIn).Take(4).Should().Equal("RIFF"u8.ToArray());
 
@@ -268,7 +269,25 @@ public sealed class MoveEffectsTests
         string mine = Path.Combine(service.CustomDirectory, "explosion_big.mp3");
         File.WriteAllBytes(mine, [1, 2, 3]);
         service.Resolve(SoundEffect.ExplosionBig).Should().Be(mine);
-        service.Resolve(SoundEffect.ImpactSmall).Should().EndWith("impact_small.wav");
+        Path.GetFileName(service.Resolve(SoundEffect.ImpactSmall)).Should().StartWith("impact_small-");
+        Directory.Delete(root, recursive: true);
+    }
+
+    [AvaloniaFact]
+    public void A_stale_cached_sound_from_an_older_version_is_replaced()
+    {
+        string root = Directory.CreateTempSubdirectory("hoshi-stale").FullName;
+        string cache = Path.Combine(root, "cache", "sounds");
+        Directory.CreateDirectory(cache);
+        string old = Path.Combine(cache, "stone_1.wav");
+        File.WriteAllBytes(old, [9, 9, 9, 9]);
+        var service = new SystemSoundService(dataDirectory: root);
+
+        string now = service.ResolveName("stone", "stone_1");
+
+        now.Should().NotBe(old);
+        File.Exists(old).Should().BeFalse("the old copy is cleaned up");
+        File.ReadAllBytes(now).Take(4).Should().Equal("RIFF"u8.ToArray());
         Directory.Delete(root, recursive: true);
     }
 
@@ -298,7 +317,7 @@ public sealed class MoveEffectsTests
     {
         string root = Directory.CreateTempSubdirectory("hoshi-stone").FullName;
         var service = new SystemSoundService(dataDirectory: root);
-        service.Resolve(SoundEffect.Stone).Should().EndWith("stone_1.wav");
+        Path.GetFileName(service.Resolve(SoundEffect.Stone)).Should().StartWith("stone_1-");
         byte[] wav = File.ReadAllBytes(service.ResolveName("stone", "stone_2"));
         short loudest = Loudest(wav);
         loudest.Should().BeGreaterThan(10000);
