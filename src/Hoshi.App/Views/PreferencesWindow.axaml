@@ -109,6 +109,9 @@
             <CheckBox IsChecked="{Binding StoneSounds}" x:Name="StoneSoundsBox"
                       Content="Sonido suave al colocar cada piedra y al capturar (también al avanzar jugada a jugada)" />
 
+            <CheckBox IsChecked="{Binding AtariAlerts}" x:Name="AtariAlertsBox"
+                      Content="Aviso de atari: el grupo tiembla y suda un poco, con un «uh-oh» (no en partidas de OGS en curso)" />
+
             <TextBlock Classes="label" Text="Música adaptativa" Margin="0,14,0,0" />
             <CheckBox IsChecked="{Binding Music}" x:Name="MusicBox"
                       Content="Lo-fi tranquilo que se anima con rachas de buenas jugadas y se calma con el tiempo o con un error (tecla M)" />

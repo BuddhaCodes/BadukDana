@@ -52,6 +52,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                     sounds.Play(SoundEffect.Stone, current.SoundVolume / 100.0 * 0.8);
                 }
             };
+            game.GroupsEnteredAtari += (_, _) =>
+            {
+                AppSettings current = settings?.Current ?? new AppSettings();
+                if (Analysis.IsAtariAlertActive && current.StoneSounds)
+                {
+                    sounds.Play(SoundEffect.Atari, current.SoundVolume / 100.0 * 0.7);
+                }
+            };
             game.StonesCaptured += (_, count) =>
             {
                 AppSettings current = settings?.Current ?? new AppSettings();
