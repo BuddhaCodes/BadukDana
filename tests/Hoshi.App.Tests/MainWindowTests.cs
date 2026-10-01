@@ -97,6 +97,14 @@ public sealed class MainWindowTests
             .Should().BeSameAs(services.GetRequiredService<MainWindowViewModel>());
     }
 
+    [Fact]
+    public void The_host_uses_the_desktop_lifetime_not_the_console_one()
+    {
+        // ConsoleLifetime blocks process exit until the host is disposed, which kept Hoshi alive after closing.
+        using ServiceProvider services = new ServiceCollection().AddLogging().AddAppServices().BuildServiceProvider();
+        services.GetRequiredService<Microsoft.Extensions.Hosting.IHostLifetime>().Should().BeOfType<Services.DesktopLifetime>();
+    }
+
     [AvaloniaFact]
     public void Edit_mode_turns_the_bar_into_the_theme_s_edit_bar()
     {

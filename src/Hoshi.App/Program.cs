@@ -16,60 +16,99 @@ internal static class Program
         ILogger logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(Program));
         logger.LogInformation("Hoshi {Version} starting on {OS}", typeof(Program).Assembly.GetName().Version, Environment.OSVersion);
 
+        int exitCode = 1;
         try
         {
-            return BuildAvaloniaApp(() => new App(host.Services)).StartWithClassicDesktopLifetime(args);
+            exitCode = BuildAvaloniaApp(() => new App(host.Services)).StartWithClassicDesktopLifetime(args);
         }
         catch (Exception ex)
         {
             logger.LogCritical(ex, "Unhandled exception, shutting down");
-            throw;
         }
         finally
         {
-            logger.LogInformation("Hoshi stopped");
             Shutdown(host, logger);
         }
+
+        // Nothing may keep the process alive once the window is gone (a foreground thread, a native handle…).
+        Environment.Exit(exitCode);
+        return exitCode;
     }
 
     /// <summary>
-    /// Stops the music and KataGo, then disposes the host asynchronously (several services only implement
-    /// IAsyncDisposable, which a synchronous Dispose would reject). A watchdog makes sure the process never
-    /// lingers after the window has closed, whatever a service does.
+    /// Saves the game, stops the music and KataGo, then disposes the host. Runs off the UI thread's
+    /// SynchronizationContext, so no async disposal can deadlock waiting for a UI thread that no longer pumps.
+    /// A watchdog terminates the process if anything still hangs.
     /// </summary>
     private static void Shutdown(IHost host, ILogger logger)
     {
         var watchdog = new Thread(() =>
         {
             Thread.Sleep(TimeSpan.FromSeconds(8));
-            logger.LogWarning("Shutdown did not finish in time; exiting");
-            Environment.Exit(0);
+            try
+            {
+                logger.LogWarning("Shutdown did not finish in time; terminating");
+            }
+            catch (ObjectDisposedException)
+            {
+                // The logger is already gone.
+            }
+
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
         })
         { IsBackground = true, Name = "Hoshi shutdown watchdog" };
         watchdog.Start();
 
+        var clock = System.Diagnostics.Stopwatch.StartNew();
         try
         {
+            // Synchronous and owned by the UI thread's objects: done here, before leaving it.
             host.Services.GetService<ViewModels.MainWindowViewModel>()?.SaveCurrentGame();
             host.Services.GetService<Services.Music.IMusicService>()?.Stop();
-            if (host.Services.GetService<Services.AnalysisEngineHost>() is { } engine)
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or IOException or UnauthorizedAccessException)
+        {
+            logger.LogWarning(ex, "Error while saving before shutdown");
+        }
+
+        bool finished = Task.Run(async () =>
+        {
+            try
             {
-                engine.DisposeAsync().AsTask().Wait(TimeSpan.FromSeconds(4));
+                if (host.Services.GetService<Services.AnalysisEngineHost>() is { } engine)
+                {
+                    await engine.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(4));
+                }
+
+                await host.StopAsync(TimeSpan.FromSeconds(2));
+            }
+            catch (Exception ex) when (ex is AggregateException or InvalidOperationException or ObjectDisposedException or OperationCanceledException or TimeoutException or IOException)
+            {
+                logger.LogWarning(ex, "Error while shutting down");
             }
 
-            host.StopAsync(TimeSpan.FromSeconds(3)).GetAwaiter().GetResult();
-            if (host is IAsyncDisposable async)
+            logger.LogInformation("Hoshi stopped ({Ms} ms)", clock.ElapsedMilliseconds);
+            try
             {
-                async.DisposeAsync().AsTask().Wait(TimeSpan.FromSeconds(3));
+                if (host is IAsyncDisposable async)
+                {
+                    await async.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(3));
+                }
+                else
+                {
+                    host.Dispose();
+                }
             }
-            else
+            catch (Exception ex) when (ex is AggregateException or InvalidOperationException or ObjectDisposedException or TimeoutException)
             {
-                host.Dispose();
+                // Logging may already be closed; the process exits right after anyway.
+                System.Diagnostics.Trace.WriteLine($"Hoshi: host disposal failed: {ex.Message}");
             }
-        }
-        catch (Exception ex) when (ex is AggregateException or InvalidOperationException or ObjectDisposedException or OperationCanceledException)
+        }).Wait(TimeSpan.FromSeconds(7));
+
+        if (!finished)
         {
-            logger.LogWarning(ex, "Error while shutting down");
+            System.Diagnostics.Trace.WriteLine("Hoshi: shutdown timed out");
         }
     }
 
