@@ -104,7 +104,7 @@ def finish(stereo: np.ndarray, peak: float = 0.89) -> np.ndarray:
     rms = np.sqrt(np.convolve(np.mean(stereo**2, axis=1), np.ones(win) / win, "same"))
     loud = np.nonzero(rms > peak * 0.012)[0]
     stereo = stereo[: min(len(stereo), loud[-1] + win)]
-    fade = int(0.25 * SR)
+    fade = min(int(0.25 * SR), len(stereo) // 2)
     stereo[-fade:] *= np.linspace(1, 0, fade)[:, None]
     return stereo
 
@@ -161,21 +161,27 @@ def explosion_big() -> np.ndarray:
 
 
 def stone(variant: int) -> np.ndarray:
-    """A stone placed on the board: the "pachi" click of slate on kaya, a short wooden knock and a faint,
-    soft chime in D minor pentatonic (so it sits with the music). Three variants to avoid machine-gun repetition."""
+    """A stone set down on the board, in the spirit of "setting a phone down": a soft, dull, close-up knock on a
+    solid surface — the edge touches first, then the stone settles flat a few milliseconds later, with a tiny
+    rattle. Muffled (no bright ring, no chime), so it stays pleasant after hundreds of moves. Three variants."""
     rng = np.random.default_rng(100 + variant)
-    t = t_axis(0.9)
-    noise = rng.standard_normal(len(t))
-    click = bandpass(noise, 1800, 7000) * env(t, 0.0003, 0.004)
-    ring = sum(a * np.sin(2 * np.pi * f * (1 + 0.02 * variant) * t) * env(t, 0.0005, d)
-               for f, a, d in ((2350, 0.5, 0.018), (3620, 0.35, 0.012), (5100, 0.2, 0.008)))
-    knock = sum(a * np.sin(2 * np.pi * f * t) * env(t, 0.001, d)
-                for f, a, d in ((420 + 30 * variant, 0.8, 0.05), (870 + 40 * variant, 0.45, 0.035)))
-    thump = np.sin(2 * np.pi * 150 * t) * env(t, 0.001, 0.02) * 0.5
-    chime_f = (587.33, 698.46, 880.0)[variant % 3]  # D5, F5, A5
-    chime = (np.sin(2 * np.pi * chime_f * t) + 0.25 * np.sin(2 * np.pi * 2 * chime_f * t)) * env(t, 0.004, 0.22) * 0.12
-    mix = 0.9 * click + ring + knock + thump + chime
-    return finish(reverb(rng, mix, 0.5, 0.12), 0.62)
+    t = t_axis(0.5)
+    out = np.zeros(len(t))
+
+    def contact(at: float, gain: float, brightness: float) -> np.ndarray:
+        tt = np.clip(t - at, 0, None)
+        gate = (t >= at).astype(float)
+        burst = lowpass(rng.standard_normal(len(t)), brightness) * np.exp(-tt / 0.004) * np.clip(tt / 0.0004, 0, 1)
+        body = sum(a * np.sin(2 * np.pi * f * (1 + 0.04 * (variant - 1)) * tt) * np.exp(-tt / d)
+                   for f, a, d in ((185, 1.0, 0.035), (345, 0.6, 0.024), (910, 0.25, 0.011), (1650, 0.12, 0.006)))
+        return (0.8 * burst + body) * gate * gain
+
+    land = 0.012 + 0.004 * variant
+    out += contact(0.0, 0.35, 1800)            # edge touches
+    out += contact(land, 1.0, 2400)            # settles flat
+    out += contact(land + 0.03 + 0.01 * rng.random(), 0.12, 2000)  # tiny rattle
+    out = lowpass(out, 4500)
+    return finish(reverb(rng, out, 0.25, 0.08), 0.6)
 
 
 def capture(big: bool) -> np.ndarray:
