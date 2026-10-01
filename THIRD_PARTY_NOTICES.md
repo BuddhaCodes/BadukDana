@@ -21,6 +21,19 @@ load as one family. None of them declares a Reserved Font Name. Full license tex
 | Zen Kaku Gothic New | © 2022 The Zen Kaku Gothic Project Authors |
 | JetBrains Mono | © 2020 The JetBrains Mono Project Authors |
 
+### Fonts of the promotional page (SIL Open Font License 1.1)
+
+Served from `docs/site/fonts/`, copied unmodified from the `@fontsource/*` 5.3.0 npm packages (Latin subsets, plus the two
+Shippori Mincho B1 Japanese subsets that hold 星 and 正). No Reserved Font Name. Texts: `licenses/OFL-Fraunces.txt`,
+`licenses/OFL-Figtree.txt`, `licenses/OFL-ShipporiMinchoB1.txt`, `licenses/OFL-JetBrainsMono.txt`.
+
+| Family | Copyright |
+|---|---|
+| Fraunces | © 2020 The Fraunces Project Authors |
+| Figtree | © 2022 The Figtree Project Authors |
+| Shippori Mincho B1 | © 2021 The Shippori Mincho Project Authors |
+| JetBrains Mono | © 2020 The JetBrains Mono Project Authors |
+
 ### Icons
 
 Converted to path data by `tools/gen_icons.py` into `src/Hoshi.App/Themes/IconSets.g.cs`.

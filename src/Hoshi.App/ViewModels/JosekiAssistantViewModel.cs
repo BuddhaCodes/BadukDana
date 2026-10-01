@@ -32,6 +32,14 @@ public sealed record BoardJosekiHint(Point Point, JosekiCategory Category, bool 
     };
 }
 
+/// <summary>One entry of the colour legend in the sidebar.</summary>
+public sealed record JosekiLegendItem(JosekiCategory Category)
+{
+    public IBrush Brush { get; } = new Avalonia.Media.Immutable.ImmutableSolidColorBrush(BoardJosekiHint.ColorOf(Category));
+
+    public string Label => Tr.T(Category == JosekiCategory.Unknown ? "Joseki.Legend.Library" : "Joseki.Legend." + Category);
+}
+
 /// <summary>
 /// "Natural" joseki: while you play on the main board, each corner's local sequence is looked up in your library
 /// and in the OGS Joseki Explorer, and the known continuations are drawn as coloured discs (green ideal, olive
@@ -56,8 +64,15 @@ public sealed partial class JosekiAssistantViewModel : ViewModelBase
     [ObservableProperty]
     private IReadOnlyList<BoardJosekiHint>? _hints;
 
+    /// <summary>The explorer's comment on the position of the last move's corner.</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Note), nameof(HasNote))]
     private string? _description;
+
+    /// <summary>What your library says about that corner: the line it completes (with its comment) or the lines it follows.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Note), nameof(HasNote))]
+    private string? _libraryNote;
 
     [ObservableProperty]
     private bool _isSearching;
@@ -98,6 +113,18 @@ public sealed partial class JosekiAssistantViewModel : ViewModelBase
 
     public bool HasText => Text is not null;
 
+    /// <summary>The joseki comments shown in the sidebar.</summary>
+    public string? Note => string.Join("\n\n", new[] { Description, LibraryNote }.Where(x => !string.IsNullOrWhiteSpace(x))) is { Length: > 0 } n ? n : null;
+
+    public bool HasNote => Note is not null;
+
+    /// <summary>What each disc colour means.</summary>
+    public IReadOnlyList<JosekiLegendItem> Legend { get; } =
+    [
+        .. new[] { JosekiCategory.Ideal, JosekiCategory.Good, JosekiCategory.Trick, JosekiCategory.Question, JosekiCategory.Mistake, JosekiCategory.Unknown }
+            .Select(c => new JosekiLegendItem(c)),
+    ];
+
     /// <summary>The task of the latest refresh (tests await it).</summary>
     public Task Pending { get; private set; } = Task.CompletedTask;
 
@@ -132,6 +159,7 @@ public sealed partial class JosekiAssistantViewModel : ViewModelBase
         {
             Hints = null;
             Description = null;
+            LibraryNote = null;
             IsSearching = false;
             SetText(null);
             return Pending = Task.CompletedTask;
@@ -184,6 +212,7 @@ public sealed partial class JosekiAssistantViewModel : ViewModelBase
         bool localKnowsLast = lastCorner is { } lc0 && sequences.ContainsKey(lc0) && hints.Keys.Any(p => Corners.Nearest(p, size) == lc0);
         Hints = [.. hints.Values];
         Description = null;
+        LibraryNote = lastCorner is { } lcn && sequences.TryGetValue(lcn, out IReadOnlyList<CornerMove>? lastSeq) ? LibraryNoteFor(lines, lastSeq, size) : null;
         SetText(sequences.Count == 0 ? null : localKnowsLast ? "Joseki.Hint.Library" : null, hints.Count);
 
         if (_explorer is null || size != 19 || sequences.Count == 0)
@@ -267,6 +296,25 @@ public sealed partial class JosekiAssistantViewModel : ViewModelBase
                 IsSearching = false;
             }
         }
+    }
+
+    private static string? LibraryNoteFor(IReadOnlyList<JosekiLine> lines, IReadOnlyList<CornerMove> seq, int size)
+    {
+        // The trailing tenuki added for the player to move is not part of what was played.
+        List<CornerMove> played = [.. seq];
+        if (played.Count > 0 && played[^1].IsTenuki)
+        {
+            played.RemoveAt(played.Count - 1);
+        }
+
+        List<JosekiLine> matching = [.. JosekiMatcher.Matching(lines, played, size).Select(m => m.Line).Distinct()];
+        if (matching.FirstOrDefault(l => l.Moves.Count == played.Count) is { } done)
+        {
+            string name = JosekiTrainerViewModel.Localize(done.Name);
+            return done.Comment is { } c ? Tr.F("Joseki.Note.Completed", name, JosekiTrainerViewModel.Localize(c)) : Tr.F("Joseki.Note.CompletedNoComment", name);
+        }
+
+        return matching.Count == 0 ? null : Tr.F("Joseki.Note.Following", string.Join(", ", matching.Take(3).Select(l => JosekiTrainerViewModel.Localize(l.Name))));
     }
 
     private void SetText(string? key, params object?[] args)

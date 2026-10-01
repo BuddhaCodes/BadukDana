@@ -256,7 +256,7 @@
 
     <!-- Sidebar: players, variation tree, comment. Width 220–420 (DESIGN.md). -->
       <Grid Grid.Column="2" x:Name="Sidebar" MinWidth="220" MaxWidth="420"
-            Background="{DynamicResource Bg.Sidebar}" RowDefinitions="Auto,Auto,*,Auto,Auto,200">
+            Background="{DynamicResource Bg.Sidebar}" RowDefinitions="Auto,Auto,*,Auto,Auto,Auto">
         <Border Grid.Row="0" Classes="game-header" IsVisible="{Binding IsLocal}" x:Name="GameHeader">
           <StackPanel Spacing="3">
             <TextBlock Text="{Binding Game.HeaderTitle}" FontFamily="{DynamicResource Font.Title}" FontSize="{DynamicResource Font.Size.Title}"
@@ -357,11 +357,37 @@
           </Grid>
         </Border>
 
-        <TextBox Grid.Row="5" x:Name="CommentBox" Classes="comment" IsVisible="{Binding IsLocal}"
-                 AcceptsReturn="True" TextWrapping="Wrap" Watermark="{l:T Main.Comment}"
-                 Text="{Binding Game.Comment}" />
+        <DockPanel Grid.Row="5" Background="{DynamicResource Bg.Properties}" MinHeight="200" IsVisible="{Binding IsLocal}">
+          <!-- Joseki comments and the colour legend, while joseki hints are on. -->
+          <Border DockPanel.Dock="Top" x:Name="JosekiInfo" IsVisible="{Binding JosekiHints.IsActive}"
+                  Padding="12,8,12,8" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="0,0,0,1">
+            <StackPanel Spacing="6">
+              <TextBlock Classes="secondary" FontSize="12" FontWeight="SemiBold" Text="{l:T Joseki.Legend.Title}" />
+              <TextBlock Text="{Binding JosekiHints.Text}" IsVisible="{Binding JosekiHints.HasText}" TextWrapping="Wrap" FontSize="12.5" x:Name="JosekiInfoTitle" />
+              <ScrollViewer MaxHeight="96" VerticalScrollBarVisibility="Auto" IsVisible="{Binding JosekiHints.HasNote}">
+                <TextBlock Text="{Binding JosekiHints.Note}" TextWrapping="Wrap" FontSize="12.5" x:Name="JosekiNote" />
+              </ScrollViewer>
+              <ItemsControl ItemsSource="{Binding JosekiHints.Legend}" x:Name="JosekiLegend" ToolTip.Tip="{l:T Joseki.Legend.Tip}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:JosekiLegendItem">
+                    <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,0,12,3">
+                      <Ellipse Width="10" Height="10" Fill="{Binding Brush}" Stroke="#D0FFFFFF" StrokeThickness="1" VerticalAlignment="Center" />
+                      <TextBlock Classes="secondary" Text="{Binding Label}" FontSize="11.5" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+          <TextBox x:Name="CommentBox" Classes="comment" IsVisible="{Binding IsLocal}"
+                   AcceptsReturn="True" TextWrapping="Wrap" Watermark="{l:T Main.Comment}"
+                   Text="{Binding Game.Comment}" />
+        </DockPanel>
 
-        <DockPanel Grid.Row="5" x:Name="ChatPanel" Classes="appear" Background="{DynamicResource Bg.Properties}" IsVisible="{Binding IsOnline}">
+        <DockPanel Grid.Row="5" x:Name="ChatPanel" Classes="appear" Background="{DynamicResource Bg.Properties}" IsVisible="{Binding IsOnline}" Height="200">
           <TextBox DockPanel.Dock="Bottom" Classes="comment" Watermark="{l:T Main.ChatHint}" Text="{Binding Online.ChatInput}" x:Name="ChatInput">
             <TextBox.KeyBindings>
               <KeyBinding Gesture="Enter" Command="{Binding Online.SendChatCommand}" />

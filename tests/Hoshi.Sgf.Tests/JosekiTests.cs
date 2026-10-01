@@ -238,3 +238,16 @@ public sealed class JosekiMatcherTests
     public void Families_come_from_the_first_stone(string point, JosekiFamily family) =>
         JosekiFamilies.Of(P(point), 19).Should().Be(family);
 }
+
+public sealed class JosekiMatchingTests
+{
+    [Fact]
+    public void A_completed_line_is_still_matched()
+    {
+        IReadOnlyList<JosekiLine> lines = JosekiLibraryReader.ExtractLines(SgfParser.Parse("(;SZ[19];B[pd];W[qc]N[Short])"), null);
+        CornerMove[] seq = [new(Stone.Black, Point.FromSgf("pd")), new(Stone.White, Point.FromSgf("qc"))];
+
+        JosekiMatcher.Matching(lines, seq, 19).Select(m => m.Line.Name).Distinct().Should().Equal("Short");
+        JosekiMatcher.Continuations(lines, seq, 19).Should().BeEmpty();
+    }
+}

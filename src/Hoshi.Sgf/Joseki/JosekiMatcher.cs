@@ -51,6 +51,21 @@ public static class JosekiMatcher
     /// </summary>
     public static IReadOnlyList<Point> Continuations(IReadOnlyList<JosekiLine> lines, IReadOnlyList<CornerMove> sequence, int size)
     {
+        var found = new List<Point>();
+        foreach ((JosekiLine line, Symmetry s) in Matching(lines, sequence, size))
+        {
+            if (line.Moves.Count > sequence.Count && s.Apply(line.Moves[sequence.Count].Point, size) is var next && !found.Contains(next))
+            {
+                found.Add(next);
+            }
+        }
+
+        return found;
+    }
+
+    /// <summary>Every line (with the symmetry that fits) that starts like <paramref name="sequence"/>, including lines it completes.</summary>
+    public static IReadOnlyList<(JosekiLine Line, Symmetry Symmetry)> Matching(IReadOnlyList<JosekiLine> lines, IReadOnlyList<CornerMove> sequence, int size)
+    {
         ArgumentNullException.ThrowIfNull(lines);
         ArgumentNullException.ThrowIfNull(sequence);
         if (sequence.Count == 0 || sequence.Any(m => m.IsTenuki))
@@ -58,10 +73,10 @@ public static class JosekiMatcher
             return [];
         }
 
-        var found = new List<Point>();
+        var found = new List<(JosekiLine, Symmetry)>();
         foreach (JosekiLine line in lines)
         {
-            if (line.Size != size || line.Moves.Count <= sequence.Count)
+            if (line.Size != size || line.Moves.Count < sequence.Count)
             {
                 continue;
             }
@@ -70,11 +85,7 @@ public static class JosekiMatcher
             {
                 if (Matches(line, s, sequence, size))
                 {
-                    Point next = s.Apply(line.Moves[sequence.Count].Point, size);
-                    if (!found.Contains(next))
-                    {
-                        found.Add(next);
-                    }
+                    found.Add((line, s));
                 }
             }
         }

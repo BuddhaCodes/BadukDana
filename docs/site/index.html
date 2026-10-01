@@ -6,10 +6,18 @@
 <title>Hoshi — a Go board that feels every move</title>
 <meta name="description" content="Hoshi is a free desktop Go (Baduk, Weiqi) app: beautiful boards, live KataGo analysis, cinematic effects for great moves, adaptive lo-fi music and online play on OGS.">
 <link rel="icon" href="icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+  /* Fonts are served with the page (SIL OFL 1.1, see THIRD_PARTY_NOTICES.md): no third-party requests. */
+  @font-face { font-family: Figtree; font-weight: 400; font-display: swap; src: url(fonts/figtree-latin-400-normal.woff2) format("woff2"); }
+  @font-face { font-family: Figtree; font-weight: 500; font-display: swap; src: url(fonts/figtree-latin-500-normal.woff2) format("woff2"); }
+  @font-face { font-family: Figtree; font-weight: 600; font-display: swap; src: url(fonts/figtree-latin-600-normal.woff2) format("woff2"); }
+  @font-face { font-family: Figtree; font-weight: 700; font-display: swap; src: url(fonts/figtree-latin-700-normal.woff2) format("woff2"); }
+  @font-face { font-family: Fraunces; font-weight: 500; font-display: swap; src: url(fonts/fraunces-latin-500-normal.woff2) format("woff2"); }
+  @font-face { font-family: Fraunces; font-weight: 600; font-display: swap; src: url(fonts/fraunces-latin-600-normal.woff2) format("woff2"); }
+  @font-face { font-family: Fraunces; font-weight: 700; font-display: swap; src: url(fonts/fraunces-latin-700-normal.woff2) format("woff2"); }
+  @font-face { font-family: "Shippori Mincho B1"; font-weight: 600 800; font-display: swap; src: url(fonts/shippori-mincho-b1-105-700-normal.woff2) format("woff2"); unicode-range: U+661F; }
+  @font-face { font-family: "Shippori Mincho B1"; font-weight: 600 800; font-display: swap; src: url(fonts/shippori-mincho-b1-117-700-normal.woff2) format("woff2"); unicode-range: U+6B63; }
+  @font-face { font-family: "JetBrains Mono"; font-weight: 400; font-display: swap; src: url(fonts/jetbrains-mono-latin-400-normal.woff2) format("woff2"); }
   :root {
     --bg: #0b1024;
     --bg-2: #111833;
@@ -29,13 +37,13 @@
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    font: 16px/1.6 Manrope, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font: 16.5px/1.65 Figtree, system-ui, -apple-system, "Segoe UI", sans-serif;
     -webkit-font-smoothing: antialiased;
   }
   img { max-width: 100%; height: auto; display: block; }
   a { color: var(--gold-2); }
   .wrap { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
-  h1, h2, h3 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 600; letter-spacing: .01em; margin: 0; }
+  h1, h2, h3 { font-family: Fraunces, "Shippori Mincho B1", Georgia, serif; font-weight: 600; letter-spacing: -.012em; margin: 0; }
   h2 { font-size: clamp(30px, 4vw, 44px); line-height: 1.1; }
   h3 { font-size: 24px; }
   p { margin: 0; }
@@ -64,21 +72,21 @@
   /* Nav */
   nav { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px); background: rgba(11, 16, 36, .72); border-bottom: 1px solid var(--line); }
   nav .wrap { display: flex; align-items: center; gap: 22px; height: 62px; }
-  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: "Cormorant Garamond", serif; font-size: 24px; font-weight: 600; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: Fraunces, "Shippori Mincho B1", Georgia, serif; font-size: 24px; font-weight: 600; }
   .brand img { width: 30px; height: 30px; }
   .brand span { color: var(--gold); }
   nav .links { display: flex; gap: 20px; margin-left: auto; }
   nav .links a { color: var(--muted); text-decoration: none; font-size: 14px; }
   nav .links a:hover { color: var(--text); }
   .lang { display: flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
-  .lang button { background: none; border: 0; color: var(--muted); font: 600 12px Manrope, sans-serif; padding: 6px 11px; cursor: pointer; }
+  .lang button { background: none; border: 0; color: var(--muted); font: 600 12px Figtree, sans-serif; padding: 6px 11px; cursor: pointer; }
   .lang button[aria-pressed="true"] { background: var(--gold); color: #1b1408; }
   @media (max-width: 720px) { nav .links { display: none; } .lang { margin-left: auto; } }
 
   /* Hero */
   header { position: relative; overflow: hidden; padding: 84px 0 70px; background: radial-gradient(1200px 600px at 70% -10%, #23305f 0%, transparent 60%), var(--bg); }
   .hero { position: relative; display: grid; grid-template-columns: 1fr 1.25fr; gap: 48px; align-items: center; }
-  .hero h1 { font-size: clamp(42px, 6vw, 72px); line-height: 1.02; }
+  .hero h1 { font-size: clamp(40px, 5.6vw, 66px); line-height: 1.06; font-weight: 700; }
   .hero h1 em { font-style: normal; color: var(--gold-2); }
   .hero p.lead { font-size: 18px; color: var(--muted); margin: 20px 0 30px; max-width: 34em; }
   .cta { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -99,9 +107,11 @@
 
   /* Features */
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+  .card { background: linear-gradient(180deg, #18214a, var(--panel)); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; transition: border-color .2s, transform .2s; }
+  .card:hover { border-color: rgba(217, 180, 90, .4); transform: translateY(-2px); }
+  .card .new { display: inline-block; margin-left: 6px; font: 700 10px Figtree, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #1b1408; background: var(--gold); border-radius: 999px; padding: 2px 7px; vertical-align: middle; }
   .card .ico { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: rgba(217, 180, 90, .12); color: var(--gold-2); margin-bottom: 14px; font-size: 19px; }
-  .card h3 { font-size: 22px; margin-bottom: 6px; }
+  .card h3 { font-size: 20px; margin-bottom: 8px; line-height: 1.25; }
   .card p { color: var(--muted); font-size: 15px; }
 
   /* Effects showcase */
@@ -116,8 +126,19 @@
   .themes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
   .themes figure { margin: 0; }
   .themes figcaption { margin-top: 10px; font-size: 14px; color: var(--muted); }
-  .themes figcaption b { color: var(--text); font-family: "Cormorant Garamond", serif; font-size: 20px; margin-right: 8px; }
+  .themes figcaption b { color: var(--text); font-family: Fraunces, "Shippori Mincho B1", Georgia, serif; font-size: 20px; margin-right: 8px; }
   @media (max-width: 720px) { .themes { grid-template-columns: 1fr; } }
+
+  /* Joseki */
+  .joseki { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .joseki figure { margin: 0; }
+  .joseki figcaption { margin-top: 12px; color: var(--muted); font-size: 15px; }
+  .joseki figcaption b { display: block; color: var(--text); font-family: Fraunces, "Shippori Mincho B1", Georgia, serif; font-size: 21px; margin-bottom: 4px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 26px 0 0; padding: 16px 18px; list-style: none; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; font-size: 14px; color: var(--muted); }
+  .legend li { display: flex; align-items: center; gap: 8px; }
+  .legend i { width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, .8); display: inline-block; }
+  .points { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 18px; }
+  @media (max-width: 900px) { .joseki, .points { grid-template-columns: 1fr; } }
 
   /* Music */
   .music { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center; }
@@ -131,13 +152,13 @@
 
   /* Fair play */
   .fair { background: linear-gradient(135deg, rgba(217, 180, 90, .12), rgba(217, 180, 90, .03)); border: 1px solid rgba(217, 180, 90, .35); border-radius: var(--radius); padding: 26px 28px; display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: start; }
-  .fair .seal { width: 46px; height: 46px; border-radius: 50%; background: var(--gold); color: #1b1408; display: grid; place-items: center; font: 600 22px "Cormorant Garamond", serif; }
+  .fair .seal { width: 46px; height: 46px; border-radius: 50%; background: var(--gold); color: #1b1408; display: grid; place-items: center; font: 600 22px Fraunces, "Shippori Mincho B1", Georgia, serif; }
 
   /* Download */
   .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: s; }
   .steps .card::before { counter-increment: s; content: counter(s); display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--gold); color: #1b1408; font-weight: 600; margin-bottom: 12px; }
   .card { min-width: 0; }
-  pre { background: #070a18; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; overflow-x: auto; font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #e5dcc4; margin: 12px 0 0; }
+  pre { background: #070a18; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; overflow-x: auto; font: 13px/1.6 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #e5dcc4; margin: 12px 0 0; }
   @media (max-width: 900px) { .steps { grid-template-columns: 1fr; } }
 
   footer { border-top: 1px solid var(--line); padding: 40px 0 56px; color: var(--muted); font-size: 13px; }
@@ -153,6 +174,7 @@
     <a class="brand" href="#top"><img src="icon.png" alt="">Hoshi <span>星</span></a>
     <div class="links">
       <a href="#features" data-i18n="nav.features">Features</a>
+      <a href="#joseki" data-i18n="nav.joseki">Joseki</a>
       <a href="#effects" data-i18n="nav.effects">Effects</a>
       <a href="#themes" data-i18n="nav.themes">Themes</a>
       <a href="#download" data-i18n="nav.download">Get Hoshi</a>
@@ -170,7 +192,7 @@
     <div>
       <p class="eyebrow" data-i18n="hero.eyebrow">Go · Baduk · Weiqi</p>
       <h1 data-i18n-html="hero.title">A Go board that <em>feels</em> every move.</h1>
-      <p class="lead" data-i18n="hero.lead">Hoshi is a free desktop app for playing and studying Go. A beautiful board, KataGo judging every move live, cinematic effects when you find the best one, and lo-fi music that heats up with your streaks.</p>
+      <p class="lead" data-i18n="hero.lead">Hoshi is a free desktop app for playing and studying Go. A beautiful board, KataGo judging every move live, joseki guidance in every corner, cinematic effects when you find the best move, and lo-fi music that heats up with your streaks.</p>
       <div class="cta">
         <a class="btn primary" href="#download" data-i18n="hero.cta">Get Hoshi</a>
         <a class="btn ghost" href="#features" data-i18n="hero.more">See what it does</a>
@@ -179,6 +201,7 @@
         <span class="badge">Windows · macOS · Linux</span>
         <span class="badge" data-i18n="hero.badge2">KataGo analysis</span>
         <span class="badge" data-i18n="hero.badge3">Play on OGS</span>
+        <span class="badge" data-i18n="hero.badge4">Joseki trainer</span>
         <span class="badge">English · Español</span>
       </div>
     </div>
@@ -201,7 +224,40 @@
       <div class="card"><div class="ico">⌁</div><h3 data-i18n="f5.t">Online on OGS</h3><p data-i18n="f5.d">Sign in to online-go.com, accept challenges and play in real time with clock and chat. Hoshi only creates unranked games.</p></div>
       <div class="card"><div class="ico">❖</div><h3 data-i18n="f6.t">SGF editor</h3><p data-i18n="f6.d">Open and save SGF files, explore variations in a game tree, add comments, marks and setup stones.</p></div>
       <div class="card"><div class="ico">☾</div><h3 data-i18n="f7.t">Five themes</h3><p data-i18n="f7.d">Night sky, Ink and gold, Zen garden, Warm minimal and a Classic tribute, each with its own board, stones and animated background.</p></div>
+      <div class="card"><div class="ico">◈</div><h3><span data-i18n="f9.t">Joseki on the board</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f9.d">Turn on Joseki and every corner shows the known continuations, coloured by how the OGS Joseki Explorer rates them, with its comments in the sidebar.</p></div>
+      <div class="card"><div class="ico">❀</div><h3><span data-i18n="f10.t">Joseki trainer</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f10.d">Practise lines on the main board in random corners. Spaced repetition brings back the ones you miss; fetch new lines from OGS or import your own SGF.</p></div>
+      <div class="card"><div class="ico">▤</div><h3><span data-i18n="f11.t">Your game library</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f11.d">Every game you play is kept. Open one later and step through it: KataGo judges each move again, with all its effects and music.</p></div>
+      <div class="card"><div class="ico">文</div><h3><span data-i18n="f12.t">English and Spanish</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f12.d">The whole app switches language live from Preferences. English by default.</p></div>
       <div class="card"><div class="ico">⇄</div><h3 data-i18n="f8.t">Yours, offline</h3><p data-i18n="f8.d">Free and open source. No account needed to play locally; your OGS login uses OAuth and Hoshi never stores your password.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="joseki">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow" data-i18n="jo.eyebrow">Joseki</p>
+      <h2 data-i18n="jo.title">Never forget a joseki again.</h2>
+      <p data-i18n="jo.lead">Study the standard corner sequences while you play, then drill them until they stick.</p>
+    </div>
+    <div class="joseki">
+      <figure><div class="shot"><img src="img/joseki-hints.jpg" width="1120" height="704" alt="Joseki continuations shown as coloured discs in two corners, with the legend in the sidebar" loading="lazy"></div>
+        <figcaption><b data-i18n="jo1.t">Joseki on the board</b><span data-i18n="jo1.d">Place a stone and Hoshi looks up that corner in the OGS Joseki Explorer and in your own library. The known answers appear as discs, the rating of your last move sits on top, and the explorer's comments show in the sidebar.</span></figcaption></figure>
+      <figure><div class="shot"><img src="img/joseki-trainer.jpg" width="1120" height="704" alt="The joseki trainer on the main board, with the line list and family filter" loading="lazy"></div>
+        <figcaption><b data-i18n="jo2.t">The trainer</b><span data-i18n="jo2.d">Ctrl+J turns the main board into a practice board; your game waits underneath. Place every stone of the line: a cross marks a miss, a circle shows the answer after two.</span></figcaption></figure>
+    </div>
+    <ul class="legend" aria-label="Colour legend">
+      <li><i style="background:#1e9e3a"></i><span data-i18n="lg.ideal">Ideal</span></li>
+      <li><i style="background:#6e9a1e"></i><span data-i18n="lg.good">Good</span></li>
+      <li><i style="background:#e8b414"></i><span data-i18n="lg.trick">Trick play</span></li>
+      <li><i style="background:#1eaedb"></i><span data-i18n="lg.question">Open question</span></li>
+      <li><i style="background:#c6283c"></i><span data-i18n="lg.mistake">Mistake</span></li>
+      <li><i style="background:#8e6ce8"></i><span data-i18n="lg.library">Your library</span></li>
+    </ul>
+    <div class="points">
+      <div class="card"><h3 data-i18n="jp1.t">Spaced repetition</h3><p data-i18n="jp1.d">Six Leitner boxes, from ten minutes to a month. A perfect run waits longer; a mistake comes back soon.</p></div>
+      <div class="card"><h3 data-i18n="jp2.t">Pick what to study</h3><p data-i18n="jp2.d">Filter by 4-4, 3-4, 3-3, 4-5 or 3-5, choose a line from the list, or let Hoshi pick what is due.</p></div>
+      <div class="card"><h3 data-i18n="jp3.t">Endless lines</h3><p data-i18n="jp3.d">“New line from OGS” follows only ideal and good moves of the Joseki Explorer. Import SGF collections or record lines from your own board.</p></div>
     </div>
   </div>
 </section>
@@ -266,7 +322,7 @@
       <div class="seal">正</div>
       <div>
         <h3 data-i18n="fp.title">Fair play built in</h3>
-        <p class="muted" style="margin-top:6px" data-i18n="fp.text">During live games on OGS, KataGo stays off — OGS forbids AI help while you play. The effects and the music follow the fight on the board instead (contact, liberties, captures), and Hoshi's own quick territory estimate is there. Every game is kept in your library, where the AI review — with all its effects — is waiting after the game.</p>
+        <p class="muted" style="margin-top:6px" data-i18n="fp.text">During live games on OGS, KataGo stays off — OGS forbids AI help while you play. The joseki hints and the trainer are off too. The effects and the music follow the fight on the board instead (contact, liberties, captures), and Hoshi's own quick territory estimate is there. Every game is kept in your library, where the AI review — with all its effects — is waiting after the game.</p>
       </div>
     </div>
   </div>
@@ -290,18 +346,18 @@
 <footer>
   <div class="wrap">
     <div class="row"><img src="icon.png" alt=""><strong style="color:var(--text)">Hoshi 星</strong></div>
-    <p data-i18n="ft.credits">Analysis by KataGo (MIT). Classic theme textures from Sabaki and Shudan (MIT). Fonts under the SIL Open Font License; icons from Phosphor, Lucide and Tabler. Effects, sounds and music are Hoshi's own.</p>
+    <p data-i18n="ft.credits">Analysis by KataGo (MIT). Classic theme textures from Sabaki and Shudan (MIT). Fonts under the SIL Open Font License; icons from Phosphor, Lucide and Tabler. Joseki ratings and comments come live from the OGS Joseki Explorer, a community project. Effects, sounds and music are Hoshi's own.</p>
     <p data-i18n="ft.ogs">Not affiliated with OGS (online-go.com) or KataGo.</p>
   </div>
 </footer>
 
 <script>
   const ES = {
-    "nav.features": "Funciones", "nav.effects": "Efectos", "nav.themes": "Temas", "nav.download": "Consíguelo",
+    "nav.features": "Funciones", "nav.joseki": "Joseki", "nav.effects": "Efectos", "nav.themes": "Temas", "nav.download": "Consíguelo",
     "hero.eyebrow": "Go · Baduk · Weiqi",
     "hero.title": "Un tablero de Go que <em>siente</em> cada jugada.",
-    "hero.lead": "Hoshi es una app de escritorio gratuita para jugar y estudiar Go. Un tablero precioso, KataGo valorando cada jugada en vivo, efectos de cine cuando das con la mejor y música lo-fi que se anima con tus rachas.",
-    "hero.cta": "Consigue Hoshi", "hero.more": "Mira lo que hace", "hero.badge2": "Análisis con KataGo", "hero.badge3": "Juega en OGS",
+    "hero.lead": "Hoshi es una app de escritorio gratuita para jugar y estudiar Go. Un tablero precioso, KataGo valorando cada jugada en vivo, guía de josekis en cada esquina, efectos de cine cuando das con la mejor jugada y música lo-fi que se anima con tus rachas.",
+    "hero.cta": "Consigue Hoshi", "hero.more": "Mira lo que hace", "hero.badge2": "Análisis con KataGo", "hero.badge3": "Juega en OGS", "hero.badge4": "Entrenador de josekis",
     "feat.eyebrow": "Funciones", "feat.title": "Todo lo que necesitas frente al tablero.",
     "feat.lead": "Juega con amigos en la misma pantalla, revisa tus partidas con un motor o enfréntate al mundo en OGS.",
     "f1.t": "Análisis con IA en vivo", "f1.d": "KataGo trabaja de fondo desde que abres Hoshi y valora cada jugada: la mejor, excelente, buena, imprecisa, error o error grave, con los puntos perdidos.",
@@ -312,6 +368,19 @@
     "f6.t": "Editor SGF", "f6.d": "Abre y guarda archivos SGF, explora variantes en el árbol, añade comentarios, marcas y piedras de posición.",
     "f7.t": "Cinco temas", "f7.d": "Cielo nocturno, Tinta y oro, Jardín zen, Minimal cálido y un homenaje Clásico, cada uno con su tablero, sus piedras y su fondo animado.",
     "f8.t": "Tuyo, sin conexión", "f8.d": "Libre y de código abierto. No necesitas cuenta para jugar en local; el acceso a OGS usa OAuth y Hoshi nunca guarda tu contraseña.",
+    "new": "Nuevo",
+    "f9.t": "Josekis en el tablero", "f9.d": "Activa Joseki y cada esquina muestra las continuaciones conocidas, coloreadas según las valora el Joseki Explorer de OGS, con sus comentarios en la barra lateral.",
+    "f10.t": "Entrenador de josekis", "f10.d": "Practica líneas en el tablero principal y en esquinas al azar. La repetición espaciada te devuelve las que fallas; trae líneas nuevas de OGS o importa tus SGF.",
+    "f11.t": "Tu biblioteca de partidas", "f11.d": "Cada partida que juegas se guarda. Ábrela después y avanza: KataGo vuelve a valorar cada jugada, con todos sus efectos y su música.",
+    "f12.t": "Inglés y español", "f12.d": "Toda la app cambia de idioma al instante desde Preferencias. Inglés por defecto.",
+    "jo.eyebrow": "Joseki", "jo.title": "Que no se te vuelva a olvidar un joseki.",
+    "jo.lead": "Estudia las secuencias de esquina mientras juegas y luego practícalas hasta que se queden.",
+    "jo1.t": "Josekis en el tablero", "jo1.d": "Pon una piedra y Hoshi busca esa esquina en el Joseki Explorer de OGS y en tu propia biblioteca. Las respuestas conocidas aparecen como discos, la valoración de tu última jugada arriba y los comentarios del explorador en la barra lateral.",
+    "jo2.t": "El entrenador", "jo2.d": "Ctrl+J convierte el tablero principal en uno de práctica; tu partida espera debajo. Coloca cada piedra de la línea: una cruz marca el fallo y un círculo te da la respuesta al segundo.",
+    "lg.ideal": "Ideal", "lg.good": "Buena", "lg.trick": "Truco", "lg.question": "Dudosa", "lg.mistake": "Error", "lg.library": "Tu biblioteca",
+    "jp1.t": "Repetición espaciada", "jp1.d": "Seis cajas Leitner, de diez minutos a un mes. Una línea perfecta tarda más en volver; un error la trae pronto.",
+    "jp2.t": "Elige qué estudiar", "jp2.d": "Filtra por 4-4, 3-4, 3-3, 4-5 o 3-5, elige una línea de la lista o deja que Hoshi elija lo pendiente.",
+    "jp3.t": "Líneas sin fin", "jp3.d": "«Nueva línea de OGS» sigue solo las jugadas ideales y buenas del Joseki Explorer. Importa colecciones SGF o graba líneas desde tu propio tablero.",
     "fx.eyebrow": "Efectos", "fx.title": "Encuentra la mejor jugada. El tablero lo nota.",
     "fx.lead": "Todos los efectos los dibuja y sintetiza Hoshi: sin vídeos de archivo ni muestras de sonido.",
     "fx1.t": "La mejor jugada", "fx1.d": "Una explosión de cine, ondas expansivas y grietas fundidas.",
@@ -329,13 +398,13 @@
     "mu.l4": "Arpegio punteado con eco", "mu.l5": "Acordes que bombean, palmas y una melodía brillante", "mu.l6": "Overdrive: bombo a negras, bajo rodante, redobles",
     "mu.demo": "Demo: calma, luego una racha de jugadas fuertes desde el 0:16 y un error grave al 1:10… ya lo oirás.",
     "fp.title": "Juego limpio de serie",
-    "fp.text": "En las partidas en curso de OGS, KataGo se queda apagado: OGS prohíbe la ayuda de IA mientras juegas. Los efectos y la música siguen entonces la pelea del tablero (contacto, libertades, capturas) y tienes la estimación rápida de territorio de Hoshi. Cada partida se guarda en tu biblioteca, donde te espera la revisión con IA, con todos sus efectos.",
+    "fp.text": "En las partidas en curso de OGS, KataGo se queda apagado: OGS prohíbe la ayuda de IA mientras juegas. Las sugerencias de joseki y el entrenador también se apagan. Los efectos y la música siguen entonces la pelea del tablero (contacto, libertades, capturas) y tienes la estimación rápida de territorio de Hoshi. Cada partida se guarda en tu biblioteca, donde te espera la revisión con IA, con todos sus efectos.",
     "dl.eyebrow": "Consigue Hoshi", "dl.title": "En marcha en tres pasos.",
     "dl.lead": "Hoshi está hecho con .NET y Avalonia y funciona en Windows, macOS y Linux.",
     "s1.t": "Instala .NET 10", "s1.d": "Descarga el SDK de .NET 10 desde dot.net para tu sistema.",
     "s2.t": "Compila y ejecuta", "s2.d": "Desde la carpeta de Hoshi:",
     "s3.t": "Añade KataGo (opcional)", "s3.d": "Descarga KataGo y una red (b18c384 es un buen comienzo) y elígelos en Preferencias → Análisis → Probar KataGo.",
-    "ft.credits": "Análisis de KataGo (MIT). Texturas del tema Clásico de Sabaki y Shudan (MIT). Fuentes con licencia SIL Open Font; iconos de Phosphor, Lucide y Tabler. Los efectos, sonidos y la música son de Hoshi.",
+    "ft.credits": "Análisis de KataGo (MIT). Texturas del tema Clásico de Sabaki y Shudan (MIT). Fuentes con licencia SIL Open Font; iconos de Phosphor, Lucide y Tabler. Las valoraciones y comentarios de josekis llegan en vivo del Joseki Explorer de OGS, un proyecto comunitario. Los efectos, sonidos y la música son de Hoshi.",
     "ft.ogs": "Sin relación con OGS (online-go.com) ni con KataGo."
   };
   const EN = {};

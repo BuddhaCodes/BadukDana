@@ -61,6 +61,17 @@ public static partial class Tr
         Add(d, "Joseki.Hint.Library", "Joseki (your library) · {0} continuations", "Joseki (tu biblioteca) · {0} continuaciones");
         Add(d, "Joseki.Hint.Unknown", "This corner has left the known joseki", "Esta esquina ya salió del joseki conocido");
         Add(d, "Joseki.Hint.Offline", "OGS Joseki Explorer unreachable · {0} from your library", "Joseki Explorer de OGS no disponible · {0} de tu biblioteca");
+        Add(d, "Joseki.Legend.Title", "Joseki", "Joseki");
+        Add(d, "Joseki.Legend.Ideal", "Ideal", "Ideal");
+        Add(d, "Joseki.Legend.Good", "Good", "Buena");
+        Add(d, "Joseki.Legend.Trick", "Trick play", "Truco");
+        Add(d, "Joseki.Legend.Question", "Open question", "Dudosa");
+        Add(d, "Joseki.Legend.Mistake", "Mistake", "Error");
+        Add(d, "Joseki.Legend.Library", "Your library", "Tu biblioteca");
+        Add(d, "Joseki.Legend.Tip", "Ratings come from the OGS Joseki Explorer; violet discs are lines from your own library. Small discs (mistakes, tricks, open questions) are shown, not recommended.", "Las valoraciones vienen del Joseki Explorer de OGS; los discos violeta son líneas de tu propia biblioteca. Los discos pequeños (errores, trucos, dudosas) se muestran, pero no se recomiendan.");
+        Add(d, "Joseki.Note.Completed", "Completes “{0}”: {1}", "Completa «{0}»: {1}");
+        Add(d, "Joseki.Note.CompletedNoComment", "Completes “{0}”.", "Completa «{0}».");
+        Add(d, "Joseki.Note.Following", "Follows: {0}", "Sigue: {0}");
         Add(d, "Joseki.Category.Ideal", "ideal", "ideal");
         Add(d, "Joseki.Category.Good", "good", "buena");
         Add(d, "Joseki.Category.Mistake", "mistake", "error");
