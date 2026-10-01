@@ -1,18 +1,24 @@
 name: Release
 
-# Builds self-contained Hoshi apps (no .NET needed on the user's machine) and attaches them to a GitHub Release.
-# Run it by pushing a tag (git tag v0.2.0 && git push origin v0.2.0) or from the Actions tab.
+# Every push to main builds self-contained Hoshi apps (no .NET needed on the user's machine) and publishes them
+# as a new GitHub Release, fully automatically. The version is <Version from Directory.Build.props without its
+# patch number>.<run number>, e.g. 0.1.7, and the tag v0.1.7 is created by the release step.
 # Asset names carry no version, so https://github.com/BuddhaCodes/BadukDana/releases/latest/download/<asset>
 # always points at the newest build (the website links there).
+# Pushes that only touch the website or Markdown files do not make a new release.
 
 on:
   push:
-    tags: ["v*"]
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Version (e.g. 0.2.0); a v-tag with it is created"
-        required: true
+    branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+      - ".github/workflows/pages.yml"
+      - ".github/workflows/ci.yml"
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -46,9 +52,8 @@ jobs:
         id: v
         shell: bash
         run: |
-          v="${{ github.event.inputs.version }}"
-          [ -z "$v" ] && v="${GITHUB_REF_NAME#v}"
-          echo "version=${v#v}" >> "$GITHUB_OUTPUT"
+          base=$(sed -n 's:.*<Version>\([0-9]*\.[0-9]*\)\..*</Version>.*:\1:p' Directory.Build.props | head -1)
+          echo "version=${base:-0.1}.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
       - name: Publish
         shell: bash
@@ -110,12 +115,16 @@ jobs:
           path: assets
           merge-multiple: true
 
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: Directory.Build.props
+          path: src-props
+
       - name: Tag
         id: tag
         run: |
-          v="${{ github.event.inputs.version }}"
-          [ -z "$v" ] && v="${GITHUB_REF_NAME#v}"
-          echo "tag=v${v#v}" >> "$GITHUB_OUTPUT"
+          base=$(sed -n 's:.*<Version>\([0-9]*\.[0-9]*\)\..*</Version>.*:\1:p' src-props/Directory.Build.props | head -1)
+          echo "tag=v${base:-0.1}.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
       - uses: softprops/action-gh-release@v2
         with:
