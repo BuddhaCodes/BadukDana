@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Hoshi.App.ViewModels;
 using Hoshi.App.Views;
+using Hoshi.Core.Localization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Hoshi.App;
@@ -24,6 +25,12 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+
+        // The saved language (English by default). Without a host (designer, UI tests) the current language is kept.
+        if (_services is not null)
+        {
+            Tr.SetLanguage(_services.GetService<Services.ISettingsService>()?.Current.Language ?? Tr.English);
+        }
 
         // The saved theme (or Hoshi's default when there is no host, e.g. the designer and UI tests).
         if (_services?.GetService<Themes.ThemeService>() is { } themes)

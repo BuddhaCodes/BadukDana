@@ -1,4 +1,5 @@
 using Avalonia.Threading;
+using Hoshi.Core.Localization;
 using Hoshi.Ogs;
 using Hoshi.Ogs.Auth;
 using Hoshi.Ogs.Games;
@@ -90,7 +91,7 @@ public sealed class AvaloniaBrowserLauncher : IBrowserLauncher
             MainWindowLocator.MainWindow?.Launcher is { } launcher && await launcher.LaunchUriAsync(uri));
         if (!opened)
         {
-            throw new OgsAuthException("No se pudo abrir el navegador. Abre manualmente la página de autorización de OGS.");
+            throw new OgsAuthException(Tr.T("Online.BrowserFailed"));
         }
     }
 }
@@ -142,7 +143,7 @@ public sealed class OgsClient : IOgsClient, IAsyncDisposable
 
         if (Session is not null)
         {
-            throw new InvalidOperationException("Cierra la sesión antes de cambiar de servidor.");
+            throw new InvalidOperationException(Tr.T("Online.SignOutBeforeSwitch"));
         }
 
         _current = Connect(server);
@@ -223,7 +224,7 @@ public sealed class OgsClient : IOgsClient, IAsyncDisposable
     {
         if (Session is null)
         {
-            throw new InvalidOperationException("Inicia sesión en OGS para abrir la partida.");
+            throw new InvalidOperationException(Tr.T("Online.SignInToOpen"));
         }
 
         var session = new OgsGameSession(_current.Realtime, gameId, _logger);

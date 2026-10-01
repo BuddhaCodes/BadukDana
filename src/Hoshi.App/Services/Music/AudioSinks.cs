@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Hoshi.Core.Localization;
 
 namespace Hoshi.App.Services.Music;
 
@@ -29,12 +30,12 @@ public static class PcmSinks
                     ?? throw new InvalidOperationException("no pacat or aplay");
             }
 
-            problem = "La música adaptativa aún no está disponible en macOS.";
+            problem = Tr.T("Music.NotOnMac");
             return null;
         }
         catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception or DllNotFoundException or EntryPointNotFoundException or ExternalException)
         {
-            problem = "No se pudo abrir la salida de audio: " + ex.Message;
+            problem = Tr.F("Music.NoAudioOutput", ex.Message);
             return null;
         }
     }

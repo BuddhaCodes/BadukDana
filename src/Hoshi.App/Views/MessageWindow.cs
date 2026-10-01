@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Hoshi.Core.Localization;
 
 namespace Hoshi.App.Views;
 
@@ -20,7 +21,7 @@ public sealed class MessageWindow : Window
         CanResize = false;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
-        var ok = new Button { Content = confirm ? "Sí" : "Aceptar", IsDefault = true, MinWidth = 80 };
+        var ok = new Button { Content = Tr.T(confirm ? "Dialog.Yes" : "Dialog.Ok"), IsDefault = true, MinWidth = 80 };
         ok.Click += (_, _) => Close(true);
         var buttons = new StackPanel
         {
@@ -31,7 +32,7 @@ public sealed class MessageWindow : Window
         };
         if (confirm)
         {
-            var no = new Button { Content = "No", IsCancel = true, MinWidth = 80 };
+            var no = new Button { Content = Tr.T("Dialog.No"), IsCancel = true, MinWidth = 80 };
             no.Click += (_, _) => Close(false);
             buttons.Children.Add(no);
         }

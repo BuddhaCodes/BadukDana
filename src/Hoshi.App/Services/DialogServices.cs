@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using Hoshi.App.ViewModels;
 using Hoshi.App.Views;
+using Hoshi.Core.Localization;
 
 namespace Hoshi.App.Services;
 
@@ -77,7 +78,7 @@ public sealed class AvaloniaFileDialogService : IFileDialogService
 
         IReadOnlyList<IStorageFile> files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Abrir SGF",
+            Title = Tr.T("Dialog.OpenSgf"),
             AllowMultiple = false,
             FileTypeFilter = [Sgf, FilePickerFileTypes.All],
         });
@@ -93,7 +94,7 @@ public sealed class AvaloniaFileDialogService : IFileDialogService
 
         IStorageFile? file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = "Guardar SGF",
+            Title = Tr.T("Dialog.SaveSgf"),
             SuggestedFileName = suggestedName,
             DefaultExtension = "sgf",
             FileTypeChoices = [Sgf],

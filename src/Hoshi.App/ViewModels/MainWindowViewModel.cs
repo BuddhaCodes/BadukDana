@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Hoshi.App.Services;
+using Hoshi.Core.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -117,7 +118,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
 
         if (Online is null && Game.IsDirty && _dialogs is not null
-            && !await _dialogs.ConfirmAsync("Cambios sin guardar", "La partida local tiene cambios sin guardar. ¿Descartarlos y abrir la partida en línea?"))
+            && !await _dialogs.ConfirmAsync(Tr.T("Dialog.UnsavedChanges"), Tr.T("Main.DiscardForOnline")))
         {
             return;
         }
@@ -136,7 +137,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         {
             if (_dialogs is not null)
             {
-                await _dialogs.ShowErrorAsync("No se pudo abrir la partida", ex.Message);
+                await _dialogs.ShowErrorAsync(Tr.T("Main.CouldNotOpenGame"), ex.Message);
             }
         }
     }
