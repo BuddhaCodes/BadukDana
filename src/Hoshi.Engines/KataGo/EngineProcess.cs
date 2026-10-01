@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Hoshi.Core.Localization;
 
 namespace Hoshi.Engines.KataGo;
 
@@ -25,22 +26,22 @@ public sealed record KataGoOptions(string Executable, string Model, string Confi
     {
         if (string.IsNullOrWhiteSpace(Executable) || !File.Exists(Executable))
         {
-            return "No se encuentra el ejecutable de KataGo.";
+            return Tr.T("Engine.ExecutableMissing");
         }
 
         if (string.IsNullOrWhiteSpace(Model) || !File.Exists(Model))
         {
-            return "No se encuentra la red neuronal (.bin.gz) de KataGo.";
+            return Tr.T("Engine.ModelMissing");
         }
 
         if (string.IsNullOrWhiteSpace(Config) || !File.Exists(Config))
         {
-            return "No se encuentra el archivo de configuración de análisis (analysis_example.cfg).";
+            return Tr.T("Engine.ConfigMissing");
         }
 
         return IsAnalysisConfig(Config)
             ? null
-            : $"«{Path.GetFileName(Config)}» no es una configuración de análisis (es para GTP). Elige analysis_example.cfg, en la misma carpeta de KataGo.";
+            : Tr.F("Engine.NotAnalysisConfig", Path.GetFileName(Config));
     }
 
     /// <summary>KataGo's analysis engine requires <c>numAnalysisThreads</c>; GTP configs (gtp_*.cfg) do not have it.</summary>
@@ -132,11 +133,11 @@ public sealed class KataGoProcess : IEngineProcess
         Process process;
         try
         {
-            process = Process.Start(info) ?? throw new EngineException("KataGo no arrancó.");
+            process = Process.Start(info) ?? throw new EngineException(Tr.T("Engine.DidNotStart"));
         }
         catch (System.ComponentModel.Win32Exception ex)
         {
-            throw new EngineException($"No se pudo iniciar KataGo: {ex.Message}", ex);
+            throw new EngineException(Tr.F("Engine.CouldNotStart", ex.Message), ex);
         }
 
         var result = new KataGoProcess(process);
@@ -174,14 +175,19 @@ public sealed class KataGoProcess : IEngineProcess
         return result;
     }
 
-    private const string Tuning = "KataGo está calibrando la tarjeta gráfica. Solo pasa la primera vez y puede tardar varios minutos";
-
     /// <summary>
     /// What KataGo is busy with before it can answer, from a stderr line: loading the network, or the one-time
-    /// OpenCL autotuning (which can take minutes). Null once it is ready for queries.
+    /// OpenCL autotuning (which can take minutes). Null once it is ready for queries. Texts use the current language.
     /// </summary>
-    internal static string? ActivityFrom(string line, string? current)
+    internal static string? ActivityFrom(string line, string? current) => ActivityFrom(line, current, Tr.Language);
+
+    /// <summary>
+    /// <see cref="ActivityFrom(string, string?)"/> in a given language. A tuning text in either language counts as
+    /// "tuning in progress", so switching language mid-tuning keeps the progress line.
+    /// </summary>
+    internal static string? ActivityFrom(string line, string? current, string language)
     {
+        string tuning = Tr.T("Engine.Tuning", language);
         if (line.Contains("ready to begin handling requests", StringComparison.OrdinalIgnoreCase))
         {
             return null;
@@ -189,21 +195,21 @@ public sealed class KataGoProcess : IEngineProcess
 
         if (line.Contains("Performing autotuning", StringComparison.Ordinal) || line.StartsWith("Beginning GPU tuning", StringComparison.Ordinal))
         {
-            return Tuning + "…";
+            return tuning + "…";
         }
 
-        if (current?.StartsWith(Tuning, StringComparison.Ordinal) == true)
+        if (current is not null && Tr.Languages.Any(l => current.StartsWith(Tr.T("Engine.Tuning", l), StringComparison.Ordinal)))
         {
             if (line.StartsWith("Tuning ", StringComparison.Ordinal) && line.Split(' ', 3) is [_, var step, ..] && step.Contains('/', StringComparison.Ordinal))
             {
-                return $"{Tuning} (paso {step})…";
+                return string.Format(System.Globalization.CultureInfo.InvariantCulture, Tr.T("Engine.TuningStep", language), tuning, step);
             }
 
             return current;
         }
 
         return line.Contains("Initializing neural net", StringComparison.Ordinal) || line.Contains("nnModelFile", StringComparison.Ordinal)
-            ? "KataGo está cargando la red neuronal…"
+            ? Tr.T("Engine.LoadingNetwork", language)
             : current;
     }
 
@@ -212,10 +218,10 @@ public sealed class KataGoProcess : IEngineProcess
     {
         string? hint = unchecked((uint)exitCode) switch
         {
-            0xC0000135 => "falta una DLL. Las versiones CUDA y TensorRT de KataGo necesitan CUDA, cuDNN o TensorRT instalados; si no los tienes, usa la versión OpenCL (o Eigen, solo CPU).",
-            0xC000001D => "tu procesador no admite las instrucciones de esta versión de KataGo. Usa la versión Eigen sin AVX2.",
-            0xC0000005 => "KataGo falló dentro del controlador de la tarjeta gráfica. Actualiza el controlador o usa la versión Eigen (solo CPU).",
-            0xC0000409 => "KataGo abortó. Revisa que la red neuronal sea compatible con tu versión de KataGo.",
+            0xC0000135 => Tr.T("Engine.Hint.MissingDll"),
+            0xC000001D => Tr.T("Engine.Hint.IllegalInstruction"),
+            0xC0000005 => Tr.T("Engine.Hint.AccessViolation"),
+            0xC0000409 => Tr.T("Engine.Hint.Aborted"),
             _ => null,
         };
 
@@ -225,8 +231,8 @@ public sealed class KataGoProcess : IEngineProcess
             ? exitCode.ToString(System.Globalization.CultureInfo.InvariantCulture)
             : "0x" + unchecked((uint)exitCode).ToString("X8", System.Globalization.CultureInfo.InvariantCulture);
         return hint is not null
-            ? $"código {code}: {hint}" + (detail.Length > 0 ? $" ({detail})" : string.Empty)
-            : detail.Length > 0 ? $"código {code}: {detail}" : $"código {code}, sin mensaje de KataGo.";
+            ? Tr.F("Engine.ExitCode", code, hint) + (detail.Length > 0 ? $" ({detail})" : string.Empty)
+            : detail.Length > 0 ? Tr.F("Engine.ExitCode", code, detail) : Tr.F("Engine.ExitCodeNoMessage", code);
     }
 
     private static bool IsErrorLine(string line) =>
