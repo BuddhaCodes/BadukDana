@@ -178,7 +178,47 @@ def stone(variant: int) -> np.ndarray:
     return finish(reverb(rng, mix, 0.5, 0.12), 0.62)
 
 
+def capture(big: bool) -> np.ndarray:
+    """Stones captured: a crisp crack as they shatter, a little debris, the clack of the stones being gathered into
+    the lid, and a soft rising chime (two notes, or a three-note arpeggio plus a low thock for a big capture)."""
+    rng = np.random.default_rng(300 + big)
+    t = t_axis(1.6 if big else 1.1)
+    n = len(t)
+    noise = rng.standard_normal(n)
+    mix = bandpass(noise, 2000, 9000) * env(t, 0.0002, 0.006) * 1.1  # crack
+    debris = np.zeros(n)
+    for _ in range(14 if big else 7):
+        at = int(rng.uniform(0.005, 0.14) * SR)
+        burst = bandpass(rng.standard_normal(int(0.01 * SR)), 2500, 8000) * np.exp(-np.arange(int(0.01 * SR)) / (0.002 * SR))
+        debris[at:at + len(burst)] += burst * rng.uniform(0.15, 0.4)
+    mix += debris
+    whoosh = bandpass(noise, 700, 3200)
+    mix += whoosh * env(t, 0.03, 0.08) * 0.12
+    # Gathered stones: short clacks, slightly different pitches, getting softer.
+    for i in range(5 if big else 2):
+        at = 0.08 + i * 0.055 + rng.uniform(0, 0.012)
+        tt = np.clip(t - at, 0, None)
+        gate = (t >= at).astype(float)
+        f = rng.uniform(2600, 3600)
+        clack = (np.sin(2 * np.pi * f * tt) * np.exp(-tt / 0.01) + 0.6 * np.sin(2 * np.pi * f * 1.52 * tt) * np.exp(-tt / 0.006)
+                 + 0.5 * np.sin(2 * np.pi * rng.uniform(500, 800) * tt) * np.exp(-tt / 0.03))
+        mix += clack * gate * (0.55 - i * 0.07)
+    # Reward chime in D minor pentatonic.
+    notes = (880.0, 1174.66, 1396.91) if big else (880.0, 1174.66)
+    for i, f in enumerate(notes):
+        at = 0.14 + i * 0.09
+        tt = np.clip(t - at, 0, None)
+        gate = (t >= at).astype(float)
+        chime = (np.sin(2 * np.pi * f * tt) + 0.3 * np.sin(2 * np.pi * 2 * f * tt)) * np.exp(-tt / 0.35) * np.clip(tt / 0.004, 0, 1)
+        mix += chime * gate * 0.16
+    if big:
+        mix += sub_drop(t, 140, 60, 0.04, 0.12) * 0.5
+    return finish(reverb(rng, mix, 0.9, 0.2), 0.7 if big else 0.62)
+
+
 if __name__ == "__main__":
+    write("capture_small.wav", capture(False))
+    write("capture_big.wav", capture(True))
     for i in range(3):
         write(f"stone_{i + 1}.wav", stone(i))
     write("impact_small.wav", impact_small())

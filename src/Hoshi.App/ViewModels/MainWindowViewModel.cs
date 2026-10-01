@@ -52,6 +52,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                     sounds.Play(SoundEffect.Stone, current.SoundVolume / 100.0 * 0.8);
                 }
             };
+            game.StonesCaptured += (_, count) =>
+            {
+                AppSettings current = settings?.Current ?? new AppSettings();
+                if (current.StoneSounds)
+                {
+                    sounds.Play(count >= 3 ? SoundEffect.CaptureBig : SoundEffect.CaptureSmall, current.SoundVolume / 100.0 * 0.85);
+                }
+            };
         }
         if (music is not null)
         {

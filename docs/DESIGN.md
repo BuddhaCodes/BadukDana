@@ -134,6 +134,11 @@ Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su compo
 
 - Cada piedra nueva (jugada, recibida de OGS o al avanzar una jugada) suena con un «pachi» suave: clic de pizarra sobre kaya, golpe de madera corto y una campanita tenue en re menor pentatónico (re, fa, la; tres variantes que rotan). En Windows va por `PlaySound` desde memoria, con poca latencia. Se desactiva en Preferencias → Análisis.
 
+## Capturas
+
+- **Visual** (`CaptureEffect`, con animaciones activadas): cada piedra capturada destella al romperse y se parte en 5–6 cuñas con su propia textura que salen girando, alejándose de la piedra que captura, encogen y se desvanecen (0,6 s), con una nube de polvo. Las piedras caen en ola desde la captura (45 ms por casilla, máx. 0,4 s).
+- **Sonido**: `capture_small` (1–2 piedras: chasquido, escombros, dos clacs al recogerlas y campanita de dos notas) y `capture_big` (3 o más: más clacs, arpegio re–fa–la y un golpe grave). Suena junto con el «pachi» de la piedra; mismo interruptor que el sonido de piedras.
+
 ## Atajos de teclado (mínimo)
 
 | Atajo | Acción |

@@ -93,6 +93,9 @@ public sealed class GoBoardControl : Control
     private readonly System.Diagnostics.Stopwatch _impactClock = new();
     private Avalonia.Threading.DispatcherTimer? _impactTimer;
     private ImpactEffect? _impact;
+    private readonly System.Diagnostics.Stopwatch _captureClock = new();
+    private Avalonia.Threading.DispatcherTimer? _captureTimer;
+    private CaptureEffect? _capture;
 
     private static readonly Typeface CoordinateTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.Medium);
     private static readonly Typeface LabelTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.SemiBold);
@@ -261,6 +264,17 @@ public sealed class GoBoardControl : Control
 
         DrawInfluence(context, g, board);
         DrawStones(context, g, board, style);
+        if (_capture is { } capture)
+        {
+            StoneStyle stones = style.ShudanTexture ? StoneStyle.Shudan : style.Stones;
+            capture.Draw(
+                context,
+                CaptureTime ?? _captureClock.Elapsed.TotalSeconds,
+                g.Cell,
+                q => StoneCenter(g, q),
+                (ctx, c, r, color, q) => DrawStone(ctx, c, r, color, stones, q),
+                StoneRadius);
+        }
         DrawTerritoryMarks(context, g, board);
         DrawEffect(context, g, board, style);
         impact?.DrawBurst(context, StoneCenter(g, impact.Point), g.Cell, t);
@@ -635,17 +649,50 @@ public sealed class GoBoardControl : Control
         }
 
         int added = 0;
+        var captured = new List<(Point, Stone)>();
         foreach (Point q in after.AllPoints)
         {
             if (before[q] == Stone.Empty && after[q] != Stone.Empty && ++added > 1)
             {
                 return;
             }
+
+            if (before[q] != Stone.Empty && after[q] == Stone.Empty)
+            {
+                captured.Add((q, before[q]));
+            }
         }
 
         _before = null;
         StartPlacementAnimation(p);
+        if (captured.Count > 0)
+        {
+            StartCapture(p, captured);
+        }
     }
+
+    private void StartCapture(Point origin, List<(Point, Stone)> captured)
+    {
+        _capture = new CaptureEffect(origin, captured, unchecked((origin.X * 31) + (origin.Y * 17) + captured.Count));
+        _captureClock.Restart();
+        _captureTimer ??= new Avalonia.Threading.DispatcherTimer(TimeSpan.FromMilliseconds(16), Avalonia.Threading.DispatcherPriority.Render, (_, _) =>
+        {
+            if (_capture is null || _capture.IsDone(_captureClock.Elapsed.TotalSeconds))
+            {
+                _capture = null;
+                _captureTimer!.Stop();
+            }
+
+            InvalidateVisual();
+        });
+        _captureTimer.Start();
+    }
+
+    /// <summary>The captured stones being animated, for tests.</summary>
+    internal int CapturingStones => _capture?.Count ?? 0;
+
+    /// <summary>Freezes the capture animation at this many seconds (tests).</summary>
+    internal double? CaptureTime { get; set; }
 
     private void StartImpact(ViewModels.BoardImpact impact)
     {
