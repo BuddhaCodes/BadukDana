@@ -5,6 +5,7 @@
         xmlns:vm="using:Hoshi.App.ViewModels"
         xmlns:c="using:Hoshi.App.Controls"
         xmlns:sys="using:System"
+        xmlns:l="using:Hoshi.App.Localization"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="820"
         x:Class="Hoshi.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -103,7 +104,7 @@
 
           <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
             <Button Classes="bar" Command="{Binding Game.PassCommand}" ToolTip.Tip="Pasar (P)" x:Name="PassButton"
-                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Pass}" Size="17" /><TextBlock Text="Pasar" VerticalAlignment="Center" /></StackPanel></Button>
+                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Pass}" Size="17" /><TextBlock Text="{l:T Main.Pass}" VerticalAlignment="Center" x:Name="PassLabel" /></StackPanel></Button>
             <Button Classes="bar" Command="{Binding Game.UndoCommand}" ToolTip.Tip="Deshacer (Ctrl+Z)" x:Name="UndoButton"
                     IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Undo}" Size="17" /><TextBlock Text="Deshacer" VerticalAlignment="Center" /></StackPanel></Button>
             <Button Classes="bar toggle" Classes.on="{Binding Analysis.IsTerritoryOn}" Command="{Binding Analysis.ToggleTerritoryCommand}"
