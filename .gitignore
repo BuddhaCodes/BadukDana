@@ -12,3 +12,6 @@ artifacts/
 .DS_Store
 Thumbs.db
 __pycache__/
+
+# Files Claude hands over (bundles, previews)
+Claude outputs/
