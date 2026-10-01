@@ -150,6 +150,9 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     /// <summary>Folder where the user can put their own impact_small / explosion_medium / explosion_big (.wav or .mp3).</summary>
     public string? CustomSoundFolder => (_sounds as Services.SystemSoundService)?.CustomDirectory;
 
+    /// <summary>What each celebration sounds like, and where custom sounds go.</summary>
+    public string SoundsHelp => Tr.F("Prefs.SoundsHelp", CustomSoundFolder ?? "sounds");
+
     partial void OnMoveEffectsChanged(bool value) => SaveEffects();
 
     partial void OnSoundVolumeChanged(int value) => SaveEffects();

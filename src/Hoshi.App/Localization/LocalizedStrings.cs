@@ -10,7 +10,12 @@ public sealed class LocalizedStrings : INotifyPropertyChanged
 {
     private LocalizedStrings()
     {
-        Tr.LanguageChanged += (_, _) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
+        Tr.LanguageChanged += (_, _) =>
+        {
+            // Avalonia's indexer bindings listen for "Item"; WPF-style listeners use "Item[]".
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item"));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
+        };
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

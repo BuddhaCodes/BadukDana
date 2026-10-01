@@ -1,11 +1,12 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:Hoshi.App.Localization"
         xmlns:vm="using:Hoshi.App.ViewModels"
         xmlns:c="using:Hoshi.App.Controls"
         x:Class="Hoshi.App.Views.PreferencesWindow"
         x:DataType="vm:PreferencesViewModel"
         x:Name="Root"
-        Title="Preferencias"
+        Title="{l:T Prefs.Title}"
         Width="760" Height="600" MinWidth="560" MinHeight="460"
         Background="{DynamicResource Bg.Window}"
         WindowStartupLocation="CenterOwner">
@@ -16,18 +17,26 @@
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="0,0,0,16">
       <TextBlock Text="星" FontFamily="{DynamicResource Font.Brand}" FontSize="30" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
       <StackPanel VerticalAlignment="Center">
-        <TextBlock Text="Apariencia" FontFamily="{DynamicResource Font.Title}" FontSize="22" />
-        <TextBlock Classes="secondary" Text="El tema se aplica al momento y se recuerda." />
+        <TextBlock Text="{l:T Prefs.Appearance}" FontFamily="{DynamicResource Font.Title}" FontSize="22" />
+        <TextBlock Classes="secondary" Text="{l:T Prefs.ThemeHint}" />
       </StackPanel>
     </StackPanel>
 
-    <Button DockPanel.Dock="Bottom" HorizontalAlignment="Right" Classes="accent" Content="Listo" Command="{Binding #Root.CloseCommand}" Margin="0,12,0,0" />
+    <Button DockPanel.Dock="Bottom" HorizontalAlignment="Right" Classes="accent" Content="{l:T Prefs.Done}" Command="{Binding #Root.CloseCommand}" Margin="0,12,0,0" />
     <TabControl x:Name="Tabs">
-      <TabItem Header="Apariencia">
+      <TabItem Header="{l:T Prefs.Appearance}">
         <DockPanel Margin="0,10,0,0">
           <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
-            <ToggleSwitch IsChecked="{Binding Animations}" OnContent="Animaciones" OffContent="Animaciones" x:Name="AnimationsSwitch" />
-            <TextBlock Classes="secondary" Text="Fondo animado y animaciones al colocar piedras. Desactívalas si prefieres una vista quieta." TextWrapping="Wrap" />
+            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,8">
+              <TextBlock Text="{l:T Prefs.Language}" VerticalAlignment="Center" />
+              <ComboBox ItemsSource="{Binding LanguageOptions}" SelectedItem="{Binding SelectedLanguage}" MinWidth="160" x:Name="LanguageBox">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:LanguageOption"><TextBlock Text="{Binding Name}" /></DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+            <ToggleSwitch IsChecked="{Binding Animations}" OnContent="{l:T Prefs.Animations}" OffContent="{l:T Prefs.Animations}" x:Name="AnimationsSwitch" />
+            <TextBlock Classes="secondary" Text="{l:T Prefs.AnimationsHint}" TextWrapping="Wrap" />
           </StackPanel>
         <ListBox ItemsSource="{Binding Cards}" SelectedItem="{Binding Selected}" Background="Transparent" x:Name="ThemeList">
           <ListBox.ItemsPanel>
@@ -65,65 +74,65 @@
         </ListBox>
         </DockPanel>
       </TabItem>
-      <TabItem Header="Análisis">
+      <TabItem Header="{l:T Main.Analysis}">
         <ScrollViewer Margin="0,10,0,0">
           <StackPanel Spacing="10" MaxWidth="640" HorizontalAlignment="Left">
             <TextBlock TextWrapping="Wrap"
-                       Text="Hoshi usa KataGo (libre, MIT) para evaluar cada jugada y estimar el territorio. Descarga en github.com/lightvector/KataGo/releases el paquete de tu sistema (OpenCL para la mayoría de gráficas, CUDA/TensorRT para NVIDIA, Eigen para solo CPU) y una red desde katagotraining.org. El paquete trae analysis_example.cfg." />
+                       Text="{l:T Prefs.KataGoIntro}" />
             <Grid ColumnDefinitions="140,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
               <Grid.Styles>
                 <Style Selector="TextBox"><Setter Property="Margin" Value="0,3" /></Style>
                 <Style Selector="Button"><Setter Property="Margin" Value="8,3,0,3" /></Style>
               </Grid.Styles>
-              <TextBlock Classes="label" Text="Ejecutable" VerticalAlignment="Center" />
+              <TextBlock Classes="label" Text="{l:T Prefs.Executable}" VerticalAlignment="Center" />
               <TextBox Grid.Column="1" Text="{Binding KataGoExecutable}" Watermark="katago.exe" x:Name="ExecutableBox" />
-              <Button Grid.Column="2" Content="Examinar…" Command="{Binding BrowseExecutableCommand}" />
-              <TextBlock Grid.Row="1" Classes="label" Text="Red neuronal" VerticalAlignment="Center" />
+              <Button Grid.Column="2" Content="{l:T Prefs.Browse}" Command="{Binding BrowseExecutableCommand}" />
+              <TextBlock Grid.Row="1" Classes="label" Text="{l:T Prefs.Network}" VerticalAlignment="Center" />
               <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding KataGoModel}" Watermark="kata1-…bin.gz" />
-              <Button Grid.Row="1" Grid.Column="2" Content="Examinar…" Command="{Binding BrowseModelCommand}" />
-              <TextBlock Grid.Row="2" Classes="label" Text="Configuración" VerticalAlignment="Center" />
+              <Button Grid.Row="1" Grid.Column="2" Content="{l:T Prefs.Browse}" Command="{Binding BrowseModelCommand}" />
+              <TextBlock Grid.Row="2" Classes="label" Text="{l:T Prefs.Config}" VerticalAlignment="Center" />
               <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding KataGoConfig}" Watermark="analysis_example.cfg" />
-              <Button Grid.Row="2" Grid.Column="2" Content="Examinar…" Command="{Binding BrowseConfigCommand}" />
-              <TextBlock Grid.Row="3" Classes="label" Text="Visitas máximas" VerticalAlignment="Center" />
+              <Button Grid.Row="2" Grid.Column="2" Content="{l:T Prefs.Browse}" Command="{Binding BrowseConfigCommand}" />
+              <TextBlock Grid.Row="3" Classes="label" Text="{l:T Prefs.MaxVisits}" VerticalAlignment="Center" />
               <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding AnalysisVisits}" Minimum="10" Maximum="100000" Increment="50"
                              FormatString="0" HorizontalAlignment="Left" Width="160" Margin="0,3" />
             </Grid>
             <StackPanel Orientation="Horizontal" Spacing="8">
-              <Button Content="Guardar" Command="{Binding ApplyEngineCommand}" />
-              <Button Classes="accent" Content="Probar KataGo" Command="{Binding TestEngineCommand}" IsEnabled="{Binding !IsTesting}" />
+              <Button Content="{l:T Main.Save}" Command="{Binding ApplyEngineCommand}" />
+              <Button Classes="accent" Content="{l:T Prefs.TestKataGo}" Command="{Binding TestEngineCommand}" IsEnabled="{Binding !IsTesting}" />
             </StackPanel>
             <TextBlock Text="{Binding EngineStatus}" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" x:Name="EngineStatus" />
             <TextBlock Classes="secondary" TextWrapping="Wrap"
-                       Text="El análisis es en vivo: KataGo muestra resultados parciales enseguida y sigue profundizando en la posición hasta las visitas máximas. Más visitas = más fuerte, pero más uso de la GPU (con una gráfica integrada, 200–500 y una red ligera como b18c384 o b10c128). En partidas de OGS en curso el análisis y el territorio se desactivan: sus normas no permiten ayuda de IA mientras juegas." />
+                       Text="{l:T Prefs.LiveHint}" />
 
-            <TextBlock Classes="label" Text="Celebrar las jugadas fuertes" Margin="0,14,0,0" />
+            <TextBlock Classes="label" Text="{l:T Prefs.Celebrate}" Margin="0,14,0,0" />
             <CheckBox IsChecked="{Binding MoveEffects}" x:Name="MoveEffectsBox"
-                      Content="Sonido e impacto en el tablero cuando KataGo juzga tu jugada como buena, excelente o la mejor" />
+                      Content="{l:T Prefs.CelebrateBox}" />
             <StackPanel Orientation="Horizontal" Spacing="10" IsEnabled="{Binding MoveEffects}">
-              <TextBlock Text="Volumen" VerticalAlignment="Center" />
+              <TextBlock Text="{l:T Prefs.Volume}" VerticalAlignment="Center" />
               <Slider Minimum="0" Maximum="100" Value="{Binding SoundVolume}" Width="220" x:Name="VolumeSlider" />
               <TextBlock Text="{Binding SoundVolume, StringFormat={}{0} %}" VerticalAlignment="Center" MinWidth="44" />
-              <Button Content="Probar sonido" Command="{Binding TestSoundCommand}" />
+              <Button Content="{l:T Prefs.TestSound}" Command="{Binding TestSoundCommand}" />
             </StackPanel>
 
             <CheckBox IsChecked="{Binding StoneSounds}" x:Name="StoneSoundsBox"
-                      Content="Sonido suave al colocar cada piedra y al capturar (también al avanzar jugada a jugada)" />
+                      Content="{l:T Prefs.StoneSoundsBox}" />
 
             <CheckBox IsChecked="{Binding AtariAlerts}" x:Name="AtariAlertsBox"
-                      Content="Aviso de atari: el grupo tiembla y suda un poco, con un «uh-oh» (no en partidas de OGS en curso)" />
+                      Content="{l:T Prefs.AtariBox}" />
 
-            <TextBlock Classes="label" Text="Música adaptativa" Margin="0,14,0,0" />
+            <TextBlock Classes="label" Text="{l:T Prefs.Music}" Margin="0,14,0,0" />
             <CheckBox IsChecked="{Binding Music}" x:Name="MusicBox"
-                      Content="Lo-fi tranquilo que se anima con rachas de buenas jugadas y se calma con el tiempo o con un error (tecla M)" />
+                      Content="{l:T Prefs.MusicBox}" />
             <StackPanel Orientation="Horizontal" Spacing="10" IsEnabled="{Binding Music}">
-              <TextBlock Text="Volumen" VerticalAlignment="Center" />
+              <TextBlock Text="{l:T Prefs.Volume}" VerticalAlignment="Center" />
               <Slider Minimum="0" Maximum="100" Value="{Binding MusicVolume}" Width="220" />
               <TextBlock Text="{Binding MusicVolume, StringFormat={}{0} %}" VerticalAlignment="Center" MinWidth="44" />
             </StackPanel>
             <TextBlock Classes="secondary" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" Text="{Binding MusicProblem}"
                        IsVisible="{Binding MusicProblem, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
             <TextBlock Classes="secondary" TextWrapping="Wrap"
-                       Text="{Binding CustomSoundFolder, StringFormat='Buena: golpe seco · Excelente: explosión con onda expansiva y temblor · La mejor: explosión cinemática, grietas incandescentes y temblor fuerte. Los sonidos son de Hoshi; para usar los tuyos, pon impact_small, explosion_medium o explosion_big (.wav o .mp3) en {0}. El impacto visual necesita las animaciones activadas (Apariencia).'}" />
+                       Text="{Binding SoundsHelp}" />
           </StackPanel>
         </ScrollViewer>
       </TabItem>

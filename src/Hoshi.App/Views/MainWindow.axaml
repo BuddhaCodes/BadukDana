@@ -48,10 +48,10 @@
       <Border Classes="bottom-bar" Classes.edit="{Binding Game.IsEditMode}" DockPanel.Dock="Bottom" x:Name="BottomBar">
         <Grid ColumnDefinitions="Auto,*,Auto">
           <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-            <Button Classes="bar icon" Command="{Binding Game.GoFirstCommand}" ToolTip.Tip="Inicio (Home)"><c:HoshiIcon Icon="{DynamicResource Icon.First}" Size="18" /></Button>
-            <Button Classes="bar icon" Command="{Binding Game.GoBackCommand}" ToolTip.Tip="Anterior (←)"><c:HoshiIcon Icon="{DynamicResource Icon.Previous}" Size="18" /></Button>
-            <Button Classes="bar icon" Command="{Binding Game.GoForwardCommand}" ToolTip.Tip="Siguiente (→)"><c:HoshiIcon Icon="{DynamicResource Icon.Next}" Size="18" /></Button>
-            <Button Classes="bar icon" Command="{Binding Game.GoLastCommand}" ToolTip.Tip="Final (End)"><c:HoshiIcon Icon="{DynamicResource Icon.Last}" Size="18" /></Button>
+            <Button Classes="bar icon" Command="{Binding Game.GoFirstCommand}" ToolTip.Tip="{l:T Main.First}"><c:HoshiIcon Icon="{DynamicResource Icon.First}" Size="18" /></Button>
+            <Button Classes="bar icon" Command="{Binding Game.GoBackCommand}" ToolTip.Tip="{l:T Main.Previous}"><c:HoshiIcon Icon="{DynamicResource Icon.Previous}" Size="18" /></Button>
+            <Button Classes="bar icon" Command="{Binding Game.GoForwardCommand}" ToolTip.Tip="{l:T Main.Next}"><c:HoshiIcon Icon="{DynamicResource Icon.Next}" Size="18" /></Button>
+            <Button Classes="bar icon" Command="{Binding Game.GoLastCommand}" ToolTip.Tip="{l:T Main.Last}"><c:HoshiIcon Icon="{DynamicResource Icon.Last}" Size="18" /></Button>
           </StackPanel>
 
           <!-- Players, as in Sabaki's bar: black name · turn toggle · white name. -->
@@ -59,11 +59,11 @@
                 IsVisible="{Binding !Game.IsEditMode}" x:Name="PlayerInfo">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="6">
               <TextBlock Classes="secondary" VerticalAlignment="Center" Text="{Binding Game.Board.WhiteCaptures, StringFormat='+{0}'}"
-                         IsVisible="{Binding Game.Board.WhiteCaptures}" ToolTip.Tip="Piedras capturadas por negras" />
+                         IsVisible="{Binding Game.Board.WhiteCaptures}" ToolTip.Tip="{l:T Main.BlackCaptures}" />
               <TextBlock Classes="player" Text="{Binding Game.BlackName}" TextTrimming="CharacterEllipsis"
                          FontWeight="{Binding Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
             </StackPanel>
-            <Border Grid.Column="1" Classes="turn-toggle" Margin="10,0" ToolTip.Tip="Turno">
+            <Border Grid.Column="1" Classes="turn-toggle" Margin="10,0" ToolTip.Tip="{l:T Main.Turn}">
               <Panel>
                 <Ellipse Classes="turn-knob black" IsVisible="{Binding Game.IsBlackToMove}" HorizontalAlignment="Left" />
                 <Ellipse Classes="turn-knob white" IsVisible="{Binding !Game.IsBlackToMove}" HorizontalAlignment="Right" />
@@ -73,75 +73,87 @@
               <TextBlock Classes="player" Text="{Binding Game.WhiteName}" TextTrimming="CharacterEllipsis"
                          FontWeight="{Binding !Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
               <TextBlock Classes="secondary" VerticalAlignment="Center" Text="{Binding Game.Board.BlackCaptures, StringFormat='+{0}'}"
-                         IsVisible="{Binding Game.Board.BlackCaptures}" ToolTip.Tip="Piedras capturadas por blancas" />
+                         IsVisible="{Binding Game.Board.BlackCaptures}" ToolTip.Tip="{l:T Main.WhiteCaptures}" />
             </StackPanel>
           </Grid>
 
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center" HorizontalAlignment="Center"
                     IsVisible="{Binding Game.IsEditMode}" x:Name="EditBar" Classes="appear">
-          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="Piedra negra"
+          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="{l:T Main.BlackStone}"
                        IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.BlackStone}}"
                        Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.BlackStone}"><Ellipse Width="14" Height="14" Fill="#141414" Stroke="#000" StrokeThickness="1" /></RadioButton>
-          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="Piedra blanca"
+          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="{l:T Main.WhiteStone}"
                        IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.WhiteStone}}"
                        Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.WhiteStone}"><Ellipse Width="14" Height="14" Fill="#F4F4F4" Stroke="#9A9A9A" StrokeThickness="1" /></RadioButton>
-          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="Triángulo"
+          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="{l:T Main.Triangle}"
                        IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.Triangle}}"
                        Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Triangle}"><c:HoshiIcon Icon="{DynamicResource Icon.Triangle}" Size="17" /></RadioButton>
-          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="Cuadrado"
+          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="{l:T Main.Square}"
                        IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.Square}}"
                        Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Square}"><c:HoshiIcon Icon="{DynamicResource Icon.Square}" Size="17" /></RadioButton>
-          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="Círculo"
+          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="{l:T Main.Circle}"
                        IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.Circle}}"
                        Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Circle}"><c:HoshiIcon Icon="{DynamicResource Icon.Circle}" Size="17" /></RadioButton>
-          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="Cruz"
+          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="{l:T Main.Cross}"
                        IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.Cross}}"
                        Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Cross}"><c:HoshiIcon Icon="{DynamicResource Icon.Cross}" Size="17" /></RadioButton>
-          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="Etiqueta"
+          <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="{l:T Main.Label}"
                        IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.Label}}"
                        Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Label}"><c:HoshiIcon Icon="{DynamicResource Icon.Label}" Size="17" /></RadioButton>
         </StackPanel>
 
           <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-            <Button Classes="bar" Command="{Binding Game.PassCommand}" ToolTip.Tip="Pasar (P)" x:Name="PassButton"
+            <Button Classes="bar" Command="{Binding Game.PassCommand}" ToolTip.Tip="{l:T Main.PassTip}" x:Name="PassButton"
                     IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Pass}" Size="17" /><TextBlock Text="{l:T Main.Pass}" VerticalAlignment="Center" x:Name="PassLabel" /></StackPanel></Button>
-            <Button Classes="bar" Command="{Binding Game.UndoCommand}" ToolTip.Tip="Deshacer (Ctrl+Z)" x:Name="UndoButton"
-                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Undo}" Size="17" /><TextBlock Text="Deshacer" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="bar" Command="{Binding Game.UndoCommand}" ToolTip.Tip="{l:T Main.UndoTip}" x:Name="UndoButton"
+                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Undo}" Size="17" /><TextBlock Text="{l:T Main.Undo}" VerticalAlignment="Center" /></StackPanel></Button>
             <Button Classes="bar toggle" Classes.on="{Binding Analysis.IsTerritoryOn}" Command="{Binding Analysis.ToggleTerritoryCommand}"
-                    ToolTip.Tip="Territorio actual y potencial (T)" x:Name="TerritoryButton"
-                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Territory}" Size="17" /><TextBlock Text="Territorio" VerticalAlignment="Center" /></StackPanel></Button>
+                    ToolTip.Tip="{l:T Main.TerritoryTip}" x:Name="TerritoryButton"
+                    >
+              <Button.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                  <Binding Path="!Game.IsEditMode" />
+                  <Binding Path="!Analysis.IsBlocked" />
+                </MultiBinding>
+              </Button.IsVisible><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Territory}" Size="17" /><TextBlock Text="{l:T Main.Territory}" VerticalAlignment="Center" /></StackPanel></Button>
             <Button Classes="bar toggle" Classes.on="{Binding Analysis.IsAnalysisOn}" Command="{Binding Analysis.ToggleAnalysisCommand}"
-                    ToolTip.Tip="Mostrar el análisis de la IA: panel y sugerencias en el tablero (A). KataGo trabaja siempre de fondo." x:Name="AnalysisButton"
-                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Analysis}" Size="17" /><TextBlock Text="Análisis" VerticalAlignment="Center" /></StackPanel></Button>
-            <Button Classes="bar" Command="{Binding OpenLobbyCommand}" ToolTip.Tip="Jugar en OGS (Ctrl+L)" x:Name="OnlineButton"
-                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Online}" Size="17" /><TextBlock Text="En línea" VerticalAlignment="Center" /></StackPanel></Button>
-            <Button Classes="bar" Command="{Binding Game.ToggleEditModeCommand}" IsVisible="{Binding Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Check}" Size="17" /><TextBlock Text="Terminar edición" VerticalAlignment="Center" /></StackPanel></Button>
-            <Button Classes="bar icon" ToolTip.Tip="Menú: archivo, edición, en línea, preferencias" x:Name="MenuButton">
+                    ToolTip.Tip="{l:T Main.AnalysisTip}" x:Name="AnalysisButton"
+                    >
+              <Button.IsVisible>
+                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                  <Binding Path="!Game.IsEditMode" />
+                  <Binding Path="!Analysis.IsBlocked" />
+                </MultiBinding>
+              </Button.IsVisible><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Analysis}" Size="17" /><TextBlock Text="{l:T Main.Analysis}" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="bar" Command="{Binding OpenLobbyCommand}" ToolTip.Tip="{l:T Main.OnlineTip}" x:Name="OnlineButton"
+                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Online}" Size="17" /><TextBlock Text="{l:T Main.Online}" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="bar" Command="{Binding Game.ToggleEditModeCommand}" IsVisible="{Binding Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Check}" Size="17" /><TextBlock Text="{l:T Main.FinishEditing}" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="bar icon" ToolTip.Tip="{l:T Main.MenuTip}" x:Name="MenuButton">
               <c:HoshiIcon Icon="{DynamicResource Icon.Menu}" Size="18" />
             <Button.Flyout>
               <MenuFlyout>
-                <MenuItem Header="Nueva 19 × 19" Command="{Binding Game.NewGameCommand}" InputGesture="Ctrl+N">
+                <MenuItem Header="{l:T Main.New19}" Command="{Binding Game.NewGameCommand}" InputGesture="Ctrl+N">
                   <MenuItem.CommandParameter><sys:Int32>19</sys:Int32></MenuItem.CommandParameter>
                 </MenuItem>
-                <MenuItem Header="Nueva 13 × 13" Command="{Binding Game.NewGameCommand}">
+                <MenuItem Header="{l:T Main.New13}" Command="{Binding Game.NewGameCommand}">
                   <MenuItem.CommandParameter><sys:Int32>13</sys:Int32></MenuItem.CommandParameter>
                 </MenuItem>
-                <MenuItem Header="Nueva 9 × 9" Command="{Binding Game.NewGameCommand}">
+                <MenuItem Header="{l:T Main.New9}" Command="{Binding Game.NewGameCommand}">
                   <MenuItem.CommandParameter><sys:Int32>9</sys:Int32></MenuItem.CommandParameter>
                 </MenuItem>
                 <Separator />
-                <MenuItem Header="Abrir…" Command="{Binding Game.OpenCommand}" InputGesture="Ctrl+O" />
-                <MenuItem Header="Guardar" Command="{Binding Game.SaveCommand}" InputGesture="Ctrl+S" />
-                <MenuItem Header="Guardar como…" Command="{Binding Game.SaveAsCommand}" InputGesture="Ctrl+Shift+S" />
+                <MenuItem Header="{l:T Main.Open}" Command="{Binding Game.OpenCommand}" InputGesture="Ctrl+O" />
+                <MenuItem Header="{l:T Main.Save}" Command="{Binding Game.SaveCommand}" InputGesture="Ctrl+S" />
+                <MenuItem Header="{l:T Main.SaveAs}" Command="{Binding Game.SaveAsCommand}" InputGesture="Ctrl+Shift+S" />
                 <Separator />
-                <MenuItem Header="Información de la partida…" Command="{Binding Game.EditGameInfoCommand}" InputGesture="Ctrl+I" />
-                <MenuItem Header="Hacer línea principal" Command="{Binding Game.PromoteVariationCommand}" />
-                <MenuItem Header="Borrar nodo y variantes" Command="{Binding Game.DeleteNodeCommand}" />
+                <MenuItem Header="{l:T Main.GameInfo}" Command="{Binding Game.EditGameInfoCommand}" InputGesture="Ctrl+I" />
+                <MenuItem Header="{l:T Main.PromoteVariation}" Command="{Binding Game.PromoteVariationCommand}" />
+                <MenuItem Header="{l:T Main.DeleteNode}" Command="{Binding Game.DeleteNodeCommand}" />
                 <Separator />
-                <MenuItem Header="Modo edición" Command="{Binding Game.ToggleEditModeCommand}" InputGesture="Ctrl+E" />
-                <MenuItem Header="Jugar en línea…" Command="{Binding OpenLobbyCommand}" InputGesture="Ctrl+L" />
+                <MenuItem Header="{l:T Main.EditMode}" Command="{Binding Game.ToggleEditModeCommand}" InputGesture="Ctrl+E" />
+                <MenuItem Header="{l:T Main.PlayOnline}" Command="{Binding OpenLobbyCommand}" InputGesture="Ctrl+L" />
                 <Separator />
-                <MenuItem Header="Preferencias…" Command="{Binding OpenPreferencesCommand}" InputGesture="Ctrl+OemComma" />
+                <MenuItem Header="{l:T Main.Preferences}" Command="{Binding OpenPreferencesCommand}" InputGesture="Ctrl+OemComma" />
               </MenuFlyout>
             </Button.Flyout>
             </Button>
@@ -209,26 +221,26 @@
                            FontWeight="{Binding Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
                 <TextBlock Grid.Row="1" Grid.Column="1" Classes="clock" Classes.low="{Binding Online.IsBlackClockLow}"
                            Text="{Binding Online.BlackClock}" x:Name="BlackClock" />
-                <TextBlock Grid.Row="1" Grid.Column="2" Classes="secondary" VerticalAlignment="Center" Text="{Binding Game.Board.BlackCaptures, StringFormat='{}{0} cap.'}" />
+                <TextBlock Grid.Row="1" Grid.Column="2" Classes="secondary" VerticalAlignment="Center" Text="{Binding Game.Board.BlackCaptures, StringFormat='+{0}'}" />
                 <Ellipse Grid.Row="2" Width="10" Height="10" Fill="#EEE" Stroke="#888" StrokeThickness="1" Margin="0,10,8,0" />
                 <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Online.WhiteName}" TextTrimming="CharacterEllipsis" Margin="0,10,0,0"
                            FontWeight="{Binding !Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
                 <TextBlock Grid.Row="3" Grid.Column="1" Classes="clock" Classes.low="{Binding Online.IsWhiteClockLow}"
                            Text="{Binding Online.WhiteClock}" x:Name="WhiteClock" />
-                <TextBlock Grid.Row="3" Grid.Column="2" Classes="secondary" VerticalAlignment="Center" Text="{Binding Game.Board.WhiteCaptures, StringFormat='{}{0} cap.'}" />
+                <TextBlock Grid.Row="3" Grid.Column="2" Classes="secondary" VerticalAlignment="Center" Text="{Binding Game.Board.WhiteCaptures, StringFormat='+{0}'}" />
               </Grid>
               <TextBlock Text="{Binding Online.StatusText}" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" x:Name="OnlineStatus" />
               <WrapPanel Orientation="Horizontal">
                 <WrapPanel.Styles>
                   <Style Selector="Button"><Setter Property="Margin" Value="0,0,6,6" /></Style>
                 </WrapPanel.Styles>
-                <Button Content="Pasar" Command="{Binding Online.PassCommand}" IsVisible="{Binding Online.IsPlayPhase}" x:Name="OnlinePassButton" />
-                <Button Content="Abandonar" Command="{Binding Online.ResignCommand}" IsVisible="{Binding Online.IsPlayPhase}" x:Name="ResignButton" />
-                <Button Content="Pedir deshacer" Command="{Binding Online.RequestUndoCommand}" IsVisible="{Binding Online.IsPlayPhase}" />
-                <Button Classes="accent" Content="Aceptar deshacer" Command="{Binding Online.AcceptUndoCommand}" IsVisible="{Binding Online.IsUndoRequested}" />
-                <Button Classes="accent" Content="Aceptar conteo" Command="{Binding Online.AcceptScoreCommand}" IsVisible="{Binding Online.IsStoneRemoval}" x:Name="AcceptScoreButton" />
-                <Button Content="Reanudar partida" Command="{Binding Online.RejectScoreCommand}" IsVisible="{Binding Online.IsStoneRemoval}" />
-                <Button Content="Salir" Command="{Binding Online.LeaveCommand}" ToolTip.Tip="Deja de mostrar la partida (sigue en OGS)" x:Name="LeaveButton" />
+                <Button Content="{l:T Main.Pass}" Command="{Binding Online.PassCommand}" IsVisible="{Binding Online.IsPlayPhase}" x:Name="OnlinePassButton" />
+                <Button Content="{l:T Main.Resign}" Command="{Binding Online.ResignCommand}" IsVisible="{Binding Online.IsPlayPhase}" x:Name="ResignButton" />
+                <Button Content="{l:T Main.RequestUndo}" Command="{Binding Online.RequestUndoCommand}" IsVisible="{Binding Online.IsPlayPhase}" />
+                <Button Classes="accent" Content="{l:T Main.AcceptUndo}" Command="{Binding Online.AcceptUndoCommand}" IsVisible="{Binding Online.IsUndoRequested}" />
+                <Button Classes="accent" Content="{l:T Main.AcceptScore}" Command="{Binding Online.AcceptScoreCommand}" IsVisible="{Binding Online.IsStoneRemoval}" x:Name="AcceptScoreButton" />
+                <Button Content="{l:T Main.ResumeGame}" Command="{Binding Online.RejectScoreCommand}" IsVisible="{Binding Online.IsStoneRemoval}" />
+                <Button Content="{l:T Main.Leave}" Command="{Binding Online.LeaveCommand}" ToolTip.Tip="{l:T Main.LeaveTip}" x:Name="LeaveButton" />
               </WrapPanel>
             </StackPanel>
           </Panel>
@@ -236,7 +248,7 @@
 
         <!-- Analysis: territory summary, engine evaluation of the last move, score graph. -->
         <Border Grid.Row="1" Classes="analysis" x:Name="AnalysisPanel"
-                IsVisible="{Binding Analysis.IsAnalysisOn}">
+                IsVisible="{Binding Analysis.IsAnalysisActive}">
           <StackPanel Spacing="6">
             <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding Analysis.Analysis, Converter={x:Static ObjectConverters.IsNotNull}}">
               <TextBlock Text="{Binding Analysis.WinrateText}" FontWeight="SemiBold" x:Name="WinrateText" />
@@ -255,7 +267,7 @@
             <c:ScoreGraph Height="64" Values="{Binding Analysis.Graph}" CurrentIndex="{Binding Analysis.GraphIndex}"
                           LineBrush="{DynamicResource Text.Primary}" Accent="{DynamicResource Accent}"
                           MoveClickedCommand="{Binding Analysis.GoToMoveCommand}" x:Name="ScoreGraph"
-                          ToolTip.Tip="Ventaja estimada de negras por jugada (arriba = negras). Clic para ir a esa jugada." />
+                          ToolTip.Tip="{l:T Main.GraphTip}" />
             <TextBlock Classes="secondary" Text="{Binding Analysis.StatusText}" TextWrapping="Wrap" Foreground="{DynamicResource Accent}"
                        IsVisible="{Binding Analysis.StatusText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" x:Name="AnalysisStatus" />
             <TextBlock Classes="secondary" Text="{Binding Analysis.TerritoryText}" TextWrapping="Wrap" x:Name="TerritoryText"
@@ -291,11 +303,11 @@
         </Border>
 
         <TextBox Grid.Row="5" x:Name="CommentBox" Classes="comment" IsVisible="{Binding IsLocal}"
-                 AcceptsReturn="True" TextWrapping="Wrap" Watermark="Comentario"
+                 AcceptsReturn="True" TextWrapping="Wrap" Watermark="{l:T Main.Comment}"
                  Text="{Binding Game.Comment}" />
 
         <DockPanel Grid.Row="5" x:Name="ChatPanel" Classes="appear" Background="{DynamicResource Bg.Properties}" IsVisible="{Binding IsOnline}">
-          <TextBox DockPanel.Dock="Bottom" Classes="comment" Watermark="Escribe al rival (Enter)" Text="{Binding Online.ChatInput}" x:Name="ChatInput">
+          <TextBox DockPanel.Dock="Bottom" Classes="comment" Watermark="{l:T Main.ChatHint}" Text="{Binding Online.ChatInput}" x:Name="ChatInput">
             <TextBox.KeyBindings>
               <KeyBinding Gesture="Enter" Command="{Binding Online.SendChatCommand}" />
             </TextBox.KeyBindings>
