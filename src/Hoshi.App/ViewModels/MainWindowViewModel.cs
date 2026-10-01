@@ -40,8 +40,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Services.Music.IMusicService? music = null,
         IReplayStore? replays = null,
         ReplaysViewModel? replaysList = null,
-        IReplaysWindowService? replaysWindow = null)
+        IReplaysWindowService? replaysWindow = null,
+        IJosekiWindowService? joseki = null)
     {
+        _joseki = joseki;
         _preferences = preferences;
         _replaysWindow = replaysWindow;
         _replayStore = replays;
@@ -162,6 +164,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private void OpenLobby() => _lobbyWindow?.Show();
 
     public bool HasPreferences => _preferences is not null;
+
+    private readonly IJosekiWindowService? _joseki;
+
+    public bool HasJoseki => _joseki is not null;
+
+    /// <summary>Ctrl+J: the joseki trainer (spaced repetition).</summary>
+    [RelayCommand(CanExecute = nameof(HasJoseki))]
+    private void OpenJoseki() => _joseki?.Show();
 
     private readonly IReplaysWindowService? _replaysWindow;
     private readonly IReplayStore? _replayStore;
