@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using Hoshi.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Hoshi.Core.Localization;
 
 namespace Hoshi.Engines.KataGo;
 
@@ -249,8 +250,8 @@ public sealed class KataGoAnalysisEngine : IAsyncDisposable
 
     private static string ExitedMessage(IEngineProcess process) =>
         process.ExitReason is { } reason
-            ? "KataGo se cerró (" + reason + ")"
-            : "KataGo se cerró inesperadamente. Revisa su configuración y el log.";
+            ? Tr.F("Engine.Exited", reason)
+            : Tr.T("Engine.ExitedUnexpectedly");
 
     private void Dispatch(string line)
     {

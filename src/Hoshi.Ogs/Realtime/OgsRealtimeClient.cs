@@ -4,6 +4,7 @@ using System.Text.Json.Nodes;
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Hoshi.Core.Localization;
 
 namespace Hoshi.Ogs.Realtime;
 
@@ -203,7 +204,7 @@ public sealed class OgsRealtimeClient : IAsyncDisposable
         {
             if (!_authenticated)
             {
-                throw new OgsRealtimeException("Sin conexión con el servidor de OGS.");
+                throw new OgsRealtimeException(Tr.T("Ogs.NotConnected"));
             }
 
             id = ++_lastRequestId;
@@ -515,7 +516,7 @@ public sealed class OgsRealtimeClient : IAsyncDisposable
 
         foreach (TaskCompletionSource<JsonElement> tcs in pending)
         {
-            tcs.TrySetException(new OgsRealtimeException("Se perdió la conexión con OGS antes de recibir respuesta."));
+            tcs.TrySetException(new OgsRealtimeException(Tr.T("Ogs.ConnectionLost")));
         }
     }
 

@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Hoshi.Core.Localization;
 
 namespace Hoshi.Ogs.Auth;
 
@@ -79,12 +80,12 @@ public sealed class OgsAuthService : IOgsCredentials
         ArgumentNullException.ThrowIfNull(openBrowser);
         if (_options.AuthMode != OgsAuthMode.OAuth)
         {
-            throw new InvalidOperationException("Este servidor usa inicio de sesión con usuario y contraseña.");
+            throw new InvalidOperationException(Tr.T("Ogs.PasswordServer"));
         }
 
         if (string.IsNullOrWhiteSpace(_options.ClientId))
         {
-            throw new OgsAuthException("Falta Ogs:ClientId en la configuración (id de la aplicación OAuth registrada).");
+            throw new OgsAuthException(Tr.T("Ogs.ClientIdMissing"));
         }
 
         string verifier = Pkce.CreateVerifier();
@@ -126,7 +127,7 @@ public sealed class OgsAuthService : IOgsCredentials
             cancellationToken);
 
         return await LoadSessionAsync(cancellationToken)
-            ?? throw new OgsAuthException("OGS aceptó el inicio de sesión pero no devolvió los datos del usuario.");
+            ?? throw new OgsAuthException(Tr.T("Ogs.NoUserAfterOAuth"));
     }
 
     /// <summary>OGS's social-login route for a provider (as in the web client's SocialLoginButtons).</summary>
@@ -223,7 +224,7 @@ public sealed class OgsAuthService : IOgsCredentials
     {
         if (_options.AuthMode != OgsAuthMode.Password)
         {
-            throw new InvalidOperationException("El inicio de sesión con contraseña solo está disponible en el modo de desarrollo (beta).");
+            throw new InvalidOperationException(Tr.T("Ogs.PasswordDevOnly"));
         }
 
         ArgumentException.ThrowIfNullOrWhiteSpace(username);
@@ -258,12 +259,12 @@ public sealed class OgsAuthService : IOgsCredentials
         {
             _logger.LogWarning("OGS password login failed with {Status}", (int)response.StatusCode);
             throw new OgsAuthException(response.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.Unauthorized or HttpStatusCode.BadRequest
-                ? "Usuario o contraseña incorrectos."
-                : string.Create(CultureInfo.InvariantCulture, $"OGS respondió {(int)response.StatusCode} al iniciar sesión."));
+                ? Tr.T("Ogs.WrongCredentials")
+                : Tr.F("Ogs.LoginHttpError", (int)response.StatusCode));
         }
 
         OgsSession session = ParseConfig(text)
-            ?? throw new OgsAuthException("OGS no devolvió los datos del usuario tras iniciar sesión (¿verificación en dos pasos o SSO?).");
+            ?? throw new OgsAuthException(Tr.T("Ogs.NoUserAfterLogin"));
         SetSession(session);
         return session;
     }
@@ -321,7 +322,7 @@ public sealed class OgsAuthService : IOgsCredentials
     {
         if (_refreshToken is null || _options.ClientId is null)
         {
-            throw new OgsAuthException("No hay token de actualización.");
+            throw new OgsAuthException(Tr.T("Ogs.NoRefreshToken"));
         }
 
         await RequestTokensAsync(
@@ -343,7 +344,7 @@ public sealed class OgsAuthService : IOgsCredentials
         {
             string error = TryGetString(text, "error") ?? ((int)response.StatusCode).ToString(CultureInfo.InvariantCulture);
             _logger.LogWarning("OGS token request ({Grant}) failed: {Error}", form["grant_type"], error);
-            throw new OgsAuthException($"OGS rechazó la solicitud de token ({error}).");
+            throw new OgsAuthException(Tr.F("Ogs.TokenRejected", error));
         }
 
         using JsonDocument doc = JsonDocument.Parse(text);
@@ -367,7 +368,7 @@ public sealed class OgsAuthService : IOgsCredentials
         using HttpResponseMessage response = await _http.SendAsync(request, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
-            throw new OgsAuthException(string.Create(CultureInfo.InvariantCulture, $"OGS respondió {(int)response.StatusCode} al pedir ui/config."));
+            throw new OgsAuthException(Tr.F("Ogs.ConfigHttpError", (int)response.StatusCode));
         }
 
         OgsSession? session = ParseConfig(await response.Content.ReadAsStringAsync(cancellationToken));
