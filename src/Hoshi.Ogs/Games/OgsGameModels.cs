@@ -1,5 +1,6 @@
 using System.Globalization;
 using Hoshi.Core;
+using Hoshi.Core.Localization;
 
 namespace Hoshi.Ogs.Games;
 
@@ -142,22 +143,22 @@ public sealed record OgsGameResult(Stone Winner, string Outcome, double? BlackSc
         return number.Length > 0 ? $"{w}+{number}" : w + "+F";
     }
 
-    /// <summary>Spanish summary for the UI.</summary>
+    /// <summary>Localized summary for the UI.</summary>
     public string Describe()
     {
         if (Winner == Stone.Empty)
         {
-            return "Partida anulada";
+            return Tr.T("Ogs.Result.Annulled");
         }
 
-        string who = Winner == Stone.Black ? "Ganan negras" : "Ganan blancas";
+        string who = Tr.T(Winner == Stone.Black ? "Ogs.Result.BlackWins" : "Ogs.Result.WhiteWins");
         string sgf = ToSgf();
         return sgf[2..] switch
         {
-            "R" => $"{who} por abandono",
-            "T" => $"{who} por tiempo",
+            "R" => Tr.F("Ogs.Result.ByResignation", who),
+            "T" => Tr.F("Ogs.Result.ByTime", who),
             "F" => $"{who} ({Outcome})",
-            var points => $"{who} por {points} puntos",
+            var points => Tr.F("Ogs.Result.ByPoints", who, points),
         };
     }
 }

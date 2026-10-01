@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using Hoshi.Core;
+using Hoshi.Core.Localization;
 
 namespace Hoshi.Ogs;
 
@@ -73,12 +74,12 @@ internal static class OgsJson
         string system = String(tc, "system") ?? String(tc, "time_control") ?? "?";
         return system switch
         {
-            "byoyomi" => $"byoyomi {Clock(Double(tc, "main_time"))} + {Long(tc, "periods") ?? 0}×{Seconds(Double(tc, "period_time"))}",
-            "fischer" => $"fischer {Clock(Double(tc, "initial_time"))} + {Seconds(Double(tc, "time_increment"))} (máx. {Clock(Double(tc, "max_time"))})",
-            "canadian" => $"canadiense {Clock(Double(tc, "main_time"))} + {Clock(Double(tc, "period_time"))}/{Long(tc, "stones_per_period") ?? 0}",
-            "simple" => $"simple {Seconds(Double(tc, "per_move"))}/jugada",
-            "absolute" => $"absoluto {Clock(Double(tc, "total_time"))}",
-            "none" => "sin límite",
+            "byoyomi" => Tr.F("Ogs.Time.Byoyomi", Clock(Double(tc, "main_time")), Long(tc, "periods") ?? 0, Seconds(Double(tc, "period_time"))),
+            "fischer" => Tr.F("Ogs.Time.Fischer", Clock(Double(tc, "initial_time")), Seconds(Double(tc, "time_increment")), Clock(Double(tc, "max_time"))),
+            "canadian" => Tr.F("Ogs.Time.Canadian", Clock(Double(tc, "main_time")), Clock(Double(tc, "period_time")), Long(tc, "stones_per_period") ?? 0),
+            "simple" => Tr.F("Ogs.Time.Simple", Seconds(Double(tc, "per_move"))),
+            "absolute" => Tr.F("Ogs.Time.Absolute", Clock(Double(tc, "total_time"))),
+            "none" => Tr.T("Ogs.Time.None"),
             _ => system,
         };
     }

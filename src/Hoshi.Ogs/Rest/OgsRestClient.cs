@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Hoshi.Ogs.Auth;
+using Hoshi.Core.Localization;
 
 namespace Hoshi.Ogs.Rest;
 
@@ -129,6 +130,6 @@ public sealed class OgsRestClient
             // Not JSON (HTML error page, etc.).
         }
 
-        return string.Create(CultureInfo.InvariantCulture, $"OGS respondió {(int)status} {status}.");
+        return Tr.F("Ogs.HttpStatus", (int)status, status);
     }
 }
