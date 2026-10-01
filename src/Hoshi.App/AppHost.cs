@@ -41,6 +41,7 @@ public static class AppHost
     /// <summary>Registers the application's own services, view models and views.</summary>
     public static IServiceCollection AddAppServices(this IServiceCollection services)
     {
+        services.AddSingleton<IHostLifetime, DesktopLifetime>();
         services.AddSingleton<IFileDialogService, AvaloniaFileDialogService>();
         services.AddSingleton<IDialogService, AvaloniaDialogService>();
         services.AddSingleton<ISettingsService, JsonSettingsService>();
