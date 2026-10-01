@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Hoshi.App.Services;
 using Hoshi.Core;
+using Hoshi.Core.Localization;
 using Hoshi.Ogs;
 using Hoshi.Ogs.Auth;
 using Hoshi.Ogs.Realtime;
@@ -26,8 +27,8 @@ public sealed record ActiveGameItem(OgsActiveGame Game, string Opponent, string 
 {
     public string TurnText => Game.Phase switch
     {
-        "play" => IsMyTurn ? "Tu turno" : "Turno rival",
-        "stone removal" => "Conteo",
+        "play" => Tr.T(IsMyTurn ? "Lobby.YourTurn" : "Lobby.TheirTurn"),
+        "stone removal" => Tr.T("Lobby.Scoring"),
         _ => Game.Phase,
     };
 }
@@ -51,7 +52,7 @@ public sealed record OpenChallengeItem(OgsOpenChallenge Challenge, bool IsOwn)
 
             if (Challenge.Ranked)
             {
-                parts.Add("clasificatoria");
+                parts.Add(Tr.T("Lobby.Ranked"));
             }
 
             return string.Join(" · ", parts);
@@ -91,7 +92,7 @@ public sealed partial class LobbyViewModel : ViewModelBase
     private string? _statusMessage;
 
     [ObservableProperty]
-    private string _connectionText = "Sin conexión";
+    private string _connectionText = Tr.T("Lobby.Offline");
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SignInCommand))]
@@ -141,7 +142,7 @@ public sealed partial class LobbyViewModel : ViewModelBase
         _ogs.OpenChallengesChanged += (_, _) => _ui.Post(RefreshOpenChallenges);
         _ogs.ServerChanged += (_, _) => _ui.Post(OnServerChanged);
         Servers = [.. ogs.Servers.Select(o => new ServerChoice(
-            o.IsProduction ? "online-go.com" : $"{o.BaseUrl.Host} (pruebas)", o))];
+            o.IsProduction ? "online-go.com" : Tr.F("Lobby.TestServer", o.BaseUrl.Host), o))];
         UpdateConnectionText();
     }
 
@@ -156,25 +157,25 @@ public sealed partial class LobbyViewModel : ViewModelBase
 
     public IReadOnlyList<TimePreset> TimePresets { get; } =
     [
-        new("Blitz · 30 s + 5×10 s", TimeControlSettings.ByoYomi(TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(10), 5)),
-        new("En vivo · 10 min + 5×30 s", TimeControlSettings.ByoYomi(TimeSpan.FromMinutes(10), TimeSpan.FromSeconds(30), 5)),
-        new("En vivo · Fischer 5 min + 10 s", TimeControlSettings.Fischer(TimeSpan.FromMinutes(5), TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(10))),
-        new("Correspondencia · 3 días + 1 día", TimeControlSettings.Fischer(TimeSpan.FromDays(3), TimeSpan.FromDays(1), TimeSpan.FromDays(7))),
+        new(Tr.T("Lobby.Time.Blitz"), TimeControlSettings.ByoYomi(TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(10), 5)),
+        new(Tr.T("Lobby.Time.Live"), TimeControlSettings.ByoYomi(TimeSpan.FromMinutes(10), TimeSpan.FromSeconds(30), 5)),
+        new(Tr.T("Lobby.Time.LiveFischer"), TimeControlSettings.Fischer(TimeSpan.FromMinutes(5), TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(10))),
+        new(Tr.T("Lobby.Time.Correspondence"), TimeControlSettings.Fischer(TimeSpan.FromDays(3), TimeSpan.FromDays(1), TimeSpan.FromDays(7))),
     ];
 
     public IReadOnlyList<ColorChoice> Colors { get; } =
     [
-        new("Automático", ChallengeColor.Automatic),
-        new("Negras", ChallengeColor.Black),
-        new("Blancas", ChallengeColor.White),
-        new("Aleatorio", ChallengeColor.Random),
+        new(Tr.T("Lobby.Color.Automatic"), ChallengeColor.Automatic),
+        new(Tr.T("Common.Black"), ChallengeColor.Black),
+        new(Tr.T("Common.White"), ChallengeColor.White),
+        new(Tr.T("Lobby.Color.Random"), ChallengeColor.Random),
     ];
 
     public IReadOnlyList<RulesChoice> RulesChoices { get; } =
     [
-        new("Japonesas", RuleSet.Japanese),
-        new("Chinas", RuleSet.Chinese),
-        new("Coreanas", RuleSet.Korean),
+        new(Tr.T("Lobby.Rules.Japanese"), RuleSet.Japanese),
+        new(Tr.T("Lobby.Rules.Chinese"), RuleSet.Chinese),
+        new(Tr.T("Lobby.Rules.Korean"), RuleSet.Korean),
         new("AGA", RuleSet.Aga),
     ];
 
@@ -255,7 +256,7 @@ public sealed partial class LobbyViewModel : ViewModelBase
             }
             else
             {
-                StatusMessage = "Autoriza a Hoshi en la ventana del navegador…";
+                StatusMessage = Tr.T("Lobby.AuthorizeInBrowser");
                 await _ogs.SignInWithBrowserAsync(OgsLoginProvider.Ogs, ct);
             }
 
@@ -280,11 +281,11 @@ public sealed partial class LobbyViewModel : ViewModelBase
             {
                 // Beta cannot do OAuth: Google sign-in always goes to the server that supports it.
                 ServerChoice oauth = Servers.FirstOrDefault(s => s.Options.AuthMode == OgsAuthMode.OAuth)
-                    ?? throw new InvalidOperationException("No hay ningún servidor con inicio de sesión por navegador.");
+                    ?? throw new InvalidOperationException(Tr.T("Lobby.NoBrowserServer"));
                 SelectedServer = oauth;
             }
 
-            StatusMessage = "Entra con Google en el navegador y autoriza a Hoshi…";
+            StatusMessage = Tr.T("Lobby.GoogleInBrowser");
             await _ogs.SignInWithBrowserAsync(OgsLoginProvider.Google, ct);
             Session = _ogs.Session;
             StatusMessage = null;
@@ -307,7 +308,7 @@ public sealed partial class LobbyViewModel : ViewModelBase
             Session = null;
             ActiveGames.Clear();
             OpenChallenges.Clear();
-            StatusMessage = "Sesión cerrada.";
+            StatusMessage = Tr.T("Lobby.SignedOut");
         });
     }
 
@@ -349,8 +350,8 @@ public sealed partial class LobbyViewModel : ViewModelBase
 
         long gameId = await _ogs.AcceptChallengeAsync(item.Challenge.ChallengeId, ct);
         StatusMessage = gameId > 0
-            ? string.Create(CultureInfo.InvariantCulture, $"Desafío aceptado: partida #{gameId}.")
-            : "Desafío aceptado.";
+            ? Tr.F("Lobby.AcceptedGame", gameId)
+            : Tr.T("Lobby.Accepted");
         if (gameId > 0)
         {
             GameStarted?.Invoke(this, gameId);
@@ -370,10 +371,10 @@ public sealed partial class LobbyViewModel : ViewModelBase
             if (opponent.Length > 0)
             {
                 OgsUser user = await _ogs.FindPlayerAsync(opponent, ct)
-                    ?? throw new OgsApiException(System.Net.HttpStatusCode.NotFound, $"No existe el usuario «{opponent}» en {ServerName}.");
+                    ?? throw new OgsApiException(System.Net.HttpStatusCode.NotFound, Tr.F("Lobby.NoSuchUser", opponent, ServerName));
                 if (user.Id == Session?.User.Id)
                 {
-                    throw new OgsApiException(System.Net.HttpStatusCode.BadRequest, "No puedes desafiarte a ti mismo.");
+                    throw new OgsApiException(System.Net.HttpStatusCode.BadRequest, Tr.T("Lobby.CannotChallengeSelf"));
                 }
 
                 opponentId = user.Id;
@@ -389,7 +390,7 @@ public sealed partial class LobbyViewModel : ViewModelBase
 
         if (!created.IsLive)
         {
-            StatusMessage = string.Create(CultureInfo.InvariantCulture, $"Desafío #{created.ChallengeId} creado. Ya es visible en {ServerName}.");
+            StatusMessage = Tr.F("Lobby.ChallengeCreated", created.ChallengeId, ServerName);
             return;
         }
 
@@ -425,7 +426,7 @@ public sealed partial class LobbyViewModel : ViewModelBase
         }
 
         await RunAsync(ct => _ogs.CancelChallengeAsync(challenge.ChallengeId, ct));
-        StatusMessage ??= "Desafío cancelado.";
+        StatusMessage ??= Tr.T("Lobby.ChallengeCancelled");
     }
 
     private async Task WaitForOpponentAsync(CreatedChallenge created)
@@ -434,7 +435,7 @@ public sealed partial class LobbyViewModel : ViewModelBase
         using var cts = new CancellationTokenSource();
         _waitCts = cts;
         IsWaiting = true;
-        WaitingText = string.Create(CultureInfo.InvariantCulture, $"Esperando rival para el desafío #{created.ChallengeId}…");
+        WaitingText = Tr.F("Lobby.WaitingFor", created.ChallengeId);
         StatusMessage = null;
         try
         {
@@ -442,7 +443,7 @@ public sealed partial class LobbyViewModel : ViewModelBase
             if (started)
             {
                 _waiting = null;
-                StatusMessage = string.Create(CultureInfo.InvariantCulture, $"¡Partida #{created.GameId} iniciada!");
+                StatusMessage = Tr.F("Lobby.GameStarted", created.GameId);
                 GameStarted?.Invoke(this, created.GameId);
             }
         }
@@ -487,11 +488,11 @@ public sealed partial class LobbyViewModel : ViewModelBase
 
     private void UpdateConnectionText() => ConnectionText = _ogs.ConnectionState switch
     {
-        OgsConnectionState.Connected => "Conectado",
-        OgsConnectionState.Connecting => "Conectando…",
-        OgsConnectionState.Reconnecting => "Reconectando…",
-        OgsConnectionState.Failed => "Conexión rechazada por el servidor",
-        _ => "Sin conexión",
+        OgsConnectionState.Connected => Tr.T("Lobby.Connected"),
+        OgsConnectionState.Connecting => Tr.T("Lobby.Connecting"),
+        OgsConnectionState.Reconnecting => Tr.T("Lobby.Reconnecting"),
+        OgsConnectionState.Failed => Tr.T("Lobby.ConnectionRejected"),
+        _ => Tr.T("Lobby.Offline"),
     };
 
     /// <summary>Runs an OGS call with the busy flag and turns failures into a user-facing message.</summary>
@@ -514,11 +515,11 @@ public sealed partial class LobbyViewModel : ViewModelBase
         catch (HttpRequestException ex)
         {
             _logger.LogWarning("OGS request failed: {Error}", ex.Message);
-            ErrorMessage = $"No se pudo conectar con {ServerName}.";
+            ErrorMessage = Tr.F("Lobby.CouldNotConnect", ServerName);
         }
         catch (TaskCanceledException)
         {
-            ErrorMessage = $"{ServerName} tardó demasiado en responder.";
+            ErrorMessage = Tr.F("Lobby.Timeout", ServerName);
         }
         catch (InvalidOperationException ex)
         {

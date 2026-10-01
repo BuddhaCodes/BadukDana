@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Hoshi.App.Themes;
 using Hoshi.Core;
+using Hoshi.Core.Localization;
 
 namespace Hoshi.App.ViewModels;
 
@@ -31,6 +32,9 @@ public sealed partial class ThemeCard : ObservableObject
 
     public Avalonia.Media.FontFamily TitleFont => new(Theme.TitleFont);
 }
+
+/// <summary>A user interface language choice ("en", "es") with its own name.</summary>
+public sealed record LanguageOption(string Code, string Name);
 
 /// <summary>Preferences: theme and animations, and the KataGo analysis engine. Changes apply immediately and are saved.</summary>
 public sealed partial class PreferencesViewModel : ViewModelBase
@@ -86,6 +90,9 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     [ObservableProperty]
     private bool _animations;
 
+    [ObservableProperty]
+    private LanguageOption _selectedLanguage;
+
     public PreferencesViewModel(
         ThemeService themes,
         Services.ISettingsService? settings = null,
@@ -114,12 +121,30 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             _musicVolume = s.MusicVolume;
         }
 
-        _engineStatus = engine?.Problem ?? (engine is null ? null : "KataGo configurado.");
+        string language = Tr.Normalize(settings?.Current.Language ?? Tr.English);
+        _selectedLanguage = LanguageOptions.First(l => l.Code == language);
+        _engineStatus = engine?.Problem ?? (engine is null ? null : Tr.T("Prefs.EngineConfigured"));
         Cards = [.. themes.Themes.Select(t => new ThemeCard(t))];
         _selected = Cards.First(c => c.Theme.Id == themes.Current.Id);
         _selected.IsSelected = true;
         _animations = themes.Animations;
         _loaded = true;
+    }
+
+    public IReadOnlyList<LanguageOption> LanguageOptions { get; } = [new("en", "English"), new("es", "Español")];
+
+    partial void OnSelectedLanguageChanged(LanguageOption value)
+    {
+        if (value is null)
+        {
+            return;
+        }
+
+        Tr.SetLanguage(value.Code);
+        if (_loaded && _settings is not null)
+        {
+            _settings.Save(_settings.Current with { Language = value.Code });
+        }
     }
 
     /// <summary>Folder where the user can put their own impact_small / explosion_medium / explosion_big (.wav or .mp3).</summary>
@@ -193,13 +218,13 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     partial void OnAnimationsChanged(bool value) => _themes.Select(Selected.Theme, value);
 
     [CommunityToolkit.Mvvm.Input.RelayCommand]
-    private async Task BrowseExecutable() => KataGoExecutable = await Pick("Ejecutable de KataGo (katago / katago.exe)") ?? KataGoExecutable;
+    private async Task BrowseExecutable() => KataGoExecutable = await Pick(Tr.T("Prefs.PickExecutable")) ?? KataGoExecutable;
 
     [CommunityToolkit.Mvvm.Input.RelayCommand]
-    private async Task BrowseModel() => KataGoModel = await Pick("Red neuronal de KataGo (.bin.gz)") ?? KataGoModel;
+    private async Task BrowseModel() => KataGoModel = await Pick(Tr.T("Prefs.PickModel")) ?? KataGoModel;
 
     [CommunityToolkit.Mvvm.Input.RelayCommand]
-    private async Task BrowseConfig() => KataGoConfig = await Pick("Configuración de análisis (analysis_example.cfg)") ?? KataGoConfig;
+    private async Task BrowseConfig() => KataGoConfig = await Pick(Tr.T("Prefs.PickConfig")) ?? KataGoConfig;
 
     /// <summary>Saves the engine settings and restarts KataGo with them.</summary>
     [CommunityToolkit.Mvvm.Input.RelayCommand]
@@ -219,7 +244,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         };
         _settings.Save(updated);
         _engine?.Reconfigure(updated);
-        EngineStatus = _engine?.Problem ?? "Guardado. KataGo arrancará con el primer análisis.";
+        EngineStatus = _engine?.Problem ?? Tr.T("Prefs.EngineSaved");
     }
 
     /// <summary>Saves, then asks KataGo for a quick analysis of an empty 9×9 board.</summary>
@@ -233,9 +258,9 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         }
 
         IsTesting = true;
-        EngineStatus = "Probando KataGo…";
+        EngineStatus = Tr.T("Prefs.TestingEngine");
         void ShowActivity(object? sender, EventArgs e) =>
-            Avalonia.Threading.Dispatcher.UIThread.Post(() => EngineStatus = _engine.Activity ?? "Probando KataGo…");
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => EngineStatus = _engine.Activity ?? Tr.T("Prefs.TestingEngine"));
         _engine.ActivityChanged += ShowActivity;
         try
         {
@@ -244,12 +269,12 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             IReadOnlyList<Hoshi.Engines.KataGo.TurnAnalysis> r = await _engine.AnalyzeAsync(
                 new Hoshi.Engines.KataGo.AnalysisQuery { Width = 9, Height = 9, Komi = 7, MaxVisits = 16, IncludeOwnership = false },
                 timeout.Token);
-            string best = r[0].Best?.Point is { } p ? p.ToHuman(9) : "pase";
-            EngineStatus = $"KataGo funciona: en 9×9 vacío propone {best}.";
+            string best = r[0].Best?.Point is { } p ? p.ToHuman(9) : Tr.T("Game.PassNoun");
+            EngineStatus = Tr.F("Prefs.EngineWorks", best);
         }
         catch (Exception ex) when (ex is Hoshi.Engines.KataGo.EngineException or OperationCanceledException)
         {
-            EngineStatus = ex is OperationCanceledException ? "KataGo no respondió a tiempo." : ex.Message;
+            EngineStatus = ex is OperationCanceledException ? Tr.T("Prefs.EngineTimeout") : ex.Message;
         }
         finally
         {

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Hoshi.Engines.KataGo;
+using Hoshi.Core.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -168,7 +169,7 @@ public sealed class MusicService : IMusicService, IDisposable
         }
         catch (Exception ex) when (ex is IOException or InvalidOperationException or ObjectDisposedException)
         {
-            Problem = "La música se detuvo: " + ex.Message;
+            Problem = Tr.F("Music.Stopped", ex.Message);
             _logger.LogWarning(ex, "Music stopped");
         }
         finally

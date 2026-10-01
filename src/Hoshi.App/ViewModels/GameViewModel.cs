@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Hoshi.App.Services;
 using Hoshi.Core;
+using Hoshi.Core.Localization;
 using Hoshi.Sgf;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -114,13 +115,13 @@ public sealed partial class GameViewModel : ViewModelBase
 
     public int MoveNumber => _cursor.MoveNumber;
 
-    public string MoveNumberText => $"Jugada {MoveNumber}";
+    public string MoveNumberText => Tr.F("Game.MoveNumber", MoveNumber);
 
-    public string CapturesText => $"Capturas ● {Board.BlackCaptures} · ○ {Board.WhiteCaptures}";
+    public string CapturesText => Tr.F("Game.Captures", Board.BlackCaptures, Board.WhiteCaptures);
 
-    public string BlackName => PlayerName(Tree.Info.BlackPlayer, Tree.Info.BlackRank, "Negras");
+    public string BlackName => PlayerName(Tree.Info.BlackPlayer, Tree.Info.BlackRank, Tr.T("Common.Black"));
 
-    public string WhiteName => PlayerName(Tree.Info.WhitePlayer, Tree.Info.WhiteRank, "Blancas");
+    public string WhiteName => PlayerName(Tree.Info.WhitePlayer, Tree.Info.WhiteRank, Tr.T("Common.White"));
 
     public bool IsBlackToMove => Board.ToMove == Stone.Black;
 
@@ -128,7 +129,7 @@ public sealed partial class GameViewModel : ViewModelBase
     public string HeaderTitle =>
         Tree.Info.GameName is { Length: > 0 } n ? n
         : FilePath is not null ? System.IO.Path.GetFileNameWithoutExtension(FilePath)
-        : "Nueva partida";
+        : Tr.T("Game.NewGame");
 
     /// <summary>Sidebar header details, e.g. "19×19 · reglas japonesas · komi 6.5 · B+R".</summary>
     public string HeaderSubtitle
@@ -138,16 +139,16 @@ public sealed partial class GameViewModel : ViewModelBase
             var parts = new List<string> { string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{Board.Width}×{Board.Height}") };
             if (Tree.Info.Rules is { } rules)
             {
-                parts.Add("reglas " + rules.Name switch
+                parts.Add(Tr.F("Game.Rules", rules.Name switch
                 {
-                    "japanese" => "japonesas",
-                    "chinese" => "chinas",
-                    "korean" => "coreanas",
+                    "japanese" => Tr.T("Game.Rules.Japanese"),
+                    "chinese" => Tr.T("Game.Rules.Chinese"),
+                    "korean" => Tr.T("Game.Rules.Korean"),
                     "aga" => "AGA",
-                    "nz" => "neozelandesas",
+                    "nz" => Tr.T("Game.Rules.NewZealand"),
                     "ing" => "Ing",
                     var other => other,
-                });
+                }));
             }
 
             if (Tree.Info.Komi is { } komi)
@@ -174,7 +175,7 @@ public sealed partial class GameViewModel : ViewModelBase
         && _cursor.Current.Parent?.GetMove(_cursor.BoardSize) is { IsPass: true };
 
     public string Title => Online is { } o ? $"{o.Title} — Hoshi" :
-        $"{(FilePath is null ? "Sin título" : System.IO.Path.GetFileName(FilePath))}{(IsDirty ? " *" : string.Empty)} — Hoshi";
+        $"{(FilePath is null ? Tr.T("Game.Untitled") : System.IO.Path.GetFileName(FilePath))}{(IsDirty ? " *" : string.Empty)} — Hoshi";
 
     public string? Comment
     {
@@ -205,17 +206,17 @@ public sealed partial class GameViewModel : ViewModelBase
 
             if (IsEditMode)
             {
-                return $"Modo edición · {ToolName(EditTool)}";
+                return Tr.F("Game.EditMode", ToolName(EditTool));
             }
 
             if (IsGameOver)
             {
-                return "Partida terminada: dos pases seguidos";
+                return Tr.T("Game.OverTwoPasses");
             }
 
             return _cursor.Current.GetMove(_cursor.BoardSize) is { IsPass: true } pass
-                ? $"{Name(pass.Color)} pasa · juegan {Name(Board.ToMove).ToLowerInvariant()}"
-                : $"Juegan {Name(Board.ToMove).ToLowerInvariant()}";
+                ? Tr.F("Game.Passed", Name(pass.Color), Tr.T(Board.ToMove == Stone.Black ? "Game.BlackToPlayAfterPass" : "Game.WhiteToPlayAfterPass"))
+                : Tr.T(Board.ToMove == Stone.Black ? "Game.BlackToPlay" : "Game.WhiteToPlay");
         }
     }
 
@@ -361,7 +362,7 @@ public sealed partial class GameViewModel : ViewModelBase
         MoveResult result = _cursor.Play(point);
         if (!result.IsLegal)
         {
-            SetStatus($"Jugada ilegal en {point.ToHuman(Board.Height)}: {Describe(result.Reason)}");
+            SetStatus(Tr.F("Game.IllegalMove", point.ToHuman(Board.Height), Describe(result.Reason)));
             return;
         }
 
@@ -514,7 +515,7 @@ public sealed partial class GameViewModel : ViewModelBase
             SgfParseResult parsed = SgfParser.ParseCollection(data);
             if (parsed.Games.Count == 0)
             {
-                throw new FormatException("El archivo no contiene ninguna partida SGF.");
+                throw new FormatException(Tr.T("Game.NoSgfGame"));
             }
 
             Online?.LeaveCommand.Execute(null);
@@ -525,8 +526,8 @@ public sealed partial class GameViewModel : ViewModelBase
             if (warnings > 0 || parsed.Games.Count > 1)
             {
                 SetStatus(parsed.Games.Count > 1
-                    ? $"Abierta la primera de {parsed.Games.Count} partidas del archivo"
-                    : $"Archivo abierto con {warnings} advertencia(s)");
+                    ? Tr.F("Game.OpenedFirstOf", parsed.Games.Count)
+                    : Tr.F("Game.OpenedWithWarnings", warnings));
             }
 
             return true;
@@ -536,10 +537,10 @@ public sealed partial class GameViewModel : ViewModelBase
             _logger.LogWarning(ex, "Could not open {File}", System.IO.Path.GetFileName(path));
             if (_dialogs is not null)
             {
-                await _dialogs.ShowErrorAsync("No se pudo abrir el archivo", ex.Message);
+                await _dialogs.ShowErrorAsync(Tr.T("Game.CouldNotOpenFile"), ex.Message);
             }
 
-            SetStatus("No se pudo abrir el archivo");
+            SetStatus(Tr.T("Game.CouldNotOpenFile"));
             return false;
         }
     }
@@ -572,7 +573,7 @@ public sealed partial class GameViewModel : ViewModelBase
         await File.WriteAllBytesAsync(path, SgfWriter.WriteBytes(Tree));
         FilePath = path;
         IsDirty = false;
-        SetStatus($"Guardado {System.IO.Path.GetFileName(path)}");
+        SetStatus(Tr.F("Game.Saved", System.IO.Path.GetFileName(path)));
     }
 
     [RelayCommand]
@@ -614,7 +615,7 @@ public sealed partial class GameViewModel : ViewModelBase
 
     private async Task<bool> ConfirmDiscardAsync() =>
         !IsDirty || _dialogs is null
-        || await _dialogs.ConfirmAsync("Cambios sin guardar", "La partida tiene cambios sin guardar. ¿Descartarlos?");
+        || await _dialogs.ConfirmAsync(Tr.T("Dialog.UnsavedChanges"), Tr.T("Game.DiscardChanges"));
 
     private void ApplyTool(Point point)
     {
@@ -763,8 +764,8 @@ public sealed partial class GameViewModel : ViewModelBase
 
     private string SuggestedFileName()
     {
-        string b = Tree.Info.BlackPlayer ?? "Negras";
-        string w = Tree.Info.WhitePlayer ?? "Blancas";
+        string b = Tree.Info.BlackPlayer ?? Tr.T("Common.Black");
+        string w = Tree.Info.WhitePlayer ?? Tr.T("Common.White");
         string name = $"{b} vs {w}.sgf";
         return string.Concat(name.Select(c => System.IO.Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
     }
@@ -772,26 +773,26 @@ public sealed partial class GameViewModel : ViewModelBase
     private static string PlayerName(string? name, string? rank, string fallback) =>
         string.IsNullOrWhiteSpace(name) ? fallback : string.IsNullOrWhiteSpace(rank) ? name : $"{name} {rank}";
 
-    private static string Name(Stone color) => color == Stone.Black ? "Negras" : "Blancas";
+    private static string Name(Stone color) => Tr.T(color == Stone.Black ? "Common.Black" : "Common.White");
 
     private static string ToolName(EditTool tool) => tool switch
     {
-        EditTool.BlackStone => "piedra negra",
-        EditTool.WhiteStone => "piedra blanca",
-        EditTool.Triangle => "triángulo",
-        EditTool.Square => "cuadrado",
-        EditTool.Circle => "círculo",
-        EditTool.Cross => "cruz",
-        _ => "etiqueta",
+        EditTool.BlackStone => Tr.T("Game.Tool.BlackStone"),
+        EditTool.WhiteStone => Tr.T("Game.Tool.WhiteStone"),
+        EditTool.Triangle => Tr.T("Game.Tool.Triangle"),
+        EditTool.Square => Tr.T("Game.Tool.Square"),
+        EditTool.Circle => Tr.T("Game.Tool.Circle"),
+        EditTool.Cross => Tr.T("Game.Tool.Cross"),
+        _ => Tr.T("Game.Tool.Label"),
     };
 
     private static string Describe(IllegalMoveReason? reason) => reason switch
     {
-        IllegalMoveReason.Occupied => "punto ocupado",
-        IllegalMoveReason.Suicide => "suicidio",
+        IllegalMoveReason.Occupied => Tr.T("Game.Illegal.Occupied"),
+        IllegalMoveReason.Suicide => Tr.T("Game.Illegal.Suicide"),
         IllegalMoveReason.Ko => "ko",
-        IllegalMoveReason.Superko => "superko (repite una posición)",
-        IllegalMoveReason.OutOfBounds => "fuera del tablero",
-        _ => "no permitida",
+        IllegalMoveReason.Superko => Tr.T("Game.Illegal.Superko"),
+        IllegalMoveReason.OutOfBounds => Tr.T("Game.Illegal.OutOfBounds"),
+        _ => Tr.T("Game.Illegal.Other"),
     };
 }

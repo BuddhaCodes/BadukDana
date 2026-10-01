@@ -1,4 +1,5 @@
 using Hoshi.Engines.KataGo;
+using Hoshi.Core.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -73,7 +74,7 @@ public sealed class AnalysisEngineHost : IAnalysisEngine, IAsyncDisposable
         _engine = null;
         _options = options;
         Problem = string.IsNullOrWhiteSpace(settings.KataGoExecutable)
-            ? "KataGo no está configurado (☰ → Preferencias → Análisis)."
+            ? Tr.T("Engine.NotConfigured")
             : options.Validate();
         if (Problem is null)
         {
@@ -97,7 +98,7 @@ public sealed class AnalysisEngineHost : IAnalysisEngine, IAsyncDisposable
 
     private async Task<IReadOnlyList<TurnAnalysis>> RunAsync(AnalysisQuery query, Action<TurnAnalysis>? onUpdate, CancellationToken cancellationToken)
     {
-        KataGoAnalysisEngine engine = _engine ?? throw new EngineException(Problem ?? "KataGo no está disponible.");
+        KataGoAnalysisEngine engine = _engine ?? throw new EngineException(Problem ?? Tr.T("Engine.Unavailable"));
         IReadOnlyList<TurnAnalysis> result = await engine.AnalyzeAsync(
             query,
             cancellationToken,

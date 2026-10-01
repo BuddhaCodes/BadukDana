@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Hoshi.App.Services;
 using Hoshi.Core;
+using Hoshi.Core.Localization;
 using Hoshi.Engines.KataGo;
 using Hoshi.Sgf;
 
@@ -149,28 +150,28 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     public bool IsWarmingUp => IsEngineActive && !_engineReady && Error is null;
 
     public string WarmupText => _engine?.Activity is { } activity
-        ? activity.Replace("KataGo está ", string.Empty, StringComparison.Ordinal) is var a && a.Length > 0 ? char.ToUpperInvariant(a[0]) + a[1..] : activity
-        : "Despertando a KataGo…";
+        ? activity.Replace(Tr.T("Analysis.EnginePrefix"), string.Empty, StringComparison.Ordinal) is var a && a.Length > 0 ? char.ToUpperInvariant(a[0]) + a[1..] : activity
+        : Tr.T("Analysis.WakingUp");
 
     public bool IsTerritoryActive => IsTerritoryOn && !IsBlocked;
 
     public bool HasEngine => _engine is not null && _engine.Problem is null;
 
     public string StatusText =>
-        IsBlocked && (IsAnalysisOn || IsTerritoryOn) ? "Análisis desactivado mientras juegas en OGS (sus normas no permiten ayuda de IA)."
+        IsBlocked && (IsAnalysisOn || IsTerritoryOn) ? Tr.T("Analysis.BlockedOnline")
         : !IsAnalysisOn ? string.Empty
         : _engine?.Problem is { } problem ? problem
         : Error is { } e ? e
         : IsBusy ? _engine?.Activity ?? (Analysis is { } a
-            ? string.Create(CultureInfo.InvariantCulture, $"Analizando en vivo · {a.Visits} visitas")
-            : "Analizando…")
+            ? Tr.F("Analysis.LiveVisits", a.Visits)
+            : Tr.T("Analysis.Analyzing"))
         : string.Empty;
 
     /// <summary>"Negras 62 %" from the engine's winrate.</summary>
     public string WinrateText => Analysis is { } a
         ? a.Winrate >= 0.5
-            ? string.Create(CultureInfo.InvariantCulture, $"Negras {a.Winrate * 100:0} %")
-            : string.Create(CultureInfo.InvariantCulture, $"Blancas {(1 - a.Winrate) * 100:0} %")
+            ? Tr.F("Analysis.WinrateBlack", a.Winrate * 100)
+            : Tr.F("Analysis.WinrateWhite", (1 - a.Winrate) * 100)
         : string.Empty;
 
     public double BlackWinrate => Analysis?.Winrate ?? 0.5;
@@ -191,13 +192,13 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     };
 
     public string BestText => Assessment is { Quality: not MoveQuality.Best } m
-        ? $"Mejor: {Name(new EngineMove(m.Played.Color, m.Best.Point))} · {FormatLead(m.Best.ScoreLead)}"
-        : Analysis?.Best is { } best ? $"Siguiente sugerida: {Name(new EngineMove(Analysis.ToMove, best.Point))}" : string.Empty;
+        ? Tr.F("Analysis.Best", Name(new EngineMove(m.Played.Color, m.Best.Point)), FormatLead(m.Best.ScoreLead))
+        : Analysis?.Best is { } best ? Tr.F("Analysis.NextSuggested", Name(new EngineMove(Analysis.ToMove, best.Point))) : string.Empty;
 
     /// <summary>"Territorio: N 23 (+12) · B 19 (+9) → N+3.5".</summary>
     public string TerritoryText => Territory is { } t
-        ? string.Create(CultureInfo.InvariantCulture,
-            $"Negras {t.BlackSecure + t.DeadWhite} (+{t.BlackPotential:0}) · Blancas {t.WhiteSecure + t.DeadBlack} (+{t.WhitePotential:0}) · {FormatLead(t.Lead)}{(t.Source == EstimateSource.Heuristic ? " (estimación rápida)" : " (KataGo)")}")
+        ? Tr.F("Analysis.Territory", t.BlackSecure + t.DeadWhite, t.BlackPotential, t.WhiteSecure + t.DeadBlack, t.WhitePotential, FormatLead(t.Lead))
+            + (t.Source == EstimateSource.Heuristic ? Tr.T("Analysis.QuickEstimate") : " (KataGo)")
         : string.Empty;
 
     [RelayCommand]
@@ -567,21 +568,21 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     }
 
     private string Name(EngineMove m) =>
-        (m.Color == Stone.Black ? "N " : "B ") + (m.Point is { } p ? p.ToHuman(_game.Board.Height) : "pase");
+        (m.Color == Stone.Black ? Tr.T("Game.BlackShort") : Tr.T("Game.WhiteShort")) + " " + (m.Point is { } p ? p.ToHuman(_game.Board.Height) : Tr.T("Game.PassNoun"));
 
     private static string QualityName(MoveQuality q) => q switch
     {
-        MoveQuality.Best => "la mejor jugada",
-        MoveQuality.Excellent => "excelente",
-        MoveQuality.Good => "buena",
-        MoveQuality.Inaccuracy => "imprecisa",
-        MoveQuality.Mistake => "error",
-        _ => "error grave",
+        MoveQuality.Best => Tr.T("Analysis.BestMove"),
+        MoveQuality.Excellent => Tr.T("Analysis.Excellent"),
+        MoveQuality.Good => Tr.T("Analysis.Good"),
+        MoveQuality.Inaccuracy => Tr.T("Analysis.Inaccuracy"),
+        MoveQuality.Mistake => Tr.T("Analysis.Mistake"),
+        _ => Tr.T("Analysis.Blunder"),
     };
 
     private static string FormatLead(double blackLead) => Math.Abs(blackLead) < 0.05
-        ? "igualada"
-        : string.Create(CultureInfo.InvariantCulture, $"{(blackLead > 0 ? "N" : "B")}+{Math.Abs(blackLead):0.0}");
+        ? Tr.T("Analysis.Even")
+        : string.Create(CultureInfo.InvariantCulture, $"{(blackLead > 0 ? Tr.T("Game.BlackShort") : Tr.T("Game.WhiteShort"))}+{Math.Abs(blackLead):0.0}");
 
     /// <summary>The shown position as the engine sees it: setup at the root plus the moves that led here.</summary>
     private sealed record Position(AnalysisQuery Base, IReadOnlyList<EngineMove> Moves, string Prefix)

@@ -9,6 +9,9 @@ public sealed record AppSettings
 {
     public string Theme { get; init; } = "night";
 
+    /// <summary>User interface language: "en" (English, the default) or "es" (Spanish).</summary>
+    public string Language { get; init; } = "en";
+
     /// <summary>Animated backgrounds and stone/UI animations (off = static, for low-power machines or preference).</summary>
     public bool Animations { get; init; } = true;
 

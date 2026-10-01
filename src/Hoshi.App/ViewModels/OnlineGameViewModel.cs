@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Hoshi.App.Services;
 using Hoshi.Core;
+using Hoshi.Core.Localization;
 using Hoshi.Ogs;
 using Hoshi.Ogs.Games;
 using Hoshi.Sgf;
@@ -12,7 +13,7 @@ namespace Hoshi.App.ViewModels;
 
 public sealed record ChatLineItem(string Username, string Body, bool IsMine, int MoveNumber)
 {
-    public string Header => string.Create(CultureInfo.InvariantCulture, $"{Username} · jugada {MoveNumber}");
+    public string Header => Tr.F("Online.ChatHeader", Username, MoveNumber);
 }
 
 /// <summary>
@@ -104,9 +105,9 @@ public sealed partial class OnlineGameViewModel : ViewModelBase, IDisposable
         ? string.Create(CultureInfo.InvariantCulture, $"OGS #{s.GameId} · {s.Black.Username} vs {s.White.Username}")
         : string.Create(CultureInfo.InvariantCulture, $"OGS #{GameId}");
 
-    public string BlackName => _snapshot?.Black.DisplayName ?? "Negras";
+    public string BlackName => _snapshot?.Black.DisplayName ?? Tr.T("Common.Black");
 
-    public string WhiteName => _snapshot?.White.DisplayName ?? "Blancas";
+    public string WhiteName => _snapshot?.White.DisplayName ?? Tr.T("Common.White");
 
     /// <summary>The user's colour in this game (Empty when watching).</summary>
     public Stone MyColor => _snapshot?.ColorOf(_game.MyPlayerId) ?? Stone.Empty;
@@ -140,17 +141,17 @@ public sealed partial class OnlineGameViewModel : ViewModelBase, IDisposable
 
             if (_snapshot is null)
             {
-                return "Conectando con la partida…";
+                return Tr.T("Online.ConnectingToGame");
             }
 
             return Phase switch
             {
-                OgsGamePhase.Finished => ResultText ?? "Partida terminada",
-                OgsGamePhase.StoneRemoval => "Conteo: marca las piedras muertas y acepta",
-                _ when IsSending => "Enviando jugada…",
-                _ when !IsPlayer => "Observando",
-                _ when IsMyTurn => "Tu turno",
-                _ => "Turno del rival",
+                OgsGamePhase.Finished => ResultText ?? Tr.T("Online.GameOver"),
+                OgsGamePhase.StoneRemoval => Tr.T("Online.StoneRemoval"),
+                _ when IsSending => Tr.T("Online.Sending"),
+                _ when !IsPlayer => Tr.T("Online.Watching"),
+                _ when IsMyTurn => Tr.T("Lobby.YourTurn"),
+                _ => Tr.T("Online.OpponentTurn"),
             };
         }
     }
@@ -191,7 +192,7 @@ public sealed partial class OnlineGameViewModel : ViewModelBase, IDisposable
         MoveResult result = _board.Board.TryPlay(MyColor, point);
         if (!result.IsLegal)
         {
-            Message = $"Jugada ilegal en {point.ToHuman(_board.Board.Height)}";
+            Message = Tr.F("Online.IllegalMove", point.ToHuman(_board.Board.Height));
             return;
         }
 
@@ -209,8 +210,8 @@ public sealed partial class OnlineGameViewModel : ViewModelBase, IDisposable
         }
 
         (OgsClockReading black, OgsClockReading white) = OgsClockMath.Read(clock, s.TimeControl, _game.ServerNow);
-        BlackClock = s.TimeControl.System == "none" ? "sin límite" : black.Format();
-        WhiteClock = s.TimeControl.System == "none" ? "sin límite" : white.Format();
+        BlackClock = s.TimeControl.System == "none" ? Tr.T("Online.NoTimeLimit") : black.Format();
+        WhiteClock = s.TimeControl.System == "none" ? Tr.T("Online.NoTimeLimit") : white.Format();
         IsBlackClockLow = IsLow(black) && ToMove == Stone.Black && IsPlayPhase;
         IsWhiteClockLow = IsLow(white) && ToMove == Stone.White && IsPlayPhase;
     }
@@ -236,7 +237,7 @@ public sealed partial class OnlineGameViewModel : ViewModelBase, IDisposable
     {
         if (!IsMyTurn || IsSending)
         {
-            Message = "Solo puedes pasar en tu turno";
+            Message = Tr.T("Online.PassOnlyOnTurn");
             return;
         }
 
@@ -248,7 +249,7 @@ public sealed partial class OnlineGameViewModel : ViewModelBase, IDisposable
     [RelayCommand(CanExecute = nameof(CanPassOrResign))]
     private async Task Resign()
     {
-        if (_dialogs is not null && !await _dialogs.ConfirmAsync("Abandonar", "¿Seguro que quieres abandonar la partida?"))
+        if (_dialogs is not null && !await _dialogs.ConfirmAsync(Tr.T("Online.Resign"), Tr.T("Online.ResignConfirm")))
         {
             return;
         }
@@ -262,7 +263,7 @@ public sealed partial class OnlineGameViewModel : ViewModelBase, IDisposable
     private void RequestUndo()
     {
         _game.RequestUndo();
-        Message = "Deshacer solicitado al rival";
+        Message = Tr.T("Online.UndoRequested");
     }
 
     private bool CanAcceptUndo() => IsUndoRequested;
@@ -280,7 +281,7 @@ public sealed partial class OnlineGameViewModel : ViewModelBase, IDisposable
     private void AcceptScore()
     {
         _game.AcceptRemovedStones(_removed);
-        Message = "Conteo aceptado; esperando al rival";
+        Message = Tr.T("Online.ScoreAccepted");
     }
 
     [RelayCommand(CanExecute = nameof(CanScore))]

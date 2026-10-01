@@ -1,4 +1,5 @@
 using Avalonia.Media;
+using Hoshi.Core.Localization;
 
 namespace Hoshi.App.Themes;
 
@@ -93,9 +94,15 @@ public sealed record HoshiTheme
 {
     public required string Id { get; init; }
 
-    public required string Name { get; init; }
+    /// <summary>Localization key of the theme's name (<see cref="Tr"/>).</summary>
+    public required string NameKey { get; init; }
 
-    public required string Description { get; init; }
+    /// <summary>Localization key of the theme's one-line description.</summary>
+    public required string DescriptionKey { get; init; }
+
+    public string Name => Tr.T(NameKey);
+
+    public string Description => Tr.T(DescriptionKey);
 
     // Chrome
     public required Color Window { get; init; }
@@ -152,8 +159,8 @@ public static class HoshiThemes
     public static HoshiTheme NightSky { get; } = new()
     {
         Id = "night",
-        Name = "Cielo nocturno",
-        Description = "Hoshi significa «estrella»: cielo azul noche con estrellas que titilan y oro pálido.",
+        NameKey = "Theme.Night.Name",
+        DescriptionKey = "Theme.Night.Description",
         Window = Color.Parse("#0E1326"),
         Bar = Color.Parse("#10152A"),
         Sidebar = Color.Parse("#0B1020"),
@@ -193,8 +200,8 @@ public static class HoshiThemes
     public static HoshiTheme InkAndGold { get; } = new()
     {
         Id = "sumi",
-        Name = "Tinta y oro",
-        Description = "Nocturno sumi-e: niebla de tinta que se mueve despacio, oro y rojo sello.",
+        NameKey = "Theme.Sumi.Name",
+        DescriptionKey = "Theme.Sumi.Description",
         Window = Color.Parse("#141518"),
         Bar = Color.Parse("#17181B"),
         Sidebar = Color.Parse("#101114"),
@@ -234,8 +241,8 @@ public static class HoshiThemes
     public static HoshiTheme ZenGarden { get; } = new()
     {
         Id = "zen",
-        Name = "Jardín zen",
-        Description = "Arena rastrillada que se mueve muy despacio, tonos piedra y verde musgo.",
+        NameKey = "Theme.Zen.Name",
+        DescriptionKey = "Theme.Zen.Description",
         Window = Color.Parse("#262724"),
         Bar = Color.Parse("#2A2B28"),
         Sidebar = Color.Parse("#222320"),
@@ -274,8 +281,8 @@ public static class HoshiThemes
     public static HoshiTheme WarmMinimal { get; } = new()
     {
         Id = "minimal",
-        Name = "Minimal cálido",
-        Description = "Sobrio: papel washi, madera clara y terracota, con micro-animaciones.",
+        NameKey = "Theme.Minimal.Name",
+        DescriptionKey = "Theme.Minimal.Description",
         Window = Color.Parse("#2A2624"),
         Bar = Color.Parse("#2B2826"),
         Sidebar = Color.Parse("#231F1D"),
@@ -312,8 +319,8 @@ public static class HoshiThemes
     public static HoshiTheme Classic { get; } = new()
     {
         Id = "classic",
-        Name = "Clásico",
-        Description = "Homenaje a Sabaki: tatami, madera de Shudan e interfaz gris oscura.",
+        NameKey = "Theme.Classic.Name",
+        DescriptionKey = "Theme.Classic.Description",
         Window = Color.Parse("#1E1E1E"),
         Bar = Color.Parse("#292A2D"),
         Sidebar = Color.Parse("#111111"),
