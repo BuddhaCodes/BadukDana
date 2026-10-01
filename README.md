@@ -6,8 +6,9 @@ Local play and SGF editing with a Sabaki-inspired look, and online play through 
 **Website:** https://buddhacodes.github.io/BadukDana/ (source in `docs/site`, published by `.github/workflows/pages.yml`).
 
 **Download:** ready-to-run builds for Windows, macOS and Linux (no .NET needed) on the
-[latest release](https://github.com/BuddhaCodes/BadukDana/releases/latest). They are produced by
-`.github/workflows/release.yml`: push a tag (`git tag v0.2.0 && git push origin v0.2.0`) or run the workflow from the Actions tab.
+[latest release](https://github.com/BuddhaCodes/BadukDana/releases/latest). They are built and published
+automatically by `.github/workflows/release.yml` on every push to `main` (version `0.1.<run number>`; pushes that
+only touch `docs/` or Markdown files are skipped).
 
 > Status and plans: see `docs/ROADMAP.md`.
 
