@@ -132,7 +132,7 @@ Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su compo
 
 ## Sonido de piedras
 
-- Cada piedra nueva (jugada, recibida de OGS o al avanzar una jugada) suena con un «pachi» suave: clic de pizarra sobre kaya, golpe de madera corto y una campanita tenue en re menor pentatónico (re, fa, la; tres variantes que rotan). En Windows va por `PlaySound` desde memoria, con poca latencia. Se desactiva en Preferencias → Análisis.
+- Cada piedra nueva (jugada, recibida de OGS o al avanzar una jugada) suena con un golpe suave y apagado, como dejar un móvil sobre la mesa (v2, 2026-10-01): el canto toca primero y la piedra se asienta plana 12–20 ms después, con un mínimo rebote; sin brillo ni campanita, para no cansar tras cientos de jugadas. Tres variantes que rotan. En Windows va por `PlaySound` desde memoria, con poca latencia. Se puede sustituir con `stone.wav`/`.mp3` en la carpeta `sounds/`. Se desactiva en Preferencias → Análisis.
 
 ## Capturas
 
