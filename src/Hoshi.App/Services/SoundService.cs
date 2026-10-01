@@ -19,7 +19,7 @@ public enum SoundEffect
     /// <summary>The engine's best move: a cinematic explosion.</summary>
     ExplosionBig,
 
-    /// <summary>Any stone placed: a soft "pachi" with a faint chime (three variants, rotated).</summary>
+    /// <summary>Any stone placed: a muffled wooden thud, like a phone set down on a table (three variants, rotated).</summary>
     Stone,
 
     /// <summary>One or two stones captured: crack, gathered clacks, a two-note chime.</summary>
@@ -51,6 +51,7 @@ public sealed class SystemSoundService : ISoundService
     private readonly HashSet<string> _reported = [];
     private int _nextAlias;
     private int _stoneVariant;
+    private readonly Dictionary<string, string> _builtIn = [];
 
     // Volume-scaled copies of the stone clicks, pinned because PlaySound reads them asynchronously.
     private readonly Dictionary<(string File, int Volume), GCHandle> _pinned = [];
@@ -128,21 +129,53 @@ public sealed class SystemSoundService : ISoundService
             }
         }
 
-        string cached = Path.Combine(_cacheDirectory, name + ".wav");
-        if (!File.Exists(cached))
+        lock (_builtIn)
         {
-            Directory.CreateDirectory(_cacheDirectory);
-            using Stream asset = AssetLoader.Open(new Uri($"avares://Hoshi/Assets/Sounds/{name}.wav"));
-            string temp = cached + ".tmp";
-            using (FileStream output = File.Create(temp))
+            if (_builtIn.TryGetValue(name, out string? known) && File.Exists(known))
             {
-                asset.CopyTo(output);
+                return known;
             }
 
-            File.Move(temp, cached, overwrite: true);
-        }
+            // The cache file is named after the content, so a Hoshi update with new sounds never plays a stale copy.
+            byte[] data;
+            using (Stream asset = AssetLoader.Open(new Uri($"avares://Hoshi/Assets/Sounds/{name}.wav")))
+            using (var ms = new MemoryStream())
+            {
+                asset.CopyTo(ms);
+                data = ms.ToArray();
+            }
 
-        return cached;
+            string hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(data))[..12].ToLowerInvariant();
+            string cached = Path.Combine(_cacheDirectory, $"{name}-{hash}.wav");
+            if (!File.Exists(cached))
+            {
+                Directory.CreateDirectory(_cacheDirectory);
+                foreach (string stale in Directory.EnumerateFiles(_cacheDirectory, name + "*.wav")
+                    .Where(f => Path.GetFileNameWithoutExtension(f) is { } n && (n == name || (n.StartsWith(name + "-", StringComparison.Ordinal) && n.Length == name.Length + 13))))
+                {
+                    TryDelete(stale);
+                }
+
+                string temp = cached + ".tmp";
+                File.WriteAllBytes(temp, data);
+                File.Move(temp, cached, overwrite: true);
+            }
+
+            _builtIn[name] = cached;
+            return cached;
+        }
+    }
+
+    private static void TryDelete(string file)
+    {
+        try
+        {
+            File.Delete(file);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Still in use or read-only: harmless, it is just never played again.
+        }
     }
 
     /// <summary>
