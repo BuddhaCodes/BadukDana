@@ -71,6 +71,9 @@ public sealed class JosekiAssistantTests
         vm.Hints!.Select(h => h.Point).Should().Contain([H("C6"), H("F3")], "the approach from either side");
         vm.Text.Should().Be("Joseki (OGS): ideal · 4 continuaciones");
         vm.Description.Should().Be("The 4-4 point.");
+        vm.Note.Should().Be("The 4-4 point.");
+        vm.Legend.Should().HaveCount(6);
+        vm.Legend.Select(l => l.Label).Should().Equal("Ideal", "Buena", "Truco", "Dudosa", "Error", "Tu biblioteca");
     }
 
     [Fact]
@@ -121,6 +124,15 @@ public sealed class JosekiAssistantTests
             await vm.Pending;
             vm.Hints.Should().ContainSingle().Which.Should().Be(new BoardJosekiHint(H("R17"), JosekiCategory.Unknown, true));
             vm.Text.Should().Be("Joseki (tu biblioteca) · 1 continuaciones");
+            vm.Note.Should().Be("Sigue: Invasión en 3-3 bajo el hoshi");
+
+            foreach (string m in new[] { "R17", "Q17", "R16", "R15", "S15", "S14", "S16" })
+            {
+                game.PlayCommand.Execute(H(m));
+            }
+
+            await vm.Pending;
+            vm.Note.Should().StartWith("Completa «Invasión en 3-3 bajo el hoshi»: Blancas viven");
 
             vm.ToggleCommand.Execute(null);
             await vm.Pending;
@@ -225,6 +237,8 @@ public sealed class JosekiMainWindowTests
             window.FindControl<GoBoardControl>("Board")!.IsVisible.Should().BeTrue();
             window.FindControl<GoBoardControl>("Board")!.JosekiHints.Should().NotBeEmpty();
             window.FindControl<TextBlock>("JosekiText")!.Text.Should().StartWith("Joseki (OGS)");
+            window.FindControl<Border>("JosekiInfo")!.IsVisible.Should().BeTrue();
+            window.FindControl<TextBlock>("JosekiNote")!.Text.Should().Be("The 4-4 point.");
             Save(window, "joseki-hints.png");
         }
         finally
