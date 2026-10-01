@@ -105,6 +105,11 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 - `IAnalysisEngine` / `AnalysisEngineHost`: KataGo según Preferencias; `GoBoardControl.Territory` y `.Suggestions` dibujan las capas; `ScoreGraph` la gráfica. `Activity` informa de la carga/calibración de KataGo (leída de su stderr).
 - Celebración: `GameViewModel.MovePlayed` marca la jugada; cuando llega su valoración, `AnalysisViewModel` publica `Impact` (`BoardImpact`: punto, fuerza 1–3, id) que `GoBoardControl` anima con `ImpactEffect`, y pide el sonido a `ISoundService`.
 
+### Localización
+- `Hoshi.Core.Localization.Tr`: tabla clave → (inglés, español), sin dependencias; cada capa añade sus textos en `Strings.<Capa>.cs` (Core, Engines, Ogs, App, Views). `Tr.T(clave)` / `Tr.F(clave, args)` (formato invariante). Idioma por defecto inglés (`AppSettings.Language`); `Tr.LanguageChanged` refresca la UI.
+- XAML: `{l:T Clave}` (`TExtension` → binding a `LocalizedStrings.Instance[clave]`), se actualiza en vivo. Los ViewModels refrescan todas sus propiedades al cambiar de idioma (`ViewModelBase`).
+- Tests: corren en español (inicializador de módulo); `LocalizationTests` comprueba que toda clave usada en las vistas existe, que ambos idiomas tienen texto y los mismos marcadores `{n}`, y el cambio en vivo.
+
 ### Servicios de App
 - `IDialogService`, `IFileDialogService`, `ISettingsService` (JSON en carpeta de datos).
 - Música (`Services/Music`): `LofiComposer` sintetiza al arrancar un bucle de 8 compases (80 BPM, 24 s) en 5 capas sincronizadas; `MusicDirector` (lógica pura con reloj explícito) convierte los veredictos (`AnalysisViewModel.MoveJudged`) en «calor» 0–4; `MusicMixer` mezcla las capas con ganancias suaves, filtro paso bajo según el calor y efecto tape-stop; `MusicService` lo envía en un hilo propio a un `IPcmSink` del SO (waveOut de winmm en Windows; `pacat`/`aplay` en Linux; sin salida en macOS por ahora). Sin veredictos (partidas de OGS en curso) la música se queda tranquila: no revela nada del motor.

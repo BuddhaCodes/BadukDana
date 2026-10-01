@@ -61,6 +61,9 @@ Cada tarea termina con: compila sin warnings, tests en verde, y una captura (si 
 - [x] Desactivado en partidas de OGS en curso (normas de OGS).
 - [x] Celebración de jugadas fuertes (2026-09-30): cuando KataGo valora como buena/excelente/la mejor una jugada que acabas de hacer, sonido de explosión cinemática (sintetizado por Hoshi, `tools/gen_sounds.py`) e impacto en el tablero (destello, ondas expansivas, chispas, temblor y, para la mejor, grietas incandescentes). Configurable en Preferencias → Análisis (activar, volumen, sonidos propios).
 - [x] Música adaptativa (2026-09-30): lo-fi sintetizado por Hoshi en 5 capas que se van sumando con rachas de buenas jugadas, se enfría con el tiempo y con errores, y hace un «tape-stop» con un error grave. Tecla M y Preferencias → Análisis. Windows (waveOut) y Linux (pacat/aplay); macOS pendiente. Más intensa (2026-09-30): sexta capa «overdrive», golpe al subir de nivel y bombeo tipo sidechain.
+- [x] Localización inglés (por defecto) / español (2026-10-01): tabla `Hoshi.Core.Localization.Tr` (`Strings.*.cs` por capa), `{l:T Clave}` en XAML con cambio en vivo, selector en Preferencias → Apariencia.
+- [x] Icono de la app (tablero de Go, `tools/gen_icon.py`) y página promocional estática bilingüe en `docs/site/`.
+- [x] Botones «Análisis» y «Territorio» ocultos durante partidas de OGS en curso.
 - [x] KataGo siempre de fondo desde que se abre la app, con píldora de carga; «Análisis» solo controla lo visual (2026-10-01).
 - [x] Aviso cómico de atari (2026-09-30): temblor, gota de sudor y «uh-oh»; `Hoshi.Core.Atari`.
 - [x] Efecto visual y sonido de capturas (2026-09-30): piedras que se rompen en cuñas en ola, chasquido + clacs + campanita.

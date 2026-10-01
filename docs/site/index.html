@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hoshi — a Go board that feels every move</title>
+<meta name="description" content="Hoshi is a free desktop Go (Baduk, Weiqi) app: beautiful boards, live KataGo analysis, cinematic effects for great moves, adaptive lo-fi music and online play on OGS.">
+<link rel="icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b1024;
+    --bg-2: #111833;
+    --panel: #151d3b;
+    --line: rgba(255, 255, 255, .08);
+    --text: #e8e6df;
+    --muted: #a3a8bd;
+    --gold: #d9b45a;
+    --gold-2: #f0d594;
+    --wood: #e2b877;
+    --radius: 18px;
+    --max: 1120px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 Manrope, system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: var(--gold-2); }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
+  h1, h2, h3 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 600; letter-spacing: .01em; margin: 0; }
+  h2 { font-size: clamp(30px, 4vw, 44px); line-height: 1.1; }
+  h3 { font-size: 24px; }
+  p { margin: 0; }
+  .muted { color: var(--muted); }
+  .eyebrow { color: var(--gold); text-transform: uppercase; letter-spacing: .18em; font-size: 12px; font-weight: 600; }
+
+  /* Stars */
+  .sky {
+    position: absolute; inset: 0; pointer-events: none; opacity: .9;
+    background-image:
+      radial-gradient(1px 1px at 12% 18%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 28% 72%, #fff 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 44% 32%, #fff6d8 50%, transparent 51%),
+      radial-gradient(1px 1px at 63% 12%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 77% 58%, #fff 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 88% 26%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 92% 84%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 6% 88%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 52% 90%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 36% 8%, #fff 50%, transparent 51%);
+    animation: twinkle 6s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { from { opacity: .55; } to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .sky { animation: none; } html { scroll-behavior: auto; } }
+
+  /* Nav */
+  nav { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px); background: rgba(11, 16, 36, .72); border-bottom: 1px solid var(--line); }
+  nav .wrap { display: flex; align-items: center; gap: 22px; height: 62px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: "Cormorant Garamond", serif; font-size: 24px; font-weight: 600; }
+  .brand img { width: 30px; height: 30px; }
+  .brand span { color: var(--gold); }
+  nav .links { display: flex; gap: 20px; margin-left: auto; }
+  nav .links a { color: var(--muted); text-decoration: none; font-size: 14px; }
+  nav .links a:hover { color: var(--text); }
+  .lang { display: flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .lang button { background: none; border: 0; color: var(--muted); font: 600 12px Manrope, sans-serif; padding: 6px 11px; cursor: pointer; }
+  .lang button[aria-pressed="true"] { background: var(--gold); color: #1b1408; }
+  @media (max-width: 720px) { nav .links { display: none; } .lang { margin-left: auto; } }
+
+  /* Hero */
+  header { position: relative; overflow: hidden; padding: 84px 0 70px; background: radial-gradient(1200px 600px at 70% -10%, #23305f 0%, transparent 60%), var(--bg); }
+  .hero { position: relative; display: grid; grid-template-columns: 1fr 1.25fr; gap: 48px; align-items: center; }
+  .hero h1 { font-size: clamp(42px, 6vw, 72px); line-height: 1.02; }
+  .hero h1 em { font-style: normal; color: var(--gold-2); }
+  .hero p.lead { font-size: 18px; color: var(--muted); margin: 20px 0 30px; max-width: 34em; }
+  .cta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 999px; text-decoration: none; font-weight: 600; font-size: 15px; }
+  .btn.primary { background: var(--gold); color: #1b1408; box-shadow: 0 8px 30px rgba(217, 180, 90, .25); }
+  .btn.primary:hover { background: var(--gold-2); }
+  .btn.ghost { border: 1px solid var(--line); color: var(--text); }
+  .btn.ghost:hover { border-color: var(--gold); }
+  .shot { border-radius: 14px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0, 0, 0, .55); background: #000; }
+  .hero .shot { transform: perspective(1400px) rotateY(-6deg) rotateX(2deg); }
+  .badges { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 26px; }
+  .badge { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; }
+  @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } .hero .shot { transform: none; } header { padding-top: 56px; } }
+
+  section { padding: 84px 0; border-top: 1px solid var(--line); }
+  .head { max-width: 680px; margin-bottom: 40px; }
+  .head p { margin-top: 12px; color: var(--muted); font-size: 17px; }
+
+  /* Features */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+  .card .ico { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: rgba(217, 180, 90, .12); color: var(--gold-2); margin-bottom: 14px; font-size: 19px; }
+  .card h3 { font-size: 22px; margin-bottom: 6px; }
+  .card p { color: var(--muted); font-size: 15px; }
+
+  /* Effects showcase */
+  .fx { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .fx figure { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+  .fx figcaption { padding: 14px 16px 16px; font-size: 14px; color: var(--muted); }
+  .fx figcaption b { display: block; color: var(--text); font-size: 15px; margin-bottom: 2px; }
+  @media (max-width: 900px) { .fx { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px) { .fx { grid-template-columns: 1fr; } }
+
+  /* Themes */
+  .themes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  .themes figure { margin: 0; }
+  .themes figcaption { margin-top: 10px; font-size: 14px; color: var(--muted); }
+  .themes figcaption b { color: var(--text); font-family: "Cormorant Garamond", serif; font-size: 20px; margin-right: 8px; }
+  @media (max-width: 720px) { .themes { grid-template-columns: 1fr; } }
+
+  /* Music */
+  .music { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center; }
+  .player { background: linear-gradient(160deg, #1b2450, #121937); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; }
+  .player audio { width: 100%; margin-top: 16px; }
+  .meter { display: flex; gap: 6px; align-items: flex-end; height: 70px; }
+  .meter i { flex: 1; background: linear-gradient(to top, var(--gold), #f6e2a8); border-radius: 4px; opacity: .85; }
+  .layers { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 8px; font-size: 14px; color: var(--muted); }
+  .layers li::before { content: "◆"; color: var(--gold); margin-right: 8px; font-size: 10px; }
+  @media (max-width: 900px) { .music { grid-template-columns: 1fr; } }
+
+  /* Fair play */
+  .fair { background: linear-gradient(135deg, rgba(217, 180, 90, .12), rgba(217, 180, 90, .03)); border: 1px solid rgba(217, 180, 90, .35); border-radius: var(--radius); padding: 26px 28px; display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: start; }
+  .fair .seal { width: 46px; height: 46px; border-radius: 50%; background: var(--gold); color: #1b1408; display: grid; place-items: center; font: 600 22px "Cormorant Garamond", serif; }
+
+  /* Download */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: s; }
+  .steps .card::before { counter-increment: s; content: counter(s); display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--gold); color: #1b1408; font-weight: 600; margin-bottom: 12px; }
+  .card { min-width: 0; }
+  pre { background: #070a18; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; overflow-x: auto; font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #e5dcc4; margin: 12px 0 0; }
+  @media (max-width: 900px) { .steps { grid-template-columns: 1fr; } }
+
+  footer { border-top: 1px solid var(--line); padding: 40px 0 56px; color: var(--muted); font-size: 13px; }
+  footer .wrap { display: grid; gap: 10px; }
+  footer .row { display: flex; gap: 12px; align-items: center; }
+  footer img { width: 26px; height: 26px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="icon.png" alt="">Hoshi <span>星</span></a>
+    <div class="links">
+      <a href="#features" data-i18n="nav.features">Features</a>
+      <a href="#effects" data-i18n="nav.effects">Effects</a>
+      <a href="#themes" data-i18n="nav.themes">Themes</a>
+      <a href="#download" data-i18n="nav.download">Get Hoshi</a>
+    </div>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <button type="button" data-lang="es" aria-pressed="false">ES</button>
+    </div>
+  </div>
+</nav>
+
+<header id="top">
+  <div class="sky"></div>
+  <div class="wrap hero">
+    <div>
+      <p class="eyebrow" data-i18n="hero.eyebrow">Go · Baduk · Weiqi</p>
+      <h1 data-i18n-html="hero.title">A Go board that <em>feels</em> every move.</h1>
+      <p class="lead" data-i18n="hero.lead">Hoshi is a free desktop app for playing and studying Go. A beautiful board, KataGo judging every move live, cinematic effects when you find the best one, and lo-fi music that heats up with your streaks.</p>
+      <div class="cta">
+        <a class="btn primary" href="#download" data-i18n="hero.cta">Get Hoshi</a>
+        <a class="btn ghost" href="#features" data-i18n="hero.more">See what it does</a>
+      </div>
+      <div class="badges">
+        <span class="badge">Windows · macOS · Linux</span>
+        <span class="badge" data-i18n="hero.badge2">KataGo analysis</span>
+        <span class="badge" data-i18n="hero.badge3">Play on OGS</span>
+        <span class="badge">English · Español</span>
+      </div>
+    </div>
+    <div class="shot"><img src="img/night-analysis.jpg" width="1120" height="704" alt="Hoshi with the Night sky theme and the analysis panel open"></div>
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow" data-i18n="feat.eyebrow">Features</p>
+      <h2 data-i18n="feat.title">Everything you need at the board.</h2>
+      <p data-i18n="feat.lead">Play friends on one screen, review your games with an engine, or take on the world on OGS.</p>
+    </div>
+    <div class="grid">
+      <div class="card"><div class="ico">◎</div><h3 data-i18n="f1.t">Live AI analysis</h3><p data-i18n="f1.d">KataGo runs in the background from the moment Hoshi opens and rates every move: best, excellent, good, inaccuracy, mistake or blunder, with points lost.</p></div>
+      <div class="card"><div class="ico">✦</div><h3 data-i18n="f2.t">Moves you can feel</h3><p data-i18n="f2.d">The best move shakes the board, cracks the wood and throws embers. Captured stones shatter. Groups in atari nervously sweat.</p></div>
+      <div class="card"><div class="ico">♪</div><h3 data-i18n="f3.t">Adaptive music</h3><p data-i18n="f3.d">A calm lo-fi loop that adds drums, arpeggios and an overdrive layer as your good moves stack up, and cools down when you slip.</p></div>
+      <div class="card"><div class="ico">▦</div><h3 data-i18n="f4.t">Territory at a glance</h3><p data-i18n="f4.d">See secure and potential territory and the estimated score, from Hoshi's own estimator or KataGo's ownership map.</p></div>
+      <div class="card"><div class="ico">⌁</div><h3 data-i18n="f5.t">Online on OGS</h3><p data-i18n="f5.d">Sign in to online-go.com, accept challenges and play in real time with clock and chat. Hoshi only creates unranked games.</p></div>
+      <div class="card"><div class="ico">❖</div><h3 data-i18n="f6.t">SGF editor</h3><p data-i18n="f6.d">Open and save SGF files, explore variations in a game tree, add comments, marks and setup stones.</p></div>
+      <div class="card"><div class="ico">☾</div><h3 data-i18n="f7.t">Five themes</h3><p data-i18n="f7.d">Night sky, Ink and gold, Zen garden, Warm minimal and a Classic tribute, each with its own board, stones and animated background.</p></div>
+      <div class="card"><div class="ico">⇄</div><h3 data-i18n="f8.t">Yours, offline</h3><p data-i18n="f8.d">Free and open source. No account needed to play locally; your OGS login uses OAuth and Hoshi never stores your password.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="effects">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow" data-i18n="fx.eyebrow">Effects</p>
+      <h2 data-i18n="fx.title">Find the best move. The board notices.</h2>
+      <p data-i18n="fx.lead">Every effect is drawn and synthesised by Hoshi itself — no stock footage, no samples.</p>
+    </div>
+    <div class="fx">
+      <figure><img src="img/impact-hot.jpg" width="480" height="480" alt="Glowing cracks around a stone" loading="lazy"><figcaption><b data-i18n="fx1.t">The best move</b><span data-i18n="fx1.d">A cinematic boom, shockwaves and molten cracks.</span></figcaption></figure>
+      <figure><img src="img/impact.jpg" width="480" height="480" alt="Cooled cracks in the wood" loading="lazy"><figcaption><b data-i18n="fx2.t">…and its mark</b><span data-i18n="fx2.d">The fractures cool into the wood, then fade.</span></figcaption></figure>
+      <figure><img src="img/capture.jpg" width="480" height="480" alt="Captured stones shattering" loading="lazy"><figcaption><b data-i18n="fx3.t">Captures</b><span data-i18n="fx3.d">Stones shatter in a wave, with a crisp crack and a chime.</span></figcaption></figure>
+      <figure><img src="img/atari.jpg" width="480" height="480" alt="A white stone in atari with a sweat drop" loading="lazy"><figcaption><b data-i18n="fx4.t">Atari</b><span data-i18n="fx4.d">The group trembles and sweats. Uh-oh.</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="themes">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow" data-i18n="th.eyebrow">Themes</p>
+      <h2 data-i18n="th.title">Pick the room you play in.</h2>
+    </div>
+    <div class="themes">
+      <figure><div class="shot"><img src="img/zen-territory.jpg" width="1120" height="704" alt="Zen garden theme with territory shown" loading="lazy"></div><figcaption><b>Zen garden</b><span data-i18n="th1">Raked sand, moss green — shown here with the territory estimate.</span></figcaption></figure>
+      <figure><div class="shot"><img src="img/ink.jpg" width="1120" height="704" alt="Ink and gold theme" loading="lazy"></div><figcaption><b>Ink and gold</b><span data-i18n="th2">A sumi-e nocturne of drifting ink and seal red.</span></figcaption></figure>
+      <figure><div class="shot"><img src="img/warm.jpg" width="1120" height="704" alt="Warm minimal theme" loading="lazy"></div><figcaption><b>Warm minimal</b><span data-i18n="th3">Washi paper, light wood and terracotta.</span></figcaption></figure>
+      <figure><div class="shot"><img src="img/night-analysis.jpg" width="1120" height="704" alt="Night sky theme" loading="lazy"></div><figcaption><b>Night sky</b><span data-i18n="th4">Hoshi means “star”: a midnight sky with twinkling stars.</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="music">
+  <div class="wrap music">
+    <div>
+      <p class="eyebrow" data-i18n="mu.eyebrow">Music</p>
+      <h2 data-i18n="mu.title">A soundtrack that plays along.</h2>
+      <p class="muted" style="margin-top:12px;font-size:17px" data-i18n="mu.lead">Six layers composed in code join one by one as you string good moves together. A blunder stops the tape. Time cools it back down.</p>
+      <ul class="layers">
+        <li data-i18n="mu.l1">Warm electric piano and vinyl crackle</li>
+        <li data-i18n="mu.l2">Bass and a soft kick</li>
+        <li data-i18n="mu.l3">Swung drums</li>
+        <li data-i18n="mu.l4">Plucked arpeggio with echo</li>
+        <li data-i18n="mu.l5">Pumping chords, claps and a bright lead</li>
+        <li data-i18n="mu.l6">Overdrive: four-on-the-floor, rolling bass, fills</li>
+      </ul>
+    </div>
+    <div class="player">
+      <div class="meter" aria-hidden="true"><i style="height:22%"></i><i style="height:34%"></i><i style="height:48%"></i><i style="height:62%"></i><i style="height:80%"></i><i style="height:100%"></i></div>
+      <audio controls preload="none" src="music-demo.mp3"></audio>
+      <p class="muted" style="font-size:13px;margin-top:10px" data-i18n="mu.demo">Demo: calm, then a streak of strong moves from 0:16 and a blunder at 1:10… you'll hear it.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="fair">
+      <div class="seal">正</div>
+      <div>
+        <h3 data-i18n="fp.title">Fair play built in</h3>
+        <p class="muted" style="margin-top:6px" data-i18n="fp.text">During live games on OGS, Hoshi turns off the analysis, the territory estimate and every engine-driven effect — OGS forbids AI help while you play. You still get the board, the sounds and the captures; the review is waiting after the game.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="download">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow" data-i18n="dl.eyebrow">Get Hoshi</p>
+      <h2 data-i18n="dl.title">Up and running in three steps.</h2>
+      <p data-i18n="dl.lead">Hoshi is built with .NET and Avalonia and runs on Windows, macOS and Linux.</p>
+    </div>
+    <div class="steps">
+      <div class="card"><h3 data-i18n="s1.t">Install .NET 10</h3><p class="muted" data-i18n="s1.d">Get the .NET 10 SDK from dot.net for your system.</p></div>
+      <div class="card"><h3 data-i18n="s2.t">Build and run</h3><p class="muted" data-i18n="s2.d">From the Hoshi folder:</p><pre>dotnet run --project src/Hoshi.App -c Release</pre></div>
+      <div class="card"><h3 data-i18n="s3.t">Add KataGo (optional)</h3><p class="muted" data-i18n="s3.d">Download KataGo and a network (b18c384 is a good start), then pick them in Preferences → Analysis → Test KataGo.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="row"><img src="icon.png" alt=""><strong style="color:var(--text)">Hoshi 星</strong></div>
+    <p data-i18n="ft.credits">Analysis by KataGo (MIT). Classic theme textures from Sabaki and Shudan (MIT). Fonts under the SIL Open Font License; icons from Phosphor, Lucide and Tabler. Effects, sounds and music are Hoshi's own.</p>
+    <p data-i18n="ft.ogs">Not affiliated with OGS (online-go.com) or KataGo.</p>
+  </div>
+</footer>
+
+<script>
+  const ES = {
+    "nav.features": "Funciones", "nav.effects": "Efectos", "nav.themes": "Temas", "nav.download": "Consíguelo",
+    "hero.eyebrow": "Go · Baduk · Weiqi",
+    "hero.title": "Un tablero de Go que <em>siente</em> cada jugada.",
+    "hero.lead": "Hoshi es una app de escritorio gratuita para jugar y estudiar Go. Un tablero precioso, KataGo valorando cada jugada en vivo, efectos de cine cuando das con la mejor y música lo-fi que se anima con tus rachas.",
+    "hero.cta": "Consigue Hoshi", "hero.more": "Mira lo que hace", "hero.badge2": "Análisis con KataGo", "hero.badge3": "Juega en OGS",
+    "feat.eyebrow": "Funciones", "feat.title": "Todo lo que necesitas frente al tablero.",
+    "feat.lead": "Juega con amigos en la misma pantalla, revisa tus partidas con un motor o enfréntate al mundo en OGS.",
+    "f1.t": "Análisis con IA en vivo", "f1.d": "KataGo trabaja de fondo desde que abres Hoshi y valora cada jugada: la mejor, excelente, buena, imprecisa, error o error grave, con los puntos perdidos.",
+    "f2.t": "Jugadas que se sienten", "f2.d": "La mejor jugada hace temblar el tablero, agrieta la madera y lanza chispas. Las piedras capturadas se rompen. Los grupos en atari sudan de nervios.",
+    "f3.t": "Música adaptativa", "f3.d": "Un lo-fi tranquilo que suma batería, arpegios y una capa «overdrive» a medida que encadenas buenas jugadas, y se calma cuando fallas.",
+    "f4.t": "Territorio de un vistazo", "f4.d": "Mira el territorio seguro y potencial y el resultado estimado, con el estimador de Hoshi o el mapa de KataGo.",
+    "f5.t": "En línea en OGS", "f5.d": "Inicia sesión en online-go.com, acepta desafíos y juega en tiempo real con reloj y chat. Hoshi solo crea partidas no clasificatorias.",
+    "f6.t": "Editor SGF", "f6.d": "Abre y guarda archivos SGF, explora variantes en el árbol, añade comentarios, marcas y piedras de posición.",
+    "f7.t": "Cinco temas", "f7.d": "Cielo nocturno, Tinta y oro, Jardín zen, Minimal cálido y un homenaje Clásico, cada uno con su tablero, sus piedras y su fondo animado.",
+    "f8.t": "Tuyo, sin conexión", "f8.d": "Libre y de código abierto. No necesitas cuenta para jugar en local; el acceso a OGS usa OAuth y Hoshi nunca guarda tu contraseña.",
+    "fx.eyebrow": "Efectos", "fx.title": "Encuentra la mejor jugada. El tablero lo nota.",
+    "fx.lead": "Todos los efectos los dibuja y sintetiza Hoshi: sin vídeos de archivo ni muestras de sonido.",
+    "fx1.t": "La mejor jugada", "fx1.d": "Una explosión de cine, ondas expansivas y grietas fundidas.",
+    "fx2.t": "…y su huella", "fx2.d": "Las grietas se enfrían en la madera y se desvanecen.",
+    "fx3.t": "Capturas", "fx3.d": "Las piedras se rompen en ola, con un chasquido y una campanita.",
+    "fx4.t": "Atari", "fx4.d": "El grupo tiembla y suda. Uh-oh.",
+    "th.eyebrow": "Temas", "th.title": "Elige la sala donde juegas.",
+    "th1": "Arena rastrillada y verde musgo, aquí con la estimación de territorio.",
+    "th2": "Un nocturno sumi-e de tinta a la deriva y rojo sello.",
+    "th3": "Papel washi, madera clara y terracota.",
+    "th4": "Hoshi significa «estrella»: un cielo de medianoche con estrellas que titilan.",
+    "mu.eyebrow": "Música", "mu.title": "Una banda sonora que juega contigo.",
+    "mu.lead": "Seis capas compuestas en código se suman una a una cuando encadenas buenas jugadas. Un error grave para la cinta. El tiempo la vuelve a calmar.",
+    "mu.l1": "Piano eléctrico cálido y crujido de vinilo", "mu.l2": "Bajo y un bombo suave", "mu.l3": "Batería con swing",
+    "mu.l4": "Arpegio punteado con eco", "mu.l5": "Acordes que bombean, palmas y una melodía brillante", "mu.l6": "Overdrive: bombo a negras, bajo rodante, redobles",
+    "mu.demo": "Demo: calma, luego una racha de jugadas fuertes desde el 0:16 y un error grave al 1:10… ya lo oirás.",
+    "fp.title": "Juego limpio de serie",
+    "fp.text": "En las partidas en curso de OGS, Hoshi apaga el análisis, la estimación de territorio y todos los efectos que dependen del motor: OGS prohíbe la ayuda de IA mientras juegas. Sigues teniendo el tablero, los sonidos y las capturas; la revisión te espera al terminar.",
+    "dl.eyebrow": "Consigue Hoshi", "dl.title": "En marcha en tres pasos.",
+    "dl.lead": "Hoshi está hecho con .NET y Avalonia y funciona en Windows, macOS y Linux.",
+    "s1.t": "Instala .NET 10", "s1.d": "Descarga el SDK de .NET 10 desde dot.net para tu sistema.",
+    "s2.t": "Compila y ejecuta", "s2.d": "Desde la carpeta de Hoshi:",
+    "s3.t": "Añade KataGo (opcional)", "s3.d": "Descarga KataGo y una red (b18c384 es un buen comienzo) y elígelos en Preferencias → Análisis → Probar KataGo.",
+    "ft.credits": "Análisis de KataGo (MIT). Texturas del tema Clásico de Sabaki y Shudan (MIT). Fuentes con licencia SIL Open Font; iconos de Phosphor, Lucide y Tabler. Los efectos, sonidos y la música son de Hoshi.",
+    "ft.ogs": "Sin relación con OGS (online-go.com) ni con KataGo."
+  };
+  const EN = {};
+  document.querySelectorAll("[data-i18n]").forEach(el => EN[el.dataset.i18n] = el.textContent);
+  document.querySelectorAll("[data-i18n-html]").forEach(el => EN[el.dataset.i18nHtml] = el.innerHTML);
+
+  function setLang(lang) {
+    const t = lang === "es" ? ES : EN;
+    document.documentElement.lang = lang;
+    document.querySelectorAll("[data-i18n]").forEach(el => { const v = t[el.dataset.i18n]; if (v) el.textContent = v; });
+    document.querySelectorAll("[data-i18n-html]").forEach(el => { const v = t[el.dataset.i18nHtml]; if (v) el.innerHTML = v; });
+    document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+    try { localStorage.setItem("hoshi-lang", lang); } catch (e) { /* storage unavailable */ }
+  }
+
+  document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
+  let initial = "en";
+  try { initial = localStorage.getItem("hoshi-lang") || (navigator.language || "en").slice(0, 2); } catch (e) { /* ignore */ }
+  setLang(initial === "es" ? "es" : "en");
+</script>
+</body>
+</html>
