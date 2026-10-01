@@ -89,10 +89,16 @@ public sealed class LiveAnalysisTests
         var engine = new PonderingEngine { PartialVisits = 5 };
         var sounds = new FakeSoundService();
         var vm = new AnalysisViewModel(game, engine, new ImmediateDispatcher(), sounds, new TestSettings()) { IsAnalysisOn = true };
-        await Task.Delay(300);
+        for (int i = 0; i < 100 && vm.Suggestions.Count == 0; i++)
+        {
+            await Task.Delay(20);
+        }
 
         game.PlayCommand.Execute(new Point(15, 3));
-        await Task.Delay(300);
+        for (int i = 0; i < 100 && vm.Assessment is null; i++)
+        {
+            await Task.Delay(20);
+        }
 
         vm.Assessment!.Quality.Should().Be(MoveQuality.Best);
         sounds.Played.Should().BeEmpty("5 visits are too few to trust");
