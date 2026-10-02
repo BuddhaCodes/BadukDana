@@ -38,6 +38,8 @@
             </StackPanel>
             <ToggleSwitch IsChecked="{Binding Animations}" OnContent="{l:T Prefs.Animations}" OffContent="{l:T Prefs.Animations}" x:Name="AnimationsSwitch" />
             <TextBlock Classes="secondary" Text="{l:T Prefs.AnimationsHint}" TextWrapping="Wrap" />
+            <CheckBox IsChecked="{Binding CheckForUpdates}" Content="{l:T Prefs.CheckForUpdates}" Margin="0,8,0,0" x:Name="UpdatesBox" />
+            <TextBlock Classes="secondary" Text="{Binding UpdatesHint}" TextWrapping="Wrap" />
           </StackPanel>
         <ListBox ItemsSource="{Binding Cards}" SelectedItem="{Binding Selected}" Background="Transparent" x:Name="ThemeList">
           <ListBox.ItemsPanel>

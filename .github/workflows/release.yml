@@ -115,6 +115,9 @@ jobs:
           path: assets
           merge-multiple: true
 
+      - name: Checksums (verified by Hoshi's updater)
+        run: cd assets && sha256sum Hoshi-* > SHA256SUMS.txt && cat SHA256SUMS.txt
+
       - uses: actions/checkout@v4
         with:
           sparse-checkout: Directory.Build.props

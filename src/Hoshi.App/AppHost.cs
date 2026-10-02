@@ -38,6 +38,8 @@ public static class AppHost
         return builder.Build();
     }
 
+    public const string UpdatesHttpClient = "updates";
+
     /// <summary>Registers the application's own services, view models and views.</summary>
     public static IServiceCollection AddAppServices(this IServiceCollection services)
     {
@@ -67,6 +69,19 @@ public static class AppHost
         services.AddSingleton<Hoshi.Ogs.Joseki.JosekiExplorer>();
         services.AddSingleton<JosekiTrainerViewModel>();
         services.AddSingleton<JosekiAssistantViewModel>();
+        services.AddHttpClient(UpdatesHttpClient, http =>
+        {
+            http.Timeout = Timeout.InfiniteTimeSpan; // downloads are long; each call has its own cancellation
+            http.DefaultRequestHeaders.UserAgent.ParseAdd("Hoshi/" + Services.Updates.UpdatePlatform.Display(Services.Updates.UpdatePlatform.CurrentVersion));
+        });
+        services.AddSingleton<Services.Updates.IReleaseSource>(sp =>
+            new Services.Updates.GitHubReleaseSource(sp.GetRequiredService<IHttpClientFactory>().CreateClient(UpdatesHttpClient)));
+        services.AddSingleton<Services.Updates.IUpdateService>(sp => new Services.Updates.UpdateService(
+            sp.GetRequiredService<Services.Updates.IReleaseSource>(),
+            sp.GetRequiredService<IHttpClientFactory>().CreateClient(UpdatesHttpClient),
+            sp.GetRequiredService<ILogger<Services.Updates.UpdateService>>()));
+        services.AddSingleton<IAppShutdown, AvaloniaAppShutdown>();
+        services.AddSingleton<UpdateViewModel>();
         services.AddSingleton<GameViewModel>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddTransient<MainWindow>();

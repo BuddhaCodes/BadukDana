@@ -10,6 +10,9 @@ internal static class Program
     [STAThread]
     public static int Main(string[] args)
     {
+        // Started by an update: let the previous version finish closing first.
+        Services.Updates.UpdateService.WaitForPreviousInstance(args);
+
         IHost host = AppHost.Create(args);
         host.Start();
 
