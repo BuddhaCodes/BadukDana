@@ -6,6 +6,11 @@ public static partial class Tr
     {
         Add(d, "Prefs.Language", "Language", "Idioma");
         Add(d, "Main.Replays", "Played games…", "Partidas jugadas…");
+        Add(d, "KataGo.Title", "KataGo is not installed", "KataGo no está instalado");
+        Add(d, "KataGo.Explanation", "The AI analysis, the move effects and the adaptive music need KataGo. Hoshi can download the official build and a small, quick network for you.", "El análisis con IA, los efectos de las jugadas y la música adaptativa necesitan KataGo. Hoshi puede descargar la versión oficial y una red pequeña y rápida por ti.");
+        Add(d, "KataGo.Install", "Install KataGo (≈{0} MB)", "Instalar KataGo (≈{0} MB)");
+        Add(d, "KataGo.NotNow", "Not now", "Ahora no");
+        Add(d, "KataGo.PrefsHint", "Leave the paths empty to use the KataGo that comes with Hoshi (or install it here).", "Deja las rutas vacías para usar el KataGo que trae Hoshi (o instálalo aquí).");
         Add(d, "Online.Chat", "Chat", "Chat");
         Add(d, "Online.ChatMute", "Mute", "Silenciar");
         Add(d, "Online.ChatMuteTip", "Hide and silence your opponent's messages for this game (handy to concentrate).", "Oculta y silencia los mensajes del rival en esta partida (útil para concentrarte).");

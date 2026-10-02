@@ -154,7 +154,13 @@ public static partial class Tr
         Add(d, "Prefs.EngineTimeout", "KataGo did not answer in time.", "KataGo no respondió a tiempo.");
 
         // Engine host
-        Add(d, "Engine.NotConfigured", "KataGo is not configured (☰ → Preferences → Analysis).", "KataGo no está configurado (☰ → Preferencias → Análisis).");
+        Add(d, "KataGo.Downloading", "Downloading KataGo… {0} %", "Descargando KataGo… {0} %");
+        Add(d, "KataGo.Ready", "KataGo is ready. It warms up in the background.", "KataGo está listo. Se prepara en segundo plano.");
+        Add(d, "KataGo.StillMissing", "KataGo was downloaded but could not be used; see the log.", "KataGo se descargó pero no se pudo usar; mira el registro.");
+        Add(d, "KataGo.Failed", "Could not install KataGo: {0}", "No se pudo instalar KataGo: {0}");
+        Add(d, "KataGo.Damaged", "The download is damaged (its checksum does not match). Please try again.", "La descarga está dañada (su suma de verificación no coincide). Prueba otra vez.");
+        Add(d, "KataGo.NoBuild", "KataGo has no official build for this system. On a Mac, install it with Homebrew (brew install katago) and restart Hoshi: it will find it and download the network.", "KataGo no tiene versión oficial para este sistema. En un Mac, instálalo con Homebrew (brew install katago) y reinicia Hoshi: lo encontrará y descargará la red.");
+        Add(d, "Engine.NotConfigured", "KataGo is not installed (install it from the card on the board or ☰ → Preferences → Analysis).", "KataGo no está instalado (instálalo desde el aviso del tablero o ☰ → Preferencias → Análisis).");
         Add(d, "Engine.Unavailable", "KataGo is not available.", "KataGo no está disponible.");
 
         // Music

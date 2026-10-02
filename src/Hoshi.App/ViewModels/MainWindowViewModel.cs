@@ -43,9 +43,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IReplaysWindowService? replaysWindow = null,
         JosekiTrainerViewModel? joseki = null,
         JosekiAssistantViewModel? josekiHints = null,
-        UpdateViewModel? updates = null)
+        UpdateViewModel? updates = null,
+        KataGoSetupViewModel? kataGoSetup = null)
     {
         Updates = updates;
+        KataGoSetup = kataGoSetup;
         Joseki = joseki ?? new JosekiTrainerViewModel(Services.Joseki.NullJosekiLibrary.Instance, game);
         JosekiHints = josekiHints ?? new JosekiAssistantViewModel(game);
         _preferences = preferences;
@@ -169,6 +171,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private void OpenLobby() => _lobbyWindow?.Show();
 
     public bool HasPreferences => _preferences is not null;
+
+    /// <summary>The "Install KataGo" card (null without a host).</summary>
+    public KataGoSetupViewModel? KataGoSetup { get; }
 
     /// <summary>The update banner and "Check for updates…" (null without a host, e.g. the designer).</summary>
     public UpdateViewModel? Updates { get; }

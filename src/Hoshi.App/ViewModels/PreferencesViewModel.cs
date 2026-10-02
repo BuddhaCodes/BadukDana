@@ -102,8 +102,10 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         Services.AnalysisEngineHost? engine = null,
         Services.IFilePickerService? picker = null,
         Services.ISoundService? sounds = null,
-        Services.Music.IMusicService? music = null)
+        Services.Music.IMusicService? music = null,
+        KataGoSetupViewModel? kataGoSetup = null)
     {
+        KataGoSetup = kataGoSetup;
         _sounds = sounds;
         _musicService = music;
         _themes = themes ?? throw new ArgumentNullException(nameof(themes));
@@ -149,6 +151,9 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             _settings.Save(_settings.Current with { CheckForUpdates = value });
         }
     }
+
+    /// <summary>One-click KataGo install (null without a host).</summary>
+    public KataGoSetupViewModel? KataGoSetup { get; }
 
     public IReadOnlyList<LanguageOption> LanguageOptions { get; } = [new("en", "English"), new("es", "Español")];
 

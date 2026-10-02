@@ -10,7 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="Assets\**" Exclude="Assets\katago\**" />
+    <!-- A local KataGo dropped in Assets/katago (not in git) is copied next to the app, where Hoshi finds it as "bundled". -->
+    <None Include="Assets\katago\**" Exclude="Assets\katago\analysis_logs\**;Assets\katago\gtp_logs\**" Condition="Exists('Assets\katago')"
+          Link="katago\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <EmbeddedResource Include="Joseki\starter.sgf" LogicalName="Hoshi.Joseki.starter.sgf" />
     <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />

@@ -105,6 +105,15 @@
               <Button Classes="accent" Content="{l:T Prefs.TestKataGo}" Command="{Binding TestEngineCommand}" IsEnabled="{Binding !IsTesting}" />
             </StackPanel>
             <TextBlock Text="{Binding EngineStatus}" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" x:Name="EngineStatus" />
+            <StackPanel Spacing="6" IsVisible="{Binding KataGoSetup, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <TextBlock Classes="secondary" Text="{l:T KataGo.PrefsHint}" TextWrapping="Wrap" />
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Content="{Binding KataGoSetup.InstallLabel}" Command="{Binding KataGoSetup.InstallCommand}"
+                        IsVisible="{Binding KataGoSetup.CanInstallHere, FallbackValue=False}" x:Name="PrefsInstallKataGo" />
+                <ProgressBar Minimum="0" Maximum="1" Value="{Binding KataGoSetup.Progress}" Width="160" IsVisible="{Binding KataGoSetup.IsInstalling, FallbackValue=False}" />
+              </StackPanel>
+              <TextBlock Classes="secondary" Text="{Binding KataGoSetup.StatusText}" TextWrapping="Wrap" IsVisible="{Binding KataGoSetup.HasStatus, FallbackValue=False}" />
+            </StackPanel>
             <TextBlock Classes="secondary" TextWrapping="Wrap"
                        Text="{l:T Prefs.LiveHint}" />
 

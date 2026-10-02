@@ -83,6 +83,26 @@ jobs:
           -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none
           -p:Version=${{ steps.v.outputs.version }} -o out/Hoshi
 
+      - name: Bundle KataGo (official build + Hoshi's network)
+        if: matrix.rid == 'win-x64' || matrix.rid == 'linux-x64'
+        shell: bash
+        run: |
+          set -e
+          if [ "${{ matrix.rid }}" = "win-x64" ]; then
+            zip=katago-v1.17.1-opencl-windows-x64.zip; sum=68d0a9b11ef7e3c1ddfc5bcd400306ca66c3770dd67a22cb377d3aaaf32e8c66
+          else
+            zip=katago-v1.17.1-opencl-linux-x64.zip; sum=be537295868c0b8ff6985e62e411fff67cbba2dc872343c74896063de1ef51e9
+          fi
+          curl -sSfL -o kg.zip "https://github.com/lightvector/KataGo/releases/download/v1.17.1/$zip"
+          echo "$sum  kg.zip" | sha256sum -c -
+          mkdir -p kg out/Hoshi/katago
+          (cd kg && cmake -E tar xf ../kg.zip)
+          find kg -type f \( -iname 'katago' -o -iname 'katago.exe' -o -iname '*.dll' -o -iname 'cacert.pem' \) -exec cp {} out/Hoshi/katago/ \;
+          find kg -type f -iname 'README.txt' -exec cp {} out/Hoshi/katago/KataGo-README.txt \;
+          cp engines/katago/b10c128.txt.gz out/Hoshi/katago/
+          [ -f out/Hoshi/katago/katago ] && chmod +x out/Hoshi/katago/katago
+          ls -la out/Hoshi/katago
+
       - name: Package (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -136,14 +156,20 @@ jobs:
           path: assets
           merge-multiple: true
 
-      - name: Checksums (verified by Hoshi's updater)
-        run: cd assets && sha256sum Hoshi-* > SHA256SUMS.txt && cat SHA256SUMS.txt
-
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
-          sparse-checkout: Directory.Build.props
+          sparse-checkout: |
+            Directory.Build.props
+            engines/katago
+          sparse-checkout-cone-mode: false
           path: src-props
+
+      - name: Network asset (downloaded by "Install KataGo")
+        run: cp src-props/engines/katago/b10c128.txt.gz assets/Hoshi-katago-b10c128.txt.gz
+
+      - name: Checksums (verified by Hoshi's updater)
+        run: cd assets && sha256sum Hoshi-* > SHA256SUMS.txt && cat SHA256SUMS.txt
 
       - name: Tag
         id: tag
