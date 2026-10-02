@@ -48,12 +48,52 @@ public sealed class KataGoLocatorTests : IDisposable
         File.WriteAllText(Path.Combine(installed, "net.bin.gz"), "net");
         KataGoLocator.Resolve(new AppSettings(), App, Data, systemPaths: [])!.Source.Should().Be(KataGoSource.Installed);
 
-        var configured = new AppSettings { KataGoExecutable = "/opt/k/katago", KataGoModel = "/opt/k/m.bin.gz" };
+        string own = Directory.CreateDirectory(Path.Combine(_root, "own")).FullName;
+        string exe = Path.Combine(own, "katago");
+        string net = Path.Combine(own, "m.bin.gz");
+        File.WriteAllText(exe, "x");
+        File.WriteAllText(net, "net");
+        var configured = new AppSettings { KataGoExecutable = exe, KataGoModel = net };
         ResolvedKataGo k = KataGoLocator.Resolve(configured, App, Data, systemPaths: [])!;
         k.Source.Should().Be(KataGoSource.Configured);
-        k.Options.Executable.Should().Be("/opt/k/katago");
+        k.Options.Executable.Should().Be(exe);
+        k.Options.Model.Should().Be(net);
         k.Options.Config.Should().EndWith(KataGoLocator.ConfigName, "an empty config falls back to Hoshi's");
         k.Options.Overrides.Should().BeNull();
+    }
+
+    [Fact]
+    public void Stale_preferences_paths_fall_back_to_the_bundled_copy()
+    {
+        string folder = Directory.CreateDirectory(Path.Combine(App, "katago")).FullName;
+        File.WriteAllText(Path.Combine(folder, KataGoLocator.ExecutableName), "x");
+        File.WriteAllText(Path.Combine(folder, "b10c128.txt.gz"), "net");
+        var stale = new AppSettings
+        {
+            KataGoExecutable = Path.Combine(_root, "gone", "katago.exe"),
+            KataGoModel = Path.Combine(_root, "gone", "model.txt"),
+            KataGoConfig = Path.Combine(_root, "gone", "analysis_example.cfg"),
+        };
+
+        ResolvedKataGo k = KataGoLocator.Resolve(stale, App, Data, systemPaths: [])!;
+
+        k.Source.Should().Be(KataGoSource.Bundled);
+        k.Options.Model.Should().EndWith("b10c128.txt.gz");
+        k.Options.Config.Should().EndWith(KataGoLocator.ConfigName);
+    }
+
+    [Fact]
+    public void A_configured_executable_with_a_missing_model_uses_hoshis_network()
+    {
+        string folder = Directory.CreateDirectory(Path.Combine(App, "katago")).FullName;
+        File.WriteAllText(Path.Combine(folder, "b10c128.txt.gz"), "net");
+        string exe = Path.Combine(_root, "katago");
+        File.WriteAllText(exe, "x");
+
+        ResolvedKataGo k = KataGoLocator.Resolve(new AppSettings { KataGoExecutable = exe, KataGoModel = Path.Combine(_root, "gone.bin.gz") }, App, Data, systemPaths: [])!;
+
+        k.Source.Should().Be(KataGoSource.Configured);
+        k.Options.Model.Should().EndWith("b10c128.txt.gz");
     }
 
     [Fact]

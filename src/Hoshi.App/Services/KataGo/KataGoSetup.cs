@@ -60,11 +60,13 @@ public static class KataGoLocator
     public static ResolvedKataGo? Resolve(AppSettings settings, string baseDirectory, string dataDirectory, IEnumerable<string>? systemPaths = null)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        if (!string.IsNullOrWhiteSpace(settings.KataGoExecutable))
+        // Preferences win, but only while the executable is still there: stale paths (a folder moved or deleted)
+        // fall through to the bundled / installed copy instead of leaving Hoshi without an engine.
+        if (!string.IsNullOrWhiteSpace(settings.KataGoExecutable) && File.Exists(settings.KataGoExecutable))
         {
             string exe = settings.KataGoExecutable;
-            string model = settings.KataGoModel ?? string.Empty;
-            string config = string.IsNullOrWhiteSpace(settings.KataGoConfig) ? EnsureConfig(dataDirectory) : settings.KataGoConfig;
+            string model = settings.KataGoModel is { Length: > 0 } m && File.Exists(m) ? m : string.Empty;
+            string config = settings.KataGoConfig is { Length: > 0 } c && File.Exists(c) ? c : EnsureConfig(dataDirectory);
             if (string.IsNullOrWhiteSpace(model))
             {
                 model = FindModel(Path.Combine(baseDirectory, FolderName)) ?? FindModel(DataFolder(dataDirectory)) ?? string.Empty;
