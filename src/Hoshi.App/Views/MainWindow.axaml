@@ -276,6 +276,8 @@
           <StackPanel Spacing="8">
             <TextBlock Text="{Binding Updates.Text}" FontWeight="SemiBold" TextWrapping="Wrap" x:Name="UpdateText"
                        IsVisible="{Binding Updates.Text, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <TextBlock Classes="secondary" Text="{Binding Updates.InstallerHint}" TextWrapping="Wrap" FontSize="12.5" x:Name="UpdateHint"
+                       IsVisible="{Binding Updates.InstallerHint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
             <TextBlock Classes="secondary" Text="{Binding Updates.StatusText}" TextWrapping="Wrap" FontSize="12.5" x:Name="UpdateStatus"
                        IsVisible="{Binding Updates.HasStatus, FallbackValue=False}" />
             <ProgressBar Minimum="0" Maximum="1" Value="{Binding Updates.Progress}" Height="4" MinHeight="4" IsVisible="{Binding Updates.IsBusy, FallbackValue=False}" />

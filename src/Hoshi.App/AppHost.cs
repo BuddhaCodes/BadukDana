@@ -76,9 +76,10 @@ public static class AppHost
         });
         services.AddSingleton<Services.Updates.IReleaseSource>(sp =>
             new Services.Updates.GitHubReleaseSource(sp.GetRequiredService<IHttpClientFactory>().CreateClient(UpdatesHttpClient)));
+        services.AddSingleton<Services.Updates.IAppUpdater>(_ => new Services.Updates.VelopackUpdater());
         services.AddSingleton<Services.Updates.IUpdateService>(sp => new Services.Updates.UpdateService(
+            sp.GetRequiredService<Services.Updates.IAppUpdater>(),
             sp.GetRequiredService<Services.Updates.IReleaseSource>(),
-            sp.GetRequiredService<IHttpClientFactory>().CreateClient(UpdatesHttpClient),
             sp.GetRequiredService<ILogger<Services.Updates.UpdateService>>()));
         services.AddSingleton<IAppShutdown, AvaloniaAppShutdown>();
         services.AddSingleton<IKataGoInstaller, DefaultKataGoInstaller>();
