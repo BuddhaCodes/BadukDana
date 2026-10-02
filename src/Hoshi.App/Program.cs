@@ -10,8 +10,8 @@ internal static class Program
     [STAThread]
     public static int Main(string[] args)
     {
-        // Started by an update: let the previous version finish closing first.
-        Services.Updates.UpdateService.WaitForPreviousInstance(args);
+        // Velopack: install/uninstall/update hooks (shortcuts and the like) run here and exit; must come first.
+        Velopack.VelopackApp.Build().SetArgs(args).Run();
 
         IHost host = AppHost.Create(args);
         host.Start();

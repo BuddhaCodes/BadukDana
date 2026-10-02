@@ -46,6 +46,15 @@ Shippori Mincho B1 Japanese subsets that hold 星 and 正). No Reserved Font Nam
 | bzip2 (`bz2.dll`, Windows) | shipped inside KataGo's Windows build | bzip2 (BSD-style) | `licenses/bzip2.txt` |
 | Microsoft Visual C++ runtime (`msvcp140*.dll`, `vcruntime140*.dll`, Windows) | shipped inside KataGo's Windows build | Microsoft Visual C++ Redistributable terms | — |
 
+### Installers and updates (Velopack)
+
+| Component | Where | License | Text |
+|---|---|---|---|
+| Velopack 1.2.161 (`Velopack.dll`; the `Update.exe` / `UpdateMac` / `UpdateNix` helpers and `Setup.exe` added by `vpk`) | every installer and update package | MIT, © 2021 Caelan Sayler, © 2024 Velopack Ltd. | `licenses/MIT-Velopack.txt` |
+| AppImage type2-runtime (the start-up code of the Linux `.AppImage`) | Linux `.AppImage` | MIT, © 2004-23 probonopd; it links libfuse (LGPL-2.0, github.com/libfuse/libfuse), squashfuse (BSD-2, github.com/vasi/squashfuse), libzstd (BSD-3) and zlib (zlib) | `licenses/MIT-AppImage-type2-runtime.txt` |
+
+`vpk` also uses zstd, mksquashfs and (for MSI, not used here) WiX while building; they are not shipped.
+
 ### Icons
 
 Converted to path data by `tools/gen_icons.py` into `src/Hoshi.App/Themes/IconSets.g.cs`.

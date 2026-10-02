@@ -25,6 +25,7 @@
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Velopack" />
     <!-- Direct reference only to lift the transitive version (see Directory.Packages.props). -->
     <PackageReference Include="Tmds.DBus.Protocol" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />

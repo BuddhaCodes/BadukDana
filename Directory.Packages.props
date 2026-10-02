@@ -7,6 +7,8 @@
 
   <ItemGroup Label="UI">
     <PackageVersion Include="Avalonia" Version="$(AvaloniaVersion)" />
+    <!-- Installers and delta updates (MIT). -->
+    <PackageVersion Include="Velopack" Version="1.2.161" />
     <PackageVersion Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />

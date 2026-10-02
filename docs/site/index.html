@@ -474,30 +474,32 @@
     <div class="head">
       <p class="eyebrow" data-i18n="dl.eyebrow">Get Hoshi</p>
       <h2 data-i18n="dl.title">Download and play.</h2>
-      <p data-i18n="dl.lead">Ready-to-run apps for Windows, macOS and Linux, built with Avalonia. Nothing else to install: .NET comes inside, and Hoshi tells you when a new version is out and updates itself in one click.</p>
+      <p data-i18n="dl.lead">Installers for Windows, macOS and Linux, built with Avalonia. Nothing else to install: .NET comes inside. Once installed, Hoshi updates itself in one click and only downloads what changed.</p>
     </div>
     <div class="dl-main">
-      <a class="btn primary big" id="dl-primary" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-windows-x64.zip">Download</a>
+      <a class="btn primary big" id="dl-primary" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-win-x64-Setup.exe">Download</a>
       <p class="muted" id="dl-meta" data-i18n="dl.meta">Free · open source · other systems below</p>
     </div>
     <div class="platforms">
       <div class="card" data-os="windows">
         <h3>Windows</h3>
-        <p class="muted" data-i18n="pw.d">Windows 10 or 11. Unzip and run Hoshi.exe.</p>
-        <div class="arch"><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-windows-x64.zip">x64</a><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-windows-arm64.zip">ARM64</a></div>
-        <p class="note" data-i18n="pw.n">First launch: if SmartScreen warns about an unknown publisher, choose “More info” → “Run anyway”.</p>
+        <p class="muted" data-i18n="pw.d">Windows 10 or 11. Run the installer: Hoshi appears in the Start menu and on the desktop, and updates itself.</p>
+        <div class="arch"><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-win-x64-Setup.exe">x64</a><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-win-arm64-Setup.exe">ARM64</a></div>
+        <p class="note"><span data-i18n="pw.n">First launch: if SmartScreen warns about an unknown publisher, choose “More info” → “Run anyway”.</span> <span data-i18n="portable">Portable:</span> <a href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-win-x64-Portable.zip">x64</a> · <a href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-win-arm64-Portable.zip">ARM64</a></p>
       </div>
       <div class="card" data-os="macos">
         <h3>macOS</h3>
-        <p class="muted" data-i18n="pm.d">macOS 12 or later. Unzip and drag Hoshi.app to Applications.</p>
-        <div class="arch"><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-macos-arm64.zip" data-i18n="pm.arm">Apple Silicon</a><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-macos-x64.zip">Intel</a></div>
-        <p class="note" data-i18n="pm.n">First launch: right-click Hoshi.app → Open → Open. Hoshi is not notarized by Apple yet.</p>
+        <p class="muted" data-i18n="pm.d">macOS 12 or later. Open the .pkg and follow the steps: Hoshi goes to Applications and updates itself.</p>
+        <div class="arch"><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-osx-arm64-Setup.pkg" data-i18n="pm.arm">Apple Silicon</a><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-osx-x64-Setup.pkg">Intel</a></div>
+        <p class="note"><span data-i18n="pm.n">Hoshi is not notarized by Apple yet: if macOS refuses the .pkg, right-click it → Open, or allow it in System Settings → Privacy &amp; Security.</span> <span data-i18n="portable">Portable:</span> <a href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-osx-arm64-Portable.zip">Apple Silicon</a> · <a href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-osx-x64-Portable.zip">Intel</a></p>
       </div>
       <div class="card" data-os="linux">
         <h3>Linux</h3>
-        <p class="muted" data-i18n="pl.d">Any recent x64 or ARM64 distribution. Unpack, then run ./install.sh for a menu entry, or just ./Hoshi.</p>
-        <div class="arch"><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-linux-x64.tar.gz">x64</a><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-linux-arm64.tar.gz">ARM64</a></div>
-        <p class="note" data-i18n="pl.n">Music needs PulseAudio/PipeWire (pacat) or ALSA (aplay).</p>
+        <p class="muted" data-i18n="pl.d">Any recent x64 or ARM64 distribution. One file: make it executable and run it — it updates itself.</p>
+        <div class="arch"><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-linux-x64.AppImage">x64</a><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-linux-arm64.AppImage">ARM64</a></div>
+        <pre style="margin-top:2px">chmod +x HoshiGo-linux-x64.AppImage
+./HoshiGo-linux-x64.AppImage</pre>
+        <p class="note"><span data-i18n="pl.n">If it does not start, install FUSE 2 (sudo apt install libfuse2). Music needs PulseAudio/PipeWire (pacat) or ALSA (aplay).</span> <span data-i18n="portable2">Classic archive:</span> <a href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-linux-x64.tar.gz">x64</a> · <a href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-linux-arm64.tar.gz">ARM64</a></p>
       </div>
     </div>
     <div class="extras">
@@ -579,14 +581,14 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
     "fp.title": "Juego limpio de serie",
     "fp.text": "En las partidas en curso de OGS, KataGo se queda apagado: OGS prohíbe la ayuda de IA mientras juegas. Las sugerencias de joseki y el entrenador también se apagan. Los efectos y la música siguen entonces la pelea del tablero (contacto, libertades, capturas) y tienes la estimación rápida de territorio de Hoshi. Cada partida se guarda en tu biblioteca, donde te espera la revisión con IA, con todos sus efectos.",
     "dl.eyebrow": "Consigue Hoshi", "dl.title": "Descarga y juega.",
-    "dl.lead": "Apps listas para usar en Windows, macOS y Linux, hechas con Avalonia. No hay que instalar nada más: .NET va dentro, y Hoshi te avisa cuando sale una versión nueva y se actualiza con un clic.",
+    "dl.lead": "Instaladores para Windows, macOS y Linux, hechos con Avalonia. No hay que instalar nada más: .NET va dentro. Una vez instalado, Hoshi se actualiza con un clic y solo descarga lo que cambió.",
     "dl.meta": "Gratis · código abierto · otros sistemas abajo",
-    "pw.d": "Windows 10 u 11. Descomprime y abre Hoshi.exe.",
+    "pw.d": "Windows 10 u 11. Ejecuta el instalador: Hoshi aparece en el menú Inicio y en el escritorio, y se actualiza solo.", "portable": "Portátil:", "portable2": "Archivo clásico:",
     "pw.n": "Primera vez: si SmartScreen avisa de un editor desconocido, elige «Más información» → «Ejecutar de todas formas».",
-    "pm.d": "macOS 12 o posterior. Descomprime y arrastra Hoshi.app a Aplicaciones.", "pm.arm": "Apple Silicon",
-    "pm.n": "Primera vez: clic derecho en Hoshi.app → Abrir → Abrir. Hoshi aún no está notarizado por Apple.",
-    "pl.d": "Cualquier distribución reciente x64 o ARM64. Descomprime y ejecuta ./install.sh para tenerlo en el menú, o simplemente ./Hoshi.",
-    "pl.n": "La música necesita PulseAudio/PipeWire (pacat) o ALSA (aplay).",
+    "pm.d": "macOS 12 o posterior. Abre el .pkg y sigue los pasos: Hoshi va a Aplicaciones y se actualiza solo.", "pm.arm": "Apple Silicon",
+    "pm.n": "Hoshi aún no está notarizado por Apple: si macOS rechaza el .pkg, haz clic derecho → Abrir, o permítelo en Ajustes del Sistema → Privacidad y seguridad.",
+    "pl.d": "Cualquier distribución reciente x64 o ARM64. Un solo archivo: hazlo ejecutable y ábrelo; se actualiza solo.",
+    "pl.n": "Si no arranca, instala FUSE 2 (sudo apt install libfuse2). La música necesita PulseAudio/PipeWire (pacat) o ALSA (aplay).",
     "s2.t": "Compilar desde el código", "s2.d": "Con el SDK de .NET 10:",
     "s3.t": "KataGo incluido", "s3.d": "Las descargas de Windows y Linux traen KataGo y una red rápida, listos desde el primer arranque. En un Mac, ejecuta brew install katago y Hoshi lo encuentra. Puedes elegir redes más fuertes en Preferencias → Análisis.",
     "ft.credits": "Análisis de KataGo (MIT). Texturas del tema Clásico de Sabaki y Shudan (MIT). Fuentes con licencia SIL Open Font; iconos de Phosphor, Lucide y Tabler. Las valoraciones y comentarios de josekis llegan en vivo del Joseki Explorer de OGS, un proyecto comunitario. Los tableros, las piedras, los fondos, los efectos, los sonidos y la música son de Hoshi.",
@@ -601,7 +603,7 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
   const DL = "https://github.com/BuddhaCodes/BadukDana/releases/latest/download/";
   const OS_NAME = { windows: "Windows", macos: "macOS", linux: "Linux" };
   const FOR = { en: "Download for {0}", es: "Descargar para {0}" };
-  const VER = { en: "Version {0} · free · open source", es: "Versión {0} · gratis · código abierto" };
+  const VER = { en: "Version {0} · installer · free · open source", es: "Versión {0} · instalador · gratis · código abierto" };
   const sys = { os: "windows", arch: "x64", version: null };
   (function detect() {
     const ua = navigator.userAgent || "";
@@ -626,8 +628,8 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
 
   function renderDownload() {
     const lang = document.documentElement.lang === "es" ? "es" : "en";
-    const file = sys.os === "windows" ? `Hoshi-windows-${sys.arch}.zip`
-      : sys.os === "macos" ? `Hoshi-macos-${sys.arch}.zip` : `Hoshi-linux-${sys.arch}.tar.gz`;
+    const file = sys.os === "windows" ? `HoshiGo-win-${sys.arch}-Setup.exe`
+      : sys.os === "macos" ? `HoshiGo-osx-${sys.arch}-Setup.pkg` : `HoshiGo-linux-${sys.arch}.AppImage`;
     const a = document.getElementById("dl-primary");
     a.href = DL + file;
     a.textContent = FOR[lang].replace("{0}", OS_NAME[sys.os]);

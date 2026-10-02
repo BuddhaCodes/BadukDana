@@ -23,15 +23,18 @@ public sealed class AvaloniaAppShutdown : IAppShutdown
 }
 
 /// <summary>
-/// The update banner. Shortly after start (and every 12 hours) asks GitHub for the latest release; when it is
-/// newer, offers it. "Update" downloads this system's file, verifies its checksum, puts it in place and restarts
-/// Hoshi; a copy that cannot replace itself (run from source, or installed somewhere read-only) opens the download
-/// page instead. Never during the player's live OGS game.
+/// The update banner. Shortly after start (and every 12 hours) looks for a newer release; when there is one, offers
+/// it. "Update" downloads it (Velopack: only what changed when possible), closes Hoshi normally (the game is saved)
+/// and the new version starts. A copy not installed with the installer (run from source, or the old .zip downloads)
+/// opens the download page instead. Never during the player's live OGS game.
 /// </summary>
 public sealed partial class UpdateViewModel : ViewModelBase
 {
     public static readonly TimeSpan FirstCheckDelay = TimeSpan.FromSeconds(8);
     public static readonly TimeSpan CheckInterval = TimeSpan.FromHours(12);
+
+    /// <summary>Where the installers are offered (the website picks the visitor's system).</summary>
+    public static readonly Uri DownloadPage = new("https://buddhacodes.github.io/BadukDana/#download");
 
     private readonly IUpdateService _updates;
     private readonly ISettingsService? _settings;
@@ -44,7 +47,7 @@ public sealed partial class UpdateViewModel : ViewModelBase
     private object?[] _statusArgs = [];
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsVisible), nameof(Text))]
+    [NotifyPropertyChangedFor(nameof(IsVisible), nameof(Text), nameof(InstallerHint))]
     [NotifyCanExecuteChangedFor(nameof(UpdateCommand))]
     private ReleaseInfo? _available;
 
@@ -89,6 +92,9 @@ public sealed partial class UpdateViewModel : ViewModelBase
         : null;
 
     public string? StatusText => _statusKey is null ? null : Tr.F(_statusKey, _statusArgs);
+
+    /// <summary>Shown under the offer when this copy cannot update itself.</summary>
+    public string? InstallerHint => Available is not null && !_updates.CanInstall ? Tr.T("Update.InstallerHint") : null;
 
     public bool HasStatus => StatusText is not null;
 
@@ -174,7 +180,7 @@ public sealed partial class UpdateViewModel : ViewModelBase
         {
             if (_browser is not null)
             {
-                await _browser.OpenAsync(release.PageUrl, CancellationToken.None);
+                await _browser.OpenAsync(DownloadPage, CancellationToken.None);
             }
 
             return;
@@ -196,11 +202,9 @@ public sealed partial class UpdateViewModel : ViewModelBase
                 Progress = p;
                 SetStatus("Update.Downloading", (int)Math.Round(p * 100));
             });
-            string archive = await _updates.DownloadAsync(release, progress, CancellationToken.None);
-            SetStatus("Update.Installing");
-            string installed = await Task.Run(() => _updates.Install(archive));
+            await _updates.DownloadAsync(release, progress, CancellationToken.None);
             SetStatus("Update.Restarting");
-            _updates.Launch(installed);
+            _updates.ApplyOnExitAndRestart(release);
             _shutdown?.Shutdown();
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException or InvalidDataException or UnauthorizedAccessException or InvalidOperationException or System.ComponentModel.Win32Exception)
