@@ -1,20 +1,17 @@
 name: Release
 
-# Every push to main builds self-contained Hoshi apps (no .NET needed on the user's machine) and publishes them
-# as a new GitHub Release, fully automatically. The version is <Version from Directory.Build.props without its
-# patch number>.<run number>, e.g. 0.1.7, and the tag v0.1.7 is created by the release step.
-# Asset names carry no version, so https://github.com/BuddhaCodes/BadukDana/releases/latest/download/<asset>
-# always points at the newest build (the website links there).
-# Pushes that only touch the website or Markdown files do not make a new release.
+# Runs after CI has passed on main (build + tests on Windows, macOS and Linux), so a release never ships a
+# broken build. It builds self-contained Hoshi apps (no .NET needed) and publishes them as a GitHub Release,
+# fully automatically. The version is <major.minor from Directory.Build.props>.<run number>, e.g. 0.1.7; the tag
+# v0.1.7 is created by the release step. Asset names carry no version, so
+# https://github.com/BuddhaCodes/BadukDana/releases/latest/download/<asset> always points at the newest build.
+# When nothing but the website, Markdown or workflow files changed since the last release, nothing is published.
 
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
-    paths-ignore:
-      - "docs/**"
-      - "**/*.md"
-      - ".github/workflows/pages.yml"
-      - ".github/workflows/ci.yml"
 
 concurrency:
   group: release
@@ -28,8 +25,30 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 jobs:
+  changes:
+    name: Anything to release?
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.diff.outputs.release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - id: diff
+        run: |
+          last=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)
+          if [ -z "$last" ]; then echo "release=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          changed=$(git diff --name-only "$last" HEAD | grep -vE '^(docs/|\.github/)|\.md$' || true)
+          echo "Changed since $last:"; echo "$changed"
+          [ -n "$changed" ] && echo "release=true" >> "$GITHUB_OUTPUT" || echo "release=false" >> "$GITHUB_OUTPUT"
+
   build:
     name: ${{ matrix.rid }}
+    needs: changes
+    if: needs.changes.outputs.release == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -43,6 +62,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - uses: actions/setup-dotnet@v4
         with:
@@ -120,6 +141,7 @@ jobs:
 
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.workflow_run.head_sha }}
           sparse-checkout: Directory.Build.props
           path: src-props
 
@@ -132,7 +154,7 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
-          target_commitish: ${{ github.sha }}
+          target_commitish: ${{ github.event.workflow_run.head_sha }}
           name: Hoshi ${{ steps.tag.outputs.tag }}
           make_latest: true
           generate_release_notes: true
