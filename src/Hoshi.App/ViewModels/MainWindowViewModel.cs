@@ -42,8 +42,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         ReplaysViewModel? replaysList = null,
         IReplaysWindowService? replaysWindow = null,
         JosekiTrainerViewModel? joseki = null,
-        JosekiAssistantViewModel? josekiHints = null)
+        JosekiAssistantViewModel? josekiHints = null,
+        UpdateViewModel? updates = null)
     {
+        Updates = updates;
         Joseki = joseki ?? new JosekiTrainerViewModel(Services.Joseki.NullJosekiLibrary.Instance, game);
         JosekiHints = josekiHints ?? new JosekiAssistantViewModel(game);
         _preferences = preferences;
@@ -166,6 +168,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private void OpenLobby() => _lobbyWindow?.Show();
 
     public bool HasPreferences => _preferences is not null;
+
+    /// <summary>The update banner and "Check for updates…" (null without a host, e.g. the designer).</summary>
+    public UpdateViewModel? Updates { get; }
 
     /// <summary>The joseki trainer, shown on the main board (Ctrl+J).</summary>
     public JosekiTrainerViewModel Joseki { get; }

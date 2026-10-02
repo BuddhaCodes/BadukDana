@@ -118,6 +118,12 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 - `Hoshi.Core.FightMeter`: lee cada jugada (contacto con piedras rivales, grupos con 1–3 libertades a ≤2 casillas, capturas) → `FightReading(Intensity, Heat, Strength)`; el calor sube mientras las jugadas siguen en la misma zona (radio 4) y se enfría con tenuki. `AnalysisViewModel` lo usa cuando KataGo no está activo (OGS en curso o sin configurar): impacto y sonido según `Strength`, y `BattleHeat` → `MusicDirector.OnBattleHeat`.
 - `GameViewModel.MoveSettled` (tableros antes/después, punto, nodo) y `TreeReplacing` (el árbol que se va). `ReplayRecorder` guarda en `IReplayStore` la partida que se va (local: id propio; OGS: `ogs-<id>`, también al terminar; réplica: solo si cambió). `MainWindowViewModel.OpenReplay` carga al principio con `Game.IsReview = true`: cada paso adelante espera la valoración de KataGo y celebra como una jugada.
 
+### Actualizaciones
+
+- `Services/Updates`: `GitHubReleaseSource` (API pública `releases/latest`; `HOSHI_UPDATE_FEED` la sustituye en pruebas), `UpdatePlatform` (versión propia, archivo por SO/arquitectura, tipo de instalación: desarrollo, carpeta o `Hoshi.app`), `UpdateInstaller` (extrae, renombra lo reemplazado a `*.old`, mueve lo nuevo; en macOS cambia el bundle entero con `ditto`; limpia al arrancar) y `UpdateService` (descarga con progreso, verifica `SHA256SUMS.txt`, lanza la nueva versión con `--wait-for-pid`).
+- `UpdateViewModel`: comprueba a los 8 s y cada 12 h (`AppSettings.CheckForUpdates`, `SkippedUpdate`), aviso en la esquina del tablero (Actualizar y reiniciar · Más tarde · Saltar), menú «Buscar actualizaciones…». Una copia que no puede reemplazarse (desde el código o en una carpeta sin permiso) abre la página de la versión. No instala durante una partida de OGS en curso.
+- `Program.Main` llama primero a `UpdateService.WaitForPreviousInstance`, para que la versión vieja termine de cerrarse.
+
 ### Localización
 - `Hoshi.Core.Localization.Tr`: tabla clave → (inglés, español), sin dependencias; cada capa añade sus textos en `Strings.<Capa>.cs` (Core, Engines, Ogs, App, Views). `Tr.T(clave)` / `Tr.F(clave, args)` (formato invariante). Idioma por defecto inglés (`AppSettings.Language`); `Tr.LanguageChanged` refresca la UI.
 - XAML: `{l:T Clave}` (`TExtension` → binding a `LocalizedStrings.Instance[clave]`), se actualiza en vivo. Los ViewModels refrescan todas sus propiedades al cambiar de idioma (`ViewModelBase`).

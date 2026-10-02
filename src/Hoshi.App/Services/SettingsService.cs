@@ -45,6 +45,12 @@ public sealed record AppSettings
 
     /// <summary>Show known joseki continuations on the main board (J).</summary>
     public bool JosekiHints { get; init; }
+
+    /// <summary>Ask GitHub for a newer Hoshi shortly after start and every 12 hours.</summary>
+    public bool CheckForUpdates { get; init; } = true;
+
+    /// <summary>A version the user chose to skip (e.g. "0.1.7"); newer ones are offered again.</summary>
+    public string? SkippedUpdate { get; init; }
 }
 
 public interface ISettingsService

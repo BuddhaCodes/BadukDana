@@ -52,6 +52,7 @@ public partial class App : Application
                 : new MainWindow { DataContext = new MainWindowViewModel() };
         }
 
+        _services?.GetService<UpdateViewModel>()?.Start();
         base.OnFrameworkInitializationCompleted();
     }
 }

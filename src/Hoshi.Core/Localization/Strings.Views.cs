@@ -6,6 +6,22 @@ public static partial class Tr
     {
         Add(d, "Prefs.Language", "Language", "Idioma");
         Add(d, "Main.Replays", "Played games…", "Partidas jugadas…");
+        Add(d, "Main.CheckUpdates", "Check for updates…", "Buscar actualizaciones…");
+        Add(d, "Prefs.CheckForUpdates", "Check for updates automatically", "Buscar actualizaciones automáticamente");
+        Add(d, "Prefs.UpdatesHint", "This is Hoshi {0}. Hoshi asks GitHub for the latest release shortly after it starts and every 12 hours; nothing about you is sent.", "Esta es Hoshi {0}. Hoshi pregunta a GitHub por la última versión poco después de abrirse y cada 12 horas; no se envía nada sobre ti.");
+        Add(d, "Update.Available", "Hoshi {0} is available (you have {1}).", "Hoshi {0} está disponible (tienes la {1}).");
+        Add(d, "Update.Install", "Update and restart", "Actualizar y reiniciar");
+        Add(d, "Update.Download", "Download", "Descargar");
+        Add(d, "Update.Later", "Later", "Más tarde");
+        Add(d, "Update.Skip", "Skip this version", "Saltar esta versión");
+        Add(d, "Update.Checking", "Checking for updates…", "Buscando actualizaciones…");
+        Add(d, "Update.UpToDate", "You have the latest version ({0}).", "Tienes la última versión ({0}).");
+        Add(d, "Update.CheckFailed", "Could not reach GitHub to check for updates.", "No se pudo consultar GitHub para buscar actualizaciones.");
+        Add(d, "Update.Downloading", "Downloading… {0} %", "Descargando… {0} %");
+        Add(d, "Update.Installing", "Installing…", "Instalando…");
+        Add(d, "Update.Restarting", "Restarting Hoshi…", "Reiniciando Hoshi…");
+        Add(d, "Update.Failed", "The update failed: {0}", "La actualización falló: {0}");
+        Add(d, "Update.AfterGame", "Finish your OGS game first; the update will wait.", "Termina primero tu partida de OGS; la actualización esperará.");
         Add(d, "Main.Joseki", "Joseki trainer", "Entrenador de josekis");
 
         // Joseki trainer

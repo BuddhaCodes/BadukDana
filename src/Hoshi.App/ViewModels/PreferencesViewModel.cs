@@ -119,6 +119,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             _stoneSounds = s.StoneSounds;
             _atariAlerts = s.AtariAlerts;
             _musicVolume = s.MusicVolume;
+            _checkForUpdates = s.CheckForUpdates;
         }
 
         string language = Tr.Normalize(settings?.Current.Language ?? Tr.English);
@@ -129,6 +130,20 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         _selected.IsSelected = true;
         _animations = themes.Animations;
         _loaded = true;
+    }
+
+    /// <summary>Ask GitHub for a newer Hoshi (saved at once).</summary>
+    [ObservableProperty]
+    private bool _checkForUpdates = true;
+
+    public string UpdatesHint => Tr.F("Prefs.UpdatesHint", Services.Updates.UpdatePlatform.Display(Services.Updates.UpdatePlatform.CurrentVersion));
+
+    partial void OnCheckForUpdatesChanged(bool value)
+    {
+        if (_loaded && _settings is not null)
+        {
+            _settings.Save(_settings.Current with { CheckForUpdates = value });
+        }
     }
 
     public IReadOnlyList<LanguageOption> LanguageOptions { get; } = [new("en", "English"), new("es", "Español")];
