@@ -46,6 +46,9 @@ public sealed class OgsGameSession : IDisposable
 
     public event EventHandler<OgsChatLine>? ChatReceived;
 
+    /// <summary>Chat lines a moderator removed (their chat ids).</summary>
+    public event EventHandler<IReadOnlyList<string>>? ChatRemoved;
+
     /// <summary>Server error for this game (e.g. a rejected move), already human readable.</summary>
     public event EventHandler<string>? ErrorReceived;
 
@@ -96,6 +99,7 @@ public sealed class OgsGameSession : IDisposable
                 ChatReceived?.Invoke(this, line);
             }
         }));
+        _subscriptions.Add(_client.Subscribe(p + "chat/remove", d => ChatRemoved?.Invoke(this, OgsGameParser.ParseChatRemoval(d))));
         _subscriptions.Add(_client.Subscribe(p + "error", d => ErrorReceived?.Invoke(this, d.ValueKind == JsonValueKind.String ? d.GetString() ?? "Error" : d.ToString())));
         _subscriptions.Add(_client.Subscribe(p + "undo_requested", d => UndoRequested?.Invoke(this, MoveNumberOf(d))));
         _subscriptions.Add(_client.Subscribe(p + "undo_accepted", OnUndoAccepted));
@@ -119,6 +123,33 @@ public sealed class OgsGameSession : IDisposable
         {
             ["game_id"] = GameId,
             ["body"] = body.Trim(),
+            ["type"] = "main",
+            ["move_number"] = MoveCount,
+        });
+    }
+
+    /// <summary>
+    /// Sends a phrase in several languages (<c>{type: "translated", en: …, es: …}</c>, goban
+    /// <c>GameChatTranslatedMessage</c>): every player reads it in their own language. "en" is required.
+    /// </summary>
+    public void SendTranslatedChat(IReadOnlyDictionary<string, string> phrases)
+    {
+        ArgumentNullException.ThrowIfNull(phrases);
+        if (!phrases.ContainsKey("en"))
+        {
+            throw new ArgumentException("A translated chat message needs an English text.", nameof(phrases));
+        }
+
+        var body = new JsonObject { ["type"] = "translated" };
+        foreach ((string language, string text) in phrases)
+        {
+            body[language] = text;
+        }
+
+        _client.Send("game/chat", new JsonObject
+        {
+            ["game_id"] = GameId,
+            ["body"] = body,
             ["type"] = "main",
             ["move_number"] = MoveCount,
         });

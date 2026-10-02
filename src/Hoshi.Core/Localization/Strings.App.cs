@@ -106,6 +106,15 @@ public static partial class Tr
 
         // OGS game
         Add(d, "Online.ChatHeader", "{0} · move {1}", "{0} · jugada {1}");
+        Add(d, "Online.ChatVariation", "[shared a variation: {0}]", "[compartió una variante: {0}]");
+        Add(d, "Online.ChatReview", "[review #{0}]", "[revisión #{0}]");
+        Add(d, "Online.ChatSpectator", "spectator", "espectador");
+        Add(d, "Online.ChatMuted", "Chat muted. Your messages still go out.", "Chat silenciado. Tus mensajes se siguen enviando.");
+        Add(d, "Online.ChatMutedNew", "Chat muted · {0} new message(s).", "Chat silenciado · {0} mensaje(s) nuevo(s).");
+        Add(d, "Online.Phrase.Hello", "Hi! Have a good game.", "¡Hola! Buena partida.");
+        Add(d, "Online.Phrase.GoodLuck", "Good luck!", "¡Suerte!");
+        Add(d, "Online.Phrase.Thanks", "Thanks for the game!", "¡Gracias por la partida!");
+        Add(d, "Online.Phrase.WellPlayed", "Well played!", "¡Bien jugado!");
         Add(d, "Online.ConnectingToGame", "Connecting to the game…", "Conectando con la partida…");
         Add(d, "Online.GameOver", "Game over", "Partida terminada");
         Add(d, "Online.StoneRemoval", "Scoring: mark the dead stones and accept", "Conteo: marca las piedras muertas y acepta");

@@ -163,7 +163,40 @@ public sealed record OgsGameResult(Stone Winner, string Outcome, double? BlackSc
     }
 }
 
-public sealed record OgsChatLine(string ChatId, string Channel, long PlayerId, string Username, string Body, int MoveNumber, DateTimeOffset Date);
+public enum OgsChatKind
+{
+    Text,
+
+    /// <summary>A quick phrase OGS sends in several languages (<c>{type: "translated", en, es…}</c>).</summary>
+    Translated,
+
+    /// <summary>A variation shared in the chat (<c>{type: "analysis"}</c>); <see cref="OgsChatLine.Body"/> is its name.</summary>
+    Analysis,
+
+    /// <summary>A link to a review (<c>{type: "review", review_id}</c>); the body is the review id.</summary>
+    Review,
+}
+
+/// <summary>
+/// A game chat line (goban <c>GameChatLine</c>). <see cref="Channel"/>: main (players), spectator, malkovich
+/// (hidden until the game ends), personal… For translated phrases <see cref="Body"/> is the English text and
+/// <see cref="Translations"/> holds every language.
+/// </summary>
+public sealed record OgsChatLine(
+    string ChatId,
+    string Channel,
+    long PlayerId,
+    string Username,
+    string Body,
+    int MoveNumber,
+    DateTimeOffset Date,
+    OgsChatKind Kind = OgsChatKind.Text,
+    IReadOnlyDictionary<string, string>? Translations = null)
+{
+    /// <summary>The text to show in <paramref name="language"/> ("en", "es"…), falling back to English.</summary>
+    public string TextIn(string language) =>
+        Translations is { } t && t.TryGetValue(language, out string? s) && !string.IsNullOrWhiteSpace(s) ? s : Body;
+}
 
 /// <summary>Full state of an online game (<c>game/{id}/gamedata</c>).</summary>
 public sealed record OgsGameSnapshot

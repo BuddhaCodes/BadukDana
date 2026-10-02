@@ -27,6 +27,52 @@ public partial class MainWindow : Window
         this.FindControl<Control>("Board")?.Focus();
     }
 
+    // View-only plumbing: keep the newest chat line in view.
+    private System.Collections.Specialized.INotifyCollectionChanged? _chat;
+
+    protected override void OnDataContextChanged(EventArgs e)
+    {
+        base.OnDataContextChanged(e);
+        if (DataContext is MainWindowViewModel vm)
+        {
+            vm.PropertyChanged += (_, a) =>
+            {
+                if (a.PropertyName is nameof(MainWindowViewModel.Online) or "" or null)
+                {
+                    WatchChat(vm.Online?.ChatLines);
+                }
+            };
+            WatchChat(vm.Online?.ChatLines);
+        }
+    }
+
+    private void WatchChat(System.Collections.Specialized.INotifyCollectionChanged? lines)
+    {
+        if (ReferenceEquals(lines, _chat))
+        {
+            return;
+        }
+
+        if (_chat is not null)
+        {
+            _chat.CollectionChanged -= OnChatChanged;
+        }
+
+        _chat = lines;
+        if (_chat is not null)
+        {
+            _chat.CollectionChanged += OnChatChanged;
+        }
+    }
+
+    private void OnChatChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        if (e.NewItems is { Count: > 0 } added && this.FindControl<ListBox>("ChatList") is { } list)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => list.ScrollIntoView(added[^1]!));
+        }
+    }
+
     // View-only plumbing: translate the dropped file into the view model's open operation.
     private static void OnDragOver(object? sender, DragEventArgs e)
     {

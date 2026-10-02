@@ -50,3 +50,15 @@ public sealed class BoolToOpacityConverter : IValueConverter
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         Avalonia.Data.BindingOperations.DoNothing;
 }
+
+/// <summary>Right for true, left for false (your chat lines on the right).</summary>
+public sealed class BoolToAlignmentConverter : IValueConverter
+{
+    public static BoolToAlignmentConverter Instance { get; } = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is true ? Avalonia.Layout.HorizontalAlignment.Right : Avalonia.Layout.HorizontalAlignment.Left;
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        Avalonia.Data.BindingOperations.DoNothing;
+}
