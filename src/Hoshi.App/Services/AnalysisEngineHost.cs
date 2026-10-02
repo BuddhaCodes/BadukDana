@@ -84,9 +84,13 @@ public sealed class AnalysisEngineHost : IAnalysisEngine, IAsyncDisposable
         _options = options;
         Source = resolved?.Source;
         Problem = resolved is null ? Tr.T("Engine.NotConfigured") : options.Validate();
-        if (Problem is null)
+        ILogger logger = _loggers.CreateLogger("KataGo");
+        if (Problem is not null)
         {
-            ILogger logger = _loggers.CreateLogger("KataGo");
+            logger.LogWarning("KataGo unavailable ({Source}): {Problem}", resolved?.Source.ToString() ?? "none", Problem);
+        }
+        else
+        {
             logger.LogInformation("Using {Source} KataGo: {Executable}", resolved!.Source, options.Executable);
             _engine = new KataGoAnalysisEngine(() => KataGoProcess.Start(options, logger, SetActivity), logger);
         }
