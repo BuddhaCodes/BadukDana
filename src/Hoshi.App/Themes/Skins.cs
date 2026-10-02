@@ -125,7 +125,7 @@ public static class Skins
         Stones = StoneStyle.Shudan,
     };
 
-    private static readonly Dictionary<string, Bitmap?> Cache = [];
+    private static readonly Dictionary<string, Bitmap> Cache = [];
 
     /// <summary>Loads (once) an image shipped with Hoshi; null when it cannot be read.</summary>
     public static Bitmap? Image(string? uri)
@@ -137,22 +137,23 @@ public static class Skins
 
         lock (Cache)
         {
-            if (!Cache.TryGetValue(uri, out Bitmap? bitmap))
+            if (Cache.TryGetValue(uri, out Bitmap? cached))
             {
-                try
-                {
-                    using Stream s = AssetLoader.Open(new Uri(uri));
-                    bitmap = new Bitmap(s);
-                }
-                catch (Exception ex) when (ex is IOException or InvalidOperationException or FileNotFoundException or ArgumentException)
-                {
-                    bitmap = null;
-                }
-
-                Cache[uri] = bitmap;
+                return cached;
             }
 
-            return bitmap;
+            try
+            {
+                using Stream s = AssetLoader.Open(new Uri(uri));
+                var bitmap = new Bitmap(s);
+                Cache[uri] = bitmap;
+                return bitmap;
+            }
+            catch (Exception ex) when (ex is IOException or InvalidOperationException or FileNotFoundException or ArgumentException)
+            {
+                // Not cached: a failure before Avalonia is up (or a transient one) must not hide the image for good.
+                return null;
+            }
         }
     }
 
