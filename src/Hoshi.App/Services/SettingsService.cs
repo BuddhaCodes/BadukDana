@@ -9,6 +9,13 @@ public sealed record AppSettings
 {
     public string Theme { get; init; } = "night";
 
+    /// <summary>Goban, stones and background chosen on top of the theme (ids from <c>Themes.Skins</c>); null = the theme's.</summary>
+    public string? BoardSkin { get; init; }
+
+    public string? StoneSkin { get; init; }
+
+    public string? BackgroundSkin { get; init; }
+
     /// <summary>User interface language: "en" (English, the default) or "es" (Spanish).</summary>
     public string Language { get; init; } = "en";
 

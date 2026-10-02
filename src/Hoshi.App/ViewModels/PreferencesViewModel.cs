@@ -33,6 +33,15 @@ public sealed partial class ThemeCard : ObservableObject
     public Avalonia.Media.FontFamily TitleFont => new(Theme.TitleFont);
 }
 
+/// <summary>A goban, stone set or background in Preferences, with a thumbnail (two for stones: white and black).</summary>
+/// <param name="Id">The skin's id; null = "as in the theme".</param>
+public sealed record SkinOption(string? Id, string Name, Avalonia.Media.IImage? Preview, Avalonia.Media.IImage? Preview2 = null)
+{
+    public bool HasPreview => Preview is not null;
+
+    public bool HasPreview2 => Preview2 is not null;
+}
+
 /// <summary>A user interface language choice ("en", "es") with its own name.</summary>
 public sealed record LanguageOption(string Code, string Name);
 
@@ -96,6 +105,23 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     [ObservableProperty]
     private LanguageOption _selectedLanguage;
 
+    [ObservableProperty]
+    private SkinOption _selectedBoard;
+
+    [ObservableProperty]
+    private SkinOption _selectedStones;
+
+    [ObservableProperty]
+    private SkinOption _selectedBackground;
+
+    private static readonly BoardState PreviewPosition = BoardState.Create(9).Setup(
+    [
+        (new Point(2, 2), Stone.Black), (new Point(6, 2), Stone.White), (new Point(2, 6), Stone.White), (new Point(6, 6), Stone.Black),
+        (new Point(3, 2), Stone.White), (new Point(2, 3), Stone.Black), (new Point(5, 6), Stone.White), (new Point(6, 5), Stone.Black),
+        (new Point(4, 4), Stone.Black), (new Point(5, 3), Stone.White), (new Point(3, 5), Stone.White), (new Point(5, 5), Stone.Black),
+        (new Point(4, 3), Stone.White), (new Point(3, 4), Stone.Black), (new Point(7, 2), Stone.White), (new Point(2, 7), Stone.Black),
+    ]);
+
     public PreferencesViewModel(
         ThemeService themes,
         Services.ISettingsService? settings = null,
@@ -135,8 +161,60 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         _selected = Cards.First(c => c.Theme.Id == themes.Current.Id);
         _selected.IsSelected = true;
         _animations = themes.Animations;
+        BoardOptions = [ThemeDefault(), .. Skins.Boards.Select(k => new SkinOption(k.Id, k.Name, Skins.Image(k.Texture)))];
+        StoneOptions = [ThemeDefault(), .. Skins.Stones.Select(k => new SkinOption(k.Id, k.Name, Sprite(k, false), Sprite(k, true)))];
+        BackgroundOptions = [ThemeDefault(), .. Skins.Backgrounds.Select(k => new SkinOption(k.Id, k.Name, Skins.Image(k.Tile)))];
+        _selectedBoard = BoardOptions.First(o => o.Id == themes.Board?.Id);
+        _selectedStones = StoneOptions.First(o => o.Id == themes.Stones?.Id);
+        _selectedBackground = BackgroundOptions.First(o => o.Id == themes.Background?.Id);
+        _themes.Changed += (_, _) =>
+        {
+            OnPropertyChanged(nameof(PreviewStyle));
+            OnPropertyChanged(nameof(PreviewBackground));
+        };
         _loaded = true;
     }
+
+    public IReadOnlyList<SkinOption> BoardOptions { get; }
+
+    public IReadOnlyList<SkinOption> StoneOptions { get; }
+
+    public IReadOnlyList<SkinOption> BackgroundOptions { get; }
+
+    /// <summary>The sample position of the "Board &amp; stones" preview.</summary>
+    public BoardState PreviewBoard => PreviewPosition;
+
+    public BoardStyle PreviewStyle => _themes.EffectiveBoard;
+
+    public BackgroundKind PreviewBackground => _themes.EffectiveBackground;
+
+    partial void OnSelectedBoardChanged(SkinOption value) => ApplySkins();
+
+    partial void OnSelectedStonesChanged(SkinOption value) => ApplySkins();
+
+    partial void OnSelectedBackgroundChanged(SkinOption value) => ApplySkins();
+
+    /// <summary>Back to the theme's own goban, stones and background.</summary>
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void ResetSkins()
+    {
+        SelectedBoard = BoardOptions[0];
+        SelectedStones = StoneOptions[0];
+        SelectedBackground = BackgroundOptions[0];
+    }
+
+    private void ApplySkins()
+    {
+        if (_loaded)
+        {
+            _themes.SelectSkins(Skins.Board(SelectedBoard?.Id), Skins.StoneSet(SelectedStones?.Id), Skins.Background(SelectedBackground?.Id));
+        }
+    }
+
+    private static SkinOption ThemeDefault() => new(null, Tr.T("Skin.FromTheme"), null);
+
+    private static Avalonia.Media.IImage? Sprite(StoneSkin k, bool black) =>
+        k.Set is null ? null : Skins.StoneSprite(k.Set, black, black ? k.BlackVariants : k.WhiteVariants, 0, 0);
 
     /// <summary>Ask GitHub for a newer Hoshi (saved at once).</summary>
     [ObservableProperty]

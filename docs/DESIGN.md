@@ -75,6 +75,16 @@ Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su compo
 - *Fuzzy placement*: desplazamiento estable por intersección (0.03 celda en 1 de 8 direcciones, o ninguno).
 - Piedra fantasma al 40 %; no aparece si la jugada es ilegal.
 
+## Gobanes, piedras y fondos propios (`Themes/Skins.cs`, `tools/art/generate.py`) — 2026-10-02
+
+Arte de Hoshi renderizado por procedimiento (numpy + Pillow, semillas fijas; sin imágenes de terceros), en `Assets/Art/`:
+
+- **Gobanes** (1024 px JPEG, veta de arriba abajo): kaya masame (veta recta), kaya itame (arcos), shin-kaya, katsura, bambú laminado, nogal oscuro (líneas color crema). También Sabaki (Shudan) y la kaya procedural teñida por el tema.
+- **Piedras** (192 px PNG con alfa, sombreado de lente biconvexa vista desde arriba, supermuestreo 3×): concha y pizarra (8 blancas con bandas de crecimiento en ángulos distintos, 4 negras), yunzi, cristal, cerámica mate, jade y obsidiana; más las vectoriales (perla, suaves, Shudan). La variante es estable por intersección (`Skins.StoneSprite`), así que una piedra nunca cambia de aspecto.
+- **Fondos** (1024 px JPEG sin costuras, dibujados a la mitad para nitidez en HiDPI, con viñeta): sashiko índigo (seigaiha), mesa de nogal, pizarra, lino carbón, persiana de bambú; además los animados de los temas, washi y tatami.
+- Cada tema trae su combinación; Preferencias → **Tablero y piedras** permite mezclar goban, piedras y fondo con cualquier tema (`AppSettings.BoardSkin/StoneSkin/BackgroundSkin`, null = el del tema; `Skins.Compose` sustituye solo esa parte del `BoardStyle`).
+- Regenerar: `python3 tools/art/generate.py --sheet hoja.png`.
+
 ## Marcadores
 
 - Última jugada: círculo hueco del color contrario (no se dibuja si hay marca SGF en ese punto).

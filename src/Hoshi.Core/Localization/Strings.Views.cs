@@ -226,6 +226,12 @@ public static partial class Tr
         Add(d, "Prefs.StoneSoundsBox", "Soft sound for every stone placed and for captures (also when stepping through a game)", "Sonido suave al colocar cada piedra y al capturar (también al avanzar jugada a jugada)");
         Add(d, "Prefs.TestKataGo", "Test KataGo", "Probar KataGo");
         Add(d, "Prefs.TestSound", "Test sound", "Probar sonido");
+        Add(d, "Prefs.BoardTab", "Board & stones", "Tablero y piedras");
+        Add(d, "Prefs.BoardHint", "Mix any goban, stones and background with the theme you like. Choices apply at once.", "Combina cualquier goban, piedras y fondo con el tema que prefieras. Se aplica al momento.");
+        Add(d, "Prefs.Board", "Goban", "Goban");
+        Add(d, "Prefs.Stones", "Stones", "Piedras");
+        Add(d, "Prefs.Background", "Background", "Fondo");
+        Add(d, "Prefs.ResetSkins", "Use the theme's", "Usar los del tema");
         Add(d, "Prefs.ThemeHint", "The theme applies at once and is remembered.", "El tema se aplica al momento y se recuerda.");
         Add(d, "Prefs.Title", "Preferences", "Preferencias");
         Add(d, "Prefs.Volume", "Volume", "Volumen");
