@@ -64,6 +64,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Analysis = new AnalysisViewModel(game, engine, ui, sounds, settings);
         _music = music;
         _settings = settings;
+        _sounds = sounds;
         if (sounds is not null)
         {
             game.StonePlaced += (_, _) =>
@@ -149,7 +150,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         try
         {
             IOnlineGame game = _ogs.OpenGame(gameId);
-            var online = new OnlineGameViewModel(game, Game, _ui, _dialogs, TimeProvider.System);
+            var online = new OnlineGameViewModel(game, Game, _ui, _dialogs, TimeProvider.System, _sounds, _settings);
             online.Left += (_, _) => { if (ReferenceEquals(Online, online)) { Online = null; } };
             Online = online;
             online.Connect();
@@ -220,6 +221,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly Services.Music.IMusicService? _music;
     private readonly ISettingsService? _settings;
+    private readonly ISoundService? _sounds;
 
     /// <summary>M: music on/off (saved).</summary>
     [RelayCommand]

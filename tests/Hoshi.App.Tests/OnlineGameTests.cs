@@ -41,6 +41,8 @@ internal sealed class FakeOnlineGame(long gameId, long myPlayerId) : IOnlineGame
 
     public event EventHandler<OgsChatLine>? ChatReceived;
 
+    public event EventHandler<IReadOnlyList<string>>? ChatRemoved;
+
     public event EventHandler<string>? ErrorReceived;
 
     public event EventHandler<int>? UndoRequested;
@@ -54,6 +56,10 @@ internal sealed class FakeOnlineGame(long gameId, long myPlayerId) : IOnlineGame
     public void Resign() => Sent.Add("resign");
 
     public void SendChat(string body) => Sent.Add("chat " + body);
+
+    public void SendTranslatedChat(IReadOnlyDictionary<string, string> phrases) => Sent.Add("phrase " + phrases["en"]);
+
+    public void RemoveChat(params string[] ids) => ChatRemoved?.Invoke(this, ids);
 
     public void RequestUndo() => Sent.Add("undo?");
 
@@ -273,6 +279,41 @@ public sealed class OnlineGameViewModelTests
     }
 
     [Fact]
+    public void Chat_history_is_kept_once_translated_phrases_are_localized_and_removals_honoured()
+    {
+        _game.Gamedata(Snapshot());
+        var hello = new OgsChatLine("1", "main", Rival.Id, "shiro_test", "Have a good game!", 0, DateTimeOffset.UnixEpoch,
+            OgsChatKind.Translated, new Dictionary<string, string> { ["en"] = "Have a good game!", ["es"] = "¡Buena partida!" });
+        _game.Chat(hello);
+        _game.Chat(hello); // replayed on reconnect
+        _game.Chat(new OgsChatLine("2", "spectator", 99, "kibitzer", "nice", 3, DateTimeOffset.UnixEpoch));
+
+        _vm.ChatLines.Should().HaveCount(2);
+        _vm.ChatLines[0].Body.Should().Be("¡Buena partida!");
+        _vm.ChatLines[1].Header.Should().EndWith("espectador");
+        _vm.IsChatEmpty.Should().BeFalse();
+
+        _game.RemoveChat("2");
+        _vm.ChatLines.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void Quick_phrases_go_out_translated_and_muting_hides_and_counts()
+    {
+        _game.Gamedata(Snapshot());
+        _vm.SendQuickPhraseCommand.Execute(_vm.QuickPhrases[2]);
+        _game.Sent.Should().Contain("phrase Thanks for the game!");
+        _vm.QuickPhrases[2].Translations["es"].Should().Be("¡Gracias por la partida!");
+
+        _vm.ToggleChatMuteCommand.Execute(null);
+        _game.Chat(new OgsChatLine("9", "main", Rival.Id, "shiro_test", "hurry up", 4, DateTimeOffset.UnixEpoch));
+        _vm.HiddenCount.Should().Be(1);
+        _vm.MutedText.Should().Be("Chat silenciado · 1 mensaje(s) nuevo(s).");
+        _vm.ToggleChatMuteCommand.Execute(null);
+        _vm.HiddenCount.Should().Be(0);
+    }
+
+    [Fact]
     public void Chat_is_listed_and_sent()
     {
         _game.Gamedata(Snapshot());
@@ -281,7 +322,7 @@ public sealed class OnlineGameViewModelTests
         _vm.ChatInput = "buena suerte";
         _vm.SendChatCommand.Execute(null);
 
-        _vm.ChatLines.Should().ContainSingle().Which.Should().Be(new ChatLineItem("shiro_test", "hola", false, 0));
+        _vm.ChatLines.Should().ContainSingle().Which.Should().Match<ChatLineItem>(c => c.Username == "shiro_test" && c.Body == "hola" && !c.IsMine && c.MoveNumber == 0);
         _game.Sent.Should().Equal("chat buena suerte");
         _vm.ChatInput.Should().BeEmpty();
     }
@@ -353,12 +394,20 @@ public sealed class MainWindowOnlineTests
         online.Clock(new OgsClock(70000001, FakeOgsClient.Me.Id, FakeOgsClient.Me.Id, FakeOgsClient.Rival.Id,
             online.ServerNow.ToUnixTimeMilliseconds(), 0, new(590, 5, 30), new(596, 5, 30)));
         online.Chat(new OgsChatLine("1", "main", FakeOgsClient.Rival.Id, "rival", "¡suerte!", 2, DateTimeOffset.UnixEpoch));
+        online.Chat(new OgsChatLine("2", "main", FakeOgsClient.Me.Id, FakeOgsClient.Me.Username, "Gracias, igualmente", 2, DateTimeOffset.UnixEpoch));
+        for (int i = 0; i < 5; i++)
+        {
+            await Task.Delay(20);
+            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        }
 
         ogs.OpenedGames.Should().Equal(70000001);
         window.FindControl<StackPanel>("OnlinePanel")!.IsEffectivelyVisible.Should().BeTrue();
         window.FindControl<TextBlock>("BlackClock")!.Text.Should().Be("9:50 + 5×0:30");
         window.FindControl<TextBox>("CommentBox")!.IsEffectivelyVisible.Should().BeFalse();
         window.FindControl<DockPanel>("ChatPanel")!.IsEffectivelyVisible.Should().BeTrue();
+        vm.Online!.ChatLines.Should().HaveCount(2);
+        window.FindControl<ListBox>("ChatList")!.ItemCount.Should().Be(2);
         window.Title.Should().StartWith("OGS #70000001");
         game.Board.Width.Should().Be(9);
 

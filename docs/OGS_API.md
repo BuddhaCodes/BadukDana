@@ -141,7 +141,7 @@ Respuestas paginadas: `{ count, next, previous, results: [...] }`.
 | `game/removed_stones/set` | `{ game_id, removed: bool, stones: "ddee…", needs_sealing?: [...] }` | Intersecciones vacías = dame |
 | `game/removed_stones/accept` | `{ game_id, stones: "<todas las removidas>", strict_seki_mode: false }` | `strict_seki_mode` siempre `false` |
 | `game/removed_stones/reject` | `{ game_id }` | Vuelve a fase de juego |
-| `game/chat` | `{ game_id, body, type: "main"\|"malkovich"\|"moderator"\|"hidden"\|"personal", move_number }` | |
+| `game/chat` | `{ game_id, body, type: "main"\|"malkovich"\|"moderator"\|"hidden"\|"personal", move_number }` | `body` es texto o un objeto: `{type:"translated", en, es…}` (frase rápida, cada jugador la lee en su idioma), `{type:"analysis", name, moves…}`, `{type:"review", review_id}` (goban `ClientToServer.ts`, verificado 2026-10-02) |
 | `game/latency` | `{ game_id, latency }` | Informar latencia al oponente |
 
 ### Partidas — servidor → cliente
@@ -157,7 +157,8 @@ Respuestas paginadas: `{ count, next, previous, results: [...] }`.
 | `game/{id}/undo_accepted` | `number \| { move_number, undo_move_count? }` | |
 | `game/{id}/undo_canceled` | `number` | |
 | `game/{id}/chat` | `{ channel, line: { chat_id, body, date, move_number, player_id, username?, … } }` | `channel`: `main`/`spectator`/`malkovich`/… |
-| `game/{id}/chat/remove`, `game/{id}/reset-chats` | | |
+| `game/{id}/chat/remove` | `{ game_id, chat_ids: string[] }` | Moderación: quitar esas líneas |
+| `game/{id}/reset-chats` | | |
 | `game/{id}/player_update` | `{ players: { black, white }, rengo_teams }` | Rengo |
 | `game/{id}/latency` | `{ player_id, latency }` | |
 | `game/{id}/auto_resign` / `clear_auto_resign` | `{ game_id, player_id, expiration }` | Oponente desconectado |

@@ -101,6 +101,24 @@ public sealed class OgsGameParserTests
     }
 
     [Fact]
+    public void Translated_analysis_and_review_chat_lines_are_read()
+    {
+        OgsChatLine t = OgsGameParser.ParseChat(Json("""
+            {"channel":"main","line":{"chat_id":"t1","body":{"type":"translated","en":"Have a good game!","es":"¡Buena partida!"},"date":1790000100,"move_number":0,"player_id":2002,"username":"shiro_test"}}
+            """))!;
+        t.Kind.Should().Be(OgsChatKind.Translated);
+        t.Body.Should().Be("Have a good game!");
+        t.TextIn("es").Should().Be("¡Buena partida!");
+        t.TextIn("ja").Should().Be("Have a good game!");
+
+        OgsGameParser.ParseChat(Json("""{"channel":"spectator","line":{"chat_id":"a","body":{"type":"analysis","name":"Better: D4","moves":"dd"},"date":1,"move_number":5,"player_id":3}}"""))!
+            .Should().Match<OgsChatLine>(l => l.Kind == OgsChatKind.Analysis && l.Body == "Better: D4" && l.Channel == "spectator");
+        OgsGameParser.ParseChat(Json("""{"channel":"main","line":{"chat_id":"r","body":{"type":"review","review_id":77},"date":1,"move_number":5,"player_id":3}}"""))!
+            .Should().Match<OgsChatLine>(l => l.Kind == OgsChatKind.Review && l.Body == "77");
+        OgsGameParser.ParseChatRemoval(Json("""{"game_id":1,"chat_ids":["a","b"]}""")).Should().Equal("a", "b");
+    }
+
+    [Fact]
     public void Chat_lines_are_read()
     {
         OgsChatLine? line = OgsGameParser.ParseChat(Json("""
@@ -256,6 +274,8 @@ public sealed class OgsGameSessionTests : IAsyncDisposable
         (await c.ReadCommandAsync("game/move")).Should().Contain("\"move\":\"..\"");
         session.SendChat(" hola ");
         (await c.ReadCommandAsync("game/chat")).Should().Contain("\"body\":\"hola\"").And.Contain("\"type\":\"main\"");
+        session.SendTranslatedChat(new Dictionary<string, string> { ["en"] = "Thanks!", ["es"] = "¡Gracias!" });
+        (await c.ReadCommandAsync("game/chat")).Should().Contain("\"type\":\"translated\"").And.Contain("\"en\":\"Thanks!\"");
         session.SetRemovedStones([new Point(0, 0), new Point(1, 0)], removed: true);
         (await c.ReadCommandAsync("game/removed_stones/set")).Should().Contain("\"stones\":\"aaba\"").And.Contain("\"removed\":true");
         session.AcceptRemovedStones([new Point(1, 0), new Point(0, 0)]);

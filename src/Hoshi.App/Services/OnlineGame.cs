@@ -29,6 +29,8 @@ public interface IOnlineGame : IDisposable
 
     event EventHandler<OgsChatLine>? ChatReceived;
 
+    event EventHandler<IReadOnlyList<string>>? ChatRemoved;
+
     event EventHandler<string>? ErrorReceived;
 
     event EventHandler<int>? UndoRequested;
@@ -42,6 +44,9 @@ public interface IOnlineGame : IDisposable
     void Resign();
 
     void SendChat(string body);
+
+    /// <summary>A quick phrase in several languages; each player reads it in theirs.</summary>
+    void SendTranslatedChat(IReadOnlyDictionary<string, string> phrases);
 
     void RequestUndo();
 
@@ -108,6 +113,12 @@ public sealed class OgsOnlineGame : IOnlineGame
         remove => _session.ChatReceived -= value;
     }
 
+    public event EventHandler<IReadOnlyList<string>>? ChatRemoved
+    {
+        add => _session.ChatRemoved += value;
+        remove => _session.ChatRemoved -= value;
+    }
+
     public event EventHandler<string>? ErrorReceived
     {
         add => _session.ErrorReceived += value;
@@ -139,6 +150,8 @@ public sealed class OgsOnlineGame : IOnlineGame
     public void Resign() => _session.Resign();
 
     public void SendChat(string body) => _session.SendChat(body);
+
+    public void SendTranslatedChat(IReadOnlyDictionary<string, string> phrases) => _session.SendTranslatedChat(phrases);
 
     public void RequestUndo() => _session.RequestUndo();
 

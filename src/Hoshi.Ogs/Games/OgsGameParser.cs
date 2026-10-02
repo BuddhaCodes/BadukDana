@@ -112,9 +112,38 @@ public static class OgsGameParser
             return null;
         }
 
-        string body = line.TryGetProperty("body", out JsonElement b) && b.ValueKind == JsonValueKind.String
-            ? b.GetString() ?? string.Empty
-            : "[análisis]"; // Analysis/review comments are objects; shown as a placeholder.
+        string body = string.Empty;
+        OgsChatKind kind = OgsChatKind.Text;
+        Dictionary<string, string>? translations = null;
+        if (line.TryGetProperty("body", out JsonElement b))
+        {
+            if (b.ValueKind == JsonValueKind.String)
+            {
+                body = b.GetString() ?? string.Empty;
+            }
+            else if (b.ValueKind == JsonValueKind.Object)
+            {
+                switch (OgsJson.String(b, "type"))
+                {
+                    case "translated":
+                        kind = OgsChatKind.Translated;
+                        translations = b.EnumerateObject()
+                            .Where(x => x.Name != "type" && x.Value.ValueKind == JsonValueKind.String)
+                            .ToDictionary(x => x.Name, x => x.Value.GetString() ?? string.Empty, StringComparer.Ordinal);
+                        body = translations.TryGetValue("en", out string? en) ? en : translations.Values.FirstOrDefault() ?? string.Empty;
+                        break;
+                    case "review":
+                        kind = OgsChatKind.Review;
+                        body = (OgsJson.Long(b, "review_id") ?? 0).ToString(CultureInfo.InvariantCulture);
+                        break;
+                    default:
+                        kind = OgsChatKind.Analysis;
+                        body = OgsJson.String(b, "name") ?? string.Empty;
+                        break;
+                }
+            }
+        }
+
         long date = OgsJson.Long(line, "date") ?? 0;
         return new OgsChatLine(
             OgsJson.String(line, "chat_id") ?? string.Empty,
@@ -124,8 +153,16 @@ public static class OgsGameParser
             body,
             (int)(OgsJson.Long(line, "move_number") ?? 0),
             // OGS sends seconds; tolerate milliseconds.
-            date > 100_000_000_000 ? DateTimeOffset.FromUnixTimeMilliseconds(date) : DateTimeOffset.FromUnixTimeSeconds(date));
+            date > 100_000_000_000 ? DateTimeOffset.FromUnixTimeMilliseconds(date) : DateTimeOffset.FromUnixTimeSeconds(date),
+            kind,
+            translations);
     }
+
+    /// <summary>The ids in <c>game/{id}/chat/remove</c> (<c>{game_id, chat_ids: [...]}</c>).</summary>
+    public static IReadOnlyList<string> ParseChatRemoval(JsonElement data) =>
+        data.ValueKind == JsonValueKind.Object && data.TryGetProperty("chat_ids", out JsonElement ids) && ids.ValueKind == JsonValueKind.Array
+            ? [.. ids.EnumerateArray().Where(i => i.ValueKind == JsonValueKind.String).Select(i => i.GetString()!)]
+            : [];
 
     /// <summary>Result from <c>winner</c> (player id or "black"/"white") + <c>outcome</c>, if the game has one.</summary>
     public static OgsGameResult? ParseResult(JsonElement e, long blackId, long whiteId)

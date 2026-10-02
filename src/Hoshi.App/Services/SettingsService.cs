@@ -46,6 +46,9 @@ public sealed record AppSettings
     /// <summary>Show known joseki continuations on the main board (J).</summary>
     public bool JosekiHints { get; init; }
 
+    /// <summary>A soft sound when the opponent writes in the game chat.</summary>
+    public bool ChatSounds { get; init; } = true;
+
     /// <summary>Ask GitHub for a newer Hoshi shortly after start and every 12 hours.</summary>
     public bool CheckForUpdates { get; init; } = true;
 

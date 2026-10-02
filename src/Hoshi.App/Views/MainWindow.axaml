@@ -45,6 +45,17 @@
     </KeyBinding>
   </Window.KeyBindings>
   <Window.Styles>
+    <Style Selector="Button.chip">
+      <Setter Property="CornerRadius" Value="999" />
+      <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="Border.chat-line">
+      <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
+    </Style>
+    <Style Selector="Border.chat-line.mine">
+      <Setter Property="Background" Value="#33D9B45A" />
+    </Style>
     <Style Selector="TextBlock.good">
       <Setter Property="Foreground" Value="#7FD08A" />
     </Style>
@@ -406,22 +417,56 @@
                    Text="{Binding Game.Comment}" />
         </DockPanel>
 
-        <DockPanel Grid.Row="5" x:Name="ChatPanel" Classes="appear" Background="{DynamicResource Bg.Properties}" IsVisible="{Binding IsOnline}" Height="200">
-          <TextBox DockPanel.Dock="Bottom" Classes="comment" Watermark="{l:T Main.ChatHint}" Text="{Binding Online.ChatInput}" x:Name="ChatInput">
+        <DockPanel Grid.Row="5" x:Name="ChatPanel" Classes="appear" Background="{DynamicResource Bg.Properties}" IsVisible="{Binding IsOnline}" Height="280">
+          <!-- Header: title and mute. -->
+          <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="12,8,8,4">
+            <TextBlock Classes="secondary" FontSize="12" FontWeight="SemiBold" Text="{l:T Online.Chat}" VerticalAlignment="Center" />
+            <ToggleButton Grid.Column="1" Classes="bar" Padding="8,2" FontSize="12" IsChecked="{Binding Online.IsChatMuted}" x:Name="ChatMute"
+                          Content="{l:T Online.ChatMute}" ToolTip.Tip="{l:T Online.ChatMuteTip}" />
+          </Grid>
+          <TextBox DockPanel.Dock="Bottom" Classes="comment" Watermark="{l:T Main.ChatHint}" Text="{Binding Online.ChatInput}" x:Name="ChatInput" MaxLength="500">
             <TextBox.KeyBindings>
               <KeyBinding Gesture="Enter" Command="{Binding Online.SendChatCommand}" />
             </TextBox.KeyBindings>
           </TextBox>
-          <ListBox ItemsSource="{Binding Online.ChatLines}" Background="Transparent" x:Name="ChatList">
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="vm:ChatLineItem">
-                <StackPanel>
-                  <TextBlock Classes="secondary" Text="{Binding Header}" />
-                  <TextBlock Text="{Binding Body}" TextWrapping="Wrap" />
-                </StackPanel>
+          <!-- Quick phrases: sent in every language, each player reads their own. -->
+          <ItemsControl DockPanel.Dock="Bottom" ItemsSource="{Binding Online.QuickPhrases}" Margin="8,2,8,6" x:Name="QuickPhrases">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:QuickPhrase">
+                <Button Classes="chip" Content="{Binding Text}" Margin="0,0,6,4" Padding="8,3" FontSize="11.5"
+                        Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).Online.SendQuickPhraseCommand}"
+                        CommandParameter="{Binding}" />
               </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <Panel>
+            <TextBlock Classes="secondary" Text="{l:T Online.ChatEmpty}" IsVisible="{Binding Online.IsChatEmpty}" TextWrapping="Wrap"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16" TextAlignment="Center" FontSize="12.5" />
+            <TextBlock Classes="secondary" Text="{Binding Online.MutedText}" IsVisible="{Binding Online.IsChatMuted}" TextWrapping="Wrap"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16" TextAlignment="Center" FontSize="12.5" x:Name="ChatMutedText" />
+            <ListBox ItemsSource="{Binding Online.ChatLines}" Background="Transparent" x:Name="ChatList" IsVisible="{Binding !Online.IsChatMuted}">
+              <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                  <Setter Property="Padding" Value="8,3" />
+                  <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                </Style>
+              </ListBox.Styles>
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:ChatLineItem">
+                  <Border Classes="chat-line" Classes.mine="{Binding IsMine}" CornerRadius="8" Padding="9,5" MaxWidth="300"
+                          HorizontalAlignment="{Binding IsMine, Converter={x:Static c:BoolToAlignmentConverter.Instance}}">
+                    <StackPanel Spacing="1">
+                      <TextBlock Classes="secondary" Text="{Binding Header}" FontSize="11" />
+                      <TextBlock Text="{Binding Body}" TextWrapping="Wrap" />
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </Panel>
         </DockPanel>
         <!-- Joseki trainer panel, over the sidebar while the trainer is on the board. -->
         <Border Grid.RowSpan="6" x:Name="JosekiPanel" IsVisible="{Binding Joseki.IsActive}"

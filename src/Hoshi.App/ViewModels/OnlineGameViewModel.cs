@@ -11,9 +11,57 @@ using Hoshi.Sgf;
 
 namespace Hoshi.App.ViewModels;
 
-public sealed record ChatLineItem(string Username, string Body, bool IsMine, int MoveNumber)
+/// <summary>A line of the game chat as shown: translated phrases in the user's language, shared variations and reviews as short notes.</summary>
+public sealed class ChatLineItem(OgsChatLine line, bool isMine)
 {
-    public string Header => Tr.F("Online.ChatHeader", Username, MoveNumber);
+    public OgsChatLine Line { get; } = line;
+
+    public string ChatId => Line.ChatId;
+
+    public string Username => Line.Username;
+
+    public bool IsMine { get; } = isMine;
+
+    public bool IsOthers => !IsMine;
+
+    public int MoveNumber => Line.MoveNumber;
+
+    public string Body => Line.Kind switch
+    {
+        OgsChatKind.Translated => Line.TextIn(Tr.Language),
+        OgsChatKind.Analysis => Tr.F("Online.ChatVariation", Line.Body),
+        OgsChatKind.Review => Tr.F("Online.ChatReview", Line.Body),
+        _ => Line.Body,
+    };
+
+    /// <summary>"name · move 12 · 14:03", plus the channel when it is not the players' main chat.</summary>
+    public string Header
+    {
+        get
+        {
+            string header = Tr.F("Online.ChatHeader", Username, MoveNumber);
+            if (Line.Date > DateTimeOffset.UnixEpoch)
+            {
+                header += " · " + Line.Date.ToLocalTime().ToString("t", CultureInfo.CurrentCulture);
+            }
+
+            return Line.Channel switch
+            {
+                "main" or "" => header,
+                "spectator" => header + " · " + Tr.T("Online.ChatSpectator"),
+                "malkovich" => header + " · Malkovich",
+                _ => header + " · " + Line.Channel,
+            };
+        }
+    }
+}
+
+/// <summary>A quick chat phrase, sent in every language Hoshi knows (OGS shows each player theirs).</summary>
+public sealed record QuickPhrase(string Key)
+{
+    public string Text => Tr.T(Key);
+
+    public IReadOnlyDictionary<string, string> Translations => Tr.Languages.ToDictionary(l => l, l => Tr.T(Key, l));
 }
 
 /// <summary>
@@ -72,8 +120,17 @@ public sealed partial class OnlineGameViewModel : ViewModelBase, IDisposable
     private bool _isUndoRequested;
 
     public OnlineGameViewModel(
-        IOnlineGame game, GameViewModel board, IUiDispatcher ui, IDialogService? dialogs = null, TimeProvider? timers = null)
+        IOnlineGame game,
+        GameViewModel board,
+        IUiDispatcher ui,
+        IDialogService? dialogs = null,
+        TimeProvider? timers = null,
+        ISoundService? sounds = null,
+        ISettingsService? settings = null)
     {
+        _sounds = sounds;
+        _settings = settings;
+        _now = timers ?? TimeProvider.System;
         _game = game ?? throw new ArgumentNullException(nameof(game));
         _board = board ?? throw new ArgumentNullException(nameof(board));
         _ui = ui ?? throw new ArgumentNullException(nameof(ui));
@@ -85,7 +142,8 @@ public sealed partial class OnlineGameViewModel : ViewModelBase, IDisposable
         _game.PhaseChanged += (_, p) => _ui.Post(() => OnPhase(p));
         _game.RemovedStonesChanged += (_, r) => _ui.Post(() => SetRemoved(r));
         _game.GameEnded += (_, r) => _ui.Post(() => OnEnded(r));
-        _game.ChatReceived += (_, l) => _ui.Post(() => ChatLines.Add(new ChatLineItem(l.Username, l.Body, l.PlayerId == _game.MyPlayerId, l.MoveNumber)));
+        _game.ChatReceived += (_, l) => _ui.Post(() => OnChat(l));
+        _game.ChatRemoved += (_, ids) => _ui.Post(() => RemoveChat(ids));
         _game.ErrorReceived += (_, e) => _ui.Post(() => { IsSending = false; Message = e; });
         _game.UndoRequested += (_, _) => _ui.Post(() => IsUndoRequested = true);
         _game.UndoAccepted += (_, n) => _ui.Post(() => OnUndoAccepted(n));
@@ -100,6 +158,85 @@ public sealed partial class OnlineGameViewModel : ViewModelBase, IDisposable
     public long GameId => _game.GameId;
 
     public ObservableCollection<ChatLineItem> ChatLines { get; } = [];
+
+    public IReadOnlyList<QuickPhrase> QuickPhrases { get; } =
+        [new("Online.Phrase.Hello"), new("Online.Phrase.GoodLuck"), new("Online.Phrase.Thanks"), new("Online.Phrase.WellPlayed")];
+
+    /// <summary>Incoming messages are hidden (and silent) until unmuted; yours still go out.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MutedText), nameof(IsChatEmpty))]
+    private bool _isChatMuted;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MutedText))]
+    private int _hiddenCount;
+
+    public string MutedText => HiddenCount > 0 ? Tr.F("Online.ChatMutedNew", HiddenCount) : Tr.T("Online.ChatMuted");
+
+    public bool IsChatEmpty => ChatLines.Count == 0 && !IsChatMuted;
+
+    private readonly ISoundService? _sounds;
+    private readonly ISettingsService? _settings;
+    private readonly TimeProvider _now;
+
+    [RelayCommand]
+    private void ToggleChatMute()
+    {
+        IsChatMuted = !IsChatMuted;
+        if (!IsChatMuted)
+        {
+            HiddenCount = 0;
+        }
+    }
+
+    [RelayCommand]
+    private void SendQuickPhrase(QuickPhrase? phrase)
+    {
+        if (phrase is not null)
+        {
+            _game.SendTranslatedChat(phrase.Translations);
+        }
+    }
+
+    private void OnChat(OgsChatLine line)
+    {
+        // OGS replays the history on every (re)connect: keep each line once.
+        if (line.ChatId.Length > 0 && ChatLines.Any(c => c.ChatId == line.ChatId))
+        {
+            return;
+        }
+
+        bool mine = line.PlayerId == _game.MyPlayerId;
+        ChatLines.Add(new ChatLineItem(line, mine));
+        OnPropertyChanged(nameof(IsChatEmpty));
+        if (mine)
+        {
+            return;
+        }
+
+        if (IsChatMuted)
+        {
+            HiddenCount++;
+            return;
+        }
+
+        // Only a fresh message makes a sound (not the history sent when joining).
+        AppSettings s = _settings?.Current ?? new AppSettings();
+        if (_sounds is not null && s.ChatSounds && _now.GetUtcNow() - line.Date < TimeSpan.FromSeconds(30))
+        {
+            _sounds.Play(SoundEffect.Chat, s.SoundVolume / 100.0 * 0.7);
+        }
+    }
+
+    private void RemoveChat(IReadOnlyList<string> ids)
+    {
+        foreach (ChatLineItem item in ChatLines.Where(c => ids.Contains(c.ChatId)).ToList())
+        {
+            ChatLines.Remove(item);
+        }
+
+        OnPropertyChanged(nameof(IsChatEmpty));
+    }
 
     public string Title => _snapshot is { } s
         ? string.Create(CultureInfo.InvariantCulture, $"OGS #{s.GameId} · {s.Black.Username} vs {s.White.Username}")

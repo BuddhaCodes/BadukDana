@@ -28,6 +28,9 @@ public enum SoundEffect
     /// <summary>A group just fell into atari: a soft, comic "uh-oh".</summary>
     Atari,
 
+    /// <summary>A chat message from the opponent: a soft double blip.</summary>
+    Chat,
+
     /// <summary>Three or more stones captured: a bigger shatter, more clacks, an arpeggio and a low thock.</summary>
     CaptureBig,
 }
@@ -75,6 +78,7 @@ public sealed class SystemSoundService : ISoundService
         SoundEffect.CaptureSmall => "capture_small",
         SoundEffect.CaptureBig => "capture_big",
         SoundEffect.Atari => "atari",
+        SoundEffect.Chat => "chat",
         _ => "explosion_big",
     };
 

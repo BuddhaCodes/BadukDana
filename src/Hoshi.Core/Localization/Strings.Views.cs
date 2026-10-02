@@ -6,6 +6,11 @@ public static partial class Tr
     {
         Add(d, "Prefs.Language", "Language", "Idioma");
         Add(d, "Main.Replays", "Played games…", "Partidas jugadas…");
+        Add(d, "Online.Chat", "Chat", "Chat");
+        Add(d, "Online.ChatMute", "Mute", "Silenciar");
+        Add(d, "Online.ChatMuteTip", "Hide and silence your opponent's messages for this game (handy to concentrate).", "Oculta y silencia los mensajes del rival en esta partida (útil para concentrarte).");
+        Add(d, "Online.ChatEmpty", "No messages yet. Say hi with a quick phrase: your opponent reads it in their language.", "Aún no hay mensajes. Saluda con una frase rápida: tu rival la lee en su idioma.");
+        Add(d, "Prefs.ChatSoundsBox", "Soft sound for new chat messages in online games", "Sonido suave con los mensajes nuevos del chat en partidas en línea");
         Add(d, "Main.CheckUpdates", "Check for updates…", "Buscar actualizaciones…");
         Add(d, "Prefs.CheckForUpdates", "Check for updates automatically", "Buscar actualizaciones automáticamente");
         Add(d, "Prefs.UpdatesHint", "This is Hoshi {0}. Hoshi asks GitHub for the latest release shortly after it starts and every 12 hours; nothing about you is sent.", "Esta es Hoshi {0}. Hoshi pregunta a GitHub por la última versión poco después de abrirse y cada 12 horas; no se envía nada sobre ti.");

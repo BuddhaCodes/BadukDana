@@ -242,8 +242,25 @@ def atari() -> np.ndarray:
     return finish(reverb(rng, lowpass(out, 5000), 0.5, 0.15), 0.42)
 
 
+def chat() -> np.ndarray:
+    """A chat message from the opponent: a soft, round double "blip" (two quick pops a fourth apart, each with a
+    tiny downward pitch bend), muffled and short so it never startles in the middle of a game."""
+    rng = np.random.default_rng(600)
+    t = t_axis(0.45)
+    out = np.zeros(len(t))
+    for start, f0 in ((0.0, 520.0), (0.085, 694.0)):
+        tt = np.clip(t - start, 0, None)
+        gate = (t >= start).astype(float)
+        bend = 1 + 0.25 * np.exp(-tt / 0.006)  # starts a touch sharp, like a bubble popping
+        phase = 2 * np.pi * np.cumsum(f0 * bend * gate) / SR
+        tone = np.sin(phase) + 0.15 * np.sin(2 * phase)
+        out += tone * np.clip(tt / 0.003, 0, 1) * np.exp(-tt / 0.045) * gate
+    return finish(reverb(rng, lowpass(out, 3200), 0.3, 0.1), 0.38)
+
+
 if __name__ == "__main__":
     write("atari.wav", atari())
+    write("chat.wav", chat())
     write("capture_small.wav", capture(False))
     write("capture_big.wav", capture(True))
     for i in range(3):
