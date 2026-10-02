@@ -87,6 +87,9 @@ public sealed class ThemeBackground : Control
                 case BackgroundKind.Washi:
                     DrawWashi(context, size);
                     break;
+                default:
+                    DrawArt(context, size, Kind);
+                    break;
             }
         }
     }
@@ -395,6 +398,40 @@ public sealed class ThemeBackground : Control
             };
             context.DrawEllipse(stone, null, c, radius, radius * 0.9);
         }
+    }
+
+    // ---------------- Hoshi's tiled art (Assets/Art/Backgrounds) ----------------
+
+    /// <summary>A seamless tile drawn at half its pixel size (sharp on high-DPI screens) under a soft vignette.</summary>
+    private static void DrawArt(DrawingContext context, Rect r, BackgroundKind kind)
+    {
+        Themes.BackgroundSkin? skin = Themes.Skins.Background(kind);
+        context.FillRectangle(new ImmutableSolidColorBrush(skin?.Surround ?? Colors.Black), r);
+        if (Themes.Skins.Image(skin?.Tile) is not { } img)
+        {
+            return;
+        }
+
+        Size tile = img.Size / 2;
+        for (double y = 0; y < r.Height; y += tile.Height)
+        {
+            for (double x = 0; x < r.Width; x += tile.Width)
+            {
+                context.DrawImage(img, new Rect(img.Size), new Rect(x, y, tile.Width, tile.Height));
+            }
+        }
+
+        var vignette = new RadialGradientBrush
+        {
+            RadiusX = new RelativeScalar(0.75, RelativeUnit.Relative),
+            RadiusY = new RelativeScalar(0.75, RelativeUnit.Relative),
+            GradientStops =
+            {
+                new GradientStop(Color.FromArgb(0, 0, 0, 0), 0.45),
+                new GradientStop(Color.FromArgb(0x70, 0, 0, 0), 1),
+            },
+        };
+        context.FillRectangle(vignette, r);
     }
 
     // ---------------- Washi ----------------

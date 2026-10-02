@@ -77,6 +77,74 @@
         </ListBox>
         </DockPanel>
       </TabItem>
+      <TabItem Header="{l:T Prefs.BoardTab}">
+        <Grid ColumnDefinitions="*,250" Margin="0,10,0,0">
+          <Border CornerRadius="10" ClipToBounds="True" Margin="0,0,18,0">
+            <Panel>
+              <c:ThemeBackground Kind="{Binding PreviewBackground}" Animate="False" />
+              <c:GoBoardControl Board="{Binding PreviewBoard}" BoardStyle="{Binding PreviewStyle}" ShowCoordinates="False"
+                                IsInteractive="False" Margin="26" x:Name="SkinPreview" />
+            </Panel>
+          </Border>
+          <ScrollViewer Grid.Column="1">
+            <StackPanel Spacing="6">
+              <TextBlock Classes="secondary" Text="{l:T Prefs.BoardHint}" TextWrapping="Wrap" Margin="0,0,0,6" />
+                <TextBlock Classes="label" Text="{l:T Prefs.Board}" />
+                <ComboBox ItemsSource="{Binding BoardOptions}" SelectedItem="{Binding SelectedBoard}" HorizontalAlignment="Stretch" x:Name="BoardBox">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SkinOption">
+                      <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Panel Width="30" Height="30">
+                          <Border Width="30" Height="30" CornerRadius="4" ClipToBounds="True" HorizontalAlignment="Left"
+                                  IsVisible="{Binding HasPreview}" Background="{DynamicResource Bg.PanelAlt}">
+                            <Image Source="{Binding Preview}" Stretch="UniformToFill" />
+                          </Border>
+                          <Image Source="{Binding Preview2}" Width="30" Height="30" HorizontalAlignment="Right" IsVisible="{Binding HasPreview2}" />
+                        </Panel>
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Classes="label" Text="{l:T Prefs.Stones}" />
+                <ComboBox ItemsSource="{Binding StoneOptions}" SelectedItem="{Binding SelectedStones}" HorizontalAlignment="Stretch" x:Name="StonesBox">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SkinOption">
+                      <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Panel Width="64" Height="30">
+                          <Border Width="30" Height="30" CornerRadius="4" ClipToBounds="True" HorizontalAlignment="Left"
+                                  IsVisible="{Binding HasPreview}" Background="{DynamicResource Bg.PanelAlt}">
+                            <Image Source="{Binding Preview}" Stretch="UniformToFill" />
+                          </Border>
+                          <Image Source="{Binding Preview2}" Width="30" Height="30" HorizontalAlignment="Right" IsVisible="{Binding HasPreview2}" />
+                        </Panel>
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Classes="label" Text="{l:T Prefs.Background}" />
+                <ComboBox ItemsSource="{Binding BackgroundOptions}" SelectedItem="{Binding SelectedBackground}" HorizontalAlignment="Stretch" x:Name="BackgroundBox">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SkinOption">
+                      <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Panel Width="30" Height="30">
+                          <Border Width="30" Height="30" CornerRadius="4" ClipToBounds="True" HorizontalAlignment="Left"
+                                  IsVisible="{Binding HasPreview}" Background="{DynamicResource Bg.PanelAlt}">
+                            <Image Source="{Binding Preview}" Stretch="UniformToFill" />
+                          </Border>
+                          <Image Source="{Binding Preview2}" Width="30" Height="30" HorizontalAlignment="Right" IsVisible="{Binding HasPreview2}" />
+                        </Panel>
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Content="{l:T Prefs.ResetSkins}" Command="{Binding ResetSkinsCommand}" Margin="0,10,0,0" />
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+      </TabItem>
       <TabItem Header="{l:T Main.Analysis}">
         <ScrollViewer Margin="0,10,0,0">
           <StackPanel Spacing="10" MaxWidth="640" HorizontalAlignment="Left">

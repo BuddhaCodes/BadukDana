@@ -142,6 +142,12 @@ public sealed class GoBoardControl : Control
         ClipToBoundsProperty.OverrideDefaultValue<GoBoardControl>(false);
     }
 
+    public GoBoardControl()
+    {
+        // Stone sprites and wood are drawn well below their size: smooth (mipmapped) scaling keeps them crisp.
+        RenderOptions.SetBitmapInterpolationMode(this, Avalonia.Media.Imaging.BitmapInterpolationMode.HighQuality);
+    }
+
     public event EventHandler<BoardPointEventArgs>? PointClicked;
 
     public IReadOnlyList<AtariGroup>? AtariGroups
@@ -294,13 +300,12 @@ public sealed class GoBoardControl : Control
         DrawSweat(context, g, board);
         if (_capture is { } capture)
         {
-            StoneStyle stones = style.ShudanTexture ? StoneStyle.Shudan : style.Stones;
             capture.Draw(
                 context,
                 CaptureTime ?? _captureClock.Elapsed.TotalSeconds,
                 g.Cell,
                 q => StoneCenter(g, q),
-                (ctx, c, r, color, q) => DrawStone(ctx, c, r, color, stones, q),
+                (ctx, c, r, color, q) => DrawStone(ctx, c, r, color, style, q),
                 StoneRadius);
         }
         DrawTerritoryMarks(context, g, board);
@@ -408,7 +413,8 @@ public sealed class GoBoardControl : Control
         using (context.PushClip(rect))
         {
             context.DrawRectangle(style.ShudanTexture ? BoardBackgroundBrush : new ImmutableSolidColorBrush(style.Wood), null, rect);
-            Bitmap wood = style.ShudanTexture ? BoardTextures.Wood : BoardTextures.KayaFor(style.Wood);
+            Bitmap wood = style.ShudanTexture ? BoardTextures.Wood
+                : Themes.Skins.Image(style.Texture) ?? BoardTextures.KayaFor(style.Wood);
             Size src = wood.Size;
 
             // Cover the board with the texture, keeping its aspect ratio (the grain runs vertically).
@@ -522,7 +528,7 @@ public sealed class GoBoardControl : Control
             Stone s = board[p];
             if (s != Stone.Empty)
             {
-                DrawStone(context, Trembled(g, p), r * (p == _animPoint ? lift : 1), s, style.ShudanTexture ? StoneStyle.Shudan : style.Stones, p);
+                DrawStone(context, Trembled(g, p), r * (p == _animPoint ? lift : 1), s, style, p);
             }
         }
     }
@@ -956,10 +962,18 @@ public sealed class GoBoardControl : Control
         return new AvPoint(c.X + (Math.Cos(angle) * d), c.Y + (Math.Sin(angle) * d));
     }
 
-    /// <summary>Draws one stone in the theme's style.</summary>
-    private static void DrawStone(DrawingContext context, AvPoint c, double r, Stone color, StoneStyle style, Point p)
+    /// <summary>Draws one stone: one of Hoshi's rendered sprites when the style has a set, else the vector style.</summary>
+    private static void DrawStone(DrawingContext context, AvPoint c, double r, Stone color, BoardStyle board, Point p)
     {
         bool black = color == Stone.Black;
+        if (!board.ShudanTexture && board.StoneSet is { } set
+            && Themes.Skins.StoneSprite(set, black, black ? board.BlackVariants : board.WhiteVariants, p.X, p.Y) is { } sprite)
+        {
+            context.DrawImage(sprite, new Rect(sprite.Size), new Rect(c.X - r, c.Y - r, 2 * r, 2 * r));
+            return;
+        }
+
+        StoneStyle style = board.ShudanTexture ? StoneStyle.Shudan : board.Stones;
         switch (style)
         {
             case StoneStyle.Pearl:
@@ -1128,7 +1142,7 @@ public sealed class GoBoardControl : Control
         using (context.PushOpacity(0.4))
         {
             BoardStyle style = BoardStyle ?? ClassicStyle;
-            DrawStone(context, g.Center(p), g.Cell * StoneRadius, GhostStone, style.ShudanTexture ? StoneStyle.Shudan : style.Stones, p);
+            DrawStone(context, g.Center(p), g.Cell * StoneRadius, GhostStone, style, p);
         }
     }
 

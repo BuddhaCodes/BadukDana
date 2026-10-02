@@ -20,6 +20,21 @@ public enum BackgroundKind
 
     /// <summary>Washi paper with fibres (static).</summary>
     Washi,
+
+    /// <summary>Indigo cotton with white seigaiha stitching (Hoshi's art, tiled).</summary>
+    Sashiko,
+
+    /// <summary>A dark walnut table top (tiled).</summary>
+    WalnutTable,
+
+    /// <summary>Dark layered slate (tiled).</summary>
+    Slate,
+
+    /// <summary>Charcoal linen (tiled).</summary>
+    Linen,
+
+    /// <summary>A bamboo blind (tiled).</summary>
+    Sudare,
 }
 
 /// <summary>The little effect played when a stone is placed.</summary>
@@ -63,6 +78,16 @@ public sealed record BoardStyle
     public bool ShudanTexture { get; init; }
 
     public Color Wood { get; init; } = Color.Parse("#E3C28A");
+
+    /// <summary>An image of the wood (<c>avares://</c>); null = Hoshi's procedural kaya tinted with <see cref="Wood"/>.</summary>
+    public string? Texture { get; init; }
+
+    /// <summary>Hoshi's rendered stone sprites (<c>Assets/Art/Stones/&lt;set&gt;</c>); null = the vector <see cref="Stones"/>.</summary>
+    public string? StoneSet { get; init; }
+
+    public int WhiteVariants { get; init; }
+
+    public int BlackVariants { get; init; }
 
     public Color Border { get; init; } = Color.Parse("#CA933A");
 
@@ -182,7 +207,11 @@ public static class HoshiThemes
         Background = BackgroundKind.NightSky,
         Board = new BoardStyle
         {
-            Wood = Color.Parse("#E6C68E"),
+            Texture = "avares://Hoshi/Assets/Art/Boards/kaya-masame.jpg",
+            StoneSet = "glass",
+            WhiteVariants = 3,
+            BlackVariants = 3,
+            Wood = Color.Parse("#E8C483"),
             Border = Color.Parse("#C9A45C"),
             BorderWidth = 0.05,
             Lines = Color.Parse("#3B2A14"),
@@ -224,7 +253,11 @@ public static class HoshiThemes
         Background = BackgroundKind.InkMist,
         Board = new BoardStyle
         {
-            Wood = Color.Parse("#DDB579"),
+            Texture = "avares://Hoshi/Assets/Art/Boards/kaya-itame.jpg",
+            StoneSet = "clam-slate",
+            WhiteVariants = 8,
+            BlackVariants = 4,
+            Wood = Color.Parse("#E0B97A"),
             BorderWidth = 0,
             Lines = Color.Parse("#2B1D10"),
             Coordinates = Color.Parse("#A02B1D10"),
@@ -264,7 +297,11 @@ public static class HoshiThemes
         Background = BackgroundKind.ZenSand,
         Board = new BoardStyle
         {
-            Wood = Color.Parse("#E6CC98"),
+            Texture = "avares://Hoshi/Assets/Art/Boards/shin-kaya.jpg",
+            StoneSet = "clam-slate",
+            WhiteVariants = 8,
+            BlackVariants = 4,
+            Wood = Color.Parse("#EFD8A4"),
             Border = Color.Parse("#B89A68"),
             BorderWidth = 0.06,
             Lines = Color.Parse("#4A3A22"),
@@ -304,7 +341,11 @@ public static class HoshiThemes
         Background = BackgroundKind.Washi,
         Board = new BoardStyle
         {
-            Wood = Color.Parse("#EACF9E"),
+            Texture = "avares://Hoshi/Assets/Art/Boards/katsura.jpg",
+            StoneSet = "ceramic",
+            WhiteVariants = 2,
+            BlackVariants = 2,
+            Wood = Color.Parse("#E0AA72"),
             BorderWidth = 0,
             Lines = Color.Parse("#4B3828"),
             Coordinates = Color.Parse("#A04B3828"),
