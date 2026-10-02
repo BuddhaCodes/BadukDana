@@ -121,4 +121,33 @@ public sealed class SiteScreenshotTests
             frame.Save(path);
         }
     }
+
+    [AvaloniaFact]
+    public async Task Board_and_stones_screenshot_is_rendered_in_English()
+    {
+        string dir = Path.Combine(AppContext.BaseDirectory, "screenshots", "site");
+        Directory.CreateDirectory(dir);
+        Tr.SetLanguage(Tr.English);
+        try
+        {
+            var themes = new ThemeService();
+            themes.ApplyCurrent(Application.Current!.Resources);
+            var vm = new PreferencesViewModel(themes);
+            vm.SelectedBoard = vm.BoardOptions.First(o => o.Id == "kaya-itame");
+            vm.SelectedStones = vm.StoneOptions.First(o => o.Id == "clam-slate");
+            vm.SelectedBackground = vm.BackgroundOptions.First(o => o.Id == "sashiko");
+            var window = new PreferencesWindow { DataContext = vm, Width = 900, Height = 600 };
+            window.Show();
+            Avalonia.Controls.ControlExtensions.FindControl<Avalonia.Controls.TabControl>(window, "Tabs")!.SelectedIndex = 1;
+            await Task.Delay(60);
+            using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
+            frame.Save(Path.Combine(dir, "board-prefs.png"));
+            window.Close();
+        }
+        finally
+        {
+            ThemeService.Apply(HoshiThemes.Default, animations: false, Application.Current!.Resources);
+            Tr.SetLanguage(Tr.Spanish);
+        }
+    }
 }
