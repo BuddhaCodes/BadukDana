@@ -42,10 +42,15 @@ public sealed class AnalysisEngineHost : IAnalysisEngine, IAsyncDisposable
     private KataGoAnalysisEngine? _engine;
     private KataGoOptions? _options;
 
-    public AnalysisEngineHost(ISettingsService settings, ILoggerFactory? loggers = null)
+    private readonly string _baseDirectory;
+    private readonly string _dataDirectory;
+
+    public AnalysisEngineHost(ISettingsService settings, ILoggerFactory? loggers = null, string? baseDirectory = null, string? dataDirectory = null)
     {
         ArgumentNullException.ThrowIfNull(settings);
         _loggers = loggers ?? NullLoggerFactory.Instance;
+        _baseDirectory = baseDirectory ?? AppContext.BaseDirectory;
+        _dataDirectory = dataDirectory ?? AppPaths.DataDirectory;
         Reconfigure(settings.Current);
     }
 
@@ -59,10 +64,14 @@ public sealed class AnalysisEngineHost : IAnalysisEngine, IAsyncDisposable
 
     public int Visits { get; private set; } = 200;
 
+    /// <summary>Where the running KataGo comes from (null when there is none).</summary>
+    public KataGo.KataGoSource? Source { get; private set; }
+
     public void Reconfigure(AppSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        var options = new KataGoOptions(settings.KataGoExecutable ?? string.Empty, settings.KataGoModel ?? string.Empty, settings.KataGoConfig ?? string.Empty);
+        KataGo.ResolvedKataGo? resolved = KataGo.KataGoLocator.Resolve(settings, _baseDirectory, _dataDirectory);
+        KataGoOptions options = resolved?.Options ?? new KataGoOptions(string.Empty, string.Empty, string.Empty);
         Visits = Math.Clamp(settings.AnalysisVisits, 10, 100_000);
         if (options == _options && _engine is not null)
         {
@@ -73,12 +82,12 @@ public sealed class AnalysisEngineHost : IAnalysisEngine, IAsyncDisposable
         KataGoAnalysisEngine? old = _engine;
         _engine = null;
         _options = options;
-        Problem = string.IsNullOrWhiteSpace(settings.KataGoExecutable)
-            ? Tr.T("Engine.NotConfigured")
-            : options.Validate();
+        Source = resolved?.Source;
+        Problem = resolved is null ? Tr.T("Engine.NotConfigured") : options.Validate();
         if (Problem is null)
         {
             ILogger logger = _loggers.CreateLogger("KataGo");
+            logger.LogInformation("Using {Source} KataGo: {Executable}", resolved!.Source, options.Executable);
             _engine = new KataGoAnalysisEngine(() => KataGoProcess.Start(options, logger, SetActivity), logger);
         }
 

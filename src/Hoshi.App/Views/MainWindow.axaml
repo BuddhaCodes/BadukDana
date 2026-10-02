@@ -252,6 +252,23 @@
             <TextBlock Text="{Binding JosekiHints.Text}" VerticalAlignment="Center" FontSize="12.5" MaxWidth="560" TextTrimming="CharacterEllipsis" x:Name="JosekiText" />
           </StackPanel>
         </Border>
+        <!-- No KataGo yet: install it with one click (the AI analysis, effects and music need it). -->
+        <Border x:Name="KataGoCard" IsVisible="{Binding KataGoSetup.IsPromptVisible, FallbackValue=False}"
+                HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20,0,0,20" MaxWidth="360"
+                Background="{DynamicResource Bg.Panel}" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="1" CornerRadius="10" Padding="14,12">
+          <StackPanel Spacing="8">
+            <TextBlock Text="{l:T KataGo.Title}" FontWeight="SemiBold" />
+            <TextBlock Classes="secondary" Text="{Binding KataGoSetup.Explanation}" TextWrapping="Wrap" FontSize="12.5" />
+            <TextBlock Classes="secondary" Text="{Binding KataGoSetup.StatusText}" TextWrapping="Wrap" FontSize="12.5" x:Name="KataGoStatus"
+                       IsVisible="{Binding KataGoSetup.HasStatus, FallbackValue=False}" />
+            <ProgressBar Minimum="0" Maximum="1" Value="{Binding KataGoSetup.Progress}" Height="4" MinHeight="4" IsVisible="{Binding KataGoSetup.IsInstalling, FallbackValue=False}" />
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+              <Button Content="{l:T KataGo.NotNow}" Command="{Binding KataGoSetup.NotNowCommand}" />
+              <Button Classes="accent" Content="{Binding KataGoSetup.InstallLabel}" Command="{Binding KataGoSetup.InstallCommand}" x:Name="KataGoInstall"
+                      IsVisible="{Binding KataGoSetup.CanInstallHere, FallbackValue=False}" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
         <!-- A newer Hoshi is out: update in place (or open the download page), later, or skip this version. -->
         <Border x:Name="UpdateBanner" Classes="update-banner" IsVisible="{Binding Updates.IsVisible, FallbackValue=False}"
                 HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,20,20" MaxWidth="360"

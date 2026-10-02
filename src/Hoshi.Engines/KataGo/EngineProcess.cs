@@ -19,9 +19,14 @@ public interface IEngineProcess : IAsyncDisposable
     string? ExitReason => null;
 }
 
-/// <summary>Paths needed to run KataGo's analysis engine.</summary>
-public sealed record KataGoOptions(string Executable, string Model, string Config)
+/// <summary>Paths needed to run KataGo's analysis engine, plus extra <c>key=value</c> config overrides (e.g. an absolute <c>logDir</c>).</summary>
+public sealed record KataGoOptions(string Executable, string Model, string Config, string? Overrides = null)
 {
+    /// <summary>The value of <c>-override-config</c>: winrates from Black's view, then <see cref="Overrides"/>.</summary>
+    public string OverrideArgument => string.IsNullOrWhiteSpace(Overrides)
+        ? "reportAnalysisWinratesAs=BLACK"
+        : "reportAnalysisWinratesAs=BLACK," + Overrides;
+
     public string? Validate()
     {
         if (string.IsNullOrWhiteSpace(Executable) || !File.Exists(Executable))
@@ -125,7 +130,7 @@ public sealed class KataGoProcess : IEngineProcess
             CreateNoWindow = true,
             WorkingDirectory = Path.GetDirectoryName(options.Executable) ?? Environment.CurrentDirectory,
         };
-        foreach (string a in (string[])["analysis", "-config", options.Config, "-model", options.Model, "-override-config", "reportAnalysisWinratesAs=BLACK"])
+        foreach (string a in (string[])["analysis", "-config", options.Config, "-model", options.Model, "-override-config", options.OverrideArgument])
         {
             info.ArgumentList.Add(a);
         }

@@ -81,6 +81,8 @@ public static class AppHost
             sp.GetRequiredService<IHttpClientFactory>().CreateClient(UpdatesHttpClient),
             sp.GetRequiredService<ILogger<Services.Updates.UpdateService>>()));
         services.AddSingleton<IAppShutdown, AvaloniaAppShutdown>();
+        services.AddSingleton<IKataGoInstaller, DefaultKataGoInstaller>();
+        services.AddSingleton<KataGoSetupViewModel>();
         services.AddSingleton<UpdateViewModel>();
         services.AddSingleton<GameViewModel>();
         services.AddSingleton<MainWindowViewModel>();

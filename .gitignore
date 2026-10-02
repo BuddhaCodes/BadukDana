@@ -13,5 +13,8 @@ artifacts/
 Thumbs.db
 __pycache__/
 
+# A local KataGo for development (the release workflow downloads the official build)
+src/Hoshi.App/Assets/katago/
+
 # Files Claude hands over (bundles, previews)
 Claude outputs/

@@ -118,6 +118,12 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 - `Hoshi.Core.FightMeter`: lee cada jugada (contacto con piedras rivales, grupos con 1–3 libertades a ≤2 casillas, capturas) → `FightReading(Intensity, Heat, Strength)`; el calor sube mientras las jugadas siguen en la misma zona (radio 4) y se enfría con tenuki. `AnalysisViewModel` lo usa cuando KataGo no está activo (OGS en curso o sin configurar): impacto y sonido según `Strength`, y `BattleHeat` → `MusicDirector.OnBattleHeat`.
 - `GameViewModel.MoveSettled` (tableros antes/después, punto, nodo) y `TreeReplacing` (el árbol que se va). `ReplayRecorder` guarda en `IReplayStore` la partida que se va (local: id propio; OGS: `ogs-<id>`, también al terminar; réplica: solo si cambió). `MainWindowViewModel.OpenReplay` carga al principio con `Game.IsReview = true`: cada paso adelante espera la valoración de KataGo y celebra como una jugada.
 
+### KataGo incluido
+
+- `Services/KataGo/KataGoSetup.cs`: `KataGoLocator.Resolve` elige, por orden, las rutas de Preferencias, `<app>/katago/` (descargas de Windows/Linux), `<datos>/katago/` («Instalar KataGo») o un katago del sistema con la red de Hoshi; usa `hoshi_analysis.cfg` (escrito en `<datos>/katago/`) y `-override-config logDir=<datos>/katago/logs`. `KataGoInstaller` descarga el zip oficial (URL, tamaño y SHA-256 fijados) y el recurso `Hoshi-katago-b10c128.txt.gz` de la última versión de Hoshi.
+- `AnalysisEngineHost.Source` dice de dónde viene; `KataGoSetupViewModel` muestra el aviso «Instalar KataGo» en el tablero y en Preferencias.
+- En desarrollo, una copia local en `src/Hoshi.App/Assets/katago/` (ignorada por git) se copia a `bin/…/katago/` y cuenta como incluida.
+
 ### Actualizaciones
 
 - `Services/Updates`: `GitHubReleaseSource` (API pública `releases/latest`; `HOSHI_UPDATE_FEED` la sustituye en pruebas), `UpdatePlatform` (versión propia, archivo por SO/arquitectura, tipo de instalación: desarrollo, carpeta o `Hoshi.app`), `UpdateInstaller` (extrae, renombra lo reemplazado a `*.old`, mueve lo nuevo; en macOS cambia el bundle entero con `ditto`; limpia al arrancar) y `UpdateService` (descarga con progreso, verifica `SHA256SUMS.txt`, lanza la nueva versión con `--wait-for-pid`).

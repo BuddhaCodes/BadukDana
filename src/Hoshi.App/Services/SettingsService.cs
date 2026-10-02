@@ -46,6 +46,9 @@ public sealed record AppSettings
     /// <summary>Show known joseki continuations on the main board (J).</summary>
     public bool JosekiHints { get; init; }
 
+    /// <summary>"Not now" on the Install KataGo card (Preferences → Analysis still offers it).</summary>
+    public bool KataGoPromptDismissed { get; init; }
+
     /// <summary>A soft sound when the opponent writes in the game chat.</summary>
     public bool ChatSounds { get; init; } = true;
 

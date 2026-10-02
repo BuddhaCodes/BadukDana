@@ -34,6 +34,18 @@ Shippori Mincho B1 Japanese subsets that hold 星 and 正). No Reserved Font Nam
 | Shippori Mincho B1 | © 2021 The Shippori Mincho Project Authors |
 | JetBrains Mono | © 2020 The JetBrains Mono Project Authors |
 
+### KataGo (bundled in the Windows and Linux downloads, or downloaded by "Install KataGo")
+
+| Component | Source | License | Text |
+|---|---|---|---|
+| KataGo v1.17.1 (OpenCL build, `katago`/`katago.exe`, `cacert.pem`) | github.com/lightvector/KataGo releases, unmodified | MIT, © David J Wu ("lightvector") and contributors; parts under the licenses in its `cpp/external` | `licenses/MIT-KataGo.txt` |
+| Network `g170e-b10c128-s1141046784-d204142634` (`engines/katago/b10c128.txt.gz`) | KataGo project, g170 run (katagoarchive.org) | Published by the KataGo project for use with KataGo; see katagotraining.org for its terms | — |
+| OpenSSL 3 (`libcrypto-3-x64.dll`, `libssl-3-x64.dll`, Windows) | shipped inside KataGo's Windows build | Apache-2.0 | `licenses/Apache-OpenSSL.txt` |
+| libzip (`zip.dll`, Windows) | shipped inside KataGo's Windows build | BSD-3-Clause | `licenses/BSD-libzip.txt` |
+| zlib (`z.dll`, Windows) | shipped inside KataGo's Windows build | zlib | `licenses/Zlib-zlib.txt` |
+| bzip2 (`bz2.dll`, Windows) | shipped inside KataGo's Windows build | bzip2 (BSD-style) | `licenses/bzip2.txt` |
+| Microsoft Visual C++ runtime (`msvcp140*.dll`, `vcruntime140*.dll`, Windows) | shipped inside KataGo's Windows build | Microsoft Visual C++ Redistributable terms | — |
+
 ### Icons
 
 Converted to path data by `tools/gen_icons.py` into `src/Hoshi.App/Themes/IconSets.g.cs`.
