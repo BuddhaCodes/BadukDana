@@ -74,7 +74,7 @@ public sealed class UpdatePlatformTests
 
         InstallTarget mac = UpdatePlatform.Detect("/Applications/Hoshi.app/Contents/MacOS/Hoshi", "/Applications/Hoshi.app/Contents/MacOS/", OSPlatform.OSX, Architecture.Arm64);
         mac.Kind.Should().Be(InstallKind.MacBundle);
-        mac.Root.Should().Be("/Applications/Hoshi.app");
+        mac.Root.Should().Be(Path.GetFullPath("/Applications/Hoshi.app"), "on Windows the same path gets a drive letter");
         mac.AssetName.Should().Be("Hoshi-macos-arm64.zip");
     }
 }
