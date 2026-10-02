@@ -8,12 +8,12 @@
 <link rel="icon" type="image/png" href="icon.png">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Hoshi — a Go board that feels every move">
-<meta property="og:description" content="A free desktop Go app: live KataGo analysis, joseki guidance, cinematic effects, adaptive music and online play on OGS.">
+<meta property="og:description" content="A free desktop Go app: kaya boards and clam-shell stones, live KataGo analysis, joseki guidance, cinematic effects, adaptive music and online play on OGS.">
 <meta property="og:url" content="https://buddhacodes.github.io/BadukDana/">
 <meta property="og:image" content="https://buddhacodes.github.io/BadukDana/img/night-analysis.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="description" content="Hoshi is a free desktop Go (Baduk, Weiqi) app: beautiful boards, live KataGo analysis, cinematic effects for great moves, adaptive lo-fi music and online play on OGS.">
-<link rel="icon" href="icon.png">
+<meta name="description" content="Hoshi is a free desktop Go (Baduk, Weiqi) app: beautiful kaya boards and stones, live KataGo analysis, joseki guidance, cinematic effects for great moves, adaptive lo-fi music and online play on OGS.">
+<meta name="theme-color" content="#0a0d19">
 <style>
   /* Fonts are served with the page (SIL OFL 1.1, see THIRD_PARTY_NOTICES.md): no third-party requests. */
   @font-face { font-family: Figtree; font-weight: 400; font-display: swap; src: url(fonts/figtree-latin-400-normal.woff2) format("woff2"); }
@@ -26,157 +26,203 @@
   @font-face { font-family: "Shippori Mincho B1"; font-weight: 600 800; font-display: swap; src: url(fonts/shippori-mincho-b1-105-700-normal.woff2) format("woff2"); unicode-range: U+661F; }
   @font-face { font-family: "Shippori Mincho B1"; font-weight: 600 800; font-display: swap; src: url(fonts/shippori-mincho-b1-117-700-normal.woff2) format("woff2"); unicode-range: U+6B63; }
   @font-face { font-family: "JetBrains Mono"; font-weight: 400; font-display: swap; src: url(fonts/jetbrains-mono-latin-400-normal.woff2) format("woff2"); }
+
   :root {
-    --bg: #0b1024;
-    --bg-2: #111833;
-    --panel: #151d3b;
-    --line: rgba(255, 255, 255, .08);
-    --text: #e8e6df;
-    --muted: #a3a8bd;
+    --ink: #0a0d19;
+    --ink-2: #0f1426;
+    --ink-3: #161c33;
+    --line: rgba(255, 255, 255, .09);
+    --text: #ece8de;
+    --muted: #a6a9b8;
     --gold: #d9b45a;
     --gold-2: #f0d594;
-    --wood: #e2b877;
-    --radius: 18px;
-    --max: 1120px;
+    --kaya: #e8c483;
+    --seal: #c8432f;
+    --paper: #f3ede1;
+    --paper-2: #e9e1d0;
+    --paper-ink: #1f1b16;
+    --paper-muted: #6b6152;
+    --paper-line: rgba(31, 27, 22, .12);
+    --serif: Fraunces, "Shippori Mincho B1", Georgia, serif;
+    --radius: 16px;
+    --max: 1160px;
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font: 16.5px/1.65 Figtree, system-ui, -apple-system, "Segoe UI", sans-serif;
-    -webkit-font-smoothing: antialiased;
-  }
+  body { margin: 0; background: var(--ink); color: var(--text); font: 16.5px/1.65 Figtree, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
   img { max-width: 100%; height: auto; display: block; }
   a { color: var(--gold-2); }
   .wrap { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
-  h1, h2, h3 { font-family: Fraunces, "Shippori Mincho B1", Georgia, serif; font-weight: 600; letter-spacing: -.012em; margin: 0; }
-  h2 { font-size: clamp(30px, 4vw, 44px); line-height: 1.1; }
-  h3 { font-size: 24px; }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; letter-spacing: -.015em; margin: 0; }
+  h2 { font-size: clamp(32px, 4.4vw, 50px); line-height: 1.06; }
+  h3 { font-size: 21px; line-height: 1.25; }
   p { margin: 0; }
   .muted { color: var(--muted); }
-  .eyebrow { color: var(--gold); text-transform: uppercase; letter-spacing: .18em; font-size: 12px; font-weight: 600; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 10px; color: var(--gold); text-transform: uppercase; letter-spacing: .2em; font-size: 12px; font-weight: 600; }
+  .eyebrow::before { content: ""; width: 26px; height: 1px; background: currentColor; opacity: .7; }
+  .head { max-width: 700px; margin-bottom: 44px; }
+  .head h2 { margin-top: 14px; }
+  .head p { margin-top: 14px; color: var(--muted); font-size: 18px; }
+  section { padding: 104px 0; position: relative; }
+  .shot { border-radius: 12px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 30px 70px rgba(0, 0, 0, .5); background: #000; }
+  .reveal { opacity: 0; transform: translateY(16px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .reveal { opacity: 1; transform: none; transition: none; } }
 
-  /* Stars */
-  .sky {
-    position: absolute; inset: 0; pointer-events: none; opacity: .9;
-    background-image:
-      radial-gradient(1px 1px at 12% 18%, #fff 50%, transparent 51%),
-      radial-gradient(1px 1px at 28% 72%, #fff 50%, transparent 51%),
-      radial-gradient(1.5px 1.5px at 44% 32%, #fff6d8 50%, transparent 51%),
-      radial-gradient(1px 1px at 63% 12%, #fff 50%, transparent 51%),
-      radial-gradient(1px 1px at 77% 58%, #fff 50%, transparent 51%),
-      radial-gradient(1.5px 1.5px at 88% 26%, #fff 50%, transparent 51%),
-      radial-gradient(1px 1px at 92% 84%, #fff 50%, transparent 51%),
-      radial-gradient(1px 1px at 6% 88%, #fff 50%, transparent 51%),
-      radial-gradient(1px 1px at 52% 90%, #fff 50%, transparent 51%),
-      radial-gradient(1px 1px at 36% 8%, #fff 50%, transparent 51%);
-    animation: twinkle 6s ease-in-out infinite alternate;
-  }
-  @keyframes twinkle { from { opacity: .55; } to { opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .sky { animation: none; } html { scroll-behavior: auto; } }
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 999px; text-decoration: none; font-weight: 600; font-size: 15px; border: 1px solid transparent; transition: background .2s, border-color .2s, transform .2s; cursor: pointer; font-family: inherit; }
+  .btn.primary { background: linear-gradient(180deg, var(--gold-2), var(--gold)); color: #1b1408; box-shadow: 0 10px 34px rgba(217, 180, 90, .28), inset 0 1px 0 rgba(255, 255, 255, .45); }
+  .btn.primary:hover { transform: translateY(-1px); }
+  .btn.ghost { border-color: var(--line); color: var(--text); background: rgba(255, 255, 255, .02); }
+  .btn.ghost:hover { border-color: rgba(217, 180, 90, .6); }
+  .btn.big { font-size: 17px; padding: 15px 30px; }
 
   /* Nav */
-  nav { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px); background: rgba(11, 16, 36, .72); border-bottom: 1px solid var(--line); }
-  nav .wrap { display: flex; align-items: center; gap: 22px; height: 62px; }
-  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: Fraunces, "Shippori Mincho B1", Georgia, serif; font-size: 24px; font-weight: 600; }
+  nav { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: rgba(10, 13, 25, .74); border-bottom: 1px solid var(--line); }
+  nav .wrap { display: flex; align-items: center; gap: 22px; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: var(--serif); font-size: 24px; font-weight: 600; }
   .brand img { width: 30px; height: 30px; }
   .brand span { color: var(--gold); }
-  nav .links { display: flex; gap: 20px; margin-left: auto; }
+  nav .links { display: flex; gap: 22px; margin-left: auto; }
   nav .links a { color: var(--muted); text-decoration: none; font-size: 14px; }
   nav .links a:hover { color: var(--text); }
   .lang { display: flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
   .lang button { background: none; border: 0; color: var(--muted); font: 600 12px Figtree, sans-serif; padding: 6px 11px; cursor: pointer; }
   .lang button[aria-pressed="true"] { background: var(--gold); color: #1b1408; }
-  @media (max-width: 720px) { nav .links { display: none; } .lang { margin-left: auto; } }
+  nav .btn { padding: 8px 16px; font-size: 14px; }
+  @media (max-width: 860px) { nav .links { display: none; } .lang { margin-left: auto; } }
+  @media (max-width: 420px) { nav .btn { display: none; } }
 
   /* Hero */
-  header { position: relative; overflow: hidden; padding: 84px 0 70px; background: radial-gradient(1200px 600px at 70% -10%, #23305f 0%, transparent 60%), var(--bg); }
-  .hero { position: relative; display: grid; grid-template-columns: 1fr 1.25fr; gap: 48px; align-items: center; }
-  .hero h1 { font-size: clamp(40px, 5.6vw, 66px); line-height: 1.06; font-weight: 700; }
-  .hero h1 em { font-style: normal; color: var(--gold-2); }
-  .hero p.lead { font-size: 18px; color: var(--muted); margin: 20px 0 30px; max-width: 34em; }
+  header { position: relative; overflow: hidden; padding: 72px 0 96px;
+    background: radial-gradient(900px 520px at 78% 10%, rgba(64, 82, 150, .35), transparent 65%), radial-gradient(700px 500px at 0% 100%, rgba(217, 180, 90, .07), transparent 70%), var(--ink); }
+  .sky { position: absolute; inset: 0; pointer-events: none;
+    background-image: radial-gradient(1px 1px at 12% 18%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 28% 72%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 44% 32%, #fff6d8 50%, transparent 51%), radial-gradient(1px 1px at 63% 8%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 97% 58%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 88% 6%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 6% 88%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 52% 94%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 36% 8%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 20% 45%, #fff 50%, transparent 51%);
+    animation: twinkle 6s ease-in-out infinite alternate; }
+  @keyframes twinkle { from { opacity: .45; } to { opacity: .95; } }
+  .kanji { position: absolute; right: -2vw; top: 50%; transform: translateY(-50%); font: 700 min(46vw, 620px)/1 "Shippori Mincho B1", serif; color: rgba(217, 180, 90, .045); pointer-events: none; user-select: none; }
+  .hero { position: relative; display: grid; grid-template-columns: 1fr 1.05fr; gap: 56px; align-items: center; }
+  .hero h1 { font-size: clamp(44px, 6vw, 76px); line-height: 1.02; font-weight: 700; margin-top: 18px; }
+  .hero h1 em { font-style: italic; font-weight: 500; color: var(--gold-2); }
+  .hero .lead { font-size: 18.5px; color: var(--muted); margin: 22px 0 32px; max-width: 32em; }
   .cta { display: flex; gap: 12px; flex-wrap: wrap; }
-  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 999px; text-decoration: none; font-weight: 600; font-size: 15px; }
-  .btn.primary { background: var(--gold); color: #1b1408; box-shadow: 0 8px 30px rgba(217, 180, 90, .25); }
-  .btn.primary:hover { background: var(--gold-2); }
-  .btn.ghost { border: 1px solid var(--line); color: var(--text); }
-  .btn.ghost:hover { border-color: var(--gold); }
-  .shot { border-radius: 14px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0, 0, 0, .55); background: #000; }
-  .hero .shot { transform: perspective(1400px) rotateY(-6deg) rotateX(2deg); }
-  .badges { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 26px; }
-  .badge { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; }
-  @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } .hero .shot { transform: none; } header { padding-top: 56px; } }
+  .facts { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 30px; font-size: 13.5px; color: var(--muted); list-style: none; padding: 0; }
+  .facts li { display: flex; align-items: center; gap: 8px; }
+  .facts li::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #cfcac0); box-shadow: 0 1px 2px rgba(0, 0, 0, .5); }
+  .facts li:nth-child(even)::before { background: radial-gradient(circle at 35% 30%, #555, #111); }
+  .goban-wrap { position: relative; }
+  .goban { position: relative; aspect-ratio: 1; width: 100%; max-width: 600px; margin-left: auto; border-radius: 6px; box-shadow: 0 2px 0 #b98f50, 0 40px 90px rgba(0, 0, 0, .65), 0 0 0 1px rgba(0, 0, 0, .3); background: #e8c483 url(art/board.jpg) center/cover; touch-action: manipulation; }
+  .goban canvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; border-radius: 6px; }
+  .goban-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; max-width: 600px; margin: 16px 0 0 auto; font-size: 13.5px; color: var(--muted); }
+  .goban-bar button { background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 5px 12px; font: 500 13px Figtree, sans-serif; cursor: pointer; }
+  .goban-bar button:hover { color: var(--text); border-color: rgba(217, 180, 90, .5); }
+  .turn { display: inline-flex; align-items: center; gap: 8px; }
+  .turn i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; background: radial-gradient(circle at 35% 30%, #555, #111); }
+  .turn i.w { background: radial-gradient(circle at 35% 30%, #fff, #cfcac0); }
+  @media (max-width: 920px) { .hero { grid-template-columns: 1fr; gap: 44px; } .goban, .goban-bar { margin-left: auto; margin-right: auto; } header { padding-top: 48px; } }
 
-  section { padding: 84px 0; border-top: 1px solid var(--line); }
-  .head { max-width: 680px; margin-bottom: 40px; }
-  .head p { margin-top: 12px; color: var(--muted); font-size: 17px; }
-
-  /* Features */
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-  .card { background: linear-gradient(180deg, #18214a, var(--panel)); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; transition: border-color .2s, transform .2s; }
-  .card:hover { border-color: rgba(217, 180, 90, .4); transform: translateY(-2px); }
-  .card .new { display: inline-block; margin-left: 6px; font: 700 10px Figtree, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #1b1408; background: var(--gold); border-radius: 999px; padding: 2px 7px; vertical-align: middle; }
-  .card .ico { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: rgba(217, 180, 90, .12); color: var(--gold-2); margin-bottom: 14px; font-size: 19px; }
-  .card h3 { font-size: 20px; margin-bottom: 8px; line-height: 1.25; }
-  .card p { color: var(--muted); font-size: 15px; }
-
-  /* Effects showcase */
-  .fx { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-  .fx figure { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
-  .fx figcaption { padding: 14px 16px 16px; font-size: 14px; color: var(--muted); }
-  .fx figcaption b { display: block; color: var(--text); font-size: 15px; margin-bottom: 2px; }
-  @media (max-width: 900px) { .fx { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 520px) { .fx { grid-template-columns: 1fr; } }
-
-  /* Themes */
-  .themes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
-  .themes figure { margin: 0; }
-  .themes figcaption { margin-top: 10px; font-size: 14px; color: var(--muted); }
-  .themes figcaption b { color: var(--text); font-family: Fraunces, "Shippori Mincho B1", Georgia, serif; font-size: 20px; margin-right: 8px; }
-  @media (max-width: 720px) { .themes { grid-template-columns: 1fr; } }
+  /* Features: tabs on washi paper */
+  .paper { background: var(--paper); color: var(--paper-ink);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35 0 0 0 0 .28 0 0 0 0 .18 0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+  .paper .eyebrow { color: #a07a2c; }
+  .paper .head p { color: var(--paper-muted); }
+  .tabs { display: flex; gap: 6px; padding: 5px; border-radius: 999px; background: var(--paper-2); border: 1px solid var(--paper-line); width: max-content; max-width: 100%; overflow-x: auto; scrollbar-width: none; margin-bottom: 34px; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs button { flex: none; border: 0; background: none; padding: 9px 20px; border-radius: 999px; font: 600 14.5px Figtree, sans-serif; color: var(--paper-muted); cursor: pointer; transition: background .2s, color .2s; }
+  .tabs button[aria-selected="true"] { background: var(--paper-ink); color: var(--paper); box-shadow: 0 6px 16px rgba(31, 27, 22, .2); }
+  .tabs button:focus-visible { outline: 2px solid #a07a2c; outline-offset: 2px; }
+  .panel { display: grid; grid-template-columns: 1.25fr 1fr; gap: 48px; align-items: start; }
+  .panel[hidden] { display: none; }
+  .panel .shot { border-color: rgba(31, 27, 22, .2); box-shadow: 0 30px 60px rgba(60, 40, 10, .25); }
+  .items { list-style: none; margin: 0; padding: 0; }
+  .items li { display: grid; grid-template-columns: 38px 1fr; gap: 16px; padding: 18px 0; border-top: 1px solid var(--paper-line); }
+  .items li:first-child { border-top: 0; padding-top: 4px; }
+  .items .ico { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--paper-ink); color: var(--gold-2); font-size: 16px; }
+  .items h3 { font-size: 20px; }
+  .items p { color: var(--paper-muted); font-size: 15.5px; margin-top: 4px; }
+  .new { display: inline-block; margin-left: 8px; font: 700 10px Figtree, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #fff; background: var(--seal); border-radius: 3px; padding: 2px 6px; vertical-align: 3px; }
+  @media (max-width: 920px) { .panel { grid-template-columns: 1fr; gap: 28px; } }
 
   /* Joseki */
-  .joseki { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .joseki { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
   .joseki figure { margin: 0; }
-  .joseki figcaption { margin-top: 12px; color: var(--muted); font-size: 15px; }
-  .joseki figcaption b { display: block; color: var(--text); font-family: Fraunces, "Shippori Mincho B1", Georgia, serif; font-size: 21px; margin-bottom: 4px; }
-  .legend { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 26px 0 0; padding: 16px 18px; list-style: none; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; font-size: 14px; color: var(--muted); }
+  .joseki figcaption { margin-top: 16px; color: var(--muted); font-size: 15.5px; }
+  .joseki figcaption b { display: block; color: var(--text); font-family: var(--serif); font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 22px; margin: 34px 0 0; padding: 16px 20px; list-style: none; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 14px; color: var(--muted); }
   .legend li { display: flex; align-items: center; gap: 8px; }
-  .legend i { width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, .8); display: inline-block; }
-  .points { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 18px; }
+  .legend i { width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, .85); display: inline-block; }
+  .points { display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px; margin-top: 36px; }
+  .points h3 { font-size: 19px; display: flex; align-items: baseline; gap: 10px; }
+  .points h3 span { font: 500 13px "JetBrains Mono", monospace; color: var(--gold); }
+  .points p { color: var(--muted); font-size: 15px; margin-top: 6px; }
   @media (max-width: 900px) { .joseki, .points { grid-template-columns: 1fr; } }
 
+  /* Craft: boards and stones on the walnut table */
+  .craft { background: linear-gradient(rgba(14, 9, 6, .78), rgba(14, 9, 6, .9)), url(art/bg-walnut.jpg) center/512px; }
+  .craft .head p { color: #c4b6a2; }
+  .row-label { font: 600 12px Figtree, sans-serif; letter-spacing: .2em; text-transform: uppercase; color: #c4b6a2; margin: 0 0 14px; }
+  .woods { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 40px; }
+  .woods figure { margin: 0; }
+  .woods .swatch { aspect-ratio: 1; border-radius: 4px; background-size: cover; position: relative; box-shadow: 0 16px 34px rgba(0, 0, 0, .55), 0 0 0 1px rgba(0, 0, 0, .35); overflow: hidden; }
+  .woods .swatch::after { content: ""; position: absolute; inset: 22%; background-image: linear-gradient(var(--l) 1px, transparent 1px), linear-gradient(90deg, var(--l) 1px, transparent 1px); background-size: 33.3% 33.3%; border-right: 1px solid var(--l); border-bottom: 1px solid var(--l); opacity: .55; }
+  .woods figcaption, .stones figcaption { font-size: 13.5px; color: #d8cdbb; margin-top: 10px; }
+  .stones { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 40px; }
+  .stones figure { margin: 0; padding: 18px 10px 14px; border-radius: 12px; background: rgba(255, 255, 255, .03); border: 1px solid rgba(255, 255, 255, .07); text-align: center; }
+  .stones .pair { display: flex; justify-content: center; }
+  .stones .pair img { width: 64px; height: 64px; filter: drop-shadow(0 6px 6px rgba(0, 0, 0, .55)); }
+  .stones .pair img + img { margin-left: -6px; }
+  .mix { display: grid; grid-template-columns: 1fr 1.3fr; gap: 44px; align-items: center; }
+  .tiles { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  .tiles span { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 5px; border-radius: 999px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .08); font-size: 13px; color: #d8cdbb; }
+  .tiles i { width: 22px; height: 22px; border-radius: 50%; background-size: 120%; background-position: center; }
+  @media (max-width: 900px) { .woods { grid-template-columns: repeat(3, 1fr); } .stones { grid-template-columns: repeat(2, 1fr); } .mix { grid-template-columns: 1fr; } }
+
+  /* Effects */
+  .fx { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .fx figure { margin: 0; }
+  .fx img { border-radius: 10px; border: 1px solid var(--line); }
+  .fx figcaption { padding-top: 12px; font-size: 14px; color: var(--muted); }
+  .fx figcaption b { display: block; color: var(--text); font-family: var(--serif); font-weight: 600; font-size: 18px; margin-bottom: 2px; }
+  @media (max-width: 900px) { .fx { grid-template-columns: repeat(2, 1fr); } }
+
+  /* Themes */
+  .themes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 26px; }
+  .themes figure { margin: 0; }
+  .themes figcaption { margin-top: 12px; font-size: 14.5px; color: var(--muted); }
+  .themes figcaption b { color: var(--text); font-family: var(--serif); font-weight: 600; font-size: 21px; margin-right: 8px; }
+  @media (max-width: 720px) { .themes { grid-template-columns: 1fr; } }
+
   /* Music */
-  .music { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center; }
-  .player { background: linear-gradient(160deg, #1b2450, #121937); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; }
-  .player audio { width: 100%; margin-top: 16px; }
+  .music { display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px; align-items: center; }
+  .player { background: linear-gradient(160deg, #19214a, #10162f); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; }
+  .player audio { width: 100%; margin-top: 18px; }
   .meter { display: flex; gap: 6px; align-items: flex-end; height: 70px; }
-  .meter i { flex: 1; background: linear-gradient(to top, var(--gold), #f6e2a8); border-radius: 4px; opacity: .85; }
-  .layers { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 8px; font-size: 14px; color: var(--muted); }
-  .layers li::before { content: "◆"; color: var(--gold); margin-right: 8px; font-size: 10px; }
+  .meter i { flex: 1; background: linear-gradient(to top, var(--gold), #f6e2a8); border-radius: 3px; opacity: .85; }
+  .layers { list-style: none; padding: 0; margin: 20px 0 0; display: grid; gap: 8px; font-size: 14.5px; color: var(--muted); counter-reset: l; }
+  .layers li { counter-increment: l; }
+  .layers li::before { content: counter(l); font: 500 12px "JetBrains Mono", monospace; color: var(--gold); margin-right: 12px; }
   @media (max-width: 900px) { .music { grid-template-columns: 1fr; } }
 
   /* Fair play */
-  .fair { background: linear-gradient(135deg, rgba(217, 180, 90, .12), rgba(217, 180, 90, .03)); border: 1px solid rgba(217, 180, 90, .35); border-radius: var(--radius); padding: 26px 28px; display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: start; }
-  .fair .seal { width: 46px; height: 46px; border-radius: 50%; background: var(--gold); color: #1b1408; display: grid; place-items: center; font: 600 22px Fraunces, "Shippori Mincho B1", Georgia, serif; }
+  .fair { border: 1px solid rgba(217, 180, 90, .35); border-radius: var(--radius); padding: 30px 32px; display: grid; grid-template-columns: auto 1fr; gap: 22px; align-items: start; background: linear-gradient(135deg, rgba(217, 180, 90, .10), rgba(217, 180, 90, .02)); }
+  .fair .seal { width: 52px; height: 52px; border-radius: 6px; background: var(--seal); color: #fff3e6; display: grid; place-items: center; font: 700 26px "Shippori Mincho B1", serif; transform: rotate(-4deg); box-shadow: 0 6px 16px rgba(200, 67, 47, .35); }
+  .fair h3 { font-size: 24px; }
 
   /* Download */
-  .dl-main { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 26px; }
-  .btn.big { font-size: 17px; padding: 15px 28px; }
+  .dl { background: radial-gradient(800px 400px at 50% 0%, rgba(217, 180, 90, .10), transparent 70%), var(--ink-2); border-top: 1px solid var(--line); }
+  .dl-main { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 34px; }
   .platforms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .card { background: var(--ink-3); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; min-width: 0; }
   .platforms .card { display: flex; flex-direction: column; gap: 10px; }
-  .platforms .card.current { border-color: rgba(217, 180, 90, .55); box-shadow: 0 0 0 1px rgba(217, 180, 90, .25) inset; }
+  .platforms .card.current { border-color: rgba(217, 180, 90, .6); box-shadow: 0 0 0 1px rgba(217, 180, 90, .25) inset; }
   .platforms .arch { display: flex; gap: 8px; flex-wrap: wrap; }
   .platforms .arch .btn { padding: 8px 16px; font-size: 14px; }
-  .platforms .note { font-size: 13px; color: var(--muted); margin: auto 0 0; padding-top: 8px; border-top: 1px solid var(--line); }
+  .platforms .note { font-size: 13px; color: var(--muted); margin: auto 0 0; padding-top: 10px; border-top: 1px solid var(--line); }
   .extras { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
-  .card { min-width: 0; }
   pre { background: #070a18; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; overflow-x: auto; font: 13px/1.6 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #e5dcc4; margin: 12px 0 0; }
   @media (max-width: 900px) { .platforms, .extras { grid-template-columns: 1fr; } }
 
-  footer { border-top: 1px solid var(--line); padding: 40px 0 56px; color: var(--muted); font-size: 13px; }
+  footer { border-top: 1px solid var(--line); padding: 44px 0 60px; color: var(--muted); font-size: 13px; background: var(--ink-2); }
   footer .wrap { display: grid; gap: 10px; }
   footer .row { display: flex; gap: 12px; align-items: center; }
   footer img { width: 26px; height: 26px; }
@@ -190,76 +236,113 @@
     <div class="links">
       <a href="#features" data-i18n="nav.features">Features</a>
       <a href="#joseki" data-i18n="nav.joseki">Joseki</a>
+      <a href="#craft" data-i18n="nav.craft">Boards &amp; stones</a>
       <a href="#effects" data-i18n="nav.effects">Effects</a>
       <a href="#themes" data-i18n="nav.themes">Themes</a>
-      <a href="#download" data-i18n="nav.download">Get Hoshi</a>
     </div>
     <div class="lang" role="group" aria-label="Language">
       <button type="button" data-lang="en" aria-pressed="true">EN</button>
       <button type="button" data-lang="es" aria-pressed="false">ES</button>
     </div>
+    <a class="btn primary" href="#download" data-i18n="nav.download">Get Hoshi</a>
   </div>
 </nav>
 
 <header id="top">
   <div class="sky"></div>
+  <div class="kanji" aria-hidden="true">星</div>
   <div class="wrap hero">
     <div>
       <p class="eyebrow" data-i18n="hero.eyebrow">Go · Baduk · Weiqi</p>
       <h1 data-i18n-html="hero.title">A Go board that <em>feels</em> every move.</h1>
       <p class="lead" data-i18n="hero.lead">Hoshi is a free desktop app for playing and studying Go. A beautiful board, KataGo judging every move live, joseki guidance in every corner, cinematic effects when you find the best move, and lo-fi music that heats up with your streaks.</p>
       <div class="cta">
-        <a class="btn primary" href="#download" data-i18n="hero.cta">Get Hoshi</a>
-        <a class="btn ghost" href="#features" data-i18n="hero.more">See what it does</a>
-        <a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana" data-i18n="hero.github">Source on GitHub</a>
+        <a class="btn primary big" href="#download" id="hero-dl" data-i18n="hero.cta">Get Hoshi</a>
+        <a class="btn ghost big" href="https://github.com/BuddhaCodes/BadukDana" data-i18n="hero.github">Source on GitHub</a>
       </div>
-      <div class="badges">
-        <span class="badge">Windows · macOS · Linux</span>
-        <span class="badge" data-i18n="hero.badge2">KataGo analysis</span>
-        <span class="badge" data-i18n="hero.badge3">Play on OGS</span>
-        <span class="badge" data-i18n="hero.badge4">Joseki trainer</span>
-        <span class="badge">English · Español</span>
+      <ul class="facts">
+        <li>Windows · macOS · Linux</li>
+        <li data-i18n="hero.badge2">KataGo included</li>
+        <li data-i18n="hero.badge3">Play on OGS</li>
+        <li data-i18n="hero.badge4">Joseki trainer</li>
+        <li>English · Español</li>
+      </ul>
+    </div>
+    <div class="goban-wrap">
+      <div class="goban" id="goban"><canvas id="board" aria-label="A Go board: click an intersection to place a stone" role="img"></canvas></div>
+      <div class="goban-bar">
+        <span class="turn"><i id="turn-dot"></i><span id="turn-text" data-i18n="board.watch">An opening is being played…</span></span>
+        <button type="button" id="board-reset" data-i18n="board.reset">Clear the board</button>
       </div>
     </div>
-    <div class="shot"><img src="img/night-analysis.jpg" width="1120" height="704" alt="Hoshi with the Night sky theme and the analysis panel open"></div>
   </div>
 </header>
 
-<section id="features">
+<section id="features" class="paper">
   <div class="wrap">
-    <div class="head">
+    <div class="head reveal">
       <p class="eyebrow" data-i18n="feat.eyebrow">Features</p>
       <h2 data-i18n="feat.title">Everything you need at the board.</h2>
       <p data-i18n="feat.lead">Play friends on one screen, review your games with an engine, or take on the world on OGS.</p>
     </div>
-    <div class="grid">
-      <div class="card"><div class="ico">◎</div><h3 data-i18n="f1.t">Live AI analysis</h3><p data-i18n="f1.d">KataGo runs in the background from the moment Hoshi opens and rates every move: best, excellent, good, inaccuracy, mistake or blunder, with points lost.</p></div>
-      <div class="card"><div class="ico">✦</div><h3 data-i18n="f2.t">Moves you can feel</h3><p data-i18n="f2.d">The best move shakes the board, cracks the wood and throws embers. Captured stones shatter. Groups in atari nervously sweat.</p></div>
-      <div class="card"><div class="ico">♪</div><h3 data-i18n="f3.t">Adaptive music</h3><p data-i18n="f3.d">A calm lo-fi loop that adds drums, arpeggios and an overdrive layer as your good moves stack up, and cools down when you slip.</p></div>
-      <div class="card"><div class="ico">▦</div><h3 data-i18n="f4.t">Territory at a glance</h3><p data-i18n="f4.d">See secure and potential territory and the estimated score, from Hoshi's own estimator or KataGo's ownership map.</p></div>
-      <div class="card"><div class="ico">⌁</div><h3 data-i18n="f5.t">Online on OGS</h3><p data-i18n="f5.d">Sign in to online-go.com, accept challenges and play in real time with clock and chat. Hoshi only creates unranked games.</p></div>
-      <div class="card"><div class="ico">❖</div><h3 data-i18n="f6.t">SGF editor</h3><p data-i18n="f6.d">Open and save SGF files, explore variations in a game tree, add comments, marks and setup stones.</p></div>
-      <div class="card"><div class="ico">☾</div><h3 data-i18n="f7.t">Five themes</h3><p data-i18n="f7.d">Night sky, Ink and gold, Zen garden, Warm minimal and a Classic tribute, each with its own board, stones and animated background.</p></div>
-      <div class="card"><div class="ico">◈</div><h3><span data-i18n="f9.t">Joseki on the board</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f9.d">Turn on Joseki and every corner shows the known continuations, coloured by how the OGS Joseki Explorer rates them, with its comments in the sidebar.</p></div>
-      <div class="card"><div class="ico">❀</div><h3><span data-i18n="f10.t">Joseki trainer</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f10.d">Practise lines on the main board in random corners. Spaced repetition brings back the ones you miss; fetch new lines from OGS or import your own SGF.</p></div>
-      <div class="card"><div class="ico">▤</div><h3><span data-i18n="f11.t">Your game library</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f11.d">Every game you play is kept. Open one later and step through it: KataGo judges each move again, with all its effects and music.</p></div>
-      <div class="card"><div class="ico">文</div><h3><span data-i18n="f12.t">English and Spanish</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f12.d">The whole app switches language live from Preferences. English by default.</p></div>
-      <div class="card"><div class="ico">⇄</div><h3 data-i18n="f8.t">Yours, offline</h3><p data-i18n="f8.d">Free and open source. No account needed to play locally; your OGS login uses OAuth and Hoshi never stores your password.</p></div>
+    <div class="tabs" role="tablist" aria-label="Features">
+      <button role="tab" id="t-study" aria-controls="p-study" aria-selected="true" data-i18n="tab.study">Study</button>
+      <button role="tab" id="t-joseki" aria-controls="p-joseki" aria-selected="false" tabindex="-1" data-i18n="tab.joseki">Joseki</button>
+      <button role="tab" id="t-play" aria-controls="p-play" aria-selected="false" tabindex="-1" data-i18n="tab.play">Play</button>
+      <button role="tab" id="t-feel" aria-controls="p-feel" aria-selected="false" tabindex="-1" data-i18n="tab.feel">Feel</button>
+    </div>
+
+    <div class="panel" role="tabpanel" id="p-study" aria-labelledby="t-study">
+      <div class="shot"><img src="img/night-analysis.jpg" width="1120" height="704" alt="Hoshi with the analysis panel: win rate, score graph and the rating of the last move"></div>
+      <ul class="items">
+        <li><span class="ico">◎</span><div><h3 data-i18n="f1.t">Live AI analysis</h3><p data-i18n="f1.d">KataGo runs in the background from the moment Hoshi opens and rates every move: best, excellent, good, inaccuracy, mistake or blunder, with points lost.</p></div></li>
+        <li><span class="ico">▦</span><div><h3 data-i18n="f4.t">Territory at a glance</h3><p data-i18n="f4.d">See secure and potential territory and the estimated score, from Hoshi's own estimator or KataGo's ownership map.</p></div></li>
+        <li><span class="ico">▤</span><div><h3><span data-i18n="f11.t">Your game library</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f11.d">Every game you play is kept. Open one later and step through it: KataGo judges each move again, with all its effects and music.</p></div></li>
+        <li><span class="ico">❖</span><div><h3 data-i18n="f6.t">SGF editor</h3><p data-i18n="f6.d">Open and save SGF files, explore variations in a game tree, add comments, marks and setup stones.</p></div></li>
+      </ul>
+    </div>
+
+    <div class="panel" role="tabpanel" id="p-joseki" aria-labelledby="t-joseki" hidden>
+      <div class="shot"><img src="img/joseki-hints.jpg" width="1120" height="704" alt="Joseki continuations shown as coloured discs in the corners" loading="lazy"></div>
+      <ul class="items">
+        <li><span class="ico">◈</span><div><h3><span data-i18n="f9.t">Joseki on the board</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f9.d">Turn on Joseki and every corner shows the known continuations, coloured by how the OGS Joseki Explorer rates them, with its comments in the sidebar.</p></div></li>
+        <li><span class="ico">❀</span><div><h3><span data-i18n="f10.t">Joseki trainer</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f10.d">Practise lines on the main board in random corners. Spaced repetition brings back the ones you miss; fetch new lines from OGS or import your own SGF.</p></div></li>
+        <li><span class="ico">→</span><div><h3 data-i18n="f13.t">More below</h3><p><a href="#joseki" data-i18n="f13.d">How the hints, the colours and the trainer work</a></p></div></li>
+      </ul>
+    </div>
+
+    <div class="panel" role="tabpanel" id="p-play" aria-labelledby="t-play" hidden>
+      <div class="shot"><img src="img/warm.jpg" width="1120" height="704" alt="Hoshi with the Warm minimal theme" loading="lazy"></div>
+      <ul class="items">
+        <li><span class="ico">⌁</span><div><h3 data-i18n="f5.t">Online on OGS</h3><p data-i18n="f5.d">Sign in to online-go.com, accept challenges and play in real time with clock and chat. Hoshi only creates unranked games.</p></div></li>
+        <li><span class="ico">●</span><div><h3 data-i18n="f14.t">Face to face</h3><p data-i18n="f14.d">Two players, one screen, on 19×19, 13×13 or 9×9, with pass and undo — every move still judged by KataGo.</p></div></li>
+        <li><span class="ico">⇄</span><div><h3 data-i18n="f8.t">Yours, offline</h3><p data-i18n="f8.d">Free and open source. No account needed to play locally; your OGS login uses OAuth and Hoshi never stores your password.</p></div></li>
+        <li><span class="ico">文</span><div><h3><span data-i18n="f12.t">English and Spanish</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f12.d">The whole app switches language live from Preferences. English by default.</p></div></li>
+      </ul>
+    </div>
+
+    <div class="panel" role="tabpanel" id="p-feel" aria-labelledby="t-feel" hidden>
+      <div class="shot"><img src="img/ink.jpg" width="1120" height="704" alt="Hoshi with the Ink and gold theme" loading="lazy"></div>
+      <ul class="items">
+        <li><span class="ico">✦</span><div><h3 data-i18n="f2.t">Moves you can feel</h3><p data-i18n="f2.d">The best move shakes the board, cracks the wood and throws embers. Captured stones shatter. Groups in atari nervously sweat.</p></div></li>
+        <li><span class="ico">♪</span><div><h3 data-i18n="f3.t">Adaptive music</h3><p data-i18n="f3.d">A calm lo-fi loop that adds drums, arpeggios and an overdrive layer as your good moves stack up, and cools down when you slip.</p></div></li>
+        <li><span class="ico">☾</span><div><h3><span data-i18n="f7.t">Themes, boards and stones</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f7.d">Five themes — Night sky, Ink and gold, Zen garden, Warm minimal and a Classic tribute — plus six gobans, five stone sets and ten backgrounds to mix with any of them.</p></div></li>
+      </ul>
     </div>
   </div>
 </section>
 
 <section id="joseki">
   <div class="wrap">
-    <div class="head">
+    <div class="head reveal">
       <p class="eyebrow" data-i18n="jo.eyebrow">Joseki</p>
       <h2 data-i18n="jo.title">Never forget a joseki again.</h2>
       <p data-i18n="jo.lead">Study the standard corner sequences while you play, then drill them until they stick.</p>
     </div>
     <div class="joseki">
-      <figure><div class="shot"><img src="img/joseki-hints.jpg" width="1120" height="704" alt="Joseki continuations shown as coloured discs in two corners, with the legend in the sidebar" loading="lazy"></div>
+      <figure class="reveal"><div class="shot"><img src="img/joseki-hints.jpg" width="1120" height="704" alt="Joseki continuations shown as coloured discs in two corners, with the legend in the sidebar" loading="lazy"></div>
         <figcaption><b data-i18n="jo1.t">Joseki on the board</b><span data-i18n="jo1.d">Place a stone and Hoshi looks up that corner in the OGS Joseki Explorer and in your own library. The known answers appear as discs, the rating of your last move sits on top, and the explorer's comments show in the sidebar.</span></figcaption></figure>
-      <figure><div class="shot"><img src="img/joseki-trainer.jpg" width="1120" height="704" alt="The joseki trainer on the main board, with the line list and family filter" loading="lazy"></div>
+      <figure class="reveal"><div class="shot"><img src="img/joseki-trainer.jpg" width="1120" height="704" alt="The joseki trainer on the main board, with the line list and family filter" loading="lazy"></div>
         <figcaption><b data-i18n="jo2.t">The trainer</b><span data-i18n="jo2.d">Ctrl+J turns the main board into a practice board; your game waits underneath. Place every stone of the line: a cross marks a miss, a circle shows the answer after two.</span></figcaption></figure>
     </div>
     <ul class="legend" aria-label="Colour legend">
@@ -271,50 +354,92 @@
       <li><i style="background:#8e6ce8"></i><span data-i18n="lg.library">Your library</span></li>
     </ul>
     <div class="points">
-      <div class="card"><h3 data-i18n="jp1.t">Spaced repetition</h3><p data-i18n="jp1.d">Six Leitner boxes, from ten minutes to a month. A perfect run waits longer; a mistake comes back soon.</p></div>
-      <div class="card"><h3 data-i18n="jp2.t">Pick what to study</h3><p data-i18n="jp2.d">Filter by 4-4, 3-4, 3-3, 4-5 or 3-5, choose a line from the list, or let Hoshi pick what is due.</p></div>
-      <div class="card"><h3 data-i18n="jp3.t">Endless lines</h3><p data-i18n="jp3.d">“New line from OGS” follows only ideal and good moves of the Joseki Explorer. Import SGF collections or record lines from your own board.</p></div>
+      <div class="reveal"><h3><span>01</span><b data-i18n="jp1.t">Spaced repetition</b></h3><p data-i18n="jp1.d">Six Leitner boxes, from ten minutes to a month. A perfect run waits longer; a mistake comes back soon.</p></div>
+      <div class="reveal"><h3><span>02</span><b data-i18n="jp2.t">Pick what to study</b></h3><p data-i18n="jp2.d">Filter by 4-4, 3-4, 3-3, 4-5 or 3-5, choose a line from the list, or let Hoshi pick what is due.</p></div>
+      <div class="reveal"><h3><span>03</span><b data-i18n="jp3.t">Endless lines</b></h3><p data-i18n="jp3.d">“New line from OGS” follows only ideal and good moves of the Joseki Explorer. Import SGF collections or record lines from your own board.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="craft" class="craft">
+  <div class="wrap">
+    <div class="head reveal">
+      <p class="eyebrow" data-i18n="cr.eyebrow">Boards &amp; stones</p>
+      <h2 data-i18n="cr.title">Wood you can almost smell.</h2>
+      <p data-i18n="cr.lead">Every goban, stone and background is rendered by Hoshi itself: straight-grain kaya, clam shell with its growth lines, slate, yunzi, glass and jade. Each stone keeps its own look on its point, like a real set.</p>
+    </div>
+    <p class="row-label" data-i18n="cr.boards">Gobans</p>
+    <div class="woods reveal">
+      <figure><div class="swatch" style="background-image:url(art/board-kaya-masame.jpg);--l:#3e2a12"></div><figcaption data-i18n="b1">Kaya, straight grain</figcaption></figure>
+      <figure><div class="swatch" style="background-image:url(art/board-kaya-itame.jpg);--l:#3a2610"></div><figcaption data-i18n="b2">Kaya, flat grain</figcaption></figure>
+      <figure><div class="swatch" style="background-image:url(art/board-shin-kaya.jpg);--l:#4a3820"></div><figcaption data-i18n="b3">Shin-kaya</figcaption></figure>
+      <figure><div class="swatch" style="background-image:url(art/board-katsura.jpg);--l:#3c220e"></div><figcaption>Katsura</figcaption></figure>
+      <figure><div class="swatch" style="background-image:url(art/board-bamboo.jpg);--l:#3a2812"></div><figcaption data-i18n="b5">Bamboo</figcaption></figure>
+      <figure><div class="swatch" style="background-image:url(art/board-walnut.jpg);--l:#eadcc0"></div><figcaption data-i18n="b6">Walnut</figcaption></figure>
+    </div>
+    <p class="row-label" data-i18n="cr.stones">Stones</p>
+    <div class="stones reveal">
+      <figure><div class="pair"><img src="art/stone-clam-slate-w.png" alt=""><img src="art/stone-clam-slate-b.png" alt=""></div><figcaption data-i18n="s1">Clam shell and slate</figcaption></figure>
+      <figure><div class="pair"><img src="art/stone-yunzi-w.png" alt=""><img src="art/stone-yunzi-b.png" alt=""></div><figcaption>Yunzi</figcaption></figure>
+      <figure><div class="pair"><img src="art/stone-glass-w.png" alt=""><img src="art/stone-glass-b.png" alt=""></div><figcaption data-i18n="s3">Glass</figcaption></figure>
+      <figure><div class="pair"><img src="art/stone-ceramic-w.png" alt=""><img src="art/stone-ceramic-b.png" alt=""></div><figcaption data-i18n="s4">Matte ceramic</figcaption></figure>
+      <figure><div class="pair"><img src="art/stone-jade-w.png" alt=""><img src="art/stone-jade-b.png" alt=""></div><figcaption data-i18n="s5">Jade and obsidian</figcaption></figure>
+    </div>
+    <div class="mix">
+      <div class="reveal">
+        <h3 data-i18n="cr.mix.t">Mix them with any theme</h3>
+        <p class="muted" style="margin-top:8px;color:#c4b6a2" data-i18n="cr.mix.d">Each theme comes with its own set. In Preferences → Board &amp; stones, pick any goban, stones and background and see them live before you play.</p>
+        <div class="tiles">
+          <span><i style="background-image:url(art/bg-sashiko.jpg)"></i><b data-i18n="g1" style="font-weight:500">Indigo sashiko</b></span>
+          <span><i style="background-image:url(art/bg-walnut.jpg)"></i><b data-i18n="g2" style="font-weight:500">Walnut table</b></span>
+          <span><i style="background-image:url(art/bg-slate.jpg)"></i><b data-i18n="g3" style="font-weight:500">Slate</b></span>
+          <span><i style="background-image:url(art/bg-linen.jpg)"></i><b data-i18n="g4" style="font-weight:500">Charcoal linen</b></span>
+          <span><i style="background-image:url(art/bg-sudare.jpg)"></i><b data-i18n="g5" style="font-weight:500">Bamboo blind</b></span>
+          <span><i style="background:radial-gradient(circle at 30% 30%,#fff 6%,transparent 8%),#1b2347"></i><b data-i18n="g6" style="font-weight:500">Night sky, ink mist, zen sand, washi, tatami</b></span>
+        </div>
+      </div>
+      <div class="shot reveal"><img src="img/board-prefs.jpg" width="900" height="600" alt="Preferences: Board &amp; stones, with a live preview and pickers for goban, stones and background" loading="lazy"></div>
     </div>
   </div>
 </section>
 
 <section id="effects">
   <div class="wrap">
-    <div class="head">
+    <div class="head reveal">
       <p class="eyebrow" data-i18n="fx.eyebrow">Effects</p>
       <h2 data-i18n="fx.title">Find the best move. The board notices.</h2>
       <p data-i18n="fx.lead">Every effect is drawn and synthesised by Hoshi itself — no stock footage, no samples.</p>
     </div>
     <div class="fx">
-      <figure><img src="img/impact-hot.jpg" width="480" height="480" alt="Glowing cracks around a stone" loading="lazy"><figcaption><b data-i18n="fx1.t">The best move</b><span data-i18n="fx1.d">A cinematic boom, shockwaves and molten cracks.</span></figcaption></figure>
-      <figure><img src="img/impact.jpg" width="480" height="480" alt="Cooled cracks in the wood" loading="lazy"><figcaption><b data-i18n="fx2.t">…and its mark</b><span data-i18n="fx2.d">The fractures cool into the wood, then fade.</span></figcaption></figure>
-      <figure><img src="img/capture.jpg" width="480" height="480" alt="Captured stones shattering" loading="lazy"><figcaption><b data-i18n="fx3.t">Captures</b><span data-i18n="fx3.d">Stones shatter in a wave, with a crisp crack and a chime.</span></figcaption></figure>
-      <figure><img src="img/atari.jpg" width="480" height="480" alt="A white stone in atari with a sweat drop" loading="lazy"><figcaption><b data-i18n="fx4.t">Atari</b><span data-i18n="fx4.d">The group trembles and sweats. Uh-oh.</span></figcaption></figure>
+      <figure class="reveal"><img src="img/impact-hot.jpg" width="480" height="480" alt="Glowing cracks around a stone" loading="lazy"><figcaption><b data-i18n="fx1.t">The best move</b><span data-i18n="fx1.d">A cinematic boom, shockwaves and molten cracks.</span></figcaption></figure>
+      <figure class="reveal"><img src="img/impact.jpg" width="480" height="480" alt="Cooled cracks in the wood" loading="lazy"><figcaption><b data-i18n="fx2.t">…and its mark</b><span data-i18n="fx2.d">The fractures cool into the wood, then fade.</span></figcaption></figure>
+      <figure class="reveal"><img src="img/capture.jpg" width="480" height="480" alt="Captured stones shattering" loading="lazy"><figcaption><b data-i18n="fx3.t">Captures</b><span data-i18n="fx3.d">Stones shatter in a wave, with a crisp crack and a chime.</span></figcaption></figure>
+      <figure class="reveal"><img src="img/atari.jpg" width="480" height="480" alt="A white stone in atari with a sweat drop" loading="lazy"><figcaption><b data-i18n="fx4.t">Atari</b><span data-i18n="fx4.d">The group trembles and sweats. Uh-oh.</span></figcaption></figure>
     </div>
   </div>
 </section>
 
-<section id="themes">
+<section id="themes" style="border-top:1px solid var(--line)">
   <div class="wrap">
-    <div class="head">
+    <div class="head reveal">
       <p class="eyebrow" data-i18n="th.eyebrow">Themes</p>
       <h2 data-i18n="th.title">Pick the room you play in.</h2>
     </div>
     <div class="themes">
-      <figure><div class="shot"><img src="img/zen-territory.jpg" width="1120" height="704" alt="Zen garden theme with territory shown" loading="lazy"></div><figcaption><b>Zen garden</b><span data-i18n="th1">Raked sand, moss green — shown here with the territory estimate.</span></figcaption></figure>
-      <figure><div class="shot"><img src="img/ink.jpg" width="1120" height="704" alt="Ink and gold theme" loading="lazy"></div><figcaption><b>Ink and gold</b><span data-i18n="th2">A sumi-e nocturne of drifting ink and seal red.</span></figcaption></figure>
-      <figure><div class="shot"><img src="img/warm.jpg" width="1120" height="704" alt="Warm minimal theme" loading="lazy"></div><figcaption><b>Warm minimal</b><span data-i18n="th3">Washi paper, light wood and terracotta.</span></figcaption></figure>
-      <figure><div class="shot"><img src="img/night-analysis.jpg" width="1120" height="704" alt="Night sky theme" loading="lazy"></div><figcaption><b>Night sky</b><span data-i18n="th4">Hoshi means “star”: a midnight sky with twinkling stars.</span></figcaption></figure>
+      <figure class="reveal"><div class="shot"><img src="img/zen-territory.jpg" width="1120" height="704" alt="Zen garden theme with territory shown" loading="lazy"></div><figcaption><b data-i18n="th1.n">Zen garden</b><span data-i18n="th1">Raked sand, shin-kaya and clam-shell stones — shown here with the territory estimate.</span></figcaption></figure>
+      <figure class="reveal"><div class="shot"><img src="img/ink.jpg" width="1120" height="704" alt="Ink and gold theme" loading="lazy"></div><figcaption><b data-i18n="th2.n">Ink and gold</b><span data-i18n="th2">A sumi-e nocturne of drifting ink and seal red, on flat-grain kaya.</span></figcaption></figure>
+      <figure class="reveal"><div class="shot"><img src="img/warm.jpg" width="1120" height="704" alt="Warm minimal theme" loading="lazy"></div><figcaption><b data-i18n="th3.n">Warm minimal</b><span data-i18n="th3">Washi paper, katsura wood, matte ceramic stones and terracotta.</span></figcaption></figure>
+      <figure class="reveal"><div class="shot"><img src="img/night-analysis.jpg" width="1120" height="704" alt="Night sky theme" loading="lazy"></div><figcaption><b data-i18n="th4.n">Night sky</b><span data-i18n="th4">Hoshi means “star”: a midnight sky with twinkling stars and glass stones.</span></figcaption></figure>
     </div>
   </div>
 </section>
 
-<section id="music">
+<section id="music" style="border-top:1px solid var(--line)">
   <div class="wrap music">
-    <div>
+    <div class="reveal">
       <p class="eyebrow" data-i18n="mu.eyebrow">Music</p>
-      <h2 data-i18n="mu.title">A soundtrack that plays along.</h2>
-      <p class="muted" style="margin-top:12px;font-size:17px" data-i18n="mu.lead">Six layers composed in code join one by one as you string good moves together. A blunder stops the tape. Time cools it back down.</p>
+      <h2 style="margin-top:14px" data-i18n="mu.title">A soundtrack that plays along.</h2>
+      <p class="muted" style="margin-top:14px;font-size:18px" data-i18n="mu.lead">Six layers composed in code join one by one as you string good moves together. A blunder stops the tape. Time cools it back down.</p>
       <ul class="layers">
         <li data-i18n="mu.l1">Warm electric piano and vinyl crackle</li>
         <li data-i18n="mu.l2">Bass and a soft kick</li>
@@ -324,7 +449,7 @@
         <li data-i18n="mu.l6">Overdrive: four-on-the-floor, rolling bass, fills</li>
       </ul>
     </div>
-    <div class="player">
+    <div class="player reveal">
       <div class="meter" aria-hidden="true"><i style="height:22%"></i><i style="height:34%"></i><i style="height:48%"></i><i style="height:62%"></i><i style="height:80%"></i><i style="height:100%"></i></div>
       <audio controls preload="none" src="music-demo.mp3"></audio>
       <p class="muted" style="font-size:13px;margin-top:10px" data-i18n="mu.demo">Demo: calm, then a streak of strong moves from 0:16 and a blunder at 1:10… you'll hear it.</p>
@@ -332,19 +457,19 @@
   </div>
 </section>
 
-<section>
+<section style="padding-top:20px">
   <div class="wrap">
-    <div class="fair">
+    <div class="fair reveal">
       <div class="seal">正</div>
       <div>
         <h3 data-i18n="fp.title">Fair play built in</h3>
-        <p class="muted" style="margin-top:6px" data-i18n="fp.text">During live games on OGS, KataGo stays off — OGS forbids AI help while you play. The joseki hints and the trainer are off too. The effects and the music follow the fight on the board instead (contact, liberties, captures), and Hoshi's own quick territory estimate is there. Every game is kept in your library, where the AI review — with all its effects — is waiting after the game.</p>
+        <p class="muted" style="margin-top:8px" data-i18n="fp.text">During live games on OGS, KataGo stays off — OGS forbids AI help while you play. The joseki hints and the trainer are off too. The effects and the music follow the fight on the board instead (contact, liberties, captures), and Hoshi's own quick territory estimate is there. Every game is kept in your library, where the AI review — with all its effects — is waiting after the game.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section id="download">
+<section id="download" class="dl">
   <div class="wrap">
     <div class="head">
       <p class="eyebrow" data-i18n="dl.eyebrow">Get Hoshi</p>
@@ -387,7 +512,7 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
 <footer>
   <div class="wrap">
     <div class="row"><img src="icon.png" alt=""><strong style="color:var(--text)">Hoshi 星</strong></div>
-    <p data-i18n="ft.credits">Analysis by KataGo (MIT). Classic theme textures from Sabaki and Shudan (MIT). Fonts under the SIL Open Font License; icons from Phosphor, Lucide and Tabler. Joseki ratings and comments come live from the OGS Joseki Explorer, a community project. Effects, sounds and music are Hoshi's own.</p>
+    <p data-i18n="ft.credits">Analysis by KataGo (MIT). Classic theme textures from Sabaki and Shudan (MIT). Fonts under the SIL Open Font License; icons from Phosphor, Lucide and Tabler. Joseki ratings and comments come live from the OGS Joseki Explorer, a community project. Boards, stones, backgrounds, effects, sounds and music are Hoshi's own.</p>
     <p><a href="https://github.com/BuddhaCodes/BadukDana" style="color:var(--gold-2)">github.com/BuddhaCodes/BadukDana</a></p>
     <p data-i18n="ft.ogs">Not affiliated with OGS (online-go.com) or KataGo.</p>
   </div>
@@ -395,26 +520,31 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
 
 <script>
   const ES = {
-    "nav.features": "Funciones", "nav.joseki": "Joseki", "nav.effects": "Efectos", "nav.themes": "Temas", "nav.download": "Consíguelo",
+    "nav.features": "Funciones", "nav.joseki": "Joseki", "nav.craft": "Tableros y piedras", "nav.effects": "Efectos", "nav.themes": "Temas", "nav.download": "Consíguelo",
     "hero.eyebrow": "Go · Baduk · Weiqi",
     "hero.title": "Un tablero de Go que <em>siente</em> cada jugada.",
     "hero.lead": "Hoshi es una app de escritorio gratuita para jugar y estudiar Go. Un tablero precioso, KataGo valorando cada jugada en vivo, guía de josekis en cada esquina, efectos de cine cuando das con la mejor jugada y música lo-fi que se anima con tus rachas.",
-    "hero.cta": "Consigue Hoshi", "hero.more": "Mira lo que hace", "hero.github": "Código en GitHub", "hero.badge2": "Análisis con KataGo", "hero.badge3": "Juega en OGS", "hero.badge4": "Entrenador de josekis",
+    "hero.cta": "Consigue Hoshi", "hero.github": "Código en GitHub", "hero.badge2": "KataGo incluido", "hero.badge3": "Juega en OGS", "hero.badge4": "Entrenador de josekis",
+    "board.watch": "Se está jugando una apertura…", "board.reset": "Vaciar el tablero",
+    "board.black": "Juegan negras: pon una piedra", "board.white": "Juegan blancas: pon una piedra",
     "feat.eyebrow": "Funciones", "feat.title": "Todo lo que necesitas frente al tablero.",
     "feat.lead": "Juega con amigos en la misma pantalla, revisa tus partidas con un motor o enfréntate al mundo en OGS.",
+    "tab.study": "Estudiar", "tab.joseki": "Joseki", "tab.play": "Jugar", "tab.feel": "Sentir",
     "f1.t": "Análisis con IA en vivo", "f1.d": "KataGo trabaja de fondo desde que abres Hoshi y valora cada jugada: la mejor, excelente, buena, imprecisa, error o error grave, con los puntos perdidos.",
     "f2.t": "Jugadas que se sienten", "f2.d": "La mejor jugada hace temblar el tablero, agrieta la madera y lanza chispas. Las piedras capturadas se rompen. Los grupos en atari sudan de nervios.",
     "f3.t": "Música adaptativa", "f3.d": "Un lo-fi tranquilo que suma batería, arpegios y una capa «overdrive» a medida que encadenas buenas jugadas, y se calma cuando fallas.",
     "f4.t": "Territorio de un vistazo", "f4.d": "Mira el territorio seguro y potencial y el resultado estimado, con el estimador de Hoshi o el mapa de KataGo.",
     "f5.t": "En línea en OGS", "f5.d": "Inicia sesión en online-go.com, acepta desafíos y juega en tiempo real con reloj y chat. Hoshi solo crea partidas no clasificatorias.",
     "f6.t": "Editor SGF", "f6.d": "Abre y guarda archivos SGF, explora variantes en el árbol, añade comentarios, marcas y piedras de posición.",
-    "f7.t": "Cinco temas", "f7.d": "Cielo nocturno, Tinta y oro, Jardín zen, Minimal cálido y un homenaje Clásico, cada uno con su tablero, sus piedras y su fondo animado.",
+    "f7.t": "Temas, tableros y piedras", "f7.d": "Cinco temas —Cielo nocturno, Tinta y oro, Jardín zen, Minimal cálido y un homenaje Clásico— y además seis gobanes, cinco juegos de piedras y diez fondos para combinar con cualquiera de ellos.",
     "f8.t": "Tuyo, sin conexión", "f8.d": "Libre y de código abierto. No necesitas cuenta para jugar en local; el acceso a OGS usa OAuth y Hoshi nunca guarda tu contraseña.",
     "new": "Nuevo",
     "f9.t": "Josekis en el tablero", "f9.d": "Activa Joseki y cada esquina muestra las continuaciones conocidas, coloreadas según las valora el Joseki Explorer de OGS, con sus comentarios en la barra lateral.",
     "f10.t": "Entrenador de josekis", "f10.d": "Practica líneas en el tablero principal y en esquinas al azar. La repetición espaciada te devuelve las que fallas; trae líneas nuevas de OGS o importa tus SGF.",
     "f11.t": "Tu biblioteca de partidas", "f11.d": "Cada partida que juegas se guarda. Ábrela después y avanza: KataGo vuelve a valorar cada jugada, con todos sus efectos y su música.",
     "f12.t": "Inglés y español", "f12.d": "Toda la app cambia de idioma al instante desde Preferencias. Inglés por defecto.",
+    "f13.t": "Más abajo", "f13.d": "Cómo funcionan las sugerencias, los colores y el entrenador",
+    "f14.t": "Cara a cara", "f14.d": "Dos jugadores, una pantalla, en 19×19, 13×13 o 9×9, con pasar y deshacer, y KataGo valorando igualmente cada jugada.",
     "jo.eyebrow": "Joseki", "jo.title": "Que no se te vuelva a olvidar un joseki.",
     "jo.lead": "Estudia las secuencias de esquina mientras juegas y luego practícalas hasta que se queden.",
     "jo1.t": "Josekis en el tablero", "jo1.d": "Pon una piedra y Hoshi busca esa esquina en el Joseki Explorer de OGS y en tu propia biblioteca. Las respuestas conocidas aparecen como discos, la valoración de tu última jugada arriba y los comentarios del explorador en la barra lateral.",
@@ -423,6 +553,13 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
     "jp1.t": "Repetición espaciada", "jp1.d": "Seis cajas Leitner, de diez minutos a un mes. Una línea perfecta tarda más en volver; un error la trae pronto.",
     "jp2.t": "Elige qué estudiar", "jp2.d": "Filtra por 4-4, 3-4, 3-3, 4-5 o 3-5, elige una línea de la lista o deja que Hoshi elija lo pendiente.",
     "jp3.t": "Líneas sin fin", "jp3.d": "«Nueva línea de OGS» sigue solo las jugadas ideales y buenas del Joseki Explorer. Importa colecciones SGF o graba líneas desde tu propio tablero.",
+    "cr.eyebrow": "Tableros y piedras", "cr.title": "Madera que casi se huele.",
+    "cr.lead": "Cada goban, piedra y fondo lo renderiza el propio Hoshi: kaya de veta recta, concha con sus líneas de crecimiento, pizarra, yunzi, cristal y jade. Cada piedra conserva su aspecto en su punto, como en un juego real.",
+    "cr.boards": "Gobanes", "cr.stones": "Piedras",
+    "b1": "Kaya, veta recta", "b2": "Kaya, veta en arco", "b3": "Shin-kaya", "b5": "Bambú", "b6": "Nogal",
+    "s1": "Concha y pizarra", "s3": "Cristal", "s4": "Cerámica mate", "s5": "Jade y obsidiana",
+    "cr.mix.t": "Combínalos con cualquier tema", "cr.mix.d": "Cada tema trae su propio juego. En Preferencias → Tablero y piedras eliges cualquier goban, piedras y fondo, y los ves en vivo antes de jugar.",
+    "g1": "Sashiko índigo", "g2": "Mesa de nogal", "g3": "Pizarra", "g4": "Lino carbón", "g5": "Persiana de bambú", "g6": "Cielo nocturno, niebla de tinta, arena zen, washi, tatami",
     "fx.eyebrow": "Efectos", "fx.title": "Encuentra la mejor jugada. El tablero lo nota.",
     "fx.lead": "Todos los efectos los dibuja y sintetiza Hoshi: sin vídeos de archivo ni muestras de sonido.",
     "fx1.t": "La mejor jugada", "fx1.d": "Una explosión de cine, ondas expansivas y grietas fundidas.",
@@ -430,10 +567,10 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
     "fx3.t": "Capturas", "fx3.d": "Las piedras se rompen en ola, con un chasquido y una campanita.",
     "fx4.t": "Atari", "fx4.d": "El grupo tiembla y suda. Uh-oh.",
     "th.eyebrow": "Temas", "th.title": "Elige la sala donde juegas.",
-    "th1": "Arena rastrillada y verde musgo, aquí con la estimación de territorio.",
-    "th2": "Un nocturno sumi-e de tinta a la deriva y rojo sello.",
-    "th3": "Papel washi, madera clara y terracota.",
-    "th4": "Hoshi significa «estrella»: un cielo de medianoche con estrellas que titilan.",
+    "th1.n": "Jardín zen", "th1": "Arena rastrillada, shin-kaya y piedras de concha, aquí con la estimación de territorio.",
+    "th2.n": "Tinta y oro", "th2": "Un nocturno sumi-e de tinta a la deriva y rojo sello, sobre kaya de veta en arco.",
+    "th3.n": "Minimal cálido", "th3": "Papel washi, madera de katsura, piedras de cerámica mate y terracota.",
+    "th4.n": "Cielo nocturno", "th4": "Hoshi significa «estrella»: un cielo de medianoche con estrellas que titilan y piedras de cristal.",
     "mu.eyebrow": "Música", "mu.title": "Una banda sonora que juega contigo.",
     "mu.lead": "Seis capas compuestas en código se suman una a una cuando encadenas buenas jugadas. Un error grave para la cinta. El tiempo la vuelve a calmar.",
     "mu.l1": "Piano eléctrico cálido y crujido de vinilo", "mu.l2": "Bajo y un bombo suave", "mu.l3": "Batería con swing",
@@ -452,14 +589,15 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
     "pl.n": "La música necesita PulseAudio/PipeWire (pacat) o ALSA (aplay).",
     "s2.t": "Compilar desde el código", "s2.d": "Con el SDK de .NET 10:",
     "s3.t": "KataGo incluido", "s3.d": "Las descargas de Windows y Linux traen KataGo y una red rápida, listos desde el primer arranque. En un Mac, ejecuta brew install katago y Hoshi lo encuentra. Puedes elegir redes más fuertes en Preferencias → Análisis.",
-    "ft.credits": "Análisis de KataGo (MIT). Texturas del tema Clásico de Sabaki y Shudan (MIT). Fuentes con licencia SIL Open Font; iconos de Phosphor, Lucide y Tabler. Las valoraciones y comentarios de josekis llegan en vivo del Joseki Explorer de OGS, un proyecto comunitario. Los efectos, sonidos y la música son de Hoshi.",
+    "ft.credits": "Análisis de KataGo (MIT). Texturas del tema Clásico de Sabaki y Shudan (MIT). Fuentes con licencia SIL Open Font; iconos de Phosphor, Lucide y Tabler. Las valoraciones y comentarios de josekis llegan en vivo del Joseki Explorer de OGS, un proyecto comunitario. Los tableros, las piedras, los fondos, los efectos, los sonidos y la música son de Hoshi.",
     "ft.ogs": "Sin relación con OGS (online-go.com) ni con KataGo."
   };
-  const EN = {};
+  const EN = { "board.black": "Black to play: place a stone", "board.white": "White to play: place a stone" };
   document.querySelectorAll("[data-i18n]").forEach(el => EN[el.dataset.i18n] = el.textContent);
   document.querySelectorAll("[data-i18n-html]").forEach(el => EN[el.dataset.i18nHtml] = el.innerHTML);
+  const T = key => (document.documentElement.lang === "es" ? ES : EN)[key] || EN[key] || key;
 
-  // Download button for the visitor's system (latest GitHub release; asset names carry no version).
+  // ---------------- Download button for the visitor's system (latest release; asset names carry no version) ----------------
   const DL = "https://github.com/BuddhaCodes/BadukDana/releases/latest/download/";
   const OS_NAME = { windows: "Windows", macos: "macOS", linux: "Linux" };
   const FOR = { en: "Download for {0}", es: "Descargar para {0}" };
@@ -500,12 +638,171 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
   function setLang(lang) {
     const t = lang === "es" ? ES : EN;
     document.documentElement.lang = lang;
-    document.querySelectorAll("[data-i18n]").forEach(el => { const v = t[el.dataset.i18n]; if (v) el.textContent = v; });
+    document.querySelectorAll("[data-i18n]").forEach(el => { const v = t[el.dataset.i18n] || EN[el.dataset.i18n]; if (v) el.textContent = v; });
     document.querySelectorAll("[data-i18n-html]").forEach(el => { const v = t[el.dataset.i18nHtml]; if (v) el.innerHTML = v; });
     document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
     try { localStorage.setItem("hoshi-lang", lang); } catch (e) { /* storage unavailable */ }
     renderDownload();
+    if (window.hoshiBoard) window.hoshiBoard.status();
   }
+
+  // ---------------- Feature tabs ----------------
+  (function tabs() {
+    const list = document.querySelector('[role="tablist"]');
+    const tabs = [...list.querySelectorAll('[role="tab"]')];
+    function select(tab, focus) {
+      tabs.forEach(t => {
+        const on = t === tab;
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+      });
+      if (focus) tab.focus();
+    }
+    tabs.forEach((t, i) => {
+      t.addEventListener("click", () => select(t));
+      t.addEventListener("keydown", e => {
+        const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+        if (d) { e.preventDefault(); select(tabs[(i + d + tabs.length) % tabs.length], true); }
+      });
+    });
+  })();
+
+  // ---------------- Reveal on scroll ----------------
+  (function reveal() {
+    const els = document.querySelectorAll(".reveal");
+    if (!("IntersectionObserver" in window)) { els.forEach(e => e.classList.add("in")); return; }
+    const io = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px" });
+    els.forEach(e => io.observe(e));
+  })();
+
+  // ---------------- The live goban: Hoshi's own kaya and clam-and-slate stones ----------------
+  (function goban() {
+    const N = 19, canvas = document.getElementById("board"), box = document.getElementById("goban");
+    const ctx = canvas.getContext("2d");
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const load = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
+    const sprites = { w: [], b: [] };
+    // A common opening (not a recorded game): star points, approaches and a few extensions.
+    const OPENING = [[15,3],[3,15],[16,15],[3,3],[14,16],[2,5],[5,2],[16,9],[9,15],[13,2],[15,13],[2,13],[9,3],[11,15],[16,11],[12,3]];
+    let grid = new Array(N * N).fill(0), next = 1, last = null, anim = null, autoplay = true, step = 0, timer = null;
+    const sounds = [1, 2, 3].map(i => { const a = new Audio(`art/stone${i}.wav`); a.preload = "none"; a.volume = .55; return a; });
+
+    function geometry() {
+      const size = canvas.clientWidth, cell = size / (N - 1 + 1.6);
+      return { size, cell, origin: cell * .8 };
+    }
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(canvas.clientWidth * dpr);
+      canvas.height = Math.round(canvas.clientHeight * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw();
+    }
+    function variant(x, y, black) {
+      const list = black ? sprites.b : sprites.w;
+      const h = ((x * 73856093) ^ (y * 19349663) ^ (black ? 83492791 : 0)) >>> 0;
+      return list[h % list.length];
+    }
+    function draw(now) {
+      const { size, cell, origin } = geometry();
+      ctx.clearRect(0, 0, size, size);
+      ctx.strokeStyle = "rgba(52, 34, 12, .85)";
+      ctx.lineWidth = 1;
+      for (let i = 0; i < N; i++) {
+        const p = Math.round(origin + i * cell) + .5;
+        ctx.lineWidth = i === 0 || i === N - 1 ? 1.6 : 1;
+        ctx.beginPath(); ctx.moveTo(origin, p); ctx.lineTo(origin + (N - 1) * cell, p); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(p, origin); ctx.lineTo(p, origin + (N - 1) * cell); ctx.stroke();
+      }
+      ctx.fillStyle = "rgba(52, 34, 12, .9)";
+      for (const a of [3, 9, 15]) for (const b of [3, 9, 15]) { ctx.beginPath(); ctx.arc(origin + a * cell, origin + b * cell, cell * .1, 0, Math.PI * 2); ctx.fill(); }
+      const r = cell * .47;
+      for (let pass = 0; pass < 2; pass++) {
+        for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+          const s = grid[y * N + x]; if (!s) continue;
+          let k = 1;
+          if (anim && anim.x === x && anim.y === y) { const t = Math.min(1, ((now || performance.now()) - anim.t) / 220); k = 1 + .12 * (1 - t) * (1 - t); }
+          const cx = origin + x * cell, cy = origin + y * cell, rr = r * k;
+          if (pass === 0) {
+            ctx.fillStyle = "rgba(30, 16, 4, .35)";
+            ctx.beginPath(); ctx.ellipse(cx + cell * .05, cy + cell * .09 * k, rr * .98, rr * .98, 0, 0, Math.PI * 2); ctx.fill();
+          } else {
+            const img = variant(x, y, s === 1);
+            if (img) ctx.drawImage(img, cx - rr, cy - rr, rr * 2, rr * 2);
+            else { ctx.fillStyle = s === 1 ? "#1b1b1c" : "#f4f1ea"; ctx.beginPath(); ctx.arc(cx, cy, rr, 0, Math.PI * 2); ctx.fill(); }
+          }
+        }
+      }
+      if (last) {
+        const s = grid[last[1] * N + last[0]];
+        ctx.strokeStyle = s === 1 ? "rgba(240, 213, 148, .95)" : "rgba(160, 118, 40, .95)";
+        ctx.lineWidth = Math.max(1.5, cell * .07);
+        ctx.beginPath(); ctx.arc(origin + last[0] * cell, origin + last[1] * cell, r * .45, 0, Math.PI * 2); ctx.stroke();
+      }
+      if (anim && (now || performance.now()) - anim.t < 240) requestAnimationFrame(draw); else anim = null;
+    }
+    const neighbours = (x, y) => [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]].filter(([a, b]) => a >= 0 && b >= 0 && a < N && b < N);
+    function group(x, y) {
+      const c = grid[y * N + x], seen = new Set([y * N + x]), stack = [[x, y]]; let libs = 0; const libSet = new Set();
+      while (stack.length) {
+        const [a, b] = stack.pop();
+        for (const [p, q] of neighbours(a, b)) {
+          const v = grid[q * N + p], id = q * N + p;
+          if (!v && !libSet.has(id)) { libSet.add(id); libs++; }
+          else if (v === c && !seen.has(id)) { seen.add(id); stack.push([p, q]); }
+        }
+      }
+      return { stones: [...seen], libs };
+    }
+    function play(x, y, sound) {
+      if (grid[y * N + x]) return false;
+      grid[y * N + x] = next;
+      let captured = 0;
+      for (const [p, q] of neighbours(x, y)) {
+        if (grid[q * N + p] === -next) { const g = group(p, q); if (!g.libs) { g.stones.forEach(i => grid[i] = 0); captured += g.stones.length; } }
+      }
+      if (!captured && !group(x, y).libs) { grid[y * N + x] = 0; return false; } // suicide
+      last = [x, y]; next = -next; anim = reduce ? null : { x, y, t: performance.now() };
+      if (sound) { const a = sounds[(x + y) % 3]; try { a.currentTime = 0; a.play().catch(() => {}); } catch (e) { /* no audio */ } }
+      draw(); status();
+      return true;
+    }
+    function status() {
+      const dot = document.getElementById("turn-dot"), text = document.getElementById("turn-text");
+      dot.className = next === 1 ? "" : "w";
+      text.textContent = autoplay ? T("board.watch") : T(next === 1 ? "board.black" : "board.white");
+    }
+    function auto() {
+      if (!autoplay) return;
+      if (step >= OPENING.length) { autoplay = false; status(); return; }
+      const [x, y] = OPENING[step++]; play(x, y, false);
+      timer = setTimeout(auto, 850);
+    }
+    function point(e) {
+      const rect = canvas.getBoundingClientRect(), { cell, origin } = geometry();
+      const x = Math.round((e.clientX - rect.left - origin) / cell), y = Math.round((e.clientY - rect.top - origin) / cell);
+      return x >= 0 && y >= 0 && x < N && y < N ? [x, y] : null;
+    }
+    canvas.addEventListener("click", e => {
+      const p = point(e); if (!p) return;
+      if (autoplay) { autoplay = false; clearTimeout(timer); }
+      play(p[0], p[1], true);
+    });
+    document.getElementById("board-reset").addEventListener("click", () => {
+      autoplay = false; clearTimeout(timer); grid.fill(0); next = 1; last = null; draw(); status();
+    });
+    window.hoshiBoard = { status };
+    Promise.all([...Array(8).keys()].map(i => load(`art/w${i}.png`)).concat([...Array(4).keys()].map(i => load(`art/b${i}.png`)))).then(imgs => {
+      sprites.w = imgs.slice(0, 8).filter(Boolean); sprites.b = imgs.slice(8).filter(Boolean);
+      new ResizeObserver(resize).observe(box);
+      if (reduce) { OPENING.forEach(([x, y]) => play(x, y, false)); autoplay = false; status(); }
+      else if ("IntersectionObserver" in window) {
+        const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); setTimeout(auto, 500); } });
+        io.observe(box);
+      } else auto();
+    });
+  })();
 
   document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
   let initial = "en";
