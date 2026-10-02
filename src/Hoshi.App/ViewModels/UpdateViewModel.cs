@@ -195,14 +195,21 @@ public sealed partial class UpdateViewModel : ViewModelBase
         IsBusy = true;
         Progress = 0;
         SetStatus("Update.Downloading", 0);
+        bool downloading = true;
         try
         {
             var progress = new Progress<double>(p =>
             {
+                if (!downloading)
+                {
+                    return; // a late report after the download finished
+                }
+
                 Progress = p;
                 SetStatus("Update.Downloading", (int)Math.Round(p * 100));
             });
             await _updates.DownloadAsync(release, progress, CancellationToken.None);
+            downloading = false;
             SetStatus("Update.Restarting");
             _updates.ApplyOnExitAndRestart(release);
             _shutdown?.Shutdown();
@@ -214,6 +221,7 @@ public sealed partial class UpdateViewModel : ViewModelBase
         }
         finally
         {
+            downloading = false;
             IsBusy = false;
         }
     }

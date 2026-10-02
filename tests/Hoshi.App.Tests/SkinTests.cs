@@ -92,7 +92,7 @@ public sealed class SkinTests
         }
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void A_stone_keeps_its_variant_but_neighbours_differ()
     {
         var first = Skins.StoneSprite("clam-slate", false, 8, 3, 3);

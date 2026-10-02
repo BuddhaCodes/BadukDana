@@ -86,6 +86,12 @@ public sealed partial class KataGoSetupViewModel : ViewModelBase
         {
             var progress = new Progress<double>(p =>
             {
+                // Progress<T> posts its reports: one can arrive after the install finished; it must not undo the result.
+                if (!IsInstalling)
+                {
+                    return;
+                }
+
                 Progress = p;
                 SetStatus("KataGo.Downloading", (int)Math.Round(p * 100));
             });
