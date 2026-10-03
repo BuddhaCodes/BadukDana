@@ -23,6 +23,11 @@ public static partial class Tr
         Add(d, "Update.Install", "Update and restart", "Actualizar y reiniciar");
         Add(d, "Update.Download", "Get the installer", "Descargar el instalador");
         Add(d, "Update.InstallerHint", "Install Hoshi with its installer once and it will keep itself up to date.", "Instala Hoshi con su instalador una vez y se mantendrá al día solo.");
+        Add(d, "Support.Menu", "Support Hoshi ♥", "Apoyar Hoshi ♥");
+        Add(d, "Support.Updated", "Hoshi was updated to {0}.", "Hoshi se actualizó a la {0}.");
+        Add(d, "Support.Ask", "Hoshi is free and open source, made in spare time. If you enjoy it, you can support it on GitHub Sponsors — it is entirely optional.", "Hoshi es gratis y de código abierto, hecho en ratos libres. Si te gusta, puedes apoyarlo en GitHub Sponsors; es totalmente opcional.");
+        Add(d, "Support.Button", "Support Hoshi", "Apoyar Hoshi");
+        Add(d, "Support.Close", "Close", "Cerrar");
         Add(d, "Update.Later", "Later", "Más tarde");
         Add(d, "Update.Skip", "Skip this version", "Saltar esta versión");
         Add(d, "Update.Checking", "Checking for updates…", "Buscando actualizaciones…");

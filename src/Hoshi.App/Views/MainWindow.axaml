@@ -187,6 +187,7 @@
                 <Separator />
                 <MenuItem Header="{l:T Main.Preferences}" Command="{Binding OpenPreferencesCommand}" InputGesture="Ctrl+OemComma" />
                 <MenuItem Header="{l:T Main.CheckUpdates}" Command="{Binding Updates.CheckNowCommand, FallbackValue={x:Null}}" x:Name="CheckUpdatesItem" />
+                <MenuItem Header="{l:T Support.Menu}" Command="{Binding Updates.SupportCommand, FallbackValue={x:Null}}" x:Name="SupportItem" />
               </MenuFlyout>
             </Button.Flyout>
             </Button>
@@ -286,6 +287,19 @@
               <Button Content="{l:T Update.Later}" Command="{Binding Updates.LaterCommand}" x:Name="UpdateLater" />
               <Button Classes="accent" Content="{Binding Updates.UpdateLabel}" Command="{Binding Updates.UpdateCommand}" x:Name="UpdateNow"
                       IsVisible="{Binding Updates.Available, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+        <!-- After an update: a quiet thank-you with the (optional) support link, once per version. -->
+        <Border x:Name="ThanksBanner" IsVisible="{Binding Updates.ShowThanks, FallbackValue=False}"
+                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,20,20" MaxWidth="360"
+                Background="{DynamicResource Bg.Panel}" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="1" CornerRadius="10" Padding="14,12">
+          <StackPanel Spacing="8">
+            <TextBlock Text="{Binding Updates.ThanksText}" FontWeight="SemiBold" TextWrapping="Wrap" />
+            <TextBlock Classes="secondary" Text="{l:T Support.Ask}" TextWrapping="Wrap" FontSize="12.5" />
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+              <Button Content="{l:T Support.Close}" Command="{Binding Updates.DismissThanksCommand}" x:Name="ThanksClose" />
+              <Button Classes="accent" Content="{l:T Support.Button}" Command="{Binding Updates.SupportCommand}" x:Name="ThanksSupport" />
             </StackPanel>
           </StackPanel>
         </Border>
