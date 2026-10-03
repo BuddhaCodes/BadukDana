@@ -64,6 +64,9 @@ public sealed record AppSettings
 
     /// <summary>A version the user chose to skip (e.g. "0.1.7"); newer ones are offered again.</summary>
     public string? SkippedUpdate { get; init; }
+
+    /// <summary>The version that ran last time (to thank the player once after an update).</summary>
+    public string? LastRunVersion { get; init; }
 }
 
 public interface ISettingsService
