@@ -222,16 +222,6 @@
   pre { background: #070a18; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; overflow-x: auto; font: 13px/1.6 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #e5dcc4; margin: 12px 0 0; }
   @media (max-width: 900px) { .platforms, .extras { grid-template-columns: 1fr; } }
 
-  /* Support */
-  .support { padding: 72px 0; background: var(--paper); color: var(--paper-ink); }
-  .support .wrap { display: grid; grid-template-columns: auto 1fr auto; gap: 26px; align-items: center; }
-  .support .stone { width: 54px; height: 54px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #d6d1c6 70%, #b9b2a3); box-shadow: 0 8px 18px rgba(60, 40, 10, .25); }
-  .support h3 { font-size: 26px; }
-  .support p { color: var(--paper-muted); margin-top: 6px; max-width: 46em; }
-  .support .btn { background: var(--paper-ink); color: var(--paper); justify-self: start; }
-  .support .btn:hover { transform: translateY(-1px); }
-  @media (max-width: 760px) { .support .wrap { grid-template-columns: 1fr; } .support .stone { display: none; } }
-
   footer { border-top: 1px solid var(--line); padding: 44px 0 60px; color: var(--muted); font-size: 13px; background: var(--ink-2); }
   footer .wrap { display: grid; gap: 10px; }
   footer .row { display: flex; gap: 12px; align-items: center; }
@@ -521,22 +511,11 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
   </div>
 </section>
 
-<section class="support" id="support">
-  <div class="wrap">
-    <div class="stone" aria-hidden="true"></div>
-    <div>
-      <h3 data-i18n="sp.title">Hoshi is free, and will stay free.</h3>
-      <p data-i18n="sp.text">It is made in spare time, with love for the game. If it brings you good games and you would like to help it grow — signing the Windows build, more boards, more study tools — you can support it on GitHub Sponsors. Entirely optional; thank you either way.</p>
-    </div>
-    <a class="btn big" href="https://github.com/sponsors/BuddhaCodes" data-i18n="sp.button">Support Hoshi ♥</a>
-  </div>
-</section>
-
 <footer>
   <div class="wrap">
     <div class="row"><img src="icon.png" alt=""><strong style="color:var(--text)">Hoshi 星</strong></div>
     <p data-i18n="ft.credits">Analysis by KataGo (MIT). Classic theme textures from Sabaki and Shudan (MIT). Fonts under the SIL Open Font License; icons from Phosphor, Lucide and Tabler. Joseki ratings and comments come live from the OGS Joseki Explorer, a community project. Boards, stones, backgrounds, effects, sounds and music are Hoshi's own.</p>
-    <p><a href="https://github.com/BuddhaCodes/BadukDana" style="color:var(--gold-2)">github.com/BuddhaCodes/BadukDana</a> · <a href="https://github.com/sponsors/BuddhaCodes" style="color:var(--gold-2)" data-i18n="sp.footer">Support Hoshi on GitHub Sponsors</a></p>
+    <p><a href="https://github.com/BuddhaCodes/BadukDana" style="color:var(--gold-2)">github.com/BuddhaCodes/BadukDana</a></p>
     <p data-i18n="ft.ogs">Not affiliated with OGS (online-go.com) or KataGo.</p>
   </div>
 </footer>
@@ -613,9 +592,6 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
     "s2.t": "Compilar desde el código", "s2.d": "Con el SDK de .NET 10:",
     "s3.t": "KataGo incluido", "s3.d": "Las descargas de Windows y Linux traen KataGo y una red rápida, listos desde el primer arranque. En un Mac, ejecuta brew install katago y Hoshi lo encuentra. Puedes elegir redes más fuertes en Preferencias → Análisis.",
     "ft.credits": "Análisis de KataGo (MIT). Texturas del tema Clásico de Sabaki y Shudan (MIT). Fuentes con licencia SIL Open Font; iconos de Phosphor, Lucide y Tabler. Las valoraciones y comentarios de josekis llegan en vivo del Joseki Explorer de OGS, un proyecto comunitario. Los tableros, las piedras, los fondos, los efectos, los sonidos y la música son de Hoshi.",
-    "sp.title": "Hoshi es gratis, y lo seguirá siendo.",
-    "sp.text": "Está hecho en ratos libres, por amor al juego. Si te da buenas partidas y quieres ayudar a que crezca —firmar la versión de Windows, más tableros, más herramientas de estudio—, puedes apoyarlo en GitHub Sponsors. Totalmente opcional; gracias igual.",
-    "sp.button": "Apoyar Hoshi ♥", "sp.footer": "Apoya Hoshi en GitHub Sponsors",
     "ft.ogs": "Sin relación con OGS (online-go.com) ni con KataGo."
   };
   const EN = { "board.black": "Black to play: place a stone", "board.white": "White to play: place a stone" };
