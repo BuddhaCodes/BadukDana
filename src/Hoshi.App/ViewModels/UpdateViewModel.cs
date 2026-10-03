@@ -36,9 +36,6 @@ public sealed partial class UpdateViewModel : ViewModelBase
     /// <summary>Where the installers are offered (the website picks the visitor's system).</summary>
     public static readonly Uri DownloadPage = new("https://buddhacodes.github.io/BadukDana/#download");
 
-    /// <summary>Where the player can support Hoshi (GitHub Sponsors).</summary>
-    public static readonly Uri SponsorPage = new("https://github.com/sponsors/BuddhaCodes");
-
     private readonly IUpdateService _updates;
     private readonly ISettingsService? _settings;
     private readonly IBrowserLauncher? _browser;
@@ -50,12 +47,12 @@ public sealed partial class UpdateViewModel : ViewModelBase
     private object?[] _statusArgs = [];
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsVisible), nameof(Text), nameof(InstallerHint), nameof(ShowThanks))]
+    [NotifyPropertyChangedFor(nameof(IsVisible), nameof(Text), nameof(InstallerHint))]
     [NotifyCanExecuteChangedFor(nameof(UpdateCommand))]
     private ReleaseInfo? _available;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsVisible), nameof(ShowThanks))]
+    [NotifyPropertyChangedFor(nameof(IsVisible))]
     private bool _isDismissed;
 
     [ObservableProperty]
@@ -64,11 +61,6 @@ public sealed partial class UpdateViewModel : ViewModelBase
 
     [ObservableProperty]
     private double _progress;
-
-    /// <summary>Hoshi was updated since it last ran: a short thank-you with the support link, once per version.</summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ThanksText), nameof(ShowThanks))]
-    private Version? _updatedTo;
 
     public UpdateViewModel(
         IUpdateService updates,
@@ -88,14 +80,7 @@ public sealed partial class UpdateViewModel : ViewModelBase
         {
             _game.PropertyChanged += OnGamePropertyChanged;
         }
-
-        NoteRun();
     }
-
-    /// <summary>Shown once after an update; never on a first install.</summary>
-    public bool ShowThanks => UpdatedTo is not null && !IsVisible;
-
-    public string? ThanksText => UpdatedTo is { } v ? Tr.F("Support.Updated", UpdatePlatform.Display(v)) : null;
 
     /// <summary>The banner shows a newer release (or the result of a manual check) until dismissed.</summary>
     public bool IsVisible => !IsDismissed && (Available is not null || _statusKey is not null);
@@ -262,44 +247,6 @@ public sealed partial class UpdateViewModel : ViewModelBase
         Later();
     }
 
-    /// <summary>Menu "Support Hoshi" and the thank-you banner: opens GitHub Sponsors.</summary>
-    [RelayCommand]
-    private async Task Support()
-    {
-        UpdatedTo = null;
-        if (_browser is not null)
-        {
-            await _browser.OpenAsync(SponsorPage, CancellationToken.None);
-        }
-    }
-
-    [RelayCommand]
-    private void DismissThanks() => UpdatedTo = null;
-
-    /// <summary>Remembers this version; when it is newer than the last one that ran, says thanks once.</summary>
-    private void NoteRun()
-    {
-        if (_settings is null)
-        {
-            return;
-        }
-
-        Version current = _updates.CurrentVersion;
-        string now = UpdatePlatform.Display(current);
-        string? last = _settings.Current.LastRunVersion;
-        if (last == now)
-        {
-            return;
-        }
-
-        if (UpdatePlatform.ParseVersion(last) is { } previous && previous < current)
-        {
-            UpdatedTo = current;
-        }
-
-        _settings.Save(_settings.Current with { LastRunVersion = now });
-    }
-
     private async Task LoopAsync(CancellationToken token)
     {
         try
@@ -324,7 +271,6 @@ public sealed partial class UpdateViewModel : ViewModelBase
         OnPropertyChanged(nameof(StatusText));
         OnPropertyChanged(nameof(HasStatus));
         OnPropertyChanged(nameof(IsVisible));
-        OnPropertyChanged(nameof(ShowThanks));
     }
 
     private void OnGamePropertyChanged(object? sender, PropertyChangedEventArgs e)
