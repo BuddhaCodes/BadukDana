@@ -482,7 +482,7 @@ public sealed class BattleAndReplayTests
     }
 
     [AvaloniaFact]
-    public void Played_games_are_kept_and_a_replay_is_reviewed_with_AI_effects()
+    public async Task Played_games_are_kept_and_a_replay_is_reviewed_with_AI_effects()
     {
         string root = Directory.CreateTempSubdirectory("hoshi-replays").FullName;
         var store = new ReplayStore(dataDirectory: root);
@@ -512,17 +512,17 @@ public sealed class BattleAndReplayTests
 
         sounds.Played.Clear();
         engine.BestMove = new Point(0, 3); // the replay's first move
+        // Awaiting lets the headless dispatcher run the engine's continuations (blocking it with Sleep + RunJobs
+        // fails on macOS: "Operation is not supported on this platform" in Dispatcher.PushFrame).
         for (int i = 0; i < 20; i++)
         {
-            System.Threading.Thread.Sleep(20);
-            Avalonia.Threading.Dispatcher.UIThread.RunJobs(); // the start position is analysed
+            await Task.Delay(20); // the start position is analysed
         }
 
         game.GoForwardCommand.Execute(null);
         for (int i = 0; i < 250 && !sounds.Played.Any(p => p.Effect == SoundEffect.ExplosionBig); i++)
         {
-            System.Threading.Thread.Sleep(20);
-            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            await Task.Delay(20);
         }
 
         sounds.Played.Should().Contain(p => p.Effect == SoundEffect.ExplosionBig, "reviewing a replay replays the AI effects");
