@@ -244,6 +244,7 @@
   .support .stone { width: 54px; height: 54px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #d6d1c6 70%, #b9b2a3); box-shadow: 0 8px 18px rgba(60, 40, 10, .25); }
   .support h3 { font-size: 26px; }
   .support p { color: var(--paper-muted); margin-top: 6px; max-width: 46em; }
+  .support p.note { font-size: 13.5px; opacity: .85; margin-top: 8px; }
   .support .btn { background: var(--paper-ink); color: var(--paper); justify-self: start; }
   .support .btn:hover { transform: translateY(-1px); }
   @media (max-width: 760px) { .support .wrap { grid-template-columns: 1fr; } .support .stone { display: none; } }
@@ -555,6 +556,7 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
     <div>
       <h3 data-i18n="sp.title">Hoshi is free, and will stay free.</h3>
       <p data-i18n="sp.text">It is made in spare time, with love for the game. If it brings you good games and you would like to help it grow — signing the Windows build, more boards, more study tools — you can support it with a donation on PayPal. Entirely optional; thank you either way.</p>
+      <p class="note" data-i18n="sp.note">PayPal isn't available where I live, so donations go to a trusted collaborator, Carlos Fernandez — the name you'll see on PayPal.</p>
     </div>
     <a class="btn big" href="https://paypal.me/CarlosFernandez934" rel="noopener" data-i18n="sp.button">Support Hoshi ♥</a>
   </div>
@@ -647,6 +649,7 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
     "ft.credits": "Análisis de KataGo (MIT). Texturas del tema Clásico de Sabaki y Shudan (MIT). Fuentes con licencia SIL Open Font; iconos de Phosphor, Lucide y Tabler. Las valoraciones y comentarios de josekis llegan en vivo del Joseki Explorer de OGS, un proyecto comunitario. Los tableros, las piedras, los fondos, los efectos, los sonidos y la música son de Hoshi.",
     "sp.title": "Hoshi es gratis, y lo seguirá siendo.",
     "sp.text": "Está hecho en ratos libres, por amor al juego. Si te da buenas partidas y quieres ayudar a que crezca —firmar la versión de Windows, más tableros, más herramientas de estudio—, puedes apoyarlo con una donación en PayPal. Totalmente opcional; gracias igual.",
+    "sp.note": "PayPal no está disponible donde vivo, así que las donaciones las recibe un colaborador de confianza, Carlos Fernandez: es el nombre que verás en PayPal.",
     "sp.button": "Apoyar Hoshi ♥", "sp.footer": "Dona a Hoshi en PayPal",
     "ft.ogs": "Sin relación con OGS (online-go.com) ni con KataGo."
   };
