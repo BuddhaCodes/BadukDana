@@ -12,6 +12,15 @@ published when only `docs/`, `.github/` or Markdown files changed since the last
 
 > Status and plans: see `docs/ROADMAP.md`.
 
+## Support Hoshi
+
+Hoshi is free and open source, and will stay that way. If it brings you good games and you'd like to help it grow,
+you can make a donation on [PayPal](https://paypal.me/CarlosFernandez934). It is entirely optional — nothing in
+Hoshi depends on it. Thank you either way.
+
+> **A note on where donations go:** PayPal isn't available where I live, so donations are received on my behalf by
+> a trusted collaborator, Carlos Fernandez — that's the name you'll see on the PayPal page.
+
 ## Requirements
 
 - .NET SDK 10.0 (`global.json` pins the minimum feature band 10.0.100)
