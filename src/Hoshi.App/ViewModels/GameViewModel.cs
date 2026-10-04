@@ -23,6 +23,16 @@ public enum EditTool
     Label,
 }
 
+/// <summary>An engine playing some colours of the local game (set by <see cref="EngineMatchViewModel"/>).</summary>
+public interface ILocalOpponent
+{
+    /// <summary>True when this colour is played by the engine, so clicks and passes for it are ignored.</summary>
+    bool Controls(Stone color);
+
+    /// <summary>What the engine is doing ("KataGo is thinking…"), shown in the status line; null for the usual status.</summary>
+    string? StatusText { get; }
+}
+
 /// <summary>
 /// The game shown in the main window: a <see cref="GameCursor"/> over an SGF tree, with local play, navigation,
 /// editing and file handling. All state shown in the UI is derived from the cursor after every change.
@@ -86,6 +96,61 @@ public sealed partial class GameViewModel : ViewModelBase
     public OnlineGameViewModel? Online { get; private set; }
 
     public bool IsOnline => Online is not null;
+
+    /// <summary>The engine of a game against an engine (or between two), or null.</summary>
+    public ILocalOpponent? Opponent
+    {
+        get => _opponent;
+        set
+        {
+            if (!ReferenceEquals(_opponent, value))
+            {
+                _opponent = value;
+                OnPropertyChanged();
+                Refresh();
+            }
+        }
+    }
+
+    private ILocalOpponent? _opponent;
+
+    /// <summary>True during an undo of several moves: the opponent waits until it is done.</summary>
+    public bool IsOpponentSuspended { get; private set; }
+
+    /// <summary>The opponent's status changed (thinking, paused…).</summary>
+    public void OpponentChanged()
+    {
+        OnPropertyChanged(nameof(StatusText));
+        PassCommand.NotifyCanExecuteChanged();
+        PassKeyCommand.NotifyCanExecuteChanged();
+        UpdateGhost();
+    }
+
+    private bool IsEngineTurn => Online is null && !IsEditMode && Opponent?.Controls(Board.ToMove) == true;
+
+    /// <summary>Plays the engine's move (null = pass) at the current position; false when it is illegal.</summary>
+    public bool PlayEngineMove(Point? point)
+    {
+        if (point is { } p && !Board.IsLegal(Board.ToMove, p))
+        {
+            return false;
+        }
+
+        _cursor.Play(point);
+        IsDirty = true;
+        return true;
+    }
+
+    /// <summary>Writes the result (e.g. "W+R") into the game info.</summary>
+    public void SetResult(string result)
+    {
+        Tree.Info.Result = result;
+        IsDirty = true;
+        _cursor.NotifyEdited();
+    }
+
+    /// <summary>Shows a message in the status line until the next change.</summary>
+    public void ShowStatus(string text) => SetStatus(text);
 
     /// <summary>Last node of the main line (where online moves are appended).</summary>
     public GameNode MainLineEnd
@@ -205,6 +270,11 @@ public sealed partial class GameViewModel : ViewModelBase
             if (Online is { } online)
             {
                 return online.StatusText;
+            }
+
+            if (!IsEditMode && Opponent?.StatusText is { } engine)
+            {
+                return engine;
             }
 
             if (IsEditMode)
@@ -368,6 +438,11 @@ public sealed partial class GameViewModel : ViewModelBase
             return;
         }
 
+        if (IsEngineTurn)
+        {
+            return;
+        }
+
         MoveResult result = _cursor.Play(point);
         if (!result.IsLegal)
         {
@@ -391,6 +466,11 @@ public sealed partial class GameViewModel : ViewModelBase
             return;
         }
 
+        if (IsEngineTurn)
+        {
+            return;
+        }
+
         _cursor.Play(null);
         IsDirty = true;
     }
@@ -401,14 +481,34 @@ public sealed partial class GameViewModel : ViewModelBase
 
     private bool CanPassWithKey() => Online is null && CanPass();
 
-    /// <summary>Takes back the last move: removes it if it ends the line, otherwise just steps back.</summary>
+    /// <summary>
+    /// Takes back the last move: removes it if it ends the line, otherwise just steps back. Against an engine it
+    /// goes back to your turn (your move and the engine's reply).
+    /// </summary>
     [RelayCommand(CanExecute = nameof(CanUndo))]
     private void Undo()
     {
         if (_cursor.Current.Children.Count == 0)
         {
-            _cursor.DeleteCurrent();
+            // The engine must not start answering the position in between.
+            IsOpponentSuspended = true;
+            try
+            {
+                _cursor.DeleteCurrent();
+                bool humanPlays = Opponent is { } o && !(o.Controls(Stone.Black) && o.Controls(Stone.White));
+                if (humanPlays && Opponent!.Controls(Board.ToMove) && _cursor.CanGoBack && _cursor.Current.Children.Count == 0
+                    && _cursor.Current.GetMove(_cursor.BoardSize) is not null)
+                {
+                    _cursor.DeleteCurrent();
+                }
+            }
+            finally
+            {
+                IsOpponentSuspended = false;
+            }
+
             IsDirty = true;
+            OnPropertyChanged(nameof(CurrentNode));
         }
         else
         {
@@ -616,7 +716,7 @@ public sealed partial class GameViewModel : ViewModelBase
 
     private bool CanEdit() => Online is null;
 
-    private bool CanPass() => Online is { } online ? online.PassCommand.CanExecute(null) : !IsEditMode && !IsGameOver;
+    private bool CanPass() => Online is { } online ? online.PassCommand.CanExecute(null) : !IsEditMode && !IsGameOver && !IsEngineTurn;
 
     private bool CanGoBack() => _cursor.CanGoBack;
 
@@ -778,7 +878,7 @@ public sealed partial class GameViewModel : ViewModelBase
         }
         else
         {
-            GhostStone = !IsGameOver && Board.IsLegal(Board.ToMove, p) ? Board.ToMove : Stone.Empty;
+            GhostStone = !IsGameOver && !IsEngineTurn && Board.IsLegal(Board.ToMove, p) ? Board.ToMove : Stone.Empty;
         }
     }
 

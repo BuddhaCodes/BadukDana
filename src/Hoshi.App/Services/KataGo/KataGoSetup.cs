@@ -50,6 +50,29 @@ public static class KataGoLocator
         reportAnalysisWinratesAs = BLACK
         """;
 
+    public const string GtpConfigName = "hoshi_gtp.cfg";
+
+    /// <summary>
+    /// Hoshi's GTP settings for playing against its KataGo: KataGo's defaults (500 visits per move, resigns when
+    /// hopeless) with winrates from the side to move, as GTP analysis expects. Edit the file to change its strength.
+    /// </summary>
+    public const string DefaultGtpConfig = """
+        # Written by Hoshi. KataGo GTP settings used when you play against Hoshi's KataGo (Preferences → Engines).
+        # Change maxVisits (or add maxTime = seconds per move) to make it weaker or stronger.
+        logAllGTPCommunication = false
+        logSearchInfo = false
+        logToStderr = false
+        rules = japanese
+        allowResignation = true
+        resignThreshold = -0.90
+        resignConsecTurns = 3
+        maxVisits = 500
+        ponderingEnabled = false
+        numSearchThreads = 8
+        nnCacheSizePowerOfTwo = 20
+        reportAnalysisWinratesAs = SIDETOMOVE
+        """;
+
     private static readonly string[] SystemPaths = ["/opt/homebrew/bin/katago", "/usr/local/bin/katago", "/usr/bin/katago"];
 
     public static string ExecutableName => OperatingSystem.IsWindows() ? "katago.exe" : "katago";
@@ -119,16 +142,34 @@ public static class KataGoLocator
     }
 
     /// <summary>Writes Hoshi's analysis config into the data folder (once) and returns its path.</summary>
-    public static string EnsureConfig(string dataDirectory)
+    public static string EnsureConfig(string dataDirectory) => EnsureFile(dataDirectory, ConfigName, DefaultConfig);
+
+    /// <summary>Writes Hoshi's GTP config into the data folder (once) and returns its path.</summary>
+    public static string EnsureGtpConfig(string dataDirectory) => EnsureFile(dataDirectory, GtpConfigName, DefaultGtpConfig);
+
+    /// <summary>
+    /// The resolved KataGo as a GTP engine: <c>katago gtp -model … -config hoshi_gtp.cfg</c>, logging into the data folder.
+    /// </summary>
+    public static Hoshi.Engines.Gtp.GtpEngineConfig GtpEngine(ResolvedKataGo kataGo, string dataDirectory, string name)
+    {
+        ArgumentNullException.ThrowIfNull(kataGo);
+        string logs = Path.Combine(DataFolder(dataDirectory), "logs");
+        string arguments = $"gtp -model {Quote(kataGo.Options.Model)} -config {Quote(EnsureGtpConfig(dataDirectory))} -override-config {Quote("logDir=" + logs)}";
+        return new Hoshi.Engines.Gtp.GtpEngineConfig(name, kataGo.Options.Executable, arguments);
+    }
+
+    private static string Quote(string value) => "\"" + value.Replace("\"", "\\\"", StringComparison.Ordinal) + "\"";
+
+    private static string EnsureFile(string dataDirectory, string name, string content)
     {
         string folder = DataFolder(dataDirectory);
-        string path = Path.Combine(folder, ConfigName);
+        string path = Path.Combine(folder, name);
         try
         {
             if (!File.Exists(path))
             {
                 Directory.CreateDirectory(folder);
-                File.WriteAllText(path, DefaultConfig.ReplaceLineEndings(Environment.NewLine) + Environment.NewLine);
+                File.WriteAllText(path, content.ReplaceLineEndings(Environment.NewLine) + Environment.NewLine);
             }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)

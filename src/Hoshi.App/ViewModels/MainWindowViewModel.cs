@@ -45,8 +45,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         JosekiAssistantViewModel? josekiHints = null,
         UpdateViewModel? updates = null,
         KataGoSetupViewModel? kataGoSetup = null,
-        AudioViewModel? audio = null)
+        AudioViewModel? audio = null,
+        EngineMatchViewModel? engineMatch = null,
+        Services.Engines.IGtpEngineHost? engines = null,
+        Services.Engines.IEngineWindows? engineWindows = null)
     {
+        EngineMatch = engineMatch;
+        _engines = engines;
+        _engineWindows = engineWindows;
         Updates = updates;
         Audio = audio;
         KataGoSetup = kataGoSetup;
@@ -262,4 +268,53 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private Task OpenPreferences() => _preferences?.ShowAsync() ?? Task.CompletedTask;
 
     private void LeaveOnline() => Online?.LeaveCommand.Execute(null);
+
+    private readonly Services.Engines.IGtpEngineHost? _engines;
+    private readonly Services.Engines.IEngineWindows? _engineWindows;
+
+    /// <summary>The game against an engine (or between two) on the board; null without a host.</summary>
+    public EngineMatchViewModel? EngineMatch { get; }
+
+    public bool HasEngines => _engines is not null && _engineWindows is not null && EngineMatch is not null;
+
+    /// <summary>Ctrl+G: a new game against an engine, or between two engines.</summary>
+    [RelayCommand(CanExecute = nameof(HasEngines))]
+    private async Task PlayEngine()
+    {
+        if (_engines is null || _engineWindows is null || EngineMatch is null)
+        {
+            return;
+        }
+
+        var options = new NewEngineGameViewModel(_engines.Engines, Game.Board.Rules);
+        if (!await _engineWindows.AskNewGameAsync(options))
+        {
+            return;
+        }
+
+        await StartEngineGameAsync(options);
+    }
+
+    /// <summary>Loads the new game and lets the chosen engines play (after the dialog, or from tests).</summary>
+    public async Task StartEngineGameAsync(NewEngineGameViewModel options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        if (EngineMatch is null || !options.CanStart)
+        {
+            return;
+        }
+
+        if (Online is null && Game.IsDirty && _dialogs is not null
+            && !await _dialogs.ConfirmAsync(Tr.T("Dialog.UnsavedChanges"), Tr.T("Game.DiscardChanges")))
+        {
+            return;
+        }
+
+        LeaveOnline();
+        Game.Load(options.CreateTree(), path: null);
+        EngineMatch.Start(options.Black.Engine, options.White.Engine);
+    }
+
+    [RelayCommand(CanExecute = nameof(HasEngines))]
+    private void OpenGtpConsole() => _engineWindows?.ShowConsole();
 }

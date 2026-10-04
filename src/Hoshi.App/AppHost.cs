@@ -53,7 +53,12 @@ public static class AppHost
         services.AddSingleton<AudioViewModel>();
         services.AddSingleton<Services.Music.IMusicService, Services.Music.MusicService>();
         services.AddSingleton<AnalysisEngineHost>();
-        services.AddSingleton<IAnalysisEngine>(sp => sp.GetRequiredService<AnalysisEngineHost>());
+        services.AddSingleton<Services.Engines.GtpEngineHost>();
+        services.AddSingleton<Services.Engines.IGtpEngineHost>(sp => sp.GetRequiredService<Services.Engines.GtpEngineHost>());
+        services.AddSingleton<Services.Engines.AnalysisEngineSwitch>();
+        services.AddSingleton<IAnalysisEngine>(sp => sp.GetRequiredService<Services.Engines.AnalysisEngineSwitch>());
+        services.AddSingleton<GtpConsoleViewModel>();
+        services.AddSingleton<Services.Engines.IEngineWindows, Services.Engines.EngineWindows>();
         services.AddSingleton<IFilePickerService, AvaloniaFilePickerService>();
         services.AddSingleton<PreferencesViewModel>();
         services.AddSingleton<IPreferencesWindowService, PreferencesWindowService>();
@@ -88,6 +93,7 @@ public static class AppHost
         services.AddSingleton<KataGoSetupViewModel>();
         services.AddSingleton<UpdateViewModel>();
         services.AddSingleton<GameViewModel>();
+        services.AddSingleton<EngineMatchViewModel>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddTransient<MainWindow>();
         return services;

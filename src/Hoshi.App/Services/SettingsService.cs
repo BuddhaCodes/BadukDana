@@ -29,6 +29,12 @@ public sealed record AppSettings
 
     public string? KataGoConfig { get; init; }
 
+    /// <summary>GTP engines added in Preferences → Engines (to play against, engine vs engine, analysis).</summary>
+    public IReadOnlyList<EngineEntry> Engines { get; init; } = [];
+
+    /// <summary>The engine of the analysis panel: null = Hoshi's KataGo (analysis engine), otherwise a GTP engine's name.</summary>
+    public string? AnalysisEngine { get; init; }
+
     /// <summary>Search visits per analysed position (more = stronger and slower).</summary>
     public int AnalysisVisits { get; init; } = 200;
 
@@ -68,6 +74,9 @@ public sealed record AppSettings
     /// <summary>A version the user chose to skip (e.g. "0.1.7"); newer ones are offered again.</summary>
     public string? SkippedUpdate { get; init; }
 }
+
+/// <summary>A GTP engine as saved in the settings (see <see cref="Hoshi.Engines.Gtp.GtpEngineConfig"/>).</summary>
+public sealed record EngineEntry(string Name, string Executable, string Arguments = "", string InitCommands = "");
 
 public interface ISettingsService
 {

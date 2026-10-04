@@ -57,6 +57,7 @@ public static partial class Tr
         AddOgs(d);
         AddApp(d);
         AddViews(d);
+        AddEngineUi(d);
         return d;
     }
 
@@ -69,6 +70,8 @@ public static partial class Tr
     static partial void AddApp(Dictionary<string, (string En, string Es)> d);
 
     static partial void AddViews(Dictionary<string, (string En, string Es)> d);
+
+    static partial void AddEngineUi(Dictionary<string, (string En, string Es)> d);
 
     /// <summary>Adds one entry; a duplicate key throws, so mistakes surface in the first test.</summary>
     private static void Add(Dictionary<string, (string En, string Es)> d, string key, string en, string es) => d.Add(key, (en, es));

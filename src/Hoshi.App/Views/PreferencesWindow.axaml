@@ -206,6 +206,62 @@
           </StackPanel>
         </ScrollViewer>
       </TabItem>
+      <TabItem Header="{l:T Prefs.EnginesTab}" IsVisible="{Binding HasEngineHost}" x:Name="EnginesTab">
+        <Grid ColumnDefinitions="200,*" Margin="0,10,0,0">
+          <DockPanel Margin="0,0,16,0">
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
+              <Button Content="{l:T Prefs.EngineAdd}" Command="{Binding AddEngineCommand}" x:Name="AddEngineButton" />
+              <Button Content="{l:T Prefs.EngineRemove}" Command="{Binding RemoveEngineCommand}" />
+            </StackPanel>
+            <ListBox ItemsSource="{Binding EngineItems}" SelectedItem="{Binding SelectedEngineItem}" x:Name="EngineList"
+                     Background="{DynamicResource Bg.Panel}" CornerRadius="8">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:EngineItem">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <c:HoshiIcon Icon="{DynamicResource Icon.Engine}" Size="14" VerticalAlignment="Center" Opacity="0.75" />
+                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </DockPanel>
+          <ScrollViewer Grid.Column="1">
+            <StackPanel Spacing="8" Margin="0,0,16,0">
+              <TextBlock TextWrapping="Wrap" Text="{l:T Prefs.EnginesIntro}" />
+              <TextBlock Classes="secondary" TextWrapping="Wrap" Text="{Binding BuiltInEngineHint}" IsVisible="{Binding SelectedIsBuiltIn}" />
+              <Grid ColumnDefinitions="130,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" IsEnabled="{Binding HasEditableEngine}"
+                    IsVisible="{Binding SelectedEngineItem, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <Grid.Styles>
+                  <Style Selector="TextBox"><Setter Property="Margin" Value="0,3" /></Style>
+                  <Style Selector="Button"><Setter Property="Margin" Value="8,3,0,3" /></Style>
+                </Grid.Styles>
+                <TextBlock Classes="label" Text="{l:T Prefs.EngineName}" VerticalAlignment="Center" />
+                <TextBox Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedEngineItem.Name, FallbackValue={x:Null}}" x:Name="EngineNameBox" />
+                <TextBlock Grid.Row="1" Classes="label" Text="{l:T Prefs.Executable}" VerticalAlignment="Center" />
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEngineItem.Executable, FallbackValue={x:Null}}" Watermark="leelaz.exe, gnugo, katago…" x:Name="EngineExeBox" />
+                <Button Grid.Row="1" Grid.Column="2" Content="{l:T Prefs.Browse}" Command="{Binding BrowseEngineExecutableCommand}" />
+                <TextBlock Grid.Row="2" Classes="label" Text="{l:T Prefs.EngineArguments}" VerticalAlignment="Center" />
+                <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedEngineItem.Arguments, FallbackValue={x:Null}}" Watermark="--gtp -w network.gz" x:Name="EngineArgsBox" TextWrapping="Wrap" />
+                <TextBlock Grid.Row="3" Classes="label" Text="{l:T Prefs.EngineInit}" VerticalAlignment="Top" Margin="0,8,0,0" />
+                <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedEngineItem.InitCommands, FallbackValue={x:Null}}" AcceptsReturn="True"
+                         MinHeight="64" Watermark="time_settings 0 5 1" FontFamily="Cascadia Mono, Consolas, Menlo, DejaVu Sans Mono, monospace" />
+              </Grid>
+              <TextBlock Classes="secondary" TextWrapping="Wrap" Text="{l:T Prefs.EngineInitHint}" IsVisible="{Binding HasEditableEngine}" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="{l:T Main.Save}" Command="{Binding SaveEnginesCommand}" x:Name="SaveEnginesButton" />
+                <Button Classes="accent" Content="{l:T Prefs.EngineTest}" Command="{Binding TestGtpEngineCommand}" x:Name="TestGtpButton" />
+              </StackPanel>
+              <TextBlock Text="{Binding EnginesStatus}" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" x:Name="EnginesStatusText"
+                         IsVisible="{Binding EnginesStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+              <TextBlock Classes="secondary" TextWrapping="Wrap" Text="{l:T Prefs.EngineExamples}" />
+
+              <TextBlock Classes="label" Text="{l:T Prefs.AnalysisEngine}" Margin="0,14,0,0" />
+              <ComboBox ItemsSource="{Binding AnalysisEngineOptions}" SelectedItem="{Binding SelectedAnalysisEngine}" MinWidth="260" x:Name="AnalysisEngineBox" />
+              <TextBlock Classes="secondary" TextWrapping="Wrap" Text="{l:T Prefs.AnalysisEngineHint}" />
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+      </TabItem>
     </TabControl>
   </DockPanel>
 </Window>

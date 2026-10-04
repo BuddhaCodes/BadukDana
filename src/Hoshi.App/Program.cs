@@ -78,10 +78,13 @@ internal static class Program
         {
             try
             {
-                if (host.Services.GetService<Services.AnalysisEngineHost>() is { } engine)
-                {
-                    await engine.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(4));
-                }
+                Task kataGo = host.Services.GetService<Services.AnalysisEngineHost>() is { } engine
+                    ? engine.DisposeAsync().AsTask()
+                    : Task.CompletedTask;
+                Task gtp = host.Services.GetService<Services.Engines.GtpEngineHost>() is { } engines
+                    ? engines.DisposeAsync().AsTask()
+                    : Task.CompletedTask;
+                await Task.WhenAll(kataGo, gtp).WaitAsync(TimeSpan.FromSeconds(4));
 
                 await host.StopAsync(TimeSpan.FromSeconds(2));
             }

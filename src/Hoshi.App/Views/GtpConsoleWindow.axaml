@@ -1,0 +1,61 @@
+<Window Icon="/Assets/hoshi.ico"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:Hoshi.App.Localization"
+        xmlns:vm="using:Hoshi.App.ViewModels"
+        xmlns:eng="using:Hoshi.App.Services.Engines"
+        x:Class="Hoshi.App.Views.GtpConsoleWindow"
+        x:DataType="vm:GtpConsoleViewModel"
+        Title="{l:T Engines.ConsoleTitle}"
+        Width="760" Height="520" MinWidth="460" MinHeight="300"
+        Background="{DynamicResource Bg.Window}"
+        WindowStartupLocation="CenterOwner">
+  <Window.Styles>
+    <Style Selector="TextBlock.mono">
+      <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Menlo, DejaVu Sans Mono, monospace" />
+      <Setter Property="FontSize" Value="12.5" />
+    </Style>
+    <Style Selector="TextBlock.sent"><Setter Property="Foreground" Value="{DynamicResource Accent}" /></Style>
+    <Style Selector="TextBlock.log"><Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" /><Setter Property="Opacity" Value="0.8" /></Style>
+    <Style Selector="TextBlock.error"><Setter Property="Foreground" Value="#E0695F" /></Style>
+  </Window.Styles>
+  <DockPanel Margin="16">
+    <Grid DockPanel.Dock="Bottom" ColumnDefinitions="Auto,*,Auto" Margin="0,10,0,0">
+      <ComboBox ItemsSource="{Binding Engines}" SelectedItem="{Binding Engine}" MinWidth="170" Margin="0,0,8,0" x:Name="EngineBox">
+        <ComboBox.ItemTemplate>
+          <DataTemplate x:DataType="eng:EngineChoice"><TextBlock Text="{Binding Name}" /></DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+      <TextBox Grid.Column="1" Text="{Binding Command}" Watermark="{l:T Engines.ConsoleWatermark}" x:Name="CommandBox"
+               FontFamily="Cascadia Mono, Consolas, Menlo, DejaVu Sans Mono, monospace" KeyDown="OnCommandKeyDown" />
+      <Button Grid.Column="2" Classes="accent" Content="{l:T Engines.Send}" Command="{Binding SendCommand}" Margin="8,0,0,0" x:Name="SendButton" />
+    </Grid>
+    <TextBlock DockPanel.Dock="Bottom" Text="{l:T Engines.ConsoleBlocked}" Foreground="{DynamicResource Accent}" TextWrapping="Wrap"
+               Margin="0,8,0,0" IsVisible="{Binding IsBlocked}" />
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="0,0,0,10">
+      <TextBlock Text="{l:T Engines.ConsoleTitle}" FontFamily="{DynamicResource Font.Title}" FontSize="18" VerticalAlignment="Center" />
+      <CheckBox IsChecked="{Binding ShowLog}" Content="{l:T Engines.ShowLog}" VerticalAlignment="Center" />
+      <Button Content="{l:T Engines.Clear}" Command="{Binding ClearCommand}" />
+    </StackPanel>
+    <Border CornerRadius="8" Background="{DynamicResource Bg.Panel}" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="1">
+      <ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Rows}" Margin="10,8" x:Name="Lines">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate><VirtualizingStackPanel /></ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:ConsoleRow">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Classes="mono log" Text="{Binding Time}" />
+                <TextBlock Classes="mono log" Text="{Binding Engine}" MinWidth="90" />
+                <TextBlock Classes="mono" Classes.sent="{Binding IsSent}" Text="{Binding Arrow}" />
+                <SelectableTextBlock Classes="mono" Classes.sent="{Binding IsSent}" Classes.log="{Binding IsLog}" Classes.error="{Binding IsError}"
+                                     Text="{Binding Text}" />
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Border>
+  </DockPanel>
+</Window>

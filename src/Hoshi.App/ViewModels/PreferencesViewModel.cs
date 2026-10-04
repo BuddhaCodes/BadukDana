@@ -59,6 +59,34 @@ public sealed partial class SkinOption : ObservableObject
     public double PreviewWidth => IsWide ? 60 : 30;
 }
 
+/// <summary>A GTP engine in Preferences → Engines (Hoshi's KataGo is listed but read-only).</summary>
+public sealed partial class EngineItem : ObservableObject
+{
+    [ObservableProperty]
+    private string _name = string.Empty;
+
+    [ObservableProperty]
+    private string _executable = string.Empty;
+
+    [ObservableProperty]
+    private string _arguments = string.Empty;
+
+    [ObservableProperty]
+    private string _initCommands = string.Empty;
+
+    public bool IsBuiltIn { get; init; }
+
+    public bool IsEditable => !IsBuiltIn;
+
+    public Services.EngineEntry ToEntry() => new(Name.Trim(), Executable.Trim().Trim('"'), Arguments.Trim(), InitCommands);
+}
+
+/// <summary>An engine for the analysis panel: null id = Hoshi's KataGo (analysis engine).</summary>
+public sealed record AnalysisEngineOption(string? Id, string Label)
+{
+    public override string ToString() => Label;
+}
+
 /// <summary>A user interface language choice ("en", "es") with its own name.</summary>
 public sealed record LanguageOption(string Code, string Name);
 
@@ -146,8 +174,12 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         Services.IFilePickerService? picker = null,
         Services.ISoundService? sounds = null,
         Services.Music.IMusicService? music = null,
-        KataGoSetupViewModel? kataGoSetup = null)
+        KataGoSetupViewModel? kataGoSetup = null,
+        Services.Engines.IGtpEngineHost? engines = null,
+        Services.Engines.AnalysisEngineSwitch? analysisSwitch = null)
     {
+        _engines = engines;
+        _analysisSwitch = analysisSwitch;
         KataGoSetup = kataGoSetup;
         _sounds = sounds;
         _musicService = music;
@@ -191,8 +223,195 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             OnPropertyChanged(nameof(PreviewStyle));
             OnPropertyChanged(nameof(PreviewBackground));
         };
+        LoadEngines();
         _loaded = true;
     }
+
+    // ---------- Engines (GTP) ----------
+
+    private readonly Services.Engines.IGtpEngineHost? _engines;
+    private readonly Services.Engines.AnalysisEngineSwitch? _analysisSwitch;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasEditableEngine), nameof(SelectedIsBuiltIn))]
+    [NotifyCanExecuteChangedFor(nameof(RemoveEngineCommand), nameof(TestGtpEngineCommand))]
+    private EngineItem? _selectedEngineItem;
+
+    [ObservableProperty]
+    private AnalysisEngineOption? _selectedAnalysisEngine;
+
+    [ObservableProperty]
+    private string? _enginesStatus;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(TestGtpEngineCommand))]
+    private bool _isTestingGtp;
+
+    public bool HasEngineHost => _engines is not null;
+
+    public System.Collections.ObjectModel.ObservableCollection<EngineItem> EngineItems { get; } = [];
+
+    public System.Collections.ObjectModel.ObservableCollection<AnalysisEngineOption> AnalysisEngineOptions { get; } = [];
+
+    public bool HasEditableEngine => SelectedEngineItem is { IsBuiltIn: false };
+
+    public bool SelectedIsBuiltIn => SelectedEngineItem is { IsBuiltIn: true };
+
+    public string BuiltInEngineHint => Tr.F("Prefs.EngineBuiltIn", Services.KataGo.KataGoLocator.GtpConfigName);
+
+    private void LoadEngines()
+    {
+        EngineItems.Clear();
+        if (_engines?.Engines.FirstOrDefault(e => e.IsBuiltIn) is { } builtIn)
+        {
+            EngineItems.Add(new EngineItem
+            {
+                IsBuiltIn = true,
+                Name = builtIn.Name,
+                Executable = builtIn.Config.Executable,
+                Arguments = builtIn.Config.Arguments,
+            });
+        }
+
+        foreach (Services.EngineEntry e in _settings?.Current.Engines ?? [])
+        {
+            EngineItems.Add(new EngineItem { Name = e.Name, Executable = e.Executable, Arguments = e.Arguments, InitCommands = e.InitCommands });
+        }
+
+        SelectedEngineItem = EngineItems.FirstOrDefault(i => !i.IsBuiltIn) ?? EngineItems.FirstOrDefault();
+        RefreshAnalysisOptions();
+    }
+
+    private void RefreshAnalysisOptions()
+    {
+        string? current = SelectedAnalysisEngine?.Id ?? _settings?.Current.AnalysisEngine;
+        AnalysisEngineOptions.Clear();
+        AnalysisEngineOptions.Add(new AnalysisEngineOption(null, Tr.T("Prefs.AnalysisBuiltIn")));
+        foreach (EngineItem item in EngineItems.Where(i => !i.IsBuiltIn && i.Name.Trim().Length > 0))
+        {
+            AnalysisEngineOptions.Add(new AnalysisEngineOption(item.Name.Trim(), item.Name.Trim()));
+        }
+
+        SelectedAnalysisEngine = AnalysisEngineOptions.FirstOrDefault(o => o.Id == current) ?? AnalysisEngineOptions[0];
+    }
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void AddEngine()
+    {
+        string name = Tr.T("Prefs.EngineNew");
+        for (int n = 2; EngineItems.Any(i => i.Name == name); n++)
+        {
+            name = $"{Tr.T("Prefs.EngineNew")} {n}";
+        }
+
+        var item = new EngineItem { Name = name };
+        EngineItems.Add(item);
+        SelectedEngineItem = item;
+        EnginesStatus = null;
+    }
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand(CanExecute = nameof(HasEditableEngine))]
+    private void RemoveEngine()
+    {
+        if (SelectedEngineItem is { IsBuiltIn: false } item)
+        {
+            EngineItems.Remove(item);
+            SelectedEngineItem = EngineItems.LastOrDefault();
+            SaveEngines();
+        }
+    }
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private async Task BrowseEngineExecutable()
+    {
+        if (SelectedEngineItem is { IsBuiltIn: false } item && await Pick(Tr.T("Prefs.PickExecutable")) is { } path)
+        {
+            item.Executable = path;
+        }
+    }
+
+    /// <summary>Saves the engine list and the analysis choice; false when a name is missing or repeated.</summary>
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void SaveEngines() => TrySaveEngines();
+
+    private bool TrySaveEngines()
+    {
+        if (_settings is null)
+        {
+            return false;
+        }
+
+        Services.EngineEntry[] entries = [.. EngineItems.Where(i => !i.IsBuiltIn).Select(i => i.ToEntry())];
+        var reserved = new HashSet<string>(EngineItems.Where(i => i.IsBuiltIn).Select(i => i.Name), StringComparer.Ordinal);
+        if (entries.Any(e => e.Name.Length == 0) || entries.GroupBy(e => e.Name).Any(g => g.Count() > 1) || entries.Any(e => reserved.Contains(e.Name)))
+        {
+            EnginesStatus = Tr.T("Prefs.EngineNameTaken");
+            return false;
+        }
+
+        RefreshAnalysisOptions();
+        Services.AppSettings updated = _settings.Current with
+        {
+            Engines = entries,
+            AnalysisEngine = SelectedAnalysisEngine?.Id,
+        };
+        _settings.Save(updated);
+        _engines?.Refresh(updated);
+        _analysisSwitch?.Reconfigure();
+        EnginesStatus = Tr.T("Prefs.EngineListSaved");
+        return true;
+    }
+
+    partial void OnSelectedAnalysisEngineChanged(AnalysisEngineOption? value)
+    {
+        if (_loaded && value is not null && _settings is not null && _settings.Current.AnalysisEngine != value.Id)
+        {
+            _settings.Save(_settings.Current with { AnalysisEngine = value.Id });
+            _analysisSwitch?.Reconfigure();
+        }
+    }
+
+    /// <summary>Saves, starts the selected engine and reports its name, commands and analysis support.</summary>
+    [CommunityToolkit.Mvvm.Input.RelayCommand(CanExecute = nameof(CanTestGtp))]
+    private async Task TestGtpEngine()
+    {
+        if (_engines is null || SelectedEngineItem is not { } item || !TrySaveEngines())
+        {
+            return;
+        }
+
+        string id = item.IsBuiltIn ? Services.Engines.GtpEngineHost.BuiltInId : item.Name.Trim();
+        if (_engines.Find(id) is not { } choice)
+        {
+            return;
+        }
+
+        IsTestingGtp = true;
+        EnginesStatus = Tr.T("Prefs.EngineTesting");
+        try
+        {
+            await _engines.StopAsync(id);
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+            Hoshi.Engines.Gtp.GtpEngine engine = await _engines.AcquireAsync(choice, timeout.Token);
+            string analysis = engine.AnalysisKind switch
+            {
+                Hoshi.Engines.Gtp.GtpAnalysisKind.KataGo => Tr.F("Prefs.EngineTestAnalysis", "kata-analyze"),
+                Hoshi.Engines.Gtp.GtpAnalysisKind.Leela => Tr.F("Prefs.EngineTestAnalysis", "lz-analyze"),
+                _ => Tr.T("Prefs.EngineTestNoAnalysis"),
+            };
+            EnginesStatus = Tr.F("Prefs.EngineTestOk", engine.DisplayName, engine.Commands.Count, analysis);
+        }
+        catch (Exception ex) when (ex is Hoshi.Engines.KataGo.EngineException or OperationCanceledException)
+        {
+            EnginesStatus = ex is OperationCanceledException ? Tr.T("Prefs.EngineTimeout") : ex.Message;
+        }
+        finally
+        {
+            IsTestingGtp = false;
+        }
+    }
+
+    private bool CanTestGtp() => !IsTestingGtp && SelectedEngineItem is not null && _engines is not null;
 
     public IReadOnlyList<SkinOption> BoardOptions { get; }
 
