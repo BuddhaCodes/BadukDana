@@ -23,6 +23,13 @@ public static partial class Tr
         Add(d, "Update.Install", "Update and restart", "Actualizar y reiniciar");
         Add(d, "Update.Download", "Get the installer", "Descargar el instalador");
         Add(d, "Update.InstallerHint", "Install Hoshi with its installer once and it will keep itself up to date.", "Instala Hoshi con su instalador una vez y se mantendrá al día solo.");
+        Add(d, "Audio.Tip", "Sound", "Sonido");
+        Add(d, "Audio.TipMuted", "Sound off", "Sonido apagado");
+        Add(d, "Audio.Mute", "Mute everything", "Silenciar todo");
+        Add(d, "Audio.Unmute", "Turn sound back on", "Volver a activar el sonido");
+        Add(d, "Audio.Effects", "Effects", "Efectos");
+        Add(d, "Audio.StoneSounds", "Stone sounds", "Sonido de las piedras");
+        Add(d, "Audio.Music", "Music", "Música");
         Add(d, "Update.Later", "Later", "Más tarde");
         Add(d, "Update.Skip", "Skip this version", "Saltar esta versión");
         Add(d, "Update.Checking", "Checking for updates…", "Buscando actualizaciones…");

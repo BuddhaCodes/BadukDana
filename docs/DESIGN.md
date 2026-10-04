@@ -85,6 +85,11 @@ Arte de Hoshi renderizado por procedimiento (numpy + Pillow, semillas fijas; sin
 - Cada tema trae su combinación; Preferencias → **Tablero y piedras** permite mezclar goban, piedras y fondo con cualquier tema (`AppSettings.BoardSkin/StoneSkin/BackgroundSkin`, null = el del tema; `Skins.Compose` sustituye solo esa parte del `BoardStyle`).
 - Regenerar: `python3 tools/art/generate.py --sheet hoja.png`.
 
+## Barra de título y sonido (2026-10-03)
+
+- Todas las ventanas usan la plantilla de `Window` de `Styles/Base.axaml`: `HoshiTitleBar` (36 px, `Bg.Bar`) arriba y el contenido debajo. Botones de 46 px; pasar el ratón usa `Bg.PanelAlt` y cerrar se pone rojo (#C42B1C). Doble clic maximiza; arrastrar mueve. Los diálogos con dueño no muestran minimizar; las ventanas sin `CanResize` no muestran maximizar.
+- El botón de sonido (icono `Volume`/`Muted` de cada juego de iconos) abre un panel con «Silenciar todo», efectos, piedras, música y volumen. Los flyouts usan `Bg.Panel` y esquinas de 10 px.
+
 ## Marcadores
 
 - Última jugada: círculo hueco del color contrario (no se dibuja si hay marca SGF en ese punto).

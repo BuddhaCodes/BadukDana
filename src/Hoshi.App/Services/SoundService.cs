@@ -41,6 +41,18 @@ public interface ISoundService
     void Play(SoundEffect effect, double volume);
 }
 
+/// <summary>Silences every effect while <see cref="AppSettings.Muted"/> is on (the speaker button).</summary>
+public sealed class MutableSoundService(ISoundService inner, ISettingsService settings) : ISoundService
+{
+    public void Play(SoundEffect effect, double volume)
+    {
+        if (!settings.Current.Muted && volume > 0)
+        {
+            inner.Play(effect, volume);
+        }
+    }
+}
+
 /// <summary>
 /// Plays sounds with what each OS already has, so Hoshi needs no audio library:
 /// Windows MCI (winmm), <c>afplay</c> on macOS, <c>paplay</c>/<c>aplay</c> on Linux.

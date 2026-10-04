@@ -50,6 +50,9 @@ public sealed record AppSettings
     /// <summary>Music volume, 0–100.</summary>
     public int MusicVolume { get; init; } = 35;
 
+    /// <summary>All sound off (effects and music) from the speaker button, keeping each volume for later.</summary>
+    public bool Muted { get; init; }
+
     /// <summary>Show known joseki continuations on the main board (J).</summary>
     public bool JosekiHints { get; init; }
 
