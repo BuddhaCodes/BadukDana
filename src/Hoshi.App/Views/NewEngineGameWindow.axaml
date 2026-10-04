@@ -1,0 +1,66 @@
+<Window Icon="/Assets/hoshi.ico"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:Hoshi.App.Localization"
+        xmlns:vm="using:Hoshi.App.ViewModels"
+        x:Class="Hoshi.App.Views.NewEngineGameWindow"
+        x:DataType="vm:NewEngineGameViewModel"
+        Title="{l:T Engines.NewGameTitle}"
+        Width="480" SizeToContent="Height"
+        CanResize="False"
+        Background="{DynamicResource Bg.Window}"
+        WindowStartupLocation="CenterOwner">
+  <Window.Styles>
+    <Style Selector="TextBlock.label">
+      <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="0,0,14,0" />
+    </Style>
+    <Style Selector="ComboBox, NumericUpDown">
+      <Setter Property="Margin" Value="0,4" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+  </Window.Styles>
+
+  <DockPanel Margin="22,18">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="0,0,0,14">
+      <TextBlock Text="碁" FontFamily="{DynamicResource Font.Brand}" FontSize="28" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
+      <TextBlock Text="{l:T Engines.NewGameTitle}" FontFamily="{DynamicResource Font.Title}" FontSize="20" VerticalAlignment="Center" />
+    </StackPanel>
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,16,0,0">
+      <Button Content="{l:T Common.Cancel}" IsCancel="True" Click="OnCancel" x:Name="CancelButton" />
+      <Button Content="{l:T Engines.Start}" IsDefault="True" Classes="accent" Click="OnOk" x:Name="StartButton"
+              IsEnabled="{Binding CanStart}" />
+    </StackPanel>
+    <StackPanel>
+      <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto">
+        <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center" Margin="0,0,14,0">
+          <Ellipse Width="12" Height="12" Fill="#15151A" Stroke="#777" StrokeThickness="1" />
+          <TextBlock Classes="label" Text="{l:T Common.Black}" Margin="0" />
+        </StackPanel>
+        <ComboBox Grid.Column="1" Grid.ColumnSpan="3" ItemsSource="{Binding Players}" SelectedItem="{Binding Black}" x:Name="BlackBox" />
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="7" VerticalAlignment="Center" Margin="0,0,14,0">
+          <Ellipse Width="12" Height="12" Fill="#F4F1EA" Stroke="#777" StrokeThickness="1" />
+          <TextBlock Classes="label" Text="{l:T Common.White}" Margin="0" />
+        </StackPanel>
+        <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" ItemsSource="{Binding Players}" SelectedItem="{Binding White}" x:Name="WhiteBox" />
+
+        <TextBlock Grid.Row="2" Classes="label" Text="{l:T Engines.Size}" />
+        <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding Sizes}" SelectedItem="{Binding Size}" x:Name="SizeBox" />
+        <TextBlock Grid.Row="2" Grid.Column="2" Classes="label" Text="{l:T Engines.Handicap}" Margin="16,0,14,0" />
+        <ComboBox Grid.Row="2" Grid.Column="3" ItemsSource="{Binding Handicaps}" SelectedItem="{Binding Handicap}" x:Name="HandicapBox" />
+
+        <TextBlock Grid.Row="3" Classes="label" Text="{l:T GameInfo.Rules}" />
+        <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding RulesOptions}" SelectedItem="{Binding Rules}" x:Name="RulesBox">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:RulesOption"><TextBlock Text="{Binding Label}" /></DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+        <TextBlock Grid.Row="3" Grid.Column="2" Classes="label" Text="Komi" Margin="16,0,14,0" />
+        <NumericUpDown Grid.Row="3" Grid.Column="3" Value="{Binding Komi}" Increment="0.5" Minimum="-50" Maximum="50" FormatString="0.0" x:Name="KomiBox" />
+      </Grid>
+      <TextBlock Classes="secondary" Text="{Binding Hint}" TextWrapping="Wrap" Margin="0,12,0,0" x:Name="HintText" />
+    </StackPanel>
+  </DockPanel>
+</Window>

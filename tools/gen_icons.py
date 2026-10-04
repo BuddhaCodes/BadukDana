@@ -35,6 +35,7 @@ ICONS = {  # key: (phosphor, lucide, tabler)
     "Folder": ("folder-open", "folder-open", "folder-open"),
     "Volume": ("speaker-high", "volume-2", "volume"),
     "Muted": ("speaker-slash", "volume-x", "volume-off"),
+    "Engine": ("robot", "bot", "robot"),
 }
 
 def num(v): return float(v)

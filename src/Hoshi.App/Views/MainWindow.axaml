@@ -37,6 +37,7 @@
     <KeyBinding Gesture="Ctrl+E" Command="{Binding Game.ToggleEditModeCommand}" />
     <KeyBinding Gesture="Ctrl+I" Command="{Binding Game.EditGameInfoCommand}" />
     <KeyBinding Gesture="Ctrl+L" Command="{Binding OpenLobbyCommand}" />
+    <KeyBinding Gesture="Ctrl+G" Command="{Binding PlayEngineCommand}" />
     <KeyBinding Gesture="Ctrl+OemComma" Command="{Binding OpenPreferencesCommand}" />
     <KeyBinding Gesture="Ctrl+N" Command="{Binding Game.NewGameCommand}">
       <KeyBinding.CommandParameter>
@@ -77,26 +78,26 @@
           </StackPanel>
 
           <!-- Players, as in Sabaki's bar: black name · turn toggle · white name. -->
-          <Grid Grid.Column="1" ColumnDefinitions="*,Auto,*" VerticalAlignment="Center" Margin="12,0"
+          <Grid Grid.Column="1" ColumnDefinitions="*,Auto,*" VerticalAlignment="Center" Margin="12,0" ClipToBounds="True"
                 IsVisible="{Binding !Game.IsEditMode}" x:Name="PlayerInfo">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="6">
-              <TextBlock Classes="secondary" VerticalAlignment="Center" Text="{Binding Game.Board.WhiteCaptures, StringFormat='+{0}'}"
+            <DockPanel HorizontalAlignment="Right">
+              <TextBlock DockPanel.Dock="Left" Classes="secondary" VerticalAlignment="Center" Margin="0,0,6,0" Text="{Binding Game.Board.WhiteCaptures, StringFormat='+{0}'}"
                          IsVisible="{Binding Game.Board.WhiteCaptures}" ToolTip.Tip="{l:T Main.BlackCaptures}" />
-              <TextBlock Classes="player" Text="{Binding Game.BlackName}" TextTrimming="CharacterEllipsis"
+              <TextBlock Classes="player" Text="{Binding Game.BlackName}" TextTrimming="CharacterEllipsis" MaxWidth="160"
                          FontWeight="{Binding Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
-            </StackPanel>
+            </DockPanel>
             <Border Grid.Column="1" Classes="turn-toggle" Margin="10,0" ToolTip.Tip="{l:T Main.Turn}">
               <Panel>
                 <Ellipse Classes="turn-knob black" IsVisible="{Binding Game.IsBlackToMove}" HorizontalAlignment="Left" />
                 <Ellipse Classes="turn-knob white" IsVisible="{Binding !Game.IsBlackToMove}" HorizontalAlignment="Right" />
               </Panel>
             </Border>
-            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
-              <TextBlock Classes="player" Text="{Binding Game.WhiteName}" TextTrimming="CharacterEllipsis"
-                         FontWeight="{Binding !Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
-              <TextBlock Classes="secondary" VerticalAlignment="Center" Text="{Binding Game.Board.BlackCaptures, StringFormat='+{0}'}"
+            <DockPanel Grid.Column="2" HorizontalAlignment="Left">
+              <TextBlock DockPanel.Dock="Right" Classes="secondary" VerticalAlignment="Center" Margin="6,0,0,0" Text="{Binding Game.Board.BlackCaptures, StringFormat='+{0}'}"
                          IsVisible="{Binding Game.Board.BlackCaptures}" ToolTip.Tip="{l:T Main.WhiteCaptures}" />
-            </StackPanel>
+              <TextBlock Classes="player" Text="{Binding Game.WhiteName}" TextTrimming="CharacterEllipsis" MaxWidth="160"
+                         FontWeight="{Binding !Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
+            </DockPanel>
           </Grid>
 
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center" HorizontalAlignment="Center"
@@ -211,6 +212,8 @@
                 <Separator />
                 <MenuItem Header="{l:T Main.EditMode}" Command="{Binding Game.ToggleEditModeCommand}" InputGesture="Ctrl+E" />
                 <MenuItem Header="{l:T Main.PlayOnline}" Command="{Binding OpenLobbyCommand}" InputGesture="Ctrl+L" />
+                <MenuItem Header="{l:T Main.PlayEngine}" Command="{Binding PlayEngineCommand}" InputGesture="Ctrl+G" x:Name="PlayEngineItem" />
+                <MenuItem Header="{l:T Main.GtpConsole}" Command="{Binding OpenGtpConsoleCommand}" x:Name="GtpConsoleItem" />
                 <MenuItem Header="{l:T Main.Replays}" Command="{Binding OpenReplaysCommand}" InputGesture="Ctrl+R" />
                 <MenuItem Header="{l:T Main.Joseki}" Command="{Binding OpenJosekiCommand}" InputGesture="Ctrl+J" />
                 <Separator />
@@ -340,6 +343,31 @@
             <TextBlock Text="{Binding Game.HeaderTitle}" FontFamily="{DynamicResource Font.Title}" FontSize="{DynamicResource Font.Size.Title}"
                        TextTrimming="CharacterEllipsis" />
             <TextBlock Classes="secondary" Text="{Binding Game.HeaderSubtitle}" TextTrimming="CharacterEllipsis" />
+            <!-- A game against an engine (or between two): who plays, what the engine is doing, pause and end. -->
+            <Border x:Name="EngineBar" Classes="appear" Margin="0,8,0,0" Padding="10,8" CornerRadius="8"
+                    Background="{DynamicResource Bg.Panel}" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="1"
+                    IsVisible="{Binding EngineMatch.IsActive, FallbackValue=False}">
+              <StackPanel Spacing="6">
+                <Grid ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto,Auto" ToolTip.Tip="{Binding EngineMatch.Title, FallbackValue={x:Null}}" x:Name="EngineTitle">
+                  <c:HoshiIcon Grid.RowSpan="2" Icon="{DynamicResource Icon.Engine}" Size="18" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="{DynamicResource Accent}" />
+                  <Ellipse Grid.Column="1" Width="10" Height="10" Fill="#1A1A1A" Stroke="#9A9A9A" StrokeThickness="1" Margin="0,0,7,0" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="2" Text="{Binding EngineMatch.BlackLabel, FallbackValue={x:Null}}" FontSize="12.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                  <Ellipse Grid.Row="1" Grid.Column="1" Width="10" Height="10" Fill="#EEE" Stroke="#888" StrokeThickness="1" Margin="0,4,7,0" VerticalAlignment="Center" />
+                  <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding EngineMatch.WhiteLabel, FallbackValue={x:Null}}" FontSize="12.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Margin="0,4,0,0" />
+                </Grid>
+                <StackPanel Orientation="Horizontal" Spacing="8"
+                            IsVisible="{Binding EngineMatch.StatusText, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}">
+                  <ProgressBar IsIndeterminate="True" Width="24" MinWidth="24" Height="3" MinHeight="3" VerticalAlignment="Center"
+                               IsVisible="{Binding EngineMatch.Thinker, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}" />
+                  <TextBlock Classes="secondary" Text="{Binding EngineMatch.StatusText, FallbackValue={x:Null}}" FontSize="12" TextWrapping="Wrap"
+                             x:Name="EngineStatusText" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Button Content="{Binding EngineMatch.PauseLabel, FallbackValue={x:Null}}" Command="{Binding EngineMatch.TogglePauseCommand, FallbackValue={x:Null}}" x:Name="EnginePause" />
+                  <Button Content="{l:T Engines.End}" Command="{Binding EngineMatch.StopCommand, FallbackValue={x:Null}}" ToolTip.Tip="{l:T Engines.EndTip}" x:Name="EngineStop" />
+                </StackPanel>
+              </StackPanel>
+            </Border>
           </StackPanel>
         </Border>
         <Border Grid.Row="0" Classes="panel-header" Padding="12,10" IsVisible="{Binding IsOnline}">

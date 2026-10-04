@@ -63,13 +63,20 @@ public sealed class ThemeTests
         try
         {
             var settings = new JsonSettingsService(path);
-            settings.Current.Should().Be(new AppSettings());
-            settings.Save(new AppSettings { Theme = "zen", Animations = false });
+            settings.Current.Should().BeEquivalentTo(new AppSettings());
+            var saved = new AppSettings
+            {
+                Theme = "zen",
+                Animations = false,
+                Engines = [new EngineEntry("Leela Zero", "/opt/leelaz", "--gtp -w \"my net.gz\"", "time_settings 0 5 1")],
+                AnalysisEngine = "Leela Zero",
+            };
+            settings.Save(saved);
 
-            new JsonSettingsService(path).Current.Should().Be(new AppSettings { Theme = "zen", Animations = false });
+            new JsonSettingsService(path).Current.Should().BeEquivalentTo(saved);
 
             File.WriteAllText(path, "{ not json");
-            new JsonSettingsService(path).Current.Should().Be(new AppSettings());
+            new JsonSettingsService(path).Current.Should().BeEquivalentTo(new AppSettings());
         }
         finally
         {
