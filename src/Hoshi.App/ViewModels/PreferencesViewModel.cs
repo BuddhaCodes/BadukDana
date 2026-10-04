@@ -33,13 +33,30 @@ public sealed partial class ThemeCard : ObservableObject
     public Avalonia.Media.FontFamily TitleFont => new(Theme.TitleFont);
 }
 
-/// <summary>A goban, stone set or background in Preferences, with a thumbnail (two for stones: white and black).</summary>
-/// <param name="Id">The skin's id; null = "as in the theme".</param>
-public sealed record SkinOption(string? Id, string Name, Avalonia.Media.IImage? Preview, Avalonia.Media.IImage? Preview2 = null)
+/// <summary>A goban, stone set or background in Preferences, with a thumbnail drawn like the board draws it.</summary>
+public sealed partial class SkinOption : ObservableObject
 {
-    public bool HasPreview => Preview is not null;
+    [ObservableProperty]
+    private string _name;
 
-    public bool HasPreview2 => Preview2 is not null;
+    [ObservableProperty]
+    private Avalonia.Media.IImage? _preview;
+
+    public SkinOption(string? id, string name, Avalonia.Media.IImage? preview, bool wide = false)
+    {
+        Id = id;
+        _name = name;
+        _preview = preview;
+        IsWide = wide;
+    }
+
+    /// <summary>The skin's id; null = "as in the theme".</summary>
+    public string? Id { get; }
+
+    /// <summary>Stone thumbnails show a white and a black stone side by side.</summary>
+    public bool IsWide { get; }
+
+    public double PreviewWidth => IsWide ? 60 : 30;
 }
 
 /// <summary>A user interface language choice ("en", "es") with its own name.</summary>
@@ -161,14 +178,16 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         _selected = Cards.First(c => c.Theme.Id == themes.Current.Id);
         _selected.IsSelected = true;
         _animations = themes.Animations;
-        BoardOptions = [ThemeDefault(), .. Skins.Boards.Select(k => new SkinOption(k.Id, k.Name, Skins.Image(k.Texture)))];
-        StoneOptions = [ThemeDefault(), .. Skins.Stones.Select(k => new SkinOption(k.Id, k.Name, Sprite(k, false), Sprite(k, true)))];
-        BackgroundOptions = [ThemeDefault(), .. Skins.Backgrounds.Select(k => new SkinOption(k.Id, k.Name, Skins.Image(k.Tile)))];
+        BoardOptions = [new SkinOption(null, string.Empty, null), .. Skins.Boards.Select(k => new SkinOption(k.Id, k.Name, SkinThumbnails.Board(Skins.Compose(themes.Current.Board, k, null))))];
+        StoneOptions = [new SkinOption(null, string.Empty, null, wide: true), .. Skins.Stones.Select(k => new SkinOption(k.Id, k.Name, SkinThumbnails.Stones(Skins.Compose(themes.Current.Board, null, k)), wide: true))];
+        BackgroundOptions = [new SkinOption(null, string.Empty, null), .. Skins.Backgrounds.Select(k => new SkinOption(k.Id, k.Name, SkinThumbnails.Background(k.Kind)))];
+        DescribeTheme();
         _selectedBoard = BoardOptions.First(o => o.Id == themes.Board?.Id);
         _selectedStones = StoneOptions.First(o => o.Id == themes.Stones?.Id);
         _selectedBackground = BackgroundOptions.First(o => o.Id == themes.Background?.Id);
         _themes.Changed += (_, _) =>
         {
+            DescribeTheme();
             OnPropertyChanged(nameof(PreviewStyle));
             OnPropertyChanged(nameof(PreviewBackground));
         };
@@ -211,10 +230,18 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         }
     }
 
-    private static SkinOption ThemeDefault() => new(null, Tr.T("Skin.FromTheme"), null);
-
-    private static Avalonia.Media.IImage? Sprite(StoneSkin k, bool black) =>
-        k.Set is null ? null : Skins.StoneSprite(k.Set, black, black ? k.BlackVariants : k.WhiteVariants, 0, 0);
+    /// <summary>The "as in the theme" entries say what the current theme uses, with its picture.</summary>
+    private void DescribeTheme()
+    {
+        BoardStyle theme = _themes.Current.Board;
+        BoardOptions[0].Name = Tr.F("Skin.FromThemeNamed", Skins.BoardNameFor(theme));
+        BoardOptions[0].Preview = SkinThumbnails.Board(theme);
+        StoneOptions[0].Name = Tr.F("Skin.FromThemeNamed", Skins.StonesNameFor(theme));
+        StoneOptions[0].Preview = SkinThumbnails.Stones(theme);
+        BackgroundKind background = _themes.Current.Background;
+        BackgroundOptions[0].Name = Tr.F("Skin.FromThemeNamed", Skins.Background(background)?.Name ?? string.Empty);
+        BackgroundOptions[0].Preview = SkinThumbnails.Background(background);
+    }
 
     /// <summary>Ask GitHub for a newer Hoshi (saved at once).</summary>
     [ObservableProperty]
@@ -270,7 +297,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
 
     partial void OnMusicChanged(bool value)
     {
-        if (value)
+        if (value && _settings?.Current.Muted != true)
         {
             _musicService?.Start();
         }
