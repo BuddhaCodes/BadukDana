@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Hoshi.Engines</RootNamespace>
-    <Description>Engine clients: KataGo analysis engine (JSON) for move review and ownership.</Description>
+    <Description>Engine clients: KataGo analysis engine (JSON) for move review and ownership; GTP client for any engine (play, analysis).</Description>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Hoshi.Core\Hoshi.Core.csproj" />
