@@ -114,6 +114,9 @@ internal sealed class FakeGtpHost : IGtpEngineHost
 
     public Func<string, string>? Other { get; set; }
 
+    /// <summary>When the moves run out, genmove never answers (the engine keeps "thinking").</summary>
+    public bool HoldWhenEmpty { get; set; }
+
     public List<ScriptedGtpProcess> Processes { get; } = [];
 
     public event EventHandler<ConsoleLine>? ConsoleLineAdded
@@ -167,8 +170,18 @@ internal sealed class FakeGtpHost : IGtpEngineHost
 
             lock (Moves)
             {
-                return Moves.Count > 0 ? "= " + Moves.Dequeue() : "= pass";
+                if (Moves.Count > 0)
+                {
+                    return "= " + Moves.Dequeue();
+                }
             }
+
+            if (HoldWhenEmpty)
+            {
+                await new TaskCompletionSource().Task;
+            }
+
+            return "= pass";
         }
 
         return Other?.Invoke(command) ?? verb switch

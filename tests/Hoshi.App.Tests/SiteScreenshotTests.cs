@@ -123,6 +123,58 @@ public sealed class SiteScreenshotTests
     }
 
     [AvaloniaFact]
+    public async Task Engine_game_screenshot_is_rendered_in_English()
+    {
+        string dir = Path.Combine(AppContext.BaseDirectory, "screenshots", "site");
+        Directory.CreateDirectory(dir);
+        Tr.SetLanguage(Tr.English);
+        EngineMatchViewModel.EngineVsEngineDelay = TimeSpan.Zero;
+        try
+        {
+            ThemeService.Apply(HoshiThemes.InkAndGold, animations: false, Application.Current!.Resources);
+            var host = new FakeGtpHost("KataGo", "Leela Zero") { HoldWhenEmpty = true };
+            foreach ((int x, int y) in Opening)
+            {
+                host.Moves.Enqueue(new Point(x, y).ToHuman(19));
+            }
+
+            var game = new GameViewModel();
+            var match = new EngineMatchViewModel(game, host, new ImmediateDispatcher());
+            var analysis = new FakeAnalysisEngine { BestMove = new Point(13, 13) };
+            var vm = new MainWindowViewModel(game, engine: analysis, ui: new ImmediateDispatcher(), engineMatch: match, engines: host);
+            var options = new NewEngineGameViewModel(host.Engines);
+            options.Black = options.Players[1];
+            options.White = options.Players[2];
+            await vm.StartEngineGameAsync(options);
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            while (game.MoveNumber < Opening.Length && clock.Elapsed < TimeSpan.FromSeconds(10))
+            {
+                await Task.Delay(20);
+            }
+
+            game.MoveNumber.Should().Be(Opening.Length);
+            var window = new MainWindow(vm) { Width = 1400, Height = 880 };
+            window.Show();
+            vm.Analysis.IsAnalysisOn = true;
+            for (int i = 0; i < 30; i++)
+            {
+                await Task.Delay(20);
+            }
+
+            match.Thinker.Should().NotBeNull();
+            using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
+            frame.Save(Path.Combine(dir, "engines.png"));
+            window.Close();
+            match.Stop();
+        }
+        finally
+        {
+            ThemeService.Apply(HoshiThemes.Default, animations: false, Application.Current!.Resources);
+            Tr.SetLanguage(Tr.Spanish);
+        }
+    }
+
+    [AvaloniaFact]
     public async Task Board_and_stones_screenshot_is_rendered_in_English()
     {
         string dir = Path.Combine(AppContext.BaseDirectory, "screenshots", "site");

@@ -7,12 +7,12 @@
 <link rel="canonical" href="https://buddhacodes.github.io/BadukDana/">
 <link rel="icon" type="image/png" href="icon.png">
 <meta name="google-site-verification" content="OhEOMrl2Oe92KjPXcQ_2Sg160fy-5NgJycDRdxuR4Fg" />
-<meta name="description" content="Hoshi is a free desktop Go (Baduk, Weiqi) app: beautiful kaya boards and stones, live KataGo analysis, joseki guidance, cinematic effects for great moves, adaptive lo-fi music and online play on OGS.">
+<meta name="description" content="Hoshi is a free desktop Go (Baduk, Weiqi) app: beautiful kaya boards and stones, live KataGo analysis, play against KataGo or any GTP engine, joseki guidance, cinematic effects for great moves, adaptive lo-fi music and online play on OGS.">
 <!-- Link previews (Open Graph: Facebook, Discord, WhatsApp, LinkedIn, Slack; Twitter/X cards) -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Hoshi">
 <meta property="og:title" content="Hoshi — a Go board that feels every move">
-<meta property="og:description" content="A free desktop Go app: kaya boards and clam-shell stones, live KataGo analysis, joseki guidance, cinematic effects, adaptive music and online play on OGS.">
+<meta property="og:description" content="A free desktop Go app: kaya boards and clam-shell stones, live KataGo analysis, play against any GTP engine, joseki guidance, cinematic effects, adaptive music and online play on OGS.">
 <meta property="og:url" content="https://buddhacodes.github.io/BadukDana/">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_ES">
@@ -24,7 +24,7 @@
 <meta property="og:image:alt" content="Hoshi: a wooden Go board with stones and the words “A Go board that feels every move.”">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Hoshi — a Go board that feels every move">
-<meta name="twitter:description" content="A free desktop Go app: kaya boards, live KataGo review, a joseki trainer and online play on OGS.">
+<meta name="twitter:description" content="A free desktop Go app: kaya boards, live KataGo review, GTP engines, a joseki trainer and online play on OGS.">
 <meta name="twitter:image" content="https://buddhacodes.github.io/BadukDana/img/og-cover.jpg">
 <meta name="twitter:image:alt" content="Hoshi: a wooden Go board with stones and the words “A Go board that feels every move.”">
 <link rel="sitemap" type="application/xml" href="https://buddhacodes.github.io/BadukDana/sitemap.xml">
@@ -281,6 +281,7 @@
         <li data-i18n="hero.badge2">KataGo included</li>
         <li data-i18n="hero.badge3">Play on OGS</li>
         <li data-i18n="hero.badge4">Joseki trainer</li>
+        <li data-i18n="hero.badge5">GTP engines</li>
         <li>English · Español</li>
       </ul>
     </div>
@@ -299,12 +300,13 @@
     <div class="head reveal">
       <p class="eyebrow" data-i18n="feat.eyebrow">Features</p>
       <h2 data-i18n="feat.title">Everything you need at the board.</h2>
-      <p data-i18n="feat.lead">Play friends on one screen, review your games with an engine, or take on the world on OGS.</p>
+      <p data-i18n="feat.lead">Play friends on one screen, take on KataGo or any GTP engine, review your games, or take on the world on OGS.</p>
     </div>
     <div class="tabs" role="tablist" aria-label="Features">
       <button role="tab" id="t-study" aria-controls="p-study" aria-selected="true" data-i18n="tab.study">Study</button>
       <button role="tab" id="t-joseki" aria-controls="p-joseki" aria-selected="false" tabindex="-1" data-i18n="tab.joseki">Joseki</button>
       <button role="tab" id="t-play" aria-controls="p-play" aria-selected="false" tabindex="-1" data-i18n="tab.play">Play</button>
+      <button role="tab" id="t-engines" aria-controls="p-engines" aria-selected="false" tabindex="-1" data-i18n="tab.engines">Engines</button>
       <button role="tab" id="t-feel" aria-controls="p-feel" aria-selected="false" tabindex="-1" data-i18n="tab.feel">Feel</button>
     </div>
 
@@ -334,6 +336,16 @@
         <li><span class="ico">●</span><div><h3 data-i18n="f14.t">Face to face</h3><p data-i18n="f14.d">Two players, one screen, on 19×19, 13×13 or 9×9, with pass and undo — every move still judged by KataGo.</p></div></li>
         <li><span class="ico">⇄</span><div><h3 data-i18n="f8.t">Yours, offline</h3><p data-i18n="f8.d">Free and open source. No account needed to play locally; your OGS login uses OAuth and Hoshi never stores your password.</p></div></li>
         <li><span class="ico">文</span><div><h3><span data-i18n="f12.t">English and Spanish</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f12.d">The whole app switches language live from Preferences. English by default.</p></div></li>
+      </ul>
+    </div>
+
+    <div class="panel" role="tabpanel" id="p-engines" aria-labelledby="t-engines" hidden>
+      <div class="shot"><img src="img/engines.jpg" width="1120" height="704" alt="KataGo and Leela Zero playing each other in Hoshi, with the engine panel in the sidebar and the analysis graph" loading="lazy"></div>
+      <ul class="items">
+        <li><span class="ico">⚙</span><div><h3><span data-i18n="f15.t">Play against any engine</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f15.d">Hoshi's own KataGo is ready out of the box; add Leela Zero, GNU Go, Pachi or any GTP engine with its command line. Choose colours, board, handicap, komi and rules with Ctrl+G.</p></div></li>
+        <li><span class="ico">⇋</span><div><h3><span data-i18n="f16.t">Engine vs engine</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f16.d">Let two engines play each other and watch the game grow in the tree. Pause, go back to any move and try your own idea: the engine answers from there.</p></div></li>
+        <li><span class="ico">⌨</span><div><h3><span data-i18n="f17.t">GTP console</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f17.d">See every command and answer between Hoshi and its engines, read their logs and type GTP commands yourself.</p></div></li>
+        <li><span class="ico">◎</span><div><h3><span data-i18n="f18.t">Analysis with your engine</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f18.d">Any engine with lz-analyze or kata-analyze can drive the analysis panel instead of the built-in KataGo. All engines stay off during your OGS games.</p></div></li>
       </ul>
     </div>
 
@@ -542,12 +554,12 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
     "hero.eyebrow": "Go · Baduk · Weiqi",
     "hero.title": "Un tablero de Go que <em>siente</em> cada jugada.",
     "hero.lead": "Hoshi es una app de escritorio gratuita para jugar y estudiar Go. Un tablero precioso, KataGo valorando cada jugada en vivo, guía de josekis en cada esquina, efectos de cine cuando das con la mejor jugada y música lo-fi que se anima con tus rachas.",
-    "hero.cta": "Consigue Hoshi", "hero.github": "Código en GitHub", "hero.badge2": "KataGo incluido", "hero.badge3": "Juega en OGS", "hero.badge4": "Entrenador de josekis",
+    "hero.cta": "Consigue Hoshi", "hero.github": "Código en GitHub", "hero.badge2": "KataGo incluido", "hero.badge3": "Juega en OGS", "hero.badge4": "Entrenador de josekis", "hero.badge5": "Motores GTP",
     "board.watch": "Se está jugando una apertura…", "board.reset": "Vaciar el tablero",
     "board.black": "Juegan negras: pon una piedra", "board.white": "Juegan blancas: pon una piedra",
     "feat.eyebrow": "Funciones", "feat.title": "Todo lo que necesitas frente al tablero.",
-    "feat.lead": "Juega con amigos en la misma pantalla, revisa tus partidas con un motor o enfréntate al mundo en OGS.",
-    "tab.study": "Estudiar", "tab.joseki": "Joseki", "tab.play": "Jugar", "tab.feel": "Sentir",
+    "feat.lead": "Juega con amigos en la misma pantalla, enfréntate a KataGo o a cualquier motor GTP, revisa tus partidas o mídete con el mundo en OGS.",
+    "tab.study": "Estudiar", "tab.joseki": "Joseki", "tab.play": "Jugar", "tab.engines": "Motores", "tab.feel": "Sentir",
     "f1.t": "Análisis con IA en vivo", "f1.d": "KataGo trabaja de fondo desde que abres Hoshi y valora cada jugada: la mejor, excelente, buena, imprecisa, error o error grave, con los puntos perdidos.",
     "f2.t": "Jugadas que se sienten", "f2.d": "La mejor jugada hace temblar el tablero, agrieta la madera y lanza chispas. Las piedras capturadas se rompen. Los grupos en atari sudan de nervios.",
     "f3.t": "Música adaptativa", "f3.d": "Un lo-fi tranquilo que suma batería, arpegios y una capa «overdrive» a medida que encadenas buenas jugadas, y se calma cuando fallas.",
@@ -562,6 +574,10 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
     "f11.t": "Tu biblioteca de partidas", "f11.d": "Cada partida que juegas se guarda. Ábrela después y avanza: KataGo vuelve a valorar cada jugada, con todos sus efectos y su música.",
     "f12.t": "Inglés y español", "f12.d": "Toda la app cambia de idioma al instante desde Preferencias. Inglés por defecto.",
     "f13.t": "Más abajo", "f13.d": "Cómo funcionan las sugerencias, los colores y el entrenador",
+    "f15.t": "Juega contra cualquier motor", "f15.d": "El KataGo de Hoshi viene listo; añade Leela Zero, GNU Go, Pachi o cualquier motor GTP con su línea de comandos. Elige colores, tablero, hándicap, komi y reglas con Ctrl+G.",
+    "f16.t": "Motor contra motor", "f16.d": "Pon a dos motores a jugar entre sí y mira crecer la partida en el árbol. Pausa, vuelve a cualquier jugada y prueba tu idea: el motor responde desde ahí.",
+    "f17.t": "Consola GTP", "f17.d": "Mira cada comando y respuesta entre Hoshi y sus motores, lee sus registros y escribe tú mismo comandos GTP.",
+    "f18.t": "Análisis con tu motor", "f18.d": "Cualquier motor con lz-analyze o kata-analyze puede llevar el panel de análisis en lugar del KataGo incluido. Todos los motores se apagan durante tus partidas de OGS.",
     "f14.t": "Cara a cara", "f14.d": "Dos jugadores, una pantalla, en 19×19, 13×13 o 9×9, con pasar y deshacer, y KataGo valorando igualmente cada jugada.",
     "jo.eyebrow": "Joseki", "jo.title": "Que no se te vuelva a olvidar un joseki.",
     "jo.lead": "Estudia las secuencias de esquina mientras juegas y luego practícalas hasta que se queden.",
