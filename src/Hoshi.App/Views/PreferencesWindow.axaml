@@ -90,52 +90,40 @@
             <StackPanel Spacing="6">
               <TextBlock Classes="secondary" Text="{l:T Prefs.BoardHint}" TextWrapping="Wrap" Margin="0,0,0,6" />
                 <TextBlock Classes="label" Text="{l:T Prefs.Board}" />
-                <ComboBox ItemsSource="{Binding BoardOptions}" SelectedItem="{Binding SelectedBoard}" HorizontalAlignment="Stretch" x:Name="BoardBox">
+                <ComboBox ItemsSource="{Binding BoardOptions}" SelectedItem="{Binding SelectedBoard}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" x:Name="BoardBox">
                   <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:SkinOption">
                       <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Panel Width="30" Height="30">
-                          <Border Width="30" Height="30" CornerRadius="4" ClipToBounds="True" HorizontalAlignment="Left"
-                                  IsVisible="{Binding HasPreview}" Background="{DynamicResource Bg.PanelAlt}">
-                            <Image Source="{Binding Preview}" Stretch="UniformToFill" />
-                          </Border>
-                          <Image Source="{Binding Preview2}" Width="30" Height="30" HorizontalAlignment="Right" IsVisible="{Binding HasPreview2}" />
-                        </Panel>
-                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                        <Border Width="{Binding PreviewWidth}" Height="30" CornerRadius="4" ClipToBounds="True" VerticalAlignment="Center">
+                          <Image Source="{Binding Preview}" Stretch="UniformToFill" />
+                        </Border>
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                       </StackPanel>
                     </DataTemplate>
                   </ComboBox.ItemTemplate>
                 </ComboBox>
                 <TextBlock Classes="label" Text="{l:T Prefs.Stones}" />
-                <ComboBox ItemsSource="{Binding StoneOptions}" SelectedItem="{Binding SelectedStones}" HorizontalAlignment="Stretch" x:Name="StonesBox">
+                <ComboBox ItemsSource="{Binding StoneOptions}" SelectedItem="{Binding SelectedStones}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" x:Name="StonesBox">
                   <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:SkinOption">
                       <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Panel Width="64" Height="30">
-                          <Border Width="30" Height="30" CornerRadius="4" ClipToBounds="True" HorizontalAlignment="Left"
-                                  IsVisible="{Binding HasPreview}" Background="{DynamicResource Bg.PanelAlt}">
-                            <Image Source="{Binding Preview}" Stretch="UniformToFill" />
-                          </Border>
-                          <Image Source="{Binding Preview2}" Width="30" Height="30" HorizontalAlignment="Right" IsVisible="{Binding HasPreview2}" />
-                        </Panel>
-                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                        <Border Width="{Binding PreviewWidth}" Height="30" CornerRadius="4" ClipToBounds="True" VerticalAlignment="Center">
+                          <Image Source="{Binding Preview}" Stretch="UniformToFill" />
+                        </Border>
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                       </StackPanel>
                     </DataTemplate>
                   </ComboBox.ItemTemplate>
                 </ComboBox>
                 <TextBlock Classes="label" Text="{l:T Prefs.Background}" />
-                <ComboBox ItemsSource="{Binding BackgroundOptions}" SelectedItem="{Binding SelectedBackground}" HorizontalAlignment="Stretch" x:Name="BackgroundBox">
+                <ComboBox ItemsSource="{Binding BackgroundOptions}" SelectedItem="{Binding SelectedBackground}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" x:Name="BackgroundBox">
                   <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:SkinOption">
                       <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Panel Width="30" Height="30">
-                          <Border Width="30" Height="30" CornerRadius="4" ClipToBounds="True" HorizontalAlignment="Left"
-                                  IsVisible="{Binding HasPreview}" Background="{DynamicResource Bg.PanelAlt}">
-                            <Image Source="{Binding Preview}" Stretch="UniformToFill" />
-                          </Border>
-                          <Image Source="{Binding Preview2}" Width="30" Height="30" HorizontalAlignment="Right" IsVisible="{Binding HasPreview2}" />
-                        </Panel>
-                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                        <Border Width="{Binding PreviewWidth}" Height="30" CornerRadius="4" ClipToBounds="True" VerticalAlignment="Center">
+                          <Image Source="{Binding Preview}" Stretch="UniformToFill" />
+                        </Border>
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                       </StackPanel>
                     </DataTemplate>
                   </ComboBox.ItemTemplate>

@@ -125,7 +125,15 @@ public sealed class SkinTests
         vm.SelectedBoard.Id.Should().BeNull("the theme's own by default");
         vm.SelectedStones = vm.StoneOptions.First(o => o.Id == "glass");
         vm.PreviewStyle.StoneSet.Should().Be("glass");
-        vm.StoneOptions.First(o => o.Id == "glass").HasPreview2.Should().BeTrue();
+        vm.StoneOptions.Should().AllSatisfy(o => o.Preview.Should().NotBeNull($"{o.Name} needs a thumbnail"));
+        vm.BoardOptions.Should().AllSatisfy(o => o.Preview.Should().NotBeNull($"{o.Name} needs a thumbnail"));
+        vm.BackgroundOptions.Should().AllSatisfy(o => o.Preview.Should().NotBeNull($"{o.Name} needs a thumbnail"));
+        vm.BoardOptions[0].Name.Should().Be("Del tema: Kaya, veta recta (masame)", "Night sky uses straight-grain kaya");
+        vm.StoneOptions[0].Name.Should().Be("Del tema: Cristal");
+        vm.BackgroundOptions[0].Name.Should().Be("Del tema: Cielo nocturno (animado)");
+
+        themes.Select(HoshiThemes.Classic, animations: false);
+        vm.BoardOptions[0].Name.Should().Be("Del tema: Sabaki (Shudan)", "the theme entries follow the theme");
 
         vm.ResetSkinsCommand.Execute(null);
         settings.Current.StoneSkin.Should().BeNull();
@@ -180,12 +188,39 @@ public sealed class SkinTests
         vm.SelectedBoard = vm.BoardOptions.First(o => o.Id == "kaya-itame");
         vm.SelectedStones = vm.StoneOptions.First(o => o.Id == "clam-slate");
         vm.SelectedBackground = vm.BackgroundOptions.First(o => o.Id == "sashiko");
-        var window = new PreferencesWindow { DataContext = vm, Width = 900, Height = 640 };
+        var window = new PreferencesWindow { DataContext = vm };
         window.Show();
         window.FindControl<TabControl>("Tabs")!.SelectedIndex = 1;
         await Task.Delay(50);
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
         frame.Save(Path.Combine(dir, "preferences-board.png"));
+        window.Close();
+        ThemeService.Apply(HoshiThemes.Default, animations: false, Application.Current!.Resources);
+    }
+
+    [AvaloniaFact]
+    public async Task Preferences_board_tab_with_the_themes_own_choices_is_rendered()
+    {
+        string dir = Path.Combine(AppContext.BaseDirectory, "screenshots", "skins");
+        Directory.CreateDirectory(dir);
+        var settings = new MemorySettings();
+        settings.Save(settings.Current with { Theme = "minimal" });
+        var themes = new ThemeService(settings);
+        themes.ApplyCurrent(Application.Current!.Resources);
+        var vm = new PreferencesViewModel(themes, settings);
+        var window = new PreferencesWindow { DataContext = vm, Height = 700 };
+        window.Show();
+        window.FindControl<TabControl>("Tabs")!.SelectedIndex = 1;
+        await Task.Delay(50);
+        using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
+        frame.Save(Path.Combine(dir, "preferences-board-theme.png"));
+        window.FindControl<ComboBox>("StonesBox")!.IsDropDownOpen = true;
+        await Task.Delay(80);
+        using (WriteableBitmap open = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
+        {
+            open.Save(Path.Combine(dir, "preferences-board-stones-open.png"));
+        }
+
         window.Close();
         ThemeService.Apply(HoshiThemes.Default, animations: false, Application.Current!.Resources);
     }

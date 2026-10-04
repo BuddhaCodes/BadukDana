@@ -74,6 +74,29 @@ public static class Skins
 
     public static BoardSkin? Board(string? id) => Boards.FirstOrDefault(b => b.Id == id);
 
+    /// <summary>The name of the goban a board style shows (for "as in the theme").</summary>
+    public static string BoardNameFor(BoardStyle style)
+    {
+        ArgumentNullException.ThrowIfNull(style);
+        BoardSkin? skin = style.ShudanTexture ? Board("sabaki") : Boards.FirstOrDefault(b => b.Texture == style.Texture);
+        return (skin ?? Board("kaya")!).Name;
+    }
+
+    /// <summary>The name of the stones a board style shows (for "as in the theme").</summary>
+    public static string StonesNameFor(BoardStyle style)
+    {
+        ArgumentNullException.ThrowIfNull(style);
+        if (style.ShudanTexture)
+        {
+            return StoneSet("shudan")!.Name;
+        }
+
+        StoneSkin? skin = style.StoneSet is { } set
+            ? Stones.FirstOrDefault(s => s.Set == set)
+            : Stones.FirstOrDefault(s => s.Set is null && s.Vector == style.Stones) ?? (style.Stones == StoneStyle.SlateShell ? StoneSet("clam-slate") : null);
+        return skin?.Name ?? style.Stones.ToString();
+    }
+
     public static StoneSkin? StoneSet(string? id) => Stones.FirstOrDefault(s => s.Id == id);
 
     public static BackgroundSkin? Background(string? id) => Backgrounds.FirstOrDefault(b => b.Id == id);

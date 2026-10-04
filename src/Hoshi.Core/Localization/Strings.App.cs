@@ -179,6 +179,7 @@ public static partial class Tr
         Add(d, "Theme.Minimal.Description", "Understated: washi paper, light wood and terracotta, with micro-animations.", "Sobrio: papel washi, madera clara y terracota, con micro-animaciones.");
         Add(d, "Theme.Classic.Name", "Classic", "Clásico");
         Add(d, "Skin.FromTheme", "As in the theme", "Como en el tema");
+        Add(d, "Skin.FromThemeNamed", "Theme: {0}", "Del tema: {0}");
         Add(d, "Skin.Board.KayaMasame", "Kaya, straight grain", "Kaya, veta recta (masame)");
         Add(d, "Skin.Board.KayaItame", "Kaya, flat grain", "Kaya, veta en arco (itame)");
         Add(d, "Skin.Board.ShinKaya", "Shin-kaya (pale spruce)", "Shin-kaya (pícea clara)");

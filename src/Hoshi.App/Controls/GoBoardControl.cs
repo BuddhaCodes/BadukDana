@@ -963,7 +963,7 @@ public sealed class GoBoardControl : Control
     }
 
     /// <summary>Draws one stone: one of Hoshi's rendered sprites when the style has a set, else the vector style.</summary>
-    private static void DrawStone(DrawingContext context, AvPoint c, double r, Stone color, BoardStyle board, Point p)
+    internal static void DrawStone(DrawingContext context, AvPoint c, double r, Stone color, BoardStyle board, Point p)
     {
         bool black = color == Stone.Black;
         if (!board.ShudanTexture && board.StoneSet is { } set
