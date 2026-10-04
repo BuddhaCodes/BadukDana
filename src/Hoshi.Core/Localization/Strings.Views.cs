@@ -30,6 +30,11 @@ public static partial class Tr
         Add(d, "Audio.Effects", "Effects", "Efectos");
         Add(d, "Audio.StoneSounds", "Stone sounds", "Sonido de las piedras");
         Add(d, "Audio.Music", "Music", "Música");
+        Add(d, "Support.Menu", "Support Hoshi ♥", "Apoyar Hoshi ♥");
+        Add(d, "Support.Updated", "Hoshi was updated to {0}.", "Hoshi se actualizó a la {0}.");
+        Add(d, "Support.Ask", "Hoshi is free and open source, made in spare time. If you enjoy it, you can support it with a donation on PayPal — it is entirely optional.", "Hoshi es gratis y de código abierto, hecho en ratos libres. Si te gusta, puedes apoyarlo con una donación en PayPal; es totalmente opcional.");
+        Add(d, "Support.Button", "Support Hoshi", "Apoyar Hoshi");
+        Add(d, "Support.Close", "Close", "Cerrar");
         Add(d, "Update.Later", "Later", "Más tarde");
         Add(d, "Update.Skip", "Skip this version", "Saltar esta versión");
         Add(d, "Update.Checking", "Checking for updates…", "Buscando actualizaciones…");

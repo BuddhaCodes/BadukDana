@@ -143,6 +143,56 @@ public sealed class UpdateViewModelTests
         vm.IsVisible.Should().BeFalse();
     }
 
+    [Fact]
+    public void Thanks_appear_once_after_an_update_and_never_on_a_first_install()
+    {
+        var settings = new TestSettings();
+        var first = new UpdateViewModel(new FakeUpdates(), settings);
+        first.ShowThanks.Should().BeFalse("a first install is not an update");
+        settings.Current.LastRunVersion.Should().Be("0.1.5");
+
+        new UpdateViewModel(new FakeUpdates(), settings).ShowThanks.Should().BeFalse("same version again");
+
+        settings.Save(settings.Current with { LastRunVersion = "0.1.3" });
+        var updated = new UpdateViewModel(new FakeUpdates(), settings);
+        updated.ShowThanks.Should().BeTrue();
+        updated.ThanksText.Should().Be("Hoshi se actualizó a la 0.1.5.");
+        settings.Current.LastRunVersion.Should().Be("0.1.5");
+        new UpdateViewModel(new FakeUpdates(), settings).ShowThanks.Should().BeFalse("only once per version");
+
+        updated.DismissThanksCommand.Execute(null);
+        updated.ShowThanks.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Support_opens_the_paypal_page_and_closes_the_thanks()
+    {
+        var settings = new TestSettings();
+        settings.Save(settings.Current with { LastRunVersion = "0.1.0" });
+        var browser = new FakeBrowser();
+        var vm = new UpdateViewModel(new FakeUpdates(), settings, browser);
+        vm.ShowThanks.Should().BeTrue();
+
+        await vm.SupportCommand.ExecuteAsync(null);
+
+        browser.Opened.Should().Equal(UpdateViewModel.DonationPage);
+        vm.ShowThanks.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task An_update_offer_takes_precedence_over_the_thanks()
+    {
+        var settings = new TestSettings();
+        settings.Save(settings.Current with { LastRunVersion = "0.1.0" });
+        var vm = new UpdateViewModel(new FakeUpdates { Latest = Release("0.1.9") }, settings);
+        vm.ShowThanks.Should().BeTrue();
+
+        await vm.CheckAsync(CancellationToken.None);
+
+        vm.IsVisible.Should().BeTrue();
+        vm.ShowThanks.Should().BeFalse("the two banners share the corner");
+    }
+
     private static ReleaseInfo Release(string v) => new(Version.Parse(v), "v" + v, new Uri("https://example.test/release"), [], null);
 }
 
