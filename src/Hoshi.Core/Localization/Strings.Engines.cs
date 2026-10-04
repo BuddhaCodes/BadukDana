@@ -33,5 +33,12 @@ public static partial class Tr
         Add(d, "Engine.ExitCodeNoMessage", "code {0}, no message from KataGo.", "código {0}, sin mensaje de KataGo.");
         Add(d, "Engine.Exited", "KataGo closed ({0})", "KataGo se cerró ({0})");
         Add(d, "Engine.ExitedUnexpectedly", "KataGo closed unexpectedly. Check its configuration and the log.", "KataGo se cerró inesperadamente. Revisa su configuración y el log.");
+        Add(d, "Gtp.ExecutableMissing", "The engine's executable was not found ({0}).", "No se encuentra el ejecutable del motor ({0}).");
+        Add(d, "Gtp.CouldNotStart", "Could not start {0}: {1}", "No se pudo iniciar {0}: {1}");
+        Add(d, "Gtp.Exited", "The engine closed ({0})", "El motor se cerró ({0})");
+        Add(d, "Gtp.ExitedUnexpectedly", "The engine closed unexpectedly. Check its command line in Preferences → Engines.", "El motor se cerró inesperadamente. Revisa su línea de comandos en Preferencias → Motores.");
+        Add(d, "Gtp.CommandFailed", "{0} rejected «{1}»: {2}", "{0} rechazó «{1}»: {2}");
+        Add(d, "Gtp.BadMove", "{0} answered something that is not a move: {1}", "{0} respondió algo que no es una jugada: {1}");
+        Add(d, "Gtp.NoAnalysis", "{0} has no analysis command (lz-analyze or kata-analyze).", "{0} no tiene comando de análisis (lz-analyze o kata-analyze).");
     }
 }
