@@ -44,9 +44,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         JosekiTrainerViewModel? joseki = null,
         JosekiAssistantViewModel? josekiHints = null,
         UpdateViewModel? updates = null,
-        KataGoSetupViewModel? kataGoSetup = null)
+        KataGoSetupViewModel? kataGoSetup = null,
+        AudioViewModel? audio = null)
     {
         Updates = updates;
+        Audio = audio;
         KataGoSetup = kataGoSetup;
         Joseki = joseki ?? new JosekiTrainerViewModel(Services.Joseki.NullJosekiLibrary.Instance, game);
         JosekiHints = josekiHints ?? new JosekiAssistantViewModel(game);
@@ -100,7 +102,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             Analysis.BattleHeat += (_, heat) => music.OnBattle(heat);
             AppSettings s = settings?.Current ?? new AppSettings();
             music.SetVolume(s.MusicVolume / 100.0);
-            if (s.Music)
+            if (s.Music && !s.Muted)
             {
                 music.Start();
             }
@@ -177,6 +179,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>The update banner and "Check for updates…" (null without a host, e.g. the designer).</summary>
     public UpdateViewModel? Updates { get; }
+
+    /// <summary>The speaker button: mute everything, volumes and music.</summary>
+    public AudioViewModel? Audio { get; }
 
     /// <summary>The joseki trainer, shown on the main board (Ctrl+J).</summary>
     public JosekiTrainerViewModel Joseki { get; }

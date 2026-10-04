@@ -87,4 +87,7 @@ public partial class MainWindow : Window
             await vm.Game.OpenFileAsync(path);
         }
     }
+
+    /// <summary>The sound panel shows the current settings (Preferences may have changed them).</summary>
+    private void OnAudioOpened(object? sender, EventArgs e) => (DataContext as MainWindowViewModel)?.Audio?.Refresh();
 }

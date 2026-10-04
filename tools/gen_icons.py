@@ -33,6 +33,8 @@ ICONS = {  # key: (phosphor, lucide, tabler)
     "Territory": ("squares-four", "grid-2x2", "layout-grid"),
     "Analysis": ("brain", "brain", "brain"),
     "Folder": ("folder-open", "folder-open", "folder-open"),
+    "Volume": ("speaker-high", "volume-2", "volume"),
+    "Muted": ("speaker-slash", "volume-x", "volume-off"),
 }
 
 def num(v): return float(v)

@@ -158,6 +158,35 @@
             <Button Classes="bar" Command="{Binding OpenLobbyCommand}" ToolTip.Tip="{l:T Main.OnlineTip}" x:Name="OnlineButton"
                     IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Online}" Size="17" /><TextBlock Text="{l:T Main.Online}" VerticalAlignment="Center" /></StackPanel></Button>
             <Button Classes="bar" Command="{Binding Game.ToggleEditModeCommand}" IsVisible="{Binding Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Check}" Size="17" /><TextBlock Text="{l:T Main.FinishEditing}" VerticalAlignment="Center" /></StackPanel></Button>
+            <!-- Sound: the panel mutes everything and sets the effects and music volumes. -->
+            <Button Classes="bar icon" ToolTip.Tip="{Binding Audio.Tooltip, FallbackValue={x:Null}}" x:Name="AudioButton"
+                    IsVisible="{Binding Audio, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <Panel>
+                <c:HoshiIcon Icon="{DynamicResource Icon.Volume}" Size="18" IsVisible="{Binding !Audio.IsMuted, FallbackValue=True}" />
+                <c:HoshiIcon Icon="{DynamicResource Icon.Muted}" Size="18" IsVisible="{Binding Audio.IsMuted, FallbackValue=False}" />
+              </Panel>
+              <Button.Flyout>
+                <Flyout Placement="TopEdgeAlignedRight" Opened="OnAudioOpened">
+                  <StackPanel Width="250" Spacing="6" Margin="4" x:Name="AudioPanel">
+                    <Button Classes.accent="{Binding !Audio.IsMuted}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Content="{Binding Audio.MuteLabel}" Command="{Binding Audio.ToggleMuteCommand}" x:Name="MuteButton" />
+                    <StackPanel Spacing="6" IsEnabled="{Binding !Audio.IsMuted}">
+                      <Grid ColumnDefinitions="*,Auto" Margin="0,6,0,0">
+                        <TextBlock Text="{l:T Audio.Effects}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Classes="secondary" Text="{Binding Audio.SoundVolume, StringFormat={}{0} %}" VerticalAlignment="Center" />
+                      </Grid>
+                      <Slider Minimum="0" Maximum="100" Value="{Binding Audio.SoundVolume}" x:Name="EffectsVolume" />
+                      <CheckBox Content="{l:T Audio.StoneSounds}" IsChecked="{Binding Audio.StoneSounds}" />
+                      <Separator Margin="0,4" />
+                      <ToggleSwitch OnContent="{l:T Audio.Music}" OffContent="{l:T Audio.Music}" IsChecked="{Binding Audio.Music}" x:Name="MusicSwitch" />
+                      <Slider Minimum="0" Maximum="100" Value="{Binding Audio.MusicVolume}" IsEnabled="{Binding Audio.Music}" x:Name="MusicVolume" />
+                      <TextBlock Classes="secondary" FontSize="12" TextWrapping="Wrap" Text="{Binding Audio.MusicProblem}"
+                                 IsVisible="{Binding Audio.MusicProblem, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    </StackPanel>
+                  </StackPanel>
+                </Flyout>
+              </Button.Flyout>
+            </Button>
             <Button Classes="bar icon" ToolTip.Tip="{l:T Main.MenuTip}" x:Name="MenuButton">
               <c:HoshiIcon Icon="{DynamicResource Icon.Menu}" Size="18" />
             <Button.Flyout>

@@ -48,7 +48,9 @@ public static class AppHost
         services.AddSingleton<IDialogService, AvaloniaDialogService>();
         services.AddSingleton<ISettingsService, JsonSettingsService>();
         services.AddSingleton<Themes.ThemeService>();
-        services.AddSingleton<ISoundService, SystemSoundService>();
+        services.AddSingleton<SystemSoundService>();
+        services.AddSingleton<ISoundService>(sp => new MutableSoundService(sp.GetRequiredService<SystemSoundService>(), sp.GetRequiredService<ISettingsService>()));
+        services.AddSingleton<AudioViewModel>();
         services.AddSingleton<Services.Music.IMusicService, Services.Music.MusicService>();
         services.AddSingleton<AnalysisEngineHost>();
         services.AddSingleton<IAnalysisEngine>(sp => sp.GetRequiredService<AnalysisEngineHost>());

@@ -1,10 +1,59 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:Hoshi.App.Controls">
   <Style Selector="Window">
     <Setter Property="Background" Value="{DynamicResource Bg.Window}" />
     <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
     <Setter Property="FontSize" Value="{DynamicResource Font.Size.Normal}" />
     <Setter Property="FontFamily" Value="{DynamicResource Font.UI}" />
+    <!-- Hoshi's own title bar (Controls/HoshiTitleBar) above the content; the bar extends the window into the
+         system title bar area itself and hides where the platform keeps its own. -->
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel>
+          <Border Name="PART_TransparencyFallback" IsHitTestVisible="False" />
+          <Border Background="{TemplateBinding Background}" IsHitTestVisible="False" />
+          <VisualLayerManager>
+            <DockPanel Margin="{Binding $parent[Window].OffScreenMargin}">
+              <c:HoshiTitleBar DockPanel.Dock="Top" />
+              <ContentPresenter Name="PART_ContentPresenter"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Content="{TemplateBinding Content}"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+            </DockPanel>
+          </VisualLayerManager>
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+  <!-- Flyouts (sound panel) in the theme's colours instead of Fluent's grey. -->
+  <Style Selector="FlyoutPresenter">
+    <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="Padding" Value="12" />
+  </Style>
+
+  <!-- Caption buttons of the title bar: flat, hover in the theme's panel colour, close turns red. -->
+  <Style Selector="c|HoshiTitleBar Button.caption">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+  <Style Selector="c|HoshiTitleBar Button.caption:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
+  </Style>
+  <Style Selector="c|HoshiTitleBar Button.caption:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource Border.Subtle}" />
+  </Style>
+  <Style Selector="c|HoshiTitleBar Button.caption.close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="#C42B1C" />
+  </Style>
+  <Style Selector="c|HoshiTitleBar Button.caption.close:pointerover Path">
+    <Setter Property="Stroke" Value="White" />
   </Style>
 
   <!-- Panels that appear (online panel, chat, edit bar, players) fade in. -->
