@@ -71,6 +71,9 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 ## Hoshi.Engines
 - `KataGoAnalysisEngine`: motor de análisis JSON de KataGo (una consulta por línea, una respuesta por turno, por `id`; `terminate` al cancelar; reinicia el proceso si muere). `KataGoProcess` lanza `katago analysis … -override-config reportAnalysisWinratesAs=BLACK`: todos los valores llegan desde el punto de vista de negras.
 - `MoveReview.Assess(antes, después, jugada)`: puntos y winrate perdidos respecto a la mejor candidata, desde el punto de vista de quien juega.
+- `Gtp/GtpClient`: GTP v2 sobre un `IEngineProcess` (verificado con la especificación GTP 2 draft 2 y `docs/GTP_Extensions.md` de KataGo): un comando a la vez, sin ids; la respuesta empieza por `=`/`?` y termina en línea vacía (se saltan banners previos). `StreamAsync` para `lz-analyze`/`kata-analyze`: cualquier otro comando o cancelar envía una línea vacía, que los termina. `Traffic` publica cada línea (consola).
+- `Gtp/GtpEngine`: handshake (`protocol_version`, `list_commands`, `name`, `version`) + comandos iniciales; `SetPositionAsync` lleva el tablero del motor a una `GtpPosition` (tamaño, komi, reglas con `kata-set-rules` si existe, piedras iniciales como `play`, jugadas): solo jugadas nuevas, `undo` (≤ 8) si el motor lo tiene, si no `clear_board`. `GenMoveAsync` (punto/pass/resign), `AnalyzeAsync` (convierte a punto de vista de negras: los motores informan desde el que mueve; lz: 0–10000, kata: 0–1 + `scoreLead` + `ownership`). Las operaciones se serializan: una jugada pedida interrumpe un análisis en curso.
+- `Gtp/GtpProcess` + `GtpEngineConfig` + `CommandLine.Split` (argumentos con comillas).
 
 ## Hoshi.App
 
@@ -104,6 +107,13 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 - `AnalysisViewModel` (en `MainWindowViewModel.Analysis`): KataGo trabaja **siempre** que esté configurado y permitido (`IsEngineActive`, desde el arranque; `IsWarmingUp` hasta la primera respuesta); `IsAnalysisOn` solo decide qué se muestra (`BoardSuggestions`, panel, gráfica). En cada cambio de posición pide a KataGo, **en vivo**, los turnos `n−1` y `n` que no estén completos (clave = setup + jugadas): prioridad 10 y `reportDuringSearchEvery` 0,25 s, así que el panel y las sugerencias se actualizan con resultados parciales mientras KataGo profundiza hasta las visitas máximas. Los parciales quedan en caché aunque la búsqueda se cancele al jugar; por eso la valoración de una jugada suele ser instantánea (la jugada ya estaba entre los candidatos de `n−1`). La celebración exige ≥ 40 visitas. La gráfica se rellena en tandas de 25 turnos a ¼ de las visitas con prioridad −10. Se bloquea con `Online.IsPlayer && !IsFinished`.
 - `IAnalysisEngine` / `AnalysisEngineHost`: KataGo según Preferencias; `GoBoardControl.Territory` y `.Suggestions` dibujan las capas; `ScoreGraph` la gráfica. `Activity` informa de la carga/calibración de KataGo (leída de su stderr).
 - Celebración: `GameViewModel.MovePlayed` marca la jugada; cuando llega su valoración, `AnalysisViewModel` publica `Impact` (`BoardImpact`: punto, fuerza 1–3, id) que `GoBoardControl` anima con `ImpactEffect`, y pide el sonido a `ISoundService`.
+
+### Motores GTP
+- `AppSettings.Engines` (`EngineEntry`: nombre, ejecutable, argumentos, comandos iniciales) y `AppSettings.AnalysisEngine` (null = KataGo JSON; si no, el nombre de un motor GTP).
+- `Services/Engines/GtpEngineHost` (`IGtpEngineHost`): lista de motores (el KataGo de Hoshi como `GtpEngineHost.BuiltInId` con `KataGoLocator.GtpEngine` → `katago gtp -model … -config hoshi_gtp.cfg`, y los del usuario), un proceso por motor arrancado al primer uso y reutilizado (se reinicia si cambió su configuración o murió), registro de consola (4000 líneas). Se cierra al salir (`Program`).
+- `EngineMatchViewModel` (`ILocalOpponent` de `GameViewModel.Opponent`): cuando la posición mostrada es el final de una línea y mueve un motor, pide `genmove` sobre `GtpPositions.At(cursor, nodo)` y juega la respuesta (`GameViewModel.PlayEngineMove`); navegar a otro sitio abandona la pregunta (la respuesta tardía se ignora). `GameViewModel` ignora clics/pases en el turno del motor, `Undo` vuelve a tu turno con `IsOpponentSuspended` para que el motor no conteste a mitad. Resign → `RE`, error → pausa con el mensaje. `TreeReplacing` lo termina.
+- `NewEngineGameViewModel` + `NewEngineGameWindow` (Ctrl+G), `GtpConsoleViewModel` + `GtpConsoleWindow` (bloqueada con `Online.IsPlayer && !IsFinished`), `IEngineWindows`.
+- `AnalysisEngineSwitch` (el `IAnalysisEngine` registrado): KataGo JSON o `GtpAnalysisEngine` (cada turno en streaming hasta las visitas pedidas o 20 s).
 
 ### Entrenador de josekis
 
