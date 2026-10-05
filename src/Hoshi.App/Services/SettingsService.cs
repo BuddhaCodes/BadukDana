@@ -41,6 +41,12 @@ public sealed record AppSettings
     /// <summary>Celebrate strong moves (by KataGo's judgement) with a sound and a board impact.</summary>
     public bool MoveEffects { get; init; } = true;
 
+    /// <summary>
+    /// How much the board moves: explosions and impacts of strong moves, shattering captures and the atari alert.
+    /// Off = none, Subtle = a small flash, a gentle fade and the sweat drop only, Full = everything.
+    /// </summary>
+    public EffectsLevel Effects { get; init; } = EffectsLevel.Full;
+
     /// <summary>Sound effects volume, 0–100 (0 = silent; the board effect still plays).</summary>
     public int SoundVolume { get; init; } = 70;
 
@@ -76,6 +82,14 @@ public sealed record AppSettings
 
     /// <summary>The version that ran last time (to thank the player once after an update).</summary>
     public string? LastRunVersion { get; init; }
+}
+
+/// <summary>How strong the visual effects on the board are (Preferences, the bottom bar, the sound panel and F).</summary>
+public enum EffectsLevel
+{
+    Off,
+    Subtle,
+    Full,
 }
 
 /// <summary>A GTP engine as saved in the settings (see <see cref="Hoshi.Engines.Gtp.GtpEngineConfig"/>).</summary>

@@ -21,10 +21,11 @@ internal sealed class ImpactEffect
     private readonly List<Ember> _embers = [];
     private double _craterRadius;
 
-    public ImpactEffect(Hoshi.Core.Point point, int strength, int seed)
+    /// <param name="subtle">Subtle effects: whatever the strength, only the small flash and one thin ring (no shake, damage or embers).</param>
+    public ImpactEffect(Hoshi.Core.Point point, int strength, int seed, bool subtle = false)
     {
         Point = point;
-        Strength = Math.Clamp(strength, 1, 3);
+        Strength = subtle ? 1 : Math.Clamp(strength, 1, 3);
         var rng = new Random(seed);
         Duration = Strength switch { 3 => 3.2, 2 => 2.0, _ => 0.9 };
 

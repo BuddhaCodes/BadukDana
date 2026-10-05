@@ -138,6 +138,7 @@ Arte de Hoshi renderizado por procedimiento (numpy + Pillow, semillas fijas; sin
   - *Excelente* (2): explosión (`explosion_medium`), destello, onda expansiva, chispas, temblor suave y un cráter pequeño con 5 fracturas.
   - *La mejor* (3): explosión cinemática (`explosion_big`: caída de subgraves, «braam» grave, cola de escombros y reverberación), destello grande, dos ondas, ~56 chispas con estela, temblor fuerte y **suelo dañado**: cráter irregular con fondo astillado y labio levantado, 8 fracturas radiales en facetas (anchas en el cráter, afinándose hasta un hilo, con bifurcaciones), fracturas en anillo que las unen y astillas de madera despedidas. Relieve con luz desde arriba a la izquierda (halo oscuro de oclusión y labio claro abajo a la derecha). Las fracturas nacen incandescentes (metal fundido) y se enfrían a grietas oscuras; todo se desvanece en ~3,2 s.
   - Las grietas se dibujan bajo las piedras y recortadas al tablero; el resto encima. Todo determinista a partir de una semilla (`ImpactEffect`). Sin animaciones (Apariencia) solo suena.
+  - Intensidad (`EffectsLevel`, `GoBoardControl.Effects`): **Completos** (todo lo anterior), **Suaves** (fuerza 1 sea cual sea la jugada: destello pequeño y un anillo fino; capturas que se encogen y desvanecen sin esquirlas; atari solo con la gota) y **Apagados**. Botón ⚡ (`Icon.Effects`, atenuado cuando están apagados) en la barra inferior, sección en el panel de sonido, Preferencias → Análisis y tecla F (Completos → Suaves → Apagados).
 
 ## IA siempre de fondo
 

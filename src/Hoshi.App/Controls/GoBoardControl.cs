@@ -74,6 +74,10 @@ public sealed class GoBoardControl : Control
 
     /// <summary>Engine suggestions drawn as labelled discs on empty points.</summary>
     /// <summary>Groups in atari: they tremble now and then and sweat a drop (a comic, low-key alert).</summary>
+    /// <summary>How strong the board effects are (impacts, captures, atari); see <see cref="Services.EffectsLevel"/>.</summary>
+    public static readonly StyledProperty<Services.EffectsLevel> EffectsProperty =
+        AvaloniaProperty.Register<GoBoardControl, Services.EffectsLevel>(nameof(Effects), Services.EffectsLevel.Full);
+
     public static readonly StyledProperty<IReadOnlyList<AtariGroup>?> AtariGroupsProperty =
         AvaloniaProperty.Register<GoBoardControl, IReadOnlyList<AtariGroup>?>(nameof(AtariGroups));
 
@@ -149,6 +153,12 @@ public sealed class GoBoardControl : Control
     }
 
     public event EventHandler<BoardPointEventArgs>? PointClicked;
+
+    public Services.EffectsLevel Effects
+    {
+        get => GetValue(EffectsProperty);
+        set => SetValue(EffectsProperty, value);
+    }
 
     public IReadOnlyList<AtariGroup>? AtariGroups
     {
@@ -331,9 +341,28 @@ public sealed class GoBoardControl : Control
             TryStartPlacementAnimation();
         }
 
-        if (change.Property == AtariGroupsProperty || change.Property == AnimateProperty)
+        if (change.Property == AtariGroupsProperty || change.Property == AnimateProperty || change.Property == EffectsProperty)
         {
             UpdateAtariTimer();
+        }
+
+        if (change.Property == EffectsProperty)
+        {
+            // Turned down mid-effect: stop what is running at once.
+            Services.EffectsLevel level = Effects;
+            if (level == Services.EffectsLevel.Off || (level == Services.EffectsLevel.Subtle && _impact is { Strength: > 1 }))
+            {
+                _impact = null;
+                _impactTimer?.Stop();
+            }
+
+            if (level == Services.EffectsLevel.Off)
+            {
+                _capture = null;
+                _captureTimer?.Stop();
+            }
+
+            InvalidateVisual();
         }
 
         if (change.Property == ImpactProperty && change.NewValue is ViewModels.BoardImpact impact)
@@ -748,7 +777,7 @@ public sealed class GoBoardControl : Control
     private Dictionary<Point, AvPoint> AtariOffsets(BoardGeometry g, BoardState board)
     {
         var offsets = new Dictionary<Point, AvPoint>();
-        if (AtariGroups is not { Count: > 0 } groups || !Animate)
+        if (AtariGroups is not { Count: > 0 } groups || !Animate || Effects != Services.EffectsLevel.Full)
         {
             return offsets;
         }
@@ -780,7 +809,7 @@ public sealed class GoBoardControl : Control
     /// <summary>A cartoon sweat drop on the group's top stone, sliding down its side and dripping off.</summary>
     private void DrawSweat(DrawingContext context, BoardGeometry g, BoardState board)
     {
-        if (AtariGroups is not { Count: > 0 } groups)
+        if (AtariGroups is not { Count: > 0 } groups || Effects == Services.EffectsLevel.Off)
         {
             return;
         }
@@ -860,7 +889,7 @@ public sealed class GoBoardControl : Control
 
     private void UpdateAtariTimer()
     {
-        bool needed = AtariGroups is { Count: > 0 } && Animate;
+        bool needed = AtariGroups is { Count: > 0 } && Animate && Effects != Services.EffectsLevel.Off;
         if (needed)
         {
             if (!_atariClock.IsRunning)
@@ -882,7 +911,12 @@ public sealed class GoBoardControl : Control
 
     private void StartCapture(Point origin, List<(Point, Stone)> captured)
     {
-        _capture = new CaptureEffect(origin, captured, unchecked((origin.X * 31) + (origin.Y * 17) + captured.Count));
+        if (Effects == Services.EffectsLevel.Off)
+        {
+            return;
+        }
+
+        _capture = new CaptureEffect(origin, captured, unchecked((origin.X * 31) + (origin.Y * 17) + captured.Count), Effects == Services.EffectsLevel.Subtle);
         _captureClock.Restart();
         _captureTimer ??= new Avalonia.Threading.DispatcherTimer(TimeSpan.FromMilliseconds(16), Avalonia.Threading.DispatcherPriority.Render, (_, _) =>
         {
@@ -897,6 +931,15 @@ public sealed class GoBoardControl : Control
         _captureTimer.Start();
     }
 
+    /// <summary>The strength the running impact is drawn with (1 when subtle), or null; for tests.</summary>
+    internal int? RunningImpactStrength => _impact?.Strength;
+
+    /// <summary>True when the running capture is the subtle fade; for tests.</summary>
+    internal bool IsCaptureSubtle => _capture?.IsSubtle == true;
+
+    /// <summary>Stones shivering in the last frame (atari alert); for tests.</summary>
+    internal int TremblingStones => _tremble.Count;
+
     /// <summary>The captured stones being animated, for tests.</summary>
     internal int CapturingStones => _capture?.Count ?? 0;
 
@@ -905,12 +948,12 @@ public sealed class GoBoardControl : Control
 
     private void StartImpact(ViewModels.BoardImpact impact)
     {
-        if (!Animate || impact.Strength <= 0)
+        if (!Animate || impact.Strength <= 0 || Effects == Services.EffectsLevel.Off)
         {
             return;
         }
 
-        _impact = new ImpactEffect(impact.Point, impact.Strength, impact.Id);
+        _impact = new ImpactEffect(impact.Point, impact.Strength, impact.Id, Effects == Services.EffectsLevel.Subtle);
         _impactClock.Restart();
         _impactTimer ??= new Avalonia.Threading.DispatcherTimer(TimeSpan.FromMilliseconds(16), Avalonia.Threading.DispatcherPriority.Render, (_, _) =>
         {

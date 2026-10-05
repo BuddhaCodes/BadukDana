@@ -48,8 +48,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         AudioViewModel? audio = null,
         EngineMatchViewModel? engineMatch = null,
         Services.Engines.IGtpEngineHost? engines = null,
-        Services.Engines.IEngineWindows? engineWindows = null)
+        Services.Engines.IEngineWindows? engineWindows = null,
+        EffectsViewModel? effects = null)
     {
+        Effects = effects ?? new EffectsViewModel(settings);
         EngineMatch = engineMatch;
         _engines = engines;
         _engineWindows = engineWindows;
@@ -72,6 +74,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
 
         Analysis = new AnalysisViewModel(game, engine, ui, sounds, settings);
+        Effects.Changed += (_, _) =>
+        {
+            Analysis.Refresh();
+            game.ShowStatus(Tr.F("Effects.Status", Effects.LevelName));
+        };
         _music = music;
         _settings = settings;
         _sounds = sounds;
@@ -185,6 +192,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>The update banner and "Check for updates…" (null without a host, e.g. the designer).</summary>
     public UpdateViewModel? Updates { get; }
+
+    /// <summary>Board effects strength (bottom bar, sound panel, Preferences, F).</summary>
+    public EffectsViewModel Effects { get; }
 
     /// <summary>The speaker button: mute everything, volumes and music.</summary>
     public AudioViewModel? Audio { get; }

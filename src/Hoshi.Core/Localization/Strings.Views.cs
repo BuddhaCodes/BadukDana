@@ -27,7 +27,7 @@ public static partial class Tr
         Add(d, "Audio.TipMuted", "Sound off", "Sonido apagado");
         Add(d, "Audio.Mute", "Mute everything", "Silenciar todo");
         Add(d, "Audio.Unmute", "Turn sound back on", "Volver a activar el sonido");
-        Add(d, "Audio.Effects", "Effects", "Efectos");
+        Add(d, "Audio.Effects", "Sound effects", "Volumen de efectos");
         Add(d, "Audio.StoneSounds", "Stone sounds", "Sonido de las piedras");
         Add(d, "Audio.Music", "Music", "Música");
         Add(d, "Support.Menu", "Support Hoshi ♥", "Apoyar Hoshi ♥");
