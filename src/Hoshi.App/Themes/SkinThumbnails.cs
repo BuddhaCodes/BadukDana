@@ -72,6 +72,13 @@ public static class SkinThumbnails
                 return image;
             }
 
+            // Off the UI thread (e.g. the DI container resolved in a plain test) nothing is drawn: touching the board
+            // textures there would fail their type initialiser and break them for the rest of the process.
+            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            {
+                return null;
+            }
+
             try
             {
                 image = create();
