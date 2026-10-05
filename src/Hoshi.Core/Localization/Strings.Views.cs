@@ -223,10 +223,10 @@ public static partial class Tr
         Add(d, "Main.WhiteStone", "White stone", "Piedra blanca");
         Add(d, "Prefs.AnimationsHint", "Animated background and stone animations. Turn them off if you prefer a still view.", "Fondo animado y animaciones al colocar piedras. Desactívalas si prefieres una vista quieta.");
         Add(d, "Prefs.Appearance", "Appearance", "Apariencia");
-        Add(d, "Prefs.AtariBox", "Atari alert: the group trembles and sweats a little, with an “uh-oh” (not in live OGS games)", "Aviso de atari: el grupo tiembla y suda un poco, con un «uh-oh» (no en partidas de OGS en curso)");
+        Add(d, "Prefs.AtariBox", "Weak groups: a quiet halo on groups that are not safe (KataGo's view when it is on), and a soft “uh-oh” when one falls into atari (not in live OGS games)", "Grupos débiles: un halo discreto en los grupos que no están a salvo (según KataGo cuando está activo) y un «uh-oh» suave cuando uno cae en atari (no en partidas de OGS en curso)");
         Add(d, "Prefs.Browse", "Browse…", "Examinar…");
         Add(d, "Prefs.Celebrate", "Celebrate strong moves", "Celebrar las jugadas fuertes");
-        Add(d, "Prefs.CelebrateBox", "Sound and board impact when KataGo judges your move good, excellent or the best", "Sonido e impacto en el tablero cuando KataGo juzga tu jugada como buena, excelente o la mejor");
+        Add(d, "Prefs.CelebrateBox", "Sound and board impact for good moves that matter: the bigger the fight or the more the position depended on it, the bigger the hit (routine opening moves only click)", "Sonido e impacto en el tablero para las buenas jugadas que importan: cuanto más grande la pelea o más dependía de ella la posición, mayor el golpe (las jugadas normales de apertura solo suenan como piedra)");
         Add(d, "Prefs.Config", "Configuration", "Configuración");
         Add(d, "Prefs.Done", "Done", "Listo");
         Add(d, "Prefs.Executable", "Executable", "Ejecutable");
@@ -234,7 +234,7 @@ public static partial class Tr
         Add(d, "Prefs.LiveHint", "Analysis is live: KataGo shows partial results right away and keeps deepening the position up to the maximum visits. More visits = stronger, but more GPU use (with integrated graphics, 200–500 and a light network such as b18c384 or b10c128). During live OGS games analysis, territory and AI effects are off: OGS rules forbid AI help while you play.", "El análisis es en vivo: KataGo muestra resultados parciales enseguida y sigue profundizando en la posición hasta las visitas máximas. Más visitas = más fuerte, pero más uso de la GPU (con una gráfica integrada, 200–500 y una red ligera como b18c384 o b10c128). En partidas de OGS en curso el análisis y el territorio se desactivan: sus normas no permiten ayuda de IA mientras juegas.");
         Add(d, "Prefs.MaxVisits", "Maximum visits", "Visitas máximas");
         Add(d, "Prefs.Music", "Adaptive music", "Música adaptativa");
-        Add(d, "Prefs.MusicBox", "Calm lo-fi that heats up with streaks of good moves and cools down with time or a mistake (key M)", "Lo-fi tranquilo que se anima con rachas de buenas jugadas y se calma con el tiempo o con un error (tecla M)");
+        Add(d, "Prefs.MusicBox", "Calm lo-fi that heats up with good moves at key moments, stays calm through the opening and cools down with time or a mistake (key M)", "Lo-fi tranquilo que se anima con buenas jugadas en los momentos clave, se mantiene tranquilo en la apertura y se calma con el tiempo o con un error (tecla M)");
         Add(d, "Prefs.Network", "Neural network", "Red neuronal");
         Add(d, "Prefs.StoneSoundsBox", "Soft sound for every stone placed and for captures (also when stepping through a game)", "Sonido suave al colocar cada piedra y al capturar (también al avanzar jugada a jugada)");
         Add(d, "Prefs.TestKataGo", "Test KataGo", "Probar KataGo");

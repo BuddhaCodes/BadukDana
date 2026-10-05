@@ -53,11 +53,11 @@ public sealed class EffectsLevelTests
             vm.Game.PlayCommand.Execute(p);
         }
 
-        vm.Analysis.AtariGroups.Should().NotBeEmpty("the black stone at D16 is in atari");
+        vm.Analysis.GroupStatuses.Should().Contain(g => g.Health == GroupHealth.Critical, "the black stone at D16 is in atari");
         vm.Effects.CycleCommand.Execute(null);
         vm.Effects.CycleCommand.Execute(null);
         vm.Analysis.IsAtariAlertActive.Should().BeFalse();
-        vm.Analysis.AtariGroups.Should().BeEmpty();
+        vm.Analysis.GroupStatuses.Should().BeEmpty();
         vm.Game.StatusText.Should().Be("Efectos visuales: Apagados");
     }
 
@@ -120,24 +120,6 @@ public sealed class EffectsLevelTests
     }
 
     [AvaloniaFact]
-    public void Atari_trembles_only_with_full_effects()
-    {
-        (GoBoardControl board, Window window) = Board();
-        board.Board = BoardState.Create(19).Setup([(new Point(3, 3), Stone.Black), (new Point(3, 2), Stone.White), (new Point(2, 3), Stone.White), (new Point(4, 3), Stone.White)]);
-        board.AtariGroups = Atari.Groups(board.Board);
-        board.AtariTime = 1.45; // inside this group's shiver (its phase comes from the liberty at D15)
-        foreach ((EffectsLevel level, int trembling) in new[] { (EffectsLevel.Full, 1), (EffectsLevel.Subtle, 0), (EffectsLevel.Off, 0) })
-        {
-            board.Effects = level;
-            board.InvalidateVisual();
-            window.CaptureRenderedFrame()?.Dispose();
-            board.TremblingStones.Should().Be(trembling, level.ToString());
-        }
-
-        window.Close();
-    }
-
-    [AvaloniaFact]
     public async Task The_effects_button_and_the_sound_panel_offer_the_three_levels()
     {
         ThemeService.Apply(HoshiThemes.NightSky, animations: false, Avalonia.Application.Current!.Resources);
@@ -169,5 +151,54 @@ public sealed class EffectsLevelTests
         audio.Flyout.Hide();
         window.Close();
         ThemeService.Apply(HoshiThemes.Default, animations: false, Avalonia.Application.Current!.Resources);
+    }
+}
+
+public sealed class WeakGroupHaloTests
+{
+    [AvaloniaFact]
+    public void Halos_follow_the_engines_ownership_and_are_rendered()
+    {
+        var board = new GoBoardControl { Animate = true, BoardStyle = HoshiThemes.NightSky.Board, ShowCoordinates = true };
+        var window = new Window { Width = 640, Height = 640, Content = board };
+        window.Show();
+        // Black's solid corner (top left), White's settled corner (top right), a contested white group in the
+        // centre, an unsettled black extension and a black stone that is lost inside White's area.
+        (int X, int Y, Stone S)[] stones =
+        [
+            (2, 3, Stone.Black), (3, 2, Stone.Black), (3, 3, Stone.Black),
+            (15, 3, Stone.White), (16, 2, Stone.White), (16, 4, Stone.White),
+            (9, 9, Stone.White), (9, 10, Stone.White), (10, 9, Stone.White),
+            (2, 9, Stone.Black), (2, 11, Stone.Black), (4, 10, Stone.White),
+            (15, 2, Stone.Black),
+        ];
+        BoardState state = BoardState.Create(19).Setup([.. stones.Select(s => (new Point(s.X, s.Y), s.S))]);
+        double[] own = new double[361];
+        foreach ((int x, int y, Stone s) in stones)
+        {
+            own[(y * 19) + x] = (x, y) switch
+            {
+                ( < 4, < 4) => 0.92,
+                (15 or 16, < 5) when s == Stone.White => -0.9,
+                (15, 2) => -0.75,
+                (9 or 10, _) => -0.05,
+                (4, 10) => -0.9,
+                _ => 0.45,
+            };
+        }
+
+        board.Board = state;
+        board.GroupStatuses = GroupStrength.Assess(state, own);
+        board.GroupStatuses.Select(g => g.Health).Should().BeEquivalentTo([GroupHealth.Weak, GroupHealth.Unsettled, GroupHealth.Unsettled, GroupHealth.Critical]);
+        board.GroupPulseTime = 1.3;
+        board.InvalidateVisual();
+        using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
+        Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
+        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "weak-groups-ownership.png"));
+
+        board.Effects = EffectsLevel.Off;
+        board.InvalidateVisual();
+        window.CaptureRenderedFrame()?.Dispose();
+        window.Close();
     }
 }

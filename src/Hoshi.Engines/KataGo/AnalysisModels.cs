@@ -121,3 +121,70 @@ public static class MoveReview
         return new MoveAssessment(quality, lost, winLost, rank, best, played);
     }
 }
+
+/// <summary>
+/// How much a move matters, for celebrations: a strong move in a quiet opening is routine; a strong move where the
+/// alternatives lose a lot, or in the middle of a fight, is a turning point. Combines the move's quality, the
+/// position's criticality (points between the engine's best move and its typical alternatives) and the fight
+/// around the move (from the board alone).
+/// </summary>
+public static class MoveImportance
+{
+    /// <summary>Candidates (after the best) averaged as "the typical alternative".</summary>
+    public const int Alternatives = 4;
+
+    /// <summary>
+    /// Points the position demanded: the best candidate's lead over the average of the next few candidates, from the
+    /// mover's side (0 when the engine saw only one candidate, i.e. nothing to compare).
+    /// </summary>
+    public static double Criticality(TurnAnalysis before, Stone mover)
+    {
+        ArgumentNullException.ThrowIfNull(before);
+        if (before.Best is not { } best)
+        {
+            return 0;
+        }
+
+        MoveCandidate[] others = [.. before.Candidates.Where(c => c != best && c.Visits > 0).OrderBy(c => c.Order).Take(Alternatives)];
+        if (others.Length == 0)
+        {
+            return 0;
+        }
+
+        double sign = mover == Stone.White ? -1 : 1;
+        return Math.Max(0, (best.ScoreLead - others.Average(c => c.ScoreLead)) * sign);
+    }
+
+    /// <summary>The opening: the first moves of the game, about 1/18 of the board (20 moves on 19×19).</summary>
+    public static bool IsOpening(int moveNumber, int width, int height) => moveNumber <= Math.Max(6, width * height / 18);
+
+    /// <summary>
+    /// Celebration strength 0–3 (0 = only the stone's own sound): never above the move's quality (best 3,
+    /// excellent 2, good 1), and only as high as the moment deserves.
+    /// </summary>
+    /// <param name="fightIntensity">The board's fight reading for the move (contact, short liberties, captures; 0–6).</param>
+    public static int Strength(MoveQuality quality, double criticality, double fightIntensity, bool opening)
+    {
+        int byQuality = quality switch
+        {
+            MoveQuality.Best => 3,
+            MoveQuality.Excellent => 2,
+            MoveQuality.Good => 1,
+            _ => 0,
+        };
+        if (byQuality == 0)
+        {
+            return 0;
+        }
+
+        // A quiet opening move is routine, however good: no fight, nothing much at stake.
+        if (opening && fightIntensity < 1.5 && criticality < 4)
+        {
+            return 0;
+        }
+
+        double score = criticality + fightIntensity;
+        int byMoment = score >= 8 ? 3 : score >= 4.5 ? 2 : score >= 2.5 ? 1 : 0;
+        return Math.Min(byQuality, byMoment);
+    }
+}

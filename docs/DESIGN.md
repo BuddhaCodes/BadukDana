@@ -133,12 +133,12 @@ Arte de Hoshi renderizado por procedimiento (numpy + Pillow, semillas fijas; sin
 - **Territorio (T):** cuadraditos del color del dueño probable; su tamaño y opacidad crecen con la seguridad. Territorio seguro y piedras muertas: cuadrado grande opaco. Resumen en la barra lateral: seguro (+potencial) de cada color y ventaja estimada, indicando si viene de la estimación rápida o de KataGo.
 - **Análisis (A):** panel en la barra lateral con winrate (barra negro/blanco), ventaja, valoración de la última jugada en color (verde = mejor/excelente, verde oliva = buena, ámbar = imprecisa, rojo = error), la mejor alternativa y la gráfica de ventaja por jugada (arriba = negras; clic para ir). Sobre el tablero, hasta 3 sugerencias como discos azules con el % de victoria de quien juega y el cambio de puntos; la mejor con borde blanco.
 - Botones de la barra con subrayado de acento cuando están activos.
-- **Celebración de jugadas fuertes** (solo con análisis activo, al jugar; no al navegar). Llega cuando KataGo termina de valorar la jugada:
+- **Celebración de jugadas que importan** (solo con análisis activo, al jugar; no al navegar). Llega cuando KataGo termina de valorar la jugada. Su fuerza no depende solo de la calidad: `MoveImportance` la limita según el momento (2026-10-05, a petición de un usuario): criticidad (puntos entre la mejor jugada y la media de las 4 siguientes candidatas de KataGo) + intensidad de la pelea alrededor (`FightMeter.Intensity`: contacto, libertades cortas, capturas); ≥ 8 → 3, ≥ 4,5 → 2, ≥ 2,5 → 1, y nunca más que la calidad. En la apertura (≈ 1/18 del tablero: 20 jugadas en 19×19) una jugada tranquila sin pelea ni criticidad ≥ 4 no tiene celebración: solo suena la piedra. Sin motor (OGS en curso), la apertura resta 1 a la fuerza de la pelea.
   - *Buena* (fuerza 1): golpe seco (`impact_small`) y una onda pequeña.
   - *Excelente* (2): explosión (`explosion_medium`), destello, onda expansiva, chispas, temblor suave y un cráter pequeño con 5 fracturas.
   - *La mejor* (3): explosión cinemática (`explosion_big`: caída de subgraves, «braam» grave, cola de escombros y reverberación), destello grande, dos ondas, ~56 chispas con estela, temblor fuerte y **suelo dañado**: cráter irregular con fondo astillado y labio levantado, 8 fracturas radiales en facetas (anchas en el cráter, afinándose hasta un hilo, con bifurcaciones), fracturas en anillo que las unen y astillas de madera despedidas. Relieve con luz desde arriba a la izquierda (halo oscuro de oclusión y labio claro abajo a la derecha). Las fracturas nacen incandescentes (metal fundido) y se enfrían a grietas oscuras; todo se desvanece en ~3,2 s.
   - Las grietas se dibujan bajo las piedras y recortadas al tablero; el resto encima. Todo determinista a partir de una semilla (`ImpactEffect`). Sin animaciones (Apariencia) solo suena.
-  - Intensidad (`EffectsLevel`, `GoBoardControl.Effects`): **Completos** (todo lo anterior), **Suaves** (fuerza 1 sea cual sea la jugada: destello pequeño y un anillo fino; capturas que se encogen y desvanecen sin esquirlas; atari solo con la gota) y **Apagados**. Botón ⚡ (`Icon.Effects`, atenuado cuando están apagados) en la barra inferior, sección en el panel de sonido, Preferencias → Análisis y tecla F (Completos → Suaves → Apagados).
+  - Intensidad (`EffectsLevel`, `GoBoardControl.Effects`): **Completos** (todo lo anterior), **Suaves** (fuerza 1 sea cual sea la jugada: destello pequeño y un anillo fino; capturas que se encogen y desvanecen sin esquirlas; halo de grupos débiles quieto) y **Apagados**. Botón ⚡ (`Icon.Effects`, atenuado cuando están apagados) en la barra inferior, sección en el panel de sonido, Preferencias → Análisis y tecla F (Completos → Suaves → Apagados).
 
 ## IA siempre de fondo
 
@@ -149,11 +149,12 @@ Arte de Hoshi renderizado por procedimiento (numpy + Pillow, semillas fijas; sin
 ## Música adaptativa
 
 - Lo-fi tranquilo (Dm9 – G13 – Cmaj9 – Am9, 80 BPM, vinilo y cinta). Capas: 0 piano eléctrico (siempre), 1 bajo y bombo, 2 batería con swing, 3 arpegio pulsado con eco, 4 «hype» (acordes con bombeo, hi-hats a semicorcheas, palmas, melodía brillante), 5 «overdrive» (bombo a negras, bajo rodante a semicorcheas, arpegio supersaw, redobles y platos). Cada capa nueva entra con un golpe («level up»: barrido inverso, boom y plato); con el calor alto las capas melódicas bombean con el bombo (sidechain).
-- Calor (0–5,3): buena +0,7, excelente +1,0, la mejor +1,3, más +0,2 por jugada de racha (≤ 25 s entre buenas, máx. +0,8). Imprecisa −1, error −2, error grave → 0 con tape-stop. Tras 12 s sin buenas jugadas se enfría 0,06/s.
+- Calor (0–5,3), más calmado desde 2026-10-05: buena +0,5, excelente +0,75, la mejor +1,0, más +0,12 por jugada de racha (≤ 25 s entre buenas, máx. +0,5), todo multiplicado por la importancia del momento (`MoveImportance`: 0 → ×0,3, 1 → ×0,55, 2 → ×0,8, 3 → ×1). En la apertura no pasa de 1,0 (solo piano y bajo). Imprecisa −1, error −2, error grave → 0 con tape-stop. Tras 10 s sin buenas jugadas se enfría 0,08/s.
 - Cada capa entra 0,85 de calor después de la anterior; el filtro se abre de 900 Hz (apagado, acogedor) a ~18 kHz.
 
 ## Sonido de piedras
 
+- Según el contexto (2026-10-05): las jugadas tranquilas (apertura, extensiones, conexiones) suenan con el golpe suave al 70 %; las jugadas con intención (contacto con piedras rivales, hane, cortes, atari: `FightMeter.Intensity` ≥ 0,6) con `stone_firm` al 90 %: la misma piedra puesta con firmeza, un clac más seco y brillante (centroide ~1,6 kHz frente a ~0,6 kHz), sin resonancia; tres variantes. Sustituible con `stone_firm.wav`/`.mp3`.
 - Cada piedra nueva (jugada, recibida de OGS o al avanzar una jugada) suena con un golpe suave y apagado, como dejar un móvil sobre la mesa (v2, 2026-10-01): el canto toca primero y la piedra se asienta plana 12–20 ms después, con un mínimo rebote; sin brillo ni campanita, para no cansar tras cientos de jugadas. Tres variantes que rotan. En Windows va por `PlaySound` desde memoria, con poca latencia. Se puede sustituir con `stone.wav`/`.mp3` en la carpeta `sounds/`. Se desactiva en Preferencias → Análisis.
 
 ## Capturas
@@ -161,11 +162,11 @@ Arte de Hoshi renderizado por procedimiento (numpy + Pillow, semillas fijas; sin
 - **Visual** (`CaptureEffect`, con animaciones activadas): cada piedra capturada destella al romperse y se parte en 5–6 cuñas con su propia textura que salen girando, alejándose de la piedra que captura, encogen y se desvanecen (0,6 s), con una nube de polvo. Las piedras caen en ola desde la captura (45 ms por casilla, máx. 0,4 s).
 - **Sonido**: `capture_small` (1–2 piedras: chasquido, escombros, dos clacs al recogerlas y campanita de dos notas) y `capture_big` (3 o más: más clacs, arpegio re–fa–la y un golpe grave). Suena junto con el «pachi» de la piedra; mismo interruptor que el sonido de piedras.
 
-## Aviso de atari
+## Grupos débiles
 
-- Discreto y cómico: cada grupo con una sola libertad tiembla un poco durante 0,45 s cada 2,4 s (cada grupo con su propio desfase) y a su piedra más alta le cae una gota de sudor azul que resbala por el lado y gotea.
-- Al entrar en atari (una vez por grupo, no en cada jugada mientras siga así) suena un «uh-oh» suave: dos notas redondas descendentes (tercera menor) que se caen de afinación al final.
-- No se marca la libertad. Desactivado en partidas de OGS en curso, como el análisis. Interruptor en Preferencias → Análisis.
+- Sustituye al aviso cómico de atari (temblor y gota de sudor) desde 2026-10-05, a petición de un usuario que esperaba ver la fuerza de los grupos. `Hoshi.Core.GroupStrength` lee cada grupo: con el mapa de propiedad de KataGo (de la posición mostrada), la propiedad media de sus piedras para su dueño: > 0,6 fuerte (no se marca), > 0,2 inestable, > −0,2 débil, si no en peligro serio; «inestable» solo si hay una piedra rival a ≤ 2 casillas (las piedras sueltas de la apertura no se marcan); un atari es como poco débil. Sin KataGo: atari = peligro serio, 2 libertades en contacto = débil.
+- Dibujo: halo radial bajo las piedras (1,6 × radio): azul `#4682DC` al 32 % (inestable) o 58 % (débil); rojo apagado `#CD483C` para el peligro serio, que respira despacio (2,6 s) con efectos completos y queda quieto con suaves. Con efectos apagados no se dibuja.
+- Al entrar en atari (una vez por grupo) sigue sonando un «uh-oh» suave. Desactivado en partidas de OGS en curso, como el análisis. Interruptor «Grupos débiles» en Preferencias → Análisis.
 
 ## Atajos de teclado (mínimo)
 

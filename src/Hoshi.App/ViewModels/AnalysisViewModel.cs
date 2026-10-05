@@ -11,6 +11,9 @@ using Hoshi.Sgf;
 
 namespace Hoshi.App.ViewModels;
 
+/// <summary>A judged move: its quality, how big a moment it was (0–3, see <see cref="MoveImportance"/>) and whether it was in the opening.</summary>
+public sealed record MoveWeight(MoveQuality Quality, int Importance, bool Opening);
+
 /// <summary>A move suggestion drawn on the board.</summary>
 public sealed record BoardSuggestion(Point Point, string Label, string Detail, bool IsBest, double Strength);
 
@@ -71,11 +74,15 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     [ObservableProperty]
     private BoardImpact? _impact;
 
-    /// <summary>Groups in atari to tremble on the board (empty when the alert is off or during a live OGS game).</summary>
+    /// <summary>
+    /// Groups that are not safe, shown as a quiet halo on the board: from KataGo's ownership map when it has read
+    /// the shown position, otherwise from short liberties in a fight. Empty when switched off, with effects off, or
+    /// during the user's live OGS game.
+    /// </summary>
     [ObservableProperty]
-    private IReadOnlyList<AtariGroup> _atariGroups = [];
+    private IReadOnlyList<GroupStatus> _groupStatuses = [];
 
-    /// <summary>The atari alert is on and allowed (not while the user plays a live OGS game).</summary>
+    /// <summary>Weak groups (and the atari sound) are on and allowed (not while the user plays a live OGS game).</summary>
     public bool IsAtariAlertActive =>
         (_settings?.Current ?? new AppSettings()) is { AtariAlerts: true, Effects: not EffectsLevel.Off } && !IsBlocked;
 
@@ -278,6 +285,19 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         OnPropertyChanged(nameof(LeadText));
         OnPropertyChanged(nameof(BestText));
         UpdateTerritory();
+        UpdateGroups();
+    }
+
+    private void UpdateGroups()
+    {
+        if (!IsAtariAlertActive)
+        {
+            GroupStatuses = [];
+            return;
+        }
+
+        IReadOnlyList<double>? ownership = IsEngineActive && Analysis is { Ownership: { } own } a && a.Turn == _game.MoveNumber ? own : null;
+        GroupStatuses = GroupStrength.Assess(_game.Board, ownership);
     }
 
     partial void OnAssessmentChanged(MoveAssessment? value)
@@ -292,7 +312,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     /// <summary>Re-evaluates the shown position (called on every navigation or edit).</summary>
     public void Refresh()
     {
-        AtariGroups = IsAtariAlertActive ? Atari.Groups(_game.Board) : [];
+        UpdateGroups();
         OnPropertyChanged(nameof(IsBlocked));
         OnPropertyChanged(nameof(IsAnalysisActive));
         OnPropertyChanged(nameof(IsEngineActive));
@@ -476,8 +496,11 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         TryCelebrate(pos);
     }
 
-    /// <summary>The engine's (trusted) verdict on a move the user just played; drives the adaptive music.</summary>
+    /// <summary>The engine's (trusted) verdict on a move the user just played.</summary>
     public event EventHandler<MoveAssessment>? MoveJudged;
+
+    /// <summary>The verdict with how much the moment mattered; drives the adaptive music.</summary>
+    public event EventHandler<MoveWeight>? MoveWeighed;
 
     /// <summary>The battle heat (0–5) after a move, when effects follow the fight instead of the engine.</summary>
     public event EventHandler<double>? BattleHeat;
@@ -485,8 +508,18 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     /// <summary>The last fight reading (for tests and a possible indicator).</summary>
     public FightReading? LastFight { get; private set; }
 
+    /// <summary>How big the last celebration was allowed to be (0–3), for tests and the music.</summary>
+    public int LastImportance { get; private set; }
+
+    private (GameNode Node, double Intensity)? _fightAt;
+
     private void OnMoveSettled(object? sender, PlacedMove move)
     {
+        // The fight around the move, from the board alone: it decides how big a celebration may be (with the
+        // engine) or drives the effects and music by itself (without it).
+        FightReading reading = _fight.OnMove(move.Before, move.After, move.Point);
+        LastFight = reading;
+        _fightAt = (move.Node, reading.Intensity);
         if (IsEngineActive)
         {
             // Reviewing a replay: every step forward is judged by KataGo and celebrated like a move just played.
@@ -500,16 +533,17 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         }
 
         // No engine (live OGS games, or KataGo not set up): effects and music follow the fight on the board —
-        // contact, short liberties and captures — never whether a move was good.
-        FightReading reading = _fight.OnMove(move.Before, move.After, move.Point);
-        LastFight = reading;
+        // contact, short liberties and captures — never whether a move was good. Opening skirmishes stay quiet.
         BattleHeat?.Invoke(this, reading.Heat);
         AppSettings settings = _settings?.Current ?? new AppSettings();
-        if (settings.MoveEffects && reading.Strength > 0)
+        int strength = MoveImportance.IsOpening(_game.MoveNumber, move.After.Width, move.After.Height)
+            ? Math.Max(0, reading.Strength - 1)
+            : reading.Strength;
+        if (settings.MoveEffects && strength > 0)
         {
-            Impact = new BoardImpact(move.Point, reading.Strength, ++_impacts);
+            Impact = new BoardImpact(move.Point, strength, ++_impacts);
             _sounds?.Play(
-                reading.Strength switch { 3 => SoundEffect.ExplosionBig, 2 => SoundEffect.ExplosionMedium, _ => SoundEffect.ImpactSmall },
+                strength switch { 3 => SoundEffect.ExplosionBig, 2 => SoundEffect.ExplosionMedium, _ => SoundEffect.ImpactSmall },
                 settings.SoundVolume / 100.0);
         }
     }
@@ -546,7 +580,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
             _awaitingJudgement = null;
             _celebratedNode = node;
             MoveJudged?.Invoke(this, judged);
-            Celebrate(judged);
+            Celebrate(judged, before, node, n);
         }
     }
 
@@ -559,11 +593,18 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         _ => 0,
     };
 
-    /// <summary>Sound and board impact for a move the user just played, once the engine has judged it.</summary>
-    private void Celebrate(MoveAssessment judged)
+    /// <summary>
+    /// Sound and board impact for a move the user just played, once the engine has judged it — as big as the
+    /// moment deserves (<see cref="MoveImportance"/>): a routine opening move only gets its stone sound.
+    /// </summary>
+    private void Celebrate(MoveAssessment judged, TurnAnalysis before, GameNode node, int moveNumber)
     {
         AppSettings settings = _settings?.Current ?? new AppSettings();
-        int strength = ImpactStrength(judged.Quality);
+        double fight = _fightAt is { } f && f.Node == node ? f.Intensity : 0;
+        bool opening = MoveImportance.IsOpening(moveNumber, _game.Board.Width, _game.Board.Height);
+        int strength = MoveImportance.Strength(judged.Quality, MoveImportance.Criticality(before, judged.Played.Color), fight, opening);
+        LastImportance = strength;
+        MoveWeighed?.Invoke(this, new MoveWeight(judged.Quality, strength, opening));
         if (!settings.MoveEffects || strength == 0 || judged.Played.Point is not { } point || !IsEngineActive)
         {
             return;

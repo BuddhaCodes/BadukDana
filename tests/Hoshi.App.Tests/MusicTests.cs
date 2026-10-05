@@ -15,12 +15,29 @@ public sealed class MusicDirectorTests
         _director.OnVerdict(MoveQuality.Best, 10);
 
         _director.Streak.Should().Be(3);
-        _director.HeatAt(10).Should().BeApproximately(0.7 + (1.0 + 0.2) + (1.3 + 0.4), 1e-9);
+        _director.HeatAt(10).Should().BeApproximately(0.5 + (0.75 + 0.12) + (1.0 + 0.24), 1e-9);
 
         var spaced = new MusicDirector();
         spaced.OnVerdict(MoveQuality.Good, 0);
         spaced.OnVerdict(MoveQuality.Excellent, 60);
         spaced.Streak.Should().Be(1, "a minute apart is not a streak");
+    }
+
+    [Fact]
+    public void Routine_good_moves_barely_count_and_the_opening_stays_calm()
+    {
+        _director.OnVerdict(MoveQuality.Best, 0, importance: 0);
+        _director.HeatAt(0).Should().BeApproximately(0.3, 1e-9, "a routine best move");
+
+        var opening = new MusicDirector();
+        for (int i = 0; i < 6; i++)
+        {
+            opening.OnVerdict(MoveQuality.Best, i, importance: 3, opening: true);
+        }
+
+        opening.HeatAt(6).Should().Be(MusicDirector.OpeningCap, "the opening never gets past the calm layers");
+        opening.OnVerdict(MoveQuality.Best, 7, importance: 3);
+        opening.HeatAt(7).Should().BeGreaterThan(MusicDirector.OpeningCap, "after the opening it can rise");
     }
 
     [Fact]
