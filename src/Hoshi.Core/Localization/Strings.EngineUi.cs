@@ -50,8 +50,8 @@ public static partial class Tr
         Add(d, "Effects.Tip", "Visual effects: {0} (F)", "Efectos visuales: {0} (F)");
         Add(d, "Effects.Status", "Visual effects: {0}", "Efectos visuales: {0}");
         Add(d, "Effects.Hint",
-            "Explosions of strong moves, shattering captures and the atari alert. Subtle keeps a small flash, a gentle fade and the sweat drop. F switches at any time.",
-            "Explosiones de las buenas jugadas, capturas que se rompen y el aviso de atari. Suaves deja un destello pequeño, un fundido y la gota de sudor. F los cambia en cualquier momento.");
+            "Explosions of the moves that matter, shattering captures and the halo on weak groups. Subtle keeps a small flash, a gentle fade and a still halo. F switches at any time.",
+            "Explosiones de las jugadas que importan, capturas que se rompen y el halo de los grupos débiles. Suaves deja un destello pequeño, un fundido y un halo quieto. F los cambia en cualquier momento.");
 
         Add(d, "Prefs.EnginesTab", "Engines", "Motores");
         Add(d, "Prefs.EnginesIntro",

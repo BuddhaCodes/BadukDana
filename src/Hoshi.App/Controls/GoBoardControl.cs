@@ -72,14 +72,13 @@ public sealed class GoBoardControl : Control
     public static readonly StyledProperty<TerritoryEstimate?> TerritoryProperty =
         AvaloniaProperty.Register<GoBoardControl, TerritoryEstimate?>(nameof(Territory));
 
-    /// <summary>Engine suggestions drawn as labelled discs on empty points.</summary>
-    /// <summary>Groups in atari: they tremble now and then and sweat a drop (a comic, low-key alert).</summary>
-    /// <summary>How strong the board effects are (impacts, captures, atari); see <see cref="Services.EffectsLevel"/>.</summary>
+    /// <summary>How strong the board effects are (impacts, captures, weak-group halos); see <see cref="Services.EffectsLevel"/>.</summary>
     public static readonly StyledProperty<Services.EffectsLevel> EffectsProperty =
         AvaloniaProperty.Register<GoBoardControl, Services.EffectsLevel>(nameof(Effects), Services.EffectsLevel.Full);
 
-    public static readonly StyledProperty<IReadOnlyList<AtariGroup>?> AtariGroupsProperty =
-        AvaloniaProperty.Register<GoBoardControl, IReadOnlyList<AtariGroup>?>(nameof(AtariGroups));
+    /// <summary>Groups that are not safe: drawn with a quiet halo under their stones.</summary>
+    public static readonly StyledProperty<IReadOnlyList<GroupStatus>?> GroupStatusesProperty =
+        AvaloniaProperty.Register<GoBoardControl, IReadOnlyList<GroupStatus>?>(nameof(GroupStatuses));
 
     /// <summary>A strong move to celebrate (flash, shockwave, embers, shake, cracks); a new value starts the effect.</summary>
     public static readonly StyledProperty<ViewModels.BoardImpact?> ImpactProperty =
@@ -89,6 +88,7 @@ public sealed class GoBoardControl : Control
     public static readonly StyledProperty<IReadOnlyList<ViewModels.BoardJosekiHint>?> JosekiHintsProperty =
         AvaloniaProperty.Register<GoBoardControl, IReadOnlyList<ViewModels.BoardJosekiHint>?>(nameof(JosekiHints));
 
+    /// <summary>Engine suggestions drawn as labelled discs on empty points.</summary>
     public static readonly StyledProperty<IReadOnlyList<ViewModels.BoardSuggestion>?> SuggestionsProperty =
         AvaloniaProperty.Register<GoBoardControl, IReadOnlyList<ViewModels.BoardSuggestion>?>(nameof(Suggestions));
 
@@ -108,9 +108,8 @@ public sealed class GoBoardControl : Control
     private readonly System.Diagnostics.Stopwatch _captureClock = new();
     private Avalonia.Threading.DispatcherTimer? _captureTimer;
     private CaptureEffect? _capture;
-    private readonly System.Diagnostics.Stopwatch _atariClock = new();
-    private Avalonia.Threading.DispatcherTimer? _atariTimer;
-    private Dictionary<Point, AvPoint> _tremble = [];
+    private readonly System.Diagnostics.Stopwatch _groupClock = new();
+    private Avalonia.Threading.DispatcherTimer? _groupTimer;
 
     private static readonly Typeface CoordinateTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.Medium);
     private static readonly Typeface LabelTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.SemiBold);
@@ -160,14 +159,14 @@ public sealed class GoBoardControl : Control
         set => SetValue(EffectsProperty, value);
     }
 
-    public IReadOnlyList<AtariGroup>? AtariGroups
+    public IReadOnlyList<GroupStatus>? GroupStatuses
     {
-        get => GetValue(AtariGroupsProperty);
-        set => SetValue(AtariGroupsProperty, value);
+        get => GetValue(GroupStatusesProperty);
+        set => SetValue(GroupStatusesProperty, value);
     }
 
     /// <summary>Freezes the atari animation at this many seconds (tests).</summary>
-    internal double? AtariTime { get; set; }
+    internal double? GroupPulseTime { get; set; }
 
     public ViewModels.BoardImpact? Impact
     {
@@ -305,9 +304,8 @@ public sealed class GoBoardControl : Control
         }
 
         DrawInfluence(context, g, board);
-        _tremble = AtariOffsets(g, board);
+        DrawGroupHalos(context, g, board);
         DrawStones(context, g, board, style);
-        DrawSweat(context, g, board);
         if (_capture is { } capture)
         {
             capture.Draw(
@@ -341,9 +339,9 @@ public sealed class GoBoardControl : Control
             TryStartPlacementAnimation();
         }
 
-        if (change.Property == AtariGroupsProperty || change.Property == AnimateProperty || change.Property == EffectsProperty)
+        if (change.Property == GroupStatusesProperty || change.Property == AnimateProperty || change.Property == EffectsProperty)
         {
-            UpdateAtariTimer();
+            UpdateGroupTimer();
         }
 
         if (change.Property == EffectsProperty)
@@ -539,7 +537,7 @@ public sealed class GoBoardControl : Control
         {
             if (board[p] != Stone.Empty)
             {
-                AvPoint c = Trembled(g, p);
+                AvPoint c = StoneCenter(g, p);
                 double k = p == _animPoint ? lift : 1;
                 var s = new BoxShadows(new BoxShadow
                 {
@@ -557,7 +555,7 @@ public sealed class GoBoardControl : Control
             Stone s = board[p];
             if (s != Stone.Empty)
             {
-                DrawStone(context, Trembled(g, p), r * (p == _animPoint ? lift : 1), s, style, p);
+                DrawStone(context, StoneCenter(g, p), r * (p == _animPoint ? lift : 1), s, style, p);
             }
         }
     }
@@ -762,148 +760,71 @@ public sealed class GoBoardControl : Control
         }
     }
 
-    // ---------- Atari alert ----------
+    // ---------- Weak groups ----------
 
-    private const double AtariCycle = 2.4;
-    private const double ShiverSeconds = 0.45;
+    /// <summary>Seconds per breath of a group in serious danger.</summary>
+    private const double PulseSeconds = 2.6;
 
-    private AvPoint Trembled(BoardGeometry g, Point p)
+    /// <summary>
+    /// A quiet halo under the stones of groups that are not safe: a cool blue for unsettled and weak groups (stronger
+    /// for weak), a muted red for groups in serious danger that slowly breathes with full effects. Strong groups,
+    /// and every group with effects off, are drawn as usual.
+    /// </summary>
+    private void DrawGroupHalos(DrawingContext context, BoardGeometry g, BoardState board)
     {
-        AvPoint c = StoneCenter(g, p);
-        return _tremble.TryGetValue(p, out AvPoint d) ? new AvPoint(c.X + d.X, c.Y + d.Y) : c;
-    }
-
-    /// <summary>Every <see cref="AtariCycle"/> seconds the group shivers briefly, like a nervous little jiggle.</summary>
-    private Dictionary<Point, AvPoint> AtariOffsets(BoardGeometry g, BoardState board)
-    {
-        var offsets = new Dictionary<Point, AvPoint>();
-        if (AtariGroups is not { Count: > 0 } groups || !Animate || Effects != Services.EffectsLevel.Full)
-        {
-            return offsets;
-        }
-
-        double t = AtariTime ?? _atariClock.Elapsed.TotalSeconds;
-        foreach (AtariGroup group in groups)
-        {
-            double phase = (group.Liberty.X * 0.37) + (group.Liberty.Y * 0.61); // groups don't shiver in lockstep
-            double u = (t + phase) % AtariCycle;
-            if (u >= ShiverSeconds)
-            {
-                continue;
-            }
-
-            double amp = g.Cell * 0.03 * Math.Sin(Math.PI * u / ShiverSeconds);
-            var d = new AvPoint(amp * Math.Sin(2 * Math.PI * 14 * u), amp * 0.35 * Math.Sin(2 * Math.PI * 21 * u));
-            foreach (Point p in group.Stones)
-            {
-                if (board.IsOnBoard(p) && board[p] != Stone.Empty)
-                {
-                    offsets[p] = d;
-                }
-            }
-        }
-
-        return offsets;
-    }
-
-    /// <summary>A cartoon sweat drop on the group's top stone, sliding down its side and dripping off.</summary>
-    private void DrawSweat(DrawingContext context, BoardGeometry g, BoardState board)
-    {
-        if (AtariGroups is not { Count: > 0 } groups || Effects == Services.EffectsLevel.Off)
+        if (GroupStatuses is not { Count: > 0 } groups || Effects == Services.EffectsLevel.Off)
         {
             return;
         }
 
-        double t = AtariTime ?? _atariClock.Elapsed.TotalSeconds;
+        double t = GroupPulseTime ?? _groupClock.Elapsed.TotalSeconds;
+        bool breathe = Animate && Effects == Services.EffectsLevel.Full;
         double r = g.Cell * StoneRadius;
-        foreach (AtariGroup group in groups)
+        foreach (GroupStatus group in groups)
         {
-            Point top = group.Stones.Where(p => board.IsOnBoard(p) && board[p] != Stone.Empty)
-                .OrderBy(p => p.Y).ThenByDescending(p => p.X).FirstOrDefault(new Point(-1, -1));
-            if (top.X < 0)
+            (Color color, double alpha) = group.Health switch
             {
-                continue;
-            }
-
-            double phase = (group.Liberty.X * 0.37) + (group.Liberty.Y * 0.61);
-            double u = Animate ? ((t + phase) % AtariCycle) / AtariCycle : 0.3;
-            // 0–0.1 pops in, 0.1–0.7 slides from the upper right down the side, 0.7–0.85 drips off and fades.
-            double angle = -Math.PI * 0.32;
-            double size = 1;
-            double alpha = 1;
-            double drop = 0;
-            if (u < 0.1)
+                GroupHealth.Unsettled => (Color.FromRgb(70, 130, 220), 0.32),
+                GroupHealth.Weak => (Color.FromRgb(70, 130, 220), 0.58),
+                _ => (Color.FromRgb(205, 72, 60), breathe ? 0.5 + (0.3 * (0.5 - (0.5 * Math.Cos(2 * Math.PI * t / PulseSeconds)))) : 0.65),
+            };
+            var brush = new RadialGradientBrush
             {
-                size = u / 0.1;
-            }
-            else if (u < 0.7)
+                GradientStops =
+                {
+                    new GradientStop(Color.FromArgb((byte)(255 * alpha), color.R, color.G, color.B), 0.55),
+                    new GradientStop(Color.FromArgb(0, color.R, color.G, color.B), 1),
+                },
+            };
+            foreach (Point p in group.Stones)
             {
-                angle += (u - 0.1) / 0.6 * Math.PI * 0.32;
+                if (board.IsOnBoard(p) && board[p] != Stone.Empty)
+                {
+                    context.DrawEllipse(brush, null, StoneCenter(g, p), r * 1.6, r * 1.6);
+                }
             }
-            else if (u < 0.85)
-            {
-                angle = 0;
-                double k = (u - 0.7) / 0.15;
-                drop = k * k * r * 0.9;
-                alpha = 1 - k;
-            }
-            else
-            {
-                continue;
-            }
-
-            AvPoint c = Trembled(g, top);
-            var at = new AvPoint(c.X + (Math.Cos(angle) * r * 1.02), c.Y + (Math.Sin(angle) * r * 1.02) + drop);
-            DrawDrop(context, at, g.Cell * 0.14 * (0.5 + (0.5 * size)), alpha);
         }
     }
 
-    private static void DrawDrop(DrawingContext context, AvPoint bottom, double radius, double alpha)
+    /// <summary>The red halo breathes only while a group in serious danger is shown with full effects.</summary>
+    private void UpdateGroupTimer()
     {
-        // A teardrop: round belly at the bottom, pointed tip at the top.
-        var geometry = new StreamGeometry();
-        using (StreamGeometryContext ctx = geometry.Open())
-        {
-            var tip = new AvPoint(bottom.X, bottom.Y - (radius * 2.6));
-            ctx.BeginFigure(tip, true);
-            ctx.CubicBezierTo(new AvPoint(bottom.X + (radius * 0.4), bottom.Y - (radius * 1.6)), new AvPoint(bottom.X + (radius * 1.15), bottom.Y - (radius * 0.6)), new AvPoint(bottom.X + radius, bottom.Y));
-            ctx.ArcTo(new AvPoint(bottom.X - radius, bottom.Y), new Size(radius, radius), 0, false, SweepDirection.Clockwise);
-            ctx.CubicBezierTo(new AvPoint(bottom.X - (radius * 1.15), bottom.Y - (radius * 0.6)), new AvPoint(bottom.X - (radius * 0.4), bottom.Y - (radius * 1.6)), tip);
-            ctx.EndFigure(true);
-        }
-
-        byte a = (byte)(255 * Math.Clamp(alpha, 0, 1));
-        var fill = new LinearGradientBrush
-        {
-            StartPoint = new RelativePoint(0.3, 0, RelativeUnit.Relative),
-            EndPoint = new RelativePoint(0.7, 1, RelativeUnit.Relative),
-            GradientStops =
-            {
-                new GradientStop(Color.FromArgb(a, 210, 236, 255), 0),
-                new GradientStop(Color.FromArgb(a, 110, 175, 240), 1),
-            },
-        };
-        context.DrawGeometry(fill, new Pen(new ImmutableSolidColorBrush(Color.FromArgb((byte)(a * 0.8), 50, 110, 190)), Math.Max(0.8, radius * 0.18)), geometry);
-        context.DrawEllipse(new ImmutableSolidColorBrush(Color.FromArgb((byte)(a * 0.9), 255, 255, 255)), null, new AvPoint(bottom.X - (radius * 0.35), bottom.Y - (radius * 0.45)), radius * 0.22, radius * 0.3);
-    }
-
-    private void UpdateAtariTimer()
-    {
-        bool needed = AtariGroups is { Count: > 0 } && Animate && Effects != Services.EffectsLevel.Off;
+        bool needed = GroupStatuses is { } groups && groups.Any(x => x.Health == GroupHealth.Critical)
+            && Animate && Effects == Services.EffectsLevel.Full;
         if (needed)
         {
-            if (!_atariClock.IsRunning)
+            if (!_groupClock.IsRunning)
             {
-                _atariClock.Restart();
+                _groupClock.Restart();
             }
 
-            _atariTimer ??= new Avalonia.Threading.DispatcherTimer(TimeSpan.FromMilliseconds(33), Avalonia.Threading.DispatcherPriority.Render, (_, _) => InvalidateVisual());
-            _atariTimer.Start();
+            _groupTimer ??= new Avalonia.Threading.DispatcherTimer(TimeSpan.FromMilliseconds(50), Avalonia.Threading.DispatcherPriority.Render, (_, _) => InvalidateVisual());
+            _groupTimer.Start();
         }
         else
         {
-            _atariTimer?.Stop();
-            _atariClock.Reset();
+            _groupTimer?.Stop();
+            _groupClock.Reset();
         }
 
         InvalidateVisual();
@@ -936,9 +857,6 @@ public sealed class GoBoardControl : Control
 
     /// <summary>True when the running capture is the subtle fade; for tests.</summary>
     internal bool IsCaptureSubtle => _capture?.IsSubtle == true;
-
-    /// <summary>Stones shivering in the last frame (atari alert); for tests.</summary>
-    internal int TremblingStones => _tremble.Count;
 
     /// <summary>The captured stones being animated, for tests.</summary>
     internal int CapturingStones => _capture?.Count ?? 0;

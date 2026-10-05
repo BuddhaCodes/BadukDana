@@ -184,6 +184,28 @@ def stone(variant: int) -> np.ndarray:
     return finish(reverb(rng, out, 0.25, 0.08), 0.6)
 
 
+def stone_firm(variant: int) -> np.ndarray:
+    """A stone played with intent — contact, hane, a cut, an atari: the same stone, but put down firmly. A brighter,
+    drier clack with a quick slap of the edge and almost no settle, still free of any ringing. Three variants."""
+    rng = np.random.default_rng(400 + variant)
+    t = t_axis(0.4)
+    out = np.zeros(len(t))
+
+    def contact(at: float, gain: float, brightness: float) -> np.ndarray:
+        tt = np.clip(t - at, 0, None)
+        gate = (t >= at).astype(float)
+        burst = lowpass(rng.standard_normal(len(t)), brightness) * np.exp(-tt / 0.0025) * np.clip(tt / 0.0002, 0, 1)
+        body = sum(a * np.sin(2 * np.pi * f * (1 + 0.035 * (variant - 1)) * tt) * np.exp(-tt / d)
+                   for f, a, d in ((240, 0.8, 0.022), (520, 0.75, 0.016), (1250, 0.4, 0.008), (2300, 0.22, 0.004)))
+        return (1.1 * burst + body) * gate * gain
+
+    land = 0.006 + 0.002 * variant
+    out += contact(0.0, 0.5, 3600)             # the edge slaps down
+    out += contact(land, 1.0, 5200)            # flat, firmly
+    out = lowpass(out, 7000)
+    return finish(reverb(rng, out, 0.2, 0.06), 0.72)
+
+
 def capture(big: bool) -> np.ndarray:
     """Stones captured: a crisp crack as they shatter, a little debris, the clack of the stones being gathered into
     the lid, and a soft rising chime (two notes, or a three-note arpeggio plus a low thock for a big capture)."""
@@ -265,6 +287,7 @@ if __name__ == "__main__":
     write("capture_big.wav", capture(True))
     for i in range(3):
         write(f"stone_{i + 1}.wav", stone(i))
+        write(f"stone_firm_{i + 1}.wav", stone_firm(i))
     write("impact_small.wav", impact_small())
     write("explosion_medium.wav", explosion_medium())
     write("explosion_big.wav", explosion_big())

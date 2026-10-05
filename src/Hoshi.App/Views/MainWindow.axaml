@@ -276,7 +276,7 @@
                           Suggestions="{Binding Analysis.BoardSuggestions}"
                           Impact="{Binding Analysis.Impact}"
                           Effects="{Binding Effects.Level}"
-                          AtariGroups="{Binding Analysis.AtariGroups}"
+                          GroupStatuses="{Binding Analysis.GroupStatuses}"
                           Animate="{DynamicResource Theme.Animations}"
                           LastMove="{Binding Game.LastMove}"
                           Markers="{Binding Game.Markers}"

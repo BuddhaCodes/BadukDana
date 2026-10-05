@@ -175,6 +175,56 @@ public sealed class SiteScreenshotTests
     }
 
     [AvaloniaFact]
+    public void Weak_groups_screenshot_is_rendered()
+    {
+        string dir = Path.Combine(AppContext.BaseDirectory, "screenshots", "site");
+        Directory.CreateDirectory(dir);
+        ThemeService.Apply(HoshiThemes.NightSky, animations: false, Application.Current!.Resources);
+        try
+        {
+            // A white group short of eyes inside Black's wall (contested), and a black stone lost inside White's area.
+            (int X, int Y, Hoshi.Core.Stone S, double Own)[] stones =
+            [
+                (2, 1, Hoshi.Core.Stone.Black, 0.85), (3, 1, Hoshi.Core.Stone.Black, 0.85), (1, 2, Hoshi.Core.Stone.Black, 0.85),
+                (1, 3, Hoshi.Core.Stone.Black, 0.85), (2, 4, Hoshi.Core.Stone.Black, 0.8), (4, 3, Hoshi.Core.Stone.Black, 0.7),
+                (2, 2, Hoshi.Core.Stone.White, 0.05), (3, 2, Hoshi.Core.Stone.White, 0.05), (2, 3, Hoshi.Core.Stone.White, 0.05),
+                (5, 5, Hoshi.Core.Stone.White, -0.85), (7, 5, Hoshi.Core.Stone.White, -0.85), (6, 7, Hoshi.Core.Stone.White, -0.85),
+                (6, 6, Hoshi.Core.Stone.Black, -0.8), (5, 6, Hoshi.Core.Stone.White, -0.85),
+            ];
+            Hoshi.Core.BoardState state = Hoshi.Core.BoardState.Create(9).Setup([.. stones.Select(s => (new Point(s.X, s.Y), s.S))]);
+            double[] own = new double[81];
+            foreach (var st in stones)
+            {
+                own[(st.Y * 9) + st.X] = st.Own;
+            }
+
+            var board = new Hoshi.App.Controls.GoBoardControl
+            {
+                Board = state,
+                BoardStyle = HoshiThemes.NightSky.Board,
+                ShowCoordinates = false,
+                GroupStatuses = Hoshi.Core.GroupStrength.Assess(state, own),
+                GroupPulseTime = 1.3,
+                Margin = new Thickness(18),
+            };
+            var window = new Avalonia.Controls.Window
+            {
+                Width = 480,
+                Height = 480,
+                Content = new Avalonia.Controls.Panel { Children = { new Hoshi.App.Controls.ThemeBackground { Kind = BackgroundKind.NightSky, Animate = false }, board } },
+            };
+            window.Show();
+            using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
+            frame.Save(Path.Combine(dir, "weak-groups.png"));
+            window.Close();
+        }
+        finally
+        {
+            ThemeService.Apply(HoshiThemes.Default, animations: false, Application.Current!.Resources);
+        }
+    }
+
+    [AvaloniaFact]
     public async Task Board_and_stones_screenshot_is_rendered_in_English()
     {
         string dir = Path.Combine(AppContext.BaseDirectory, "screenshots", "site");

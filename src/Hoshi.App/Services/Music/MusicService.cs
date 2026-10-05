@@ -25,7 +25,9 @@ public interface IMusicService
     void SetVolume(double volume);
 
     /// <summary>The engine's verdict on a move the user just played.</summary>
-    void OnVerdict(MoveQuality quality);
+    /// <param name="importance">How big the moment was (0 routine … 3 turning point); see <c>MoveImportance</c>.</param>
+    /// <param name="opening">The move was in the opening, where the music stays calm.</param>
+    void OnVerdict(MoveQuality quality, int importance = 3, bool opening = false);
 
     /// <summary>The fight on the board, when there is no engine verdict (live OGS games, no KataGo).</summary>
     void OnBattle(double heat);
@@ -122,11 +124,11 @@ public sealed class MusicService : IMusicService, IDisposable
         }
     }
 
-    public void OnVerdict(MoveQuality quality)
+    public void OnVerdict(MoveQuality quality, int importance = 3, bool opening = false)
     {
         lock (_gate)
         {
-            _director.OnVerdict(quality, Now);
+            _director.OnVerdict(quality, Now, importance, opening);
         }
     }
 

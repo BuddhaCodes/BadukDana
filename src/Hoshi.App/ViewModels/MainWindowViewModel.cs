@@ -84,12 +84,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _sounds = sounds;
         if (sounds is not null)
         {
-            game.StonePlaced += (_, _) =>
+            game.MoveSettled += (_, move) =>
             {
                 AppSettings current = settings?.Current ?? new AppSettings();
                 if (current.StoneSounds)
                 {
-                    sounds.Play(SoundEffect.Stone, current.SoundVolume / 100.0 * 0.8);
+                    (SoundEffect sound, double loudness) = StoneSound(move);
+                    sounds.Play(sound, current.SoundVolume / 100.0 * loudness);
                 }
             };
             game.GroupsEnteredAtari += (_, _) =>
@@ -111,7 +112,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
         if (music is not null)
         {
-            Analysis.MoveJudged += (_, verdict) => music.OnVerdict(verdict.Quality);
+            Analysis.MoveWeighed += (_, weight) => music.OnVerdict(weight.Quality, weight.Importance, weight.Opening);
             Analysis.BattleHeat += (_, heat) => music.OnBattle(heat);
             AppSettings s = settings?.Current ?? new AppSettings();
             music.SetVolume(s.MusicVolume / 100.0);
@@ -192,6 +193,18 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>The update banner and "Check for updates…" (null without a host, e.g. the designer).</summary>
     public UpdateViewModel? Updates { get; }
+
+    /// <summary>
+    /// The stone's own sound: a soft thud for quiet moves (openings, extensions, connections) and a firmer clack for
+    /// moves played with intent — touching an enemy stone, or leaving a group nearby short of liberties.
+    /// </summary>
+    public static (SoundEffect Sound, double Loudness) StoneSound(PlacedMove move)
+    {
+        ArgumentNullException.ThrowIfNull(move);
+        int captured = move.Before.AllPoints.Count(p => move.Before[p] != Hoshi.Core.Stone.Empty && move.After[p] == Hoshi.Core.Stone.Empty);
+        double intensity = Hoshi.Core.FightMeter.Intensity(move.Before, move.After, move.Point, captured);
+        return intensity >= 0.6 ? (SoundEffect.StoneFirm, 0.9) : (SoundEffect.Stone, 0.7);
+    }
 
     /// <summary>Board effects strength (bottom bar, sound panel, Preferences, F).</summary>
     public EffectsViewModel Effects { get; }

@@ -25,6 +25,9 @@ internal sealed class FakeAnalysisEngine : IAnalysisEngine
     /// <summary>Best move suggested at every turn.</summary>
     public Point BestMove { get; set; } = new(15, 3);
 
+    /// <summary>Points the second candidate loses against the best: small = a routine position, large = critical.</summary>
+    public double SecondGap { get; set; } = 0.4;
+
     public event EventHandler? Changed;
 
     public void RaiseChanged() => Changed?.Invoke(this, EventArgs.Empty);
@@ -51,7 +54,7 @@ internal sealed class FakeAnalysisEngine : IAnalysisEngine
             }
 
             MoveCandidate best = new(BestMove, 0, 80, 0.55, lead, 0.5, [BestMove]);
-            MoveCandidate second = new(new Point(3, 3), 1, 20, 0.5, lead + (toMove == Stone.Black ? -0.4 : 0.4), 0.2, []);
+            MoveCandidate second = new(new Point(3, 3), 1, 20, 0.5, lead + (toMove == Stone.Black ? -SecondGap : SecondGap), 0.2, []);
             double[] ownership = [.. Enumerable.Range(0, query.Width * query.Height).Select(i => i < query.Width ? 1.0 : 0)];
             return new TurnAnalysis(t, toMove, 0.55, lead, 100, [best, second], ownership);
         }).ToList();

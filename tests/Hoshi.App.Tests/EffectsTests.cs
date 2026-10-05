@@ -37,6 +37,9 @@ internal sealed class PonderingEngine : IAnalysisEngine
 
     public int PartialVisits { get; set; } = 60;
 
+    /// <summary>Points the alternative (a pass, so it is never suggested) loses: a critical position by default.</summary>
+    public double AlternativeLoss { get; set; } = 9;
+
     public List<AnalysisQuery> Queries { get; } = [];
 
     public event EventHandler? Changed;
@@ -52,7 +55,9 @@ internal sealed class PonderingEngine : IAnalysisEngine
         foreach (int t in query.Turns.Count == 0 ? [query.Moves.Count] : query.Turns)
         {
             Stone toMove = t % 2 == 0 ? Stone.Black : Stone.White;
-            onUpdate(new TurnAnalysis(t, toMove, 0.5, 0.5, PartialVisits, [new MoveCandidate(BestMove, 0, PartialVisits, 0.5, 0.5, 0.4, [])], null));
+            double alternative = 0.5 + (toMove == Stone.Black ? -AlternativeLoss : AlternativeLoss);
+            onUpdate(new TurnAnalysis(t, toMove, 0.5, 0.5, PartialVisits,
+                [new MoveCandidate(BestMove, 0, PartialVisits, 0.5, 0.5, 0.4, []), new MoveCandidate(null, 1, 5, 0.4, alternative, 0.01, [])], null));
         }
 
         await Task.Delay(Timeout.Infinite, cancellationToken);
@@ -69,7 +74,10 @@ public sealed class LiveAnalysisTests
         var engine = new PonderingEngine();
         var sounds = new FakeSoundService();
         var vm = new AnalysisViewModel(game, engine, new ImmediateDispatcher(), sounds, new TestSettings()) { IsAnalysisOn = true };
-        await Task.Delay(300);
+        for (int i = 0; i < 250 && (engine.Queries.Count == 0 || vm.Suggestions.Count == 0); i++)
+        {
+            await Task.Delay(20); // under load the first live query can take a moment
+        }
 
         engine.Queries.Should().ContainSingle().Which.Should().Match<AnalysisQuery>(q => q.Priority == 10 && q.ReportDuringSearchEvery == AnalysisViewModel.LiveReportSeconds && q.MaxVisits == 500);
         vm.Suggestions.Should().ContainSingle(s => s.Point == new Point(15, 3), "partial results are shown while KataGo keeps searching");
@@ -115,6 +123,7 @@ public sealed class MoveEffectsTests
 
     public MoveEffectsTests()
     {
+        _engine.SecondGap = 9; // a critical position: the alternatives lose 9 points, so the best move is a big moment
         _vm = new AnalysisViewModel(_game, _engine, new ImmediateDispatcher(), _sounds, _settings) { IsAnalysisOn = true };
     }
 
@@ -144,6 +153,22 @@ public sealed class MoveEffectsTests
 
         _vm.Impact.Should().Be(new BoardImpact(new Point(15, 3), 3, 1));
         _sounds.Played.Should().Equal((SoundEffect.ExplosionBig, 0.7));
+    }
+
+    [AvaloniaFact]
+    public async Task A_routine_opening_move_only_gets_its_stone_sound_even_when_it_is_the_best()
+    {
+        var game = new GameViewModel();
+        var sounds = new FakeSoundService();
+        var engine = new FakeAnalysisEngine { SecondGap = 0.4 }; // every sensible move is about as good
+        var vm = new AnalysisViewModel(game, engine, new ImmediateDispatcher(), sounds, new TestSettings()) { IsAnalysisOn = true };
+        game.PlayCommand.Execute(new Point(15, 3));
+        await SettleAsync();
+
+        vm.Assessment!.Quality.Should().Be(MoveQuality.Best);
+        vm.LastImportance.Should().Be(0);
+        vm.Impact.Should().BeNull();
+        sounds.Played.Should().BeEmpty();
     }
 
     [AvaloniaFact]
@@ -292,6 +317,24 @@ public sealed class MoveEffectsTests
     }
 
     [AvaloniaFact]
+    public void Quiet_stones_thud_softly_and_contact_plays_clack()
+    {
+        var sounds = new FakeSoundService();
+        var settings = new TestSettings();
+        var vm = new MainWindowViewModel(new GameViewModel(), ui: new ImmediateDispatcher(), sounds: sounds, settings: settings);
+        vm.Game.PlayCommand.Execute(new Point(3, 3));   // B: opening corner
+        vm.Game.PlayCommand.Execute(new Point(15, 15)); // W: opening corner
+        vm.Game.PlayCommand.Execute(new Point(15, 14)); // B: attaches
+        vm.Game.PlayCommand.Execute(new Point(3, 5));   // W: approach at a distance
+        vm.Game.PlayCommand.Execute(new Point(3, 4));   // B: contact
+
+        sounds.Played.Select(p => p.Effect).Should().Equal(
+            SoundEffect.Stone, SoundEffect.Stone, SoundEffect.StoneFirm, SoundEffect.Stone, SoundEffect.StoneFirm);
+        sounds.Played[0].Volume.Should().BeApproximately(0.7 * 0.7, 1e-9);
+        sounds.Played[2].Volume.Should().BeApproximately(0.7 * 0.9, 1e-9);
+    }
+
+    [AvaloniaFact]
     public void A_stone_sound_plays_for_each_new_stone_but_not_for_jumps_or_edits()
     {
         var game = new GameViewModel();
@@ -403,14 +446,15 @@ public sealed class MoveEffectsTests
         game.PlayCommand.Execute(new Point(4, 2));   // B: white D17 has one liberty left (D18)
 
         alerts.Should().Equal(1);
-        vm.AtariGroups.Should().ContainSingle().Which.Liberty.Should().Be(new Point(3, 1));
+        vm.GroupStatuses.Should().ContainSingle(g => g.Health == GroupHealth.Critical)
+            .Which.Stones.Should().Equal(new Point(3, 2));
         game.PlayCommand.Execute(new Point(15, 3));  // W elsewhere: still in atari, not announced again
         alerts.Should().Equal(1);
-        vm.AtariGroups.Should().HaveCount(1);
+        vm.GroupStatuses.Should().ContainSingle(g => g.Health == GroupHealth.Critical);
     }
 
     [AvaloniaFact]
-    public void A_group_in_atari_trembles_and_sweats_and_frames_are_saved()
+    public void Weak_groups_get_a_quiet_halo_and_frames_are_saved()
     {
         var board = new GoBoardControl { Animate = true, BoardStyle = HoshiThemes.NightSky.Board };
         var window = new Window { Width = 600, Height = 600, Content = board };
@@ -419,13 +463,13 @@ public sealed class MoveEffectsTests
             (new Point(3, 2), Stone.White), (new Point(4, 2), Stone.White),
             (new Point(2, 2), Stone.Black), (new Point(5, 2), Stone.Black), (new Point(3, 3), Stone.Black), (new Point(4, 3), Stone.Black), (new Point(4, 1), Stone.Black)]);
         board.Board = state;
-        board.AtariGroups = Hoshi.Core.Atari.Groups(state);
-        board.AtariGroups.Should().ContainSingle();
+        board.GroupStatuses = GroupStrength.Assess(state);
+        board.GroupStatuses.Should().ContainSingle(g => g.Health == GroupHealth.Critical);
 
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
-        foreach ((double t, string name) in new[] { (0.2, "atari-1.png"), (1.2, "atari-2.png"), (1.85, "atari-3.png") })
+        foreach ((double t, string name) in new[] { (0.2, "weak-groups-1.png"), (1.3, "weak-groups-2.png") })
         {
-            board.AtariTime = t;
+            board.GroupPulseTime = t;
             board.InvalidateVisual();
             using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
             frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", name));
@@ -487,7 +531,7 @@ public sealed class BattleAndReplayTests
         string root = Directory.CreateTempSubdirectory("hoshi-replays").FullName;
         var store = new ReplayStore(dataDirectory: root);
         var game = new GameViewModel();
-        var engine = new FakeAnalysisEngine();
+        var engine = new FakeAnalysisEngine { SecondGap = 9 }; // every position critical, so the right move is a big moment
         var sounds = new FakeSoundService();
         var list = new ReplaysViewModel(store);
         var main = new MainWindowViewModel(game, ui: new ImmediateDispatcher(), engine: engine, sounds: sounds, settings: new TestSettings(),

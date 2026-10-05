@@ -121,7 +121,7 @@ public sealed class AudioTests
 
         public void SetVolume(double volume) => Volume = volume;
 
-        public void OnVerdict(MoveQuality quality)
+        public void OnVerdict(MoveQuality quality, int importance = 3, bool opening = false)
         {
         }
 

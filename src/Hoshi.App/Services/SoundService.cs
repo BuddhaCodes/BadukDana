@@ -19,8 +19,11 @@ public enum SoundEffect
     /// <summary>The engine's best move: a cinematic explosion.</summary>
     ExplosionBig,
 
-    /// <summary>Any stone placed: a muffled wooden thud, like a phone set down on a table (three variants, rotated).</summary>
+    /// <summary>A quiet stone (opening, extensions): a muffled wooden thud, like a phone set down on a table (three variants, rotated).</summary>
     Stone,
+
+    /// <summary>A stone played with intent (contact, hane, cut, atari): a firmer, drier clack (three variants, rotated).</summary>
+    StoneFirm,
 
     /// <summary>One or two stones captured: crack, gathered clacks, a two-note chime.</summary>
     CaptureSmall,
@@ -87,6 +90,7 @@ public sealed class SystemSoundService : ISoundService
         SoundEffect.ImpactSmall => "impact_small",
         SoundEffect.ExplosionMedium => "explosion_medium",
         SoundEffect.Stone => "stone",
+        SoundEffect.StoneFirm => "stone_firm",
         SoundEffect.CaptureSmall => "capture_small",
         SoundEffect.CaptureBig => "capture_big",
         SoundEffect.Atari => "atari",
@@ -104,10 +108,11 @@ public sealed class SystemSoundService : ISoundService
 
         try
         {
-            string file = effect == SoundEffect.Stone
-                ? ResolveName("stone", $"stone_{(Interlocked.Increment(ref _stoneVariant) % 3) + 1}")
+            bool stone = effect is SoundEffect.Stone or SoundEffect.StoneFirm;
+            string file = stone
+                ? ResolveName(FileName(effect), $"{FileName(effect)}_{(Interlocked.Increment(ref _stoneVariant) % 3) + 1}")
                 : Resolve(effect);
-            if (OperatingSystem.IsWindows() && effect == SoundEffect.Stone && file.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
+            if (OperatingSystem.IsWindows() && stone && file.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
             {
                 PlayQuickWindows(file, volume);
             }
@@ -132,7 +137,9 @@ public sealed class SystemSoundService : ISoundService
 
     /// <summary>The user's replacement file if there is one, otherwise the built-in WAV (copied out of the assembly once).</summary>
     internal string Resolve(SoundEffect effect) =>
-        effect == SoundEffect.Stone ? ResolveName("stone", "stone_1") : ResolveName(FileName(effect), FileName(effect));
+        effect is SoundEffect.Stone or SoundEffect.StoneFirm
+            ? ResolveName(FileName(effect), FileName(effect) + "_1")
+            : ResolveName(FileName(effect), FileName(effect));
 
     internal string ResolveName(string customName, string name)
     {
