@@ -92,6 +92,10 @@
   .btn.ghost { border-color: var(--line); color: var(--text); background: rgba(255, 255, 255, .02); }
   .btn.ghost:hover { border-color: rgba(217, 180, 90, .6); }
   .btn.big { font-size: 17px; padding: 15px 30px; }
+  .cta .btn.big { font-size: 16px; padding: 14px 22px; }
+  .btn.donate .heart { color: #e2567a; transition: transform .2s; }
+  .btn.donate:hover { border-color: rgba(226, 86, 122, .6); }
+  .btn.donate:hover .heart { transform: scale(1.18); }
 
   /* Nav */
   nav { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: rgba(10, 13, 25, .74); border-bottom: 1px solid var(--line); }
@@ -286,6 +290,7 @@
       <div class="cta">
         <a class="btn primary big" href="#download" id="hero-dl" data-i18n="hero.cta">Get Hoshi</a>
         <a class="btn ghost big" href="https://github.com/BuddhaCodes/BadukDana" data-i18n="hero.github">Source on GitHub</a>
+        <a class="btn ghost big donate" href="https://paypal.me/CarlosFernandez934" rel="noopener" title="PayPal"><span class="heart" aria-hidden="true">♥</span><span data-i18n="hero.support">Support Hoshi</span></a>
       </div>
       <ul class="facts">
         <li>Windows · macOS · Linux</li>
@@ -577,7 +582,7 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
     "hero.eyebrow": "Go · Baduk · Weiqi",
     "hero.title": "Un tablero de Go que <em>siente</em> cada jugada.",
     "hero.lead": "Hoshi es una app de escritorio gratuita para jugar y estudiar Go. Un tablero precioso, KataGo valorando cada jugada en vivo, guía de josekis en cada esquina, efectos de cine cuando das con la mejor jugada y música lo-fi que se anima con tus rachas.",
-    "hero.cta": "Consigue Hoshi", "hero.github": "Código en GitHub", "hero.badge2": "KataGo incluido", "hero.badge3": "Juega en OGS", "hero.badge4": "Entrenador de josekis", "hero.badge5": "Motores GTP",
+    "hero.cta": "Consigue Hoshi", "hero.github": "Código en GitHub", "hero.support": "Apoya Hoshi", "hero.badge2": "KataGo incluido", "hero.badge3": "Juega en OGS", "hero.badge4": "Entrenador de josekis", "hero.badge5": "Motores GTP",
     "board.watch": "Se está jugando una apertura…", "board.reset": "Vaciar el tablero",
     "board.black": "Juegan negras: pon una piedra", "board.white": "Juegan blancas: pon una piedra",
     "feat.eyebrow": "Funciones", "feat.title": "Todo lo que necesitas frente al tablero.",
