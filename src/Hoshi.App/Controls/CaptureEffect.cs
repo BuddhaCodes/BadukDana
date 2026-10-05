@@ -20,8 +20,10 @@ internal sealed class CaptureEffect
 
     private readonly List<Victim> _victims = [];
 
-    public CaptureEffect(Point origin, IEnumerable<(Point Point, Stone Color)> captured, int seed)
+    /// <param name="subtle">Subtle effects: the stones just shrink and fade where they were, without shards or glints.</param>
+    public CaptureEffect(Point origin, IEnumerable<(Point Point, Stone Color)> captured, int seed, bool subtle = false)
     {
+        IsSubtle = subtle;
         var rng = new Random(seed);
         foreach ((Point p, Stone color) in captured)
         {
@@ -51,6 +53,8 @@ internal sealed class CaptureEffect
 
     public double Duration { get; }
 
+    public bool IsSubtle { get; }
+
     public int Count => _victims.Count;
 
     public bool IsDone(double t) => t >= Duration;
@@ -78,6 +82,20 @@ internal sealed class CaptureEffect
             double k = local / ShardSeconds;
             if (k >= 1.25)
             {
+                continue;
+            }
+
+            if (IsSubtle)
+            {
+                if (k < 1)
+                {
+                    double fade = 1 - k;
+                    using (context.PushOpacity(fade * fade))
+                    {
+                        drawStone(context, c, r * (1 - (0.25 * k)), v.Color, v.Point);
+                    }
+                }
+
                 continue;
             }
 

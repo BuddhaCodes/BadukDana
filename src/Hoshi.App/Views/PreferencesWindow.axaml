@@ -188,6 +188,13 @@
             <CheckBox IsChecked="{Binding ChatSounds}" x:Name="ChatSoundsBox"
                       Content="{l:T Prefs.ChatSoundsBox}" />
 
+            <TextBlock Classes="label" Text="{l:T Effects.Title}" Margin="0,14,0,0" />
+            <StackPanel Orientation="Horizontal" Spacing="14" x:Name="PrefsEffectsLevels">
+              <RadioButton GroupName="effects-prefs" Content="{l:T Effects.Off}" IsChecked="{Binding Effects.IsOff}" />
+              <RadioButton GroupName="effects-prefs" Content="{l:T Effects.Subtle}" IsChecked="{Binding Effects.IsSubtle}" />
+              <RadioButton GroupName="effects-prefs" Content="{l:T Effects.Full}" IsChecked="{Binding Effects.IsFull}" />
+            </StackPanel>
+            <TextBlock Classes="secondary" TextWrapping="Wrap" Text="{l:T Effects.Hint}" />
             <CheckBox IsChecked="{Binding AtariAlerts}" x:Name="AtariAlertsBox"
                       Content="{l:T Prefs.AtariBox}" />
 

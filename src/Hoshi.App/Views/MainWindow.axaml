@@ -159,6 +159,23 @@
             <Button Classes="bar" Command="{Binding OpenLobbyCommand}" ToolTip.Tip="{l:T Main.OnlineTip}" x:Name="OnlineButton"
                     IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Online}" Size="17" /><TextBlock Text="{l:T Main.Online}" VerticalAlignment="Center" /></StackPanel></Button>
             <Button Classes="bar" Command="{Binding Game.ToggleEditModeCommand}" IsVisible="{Binding Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Check}" Size="17" /><TextBlock Text="{l:T Main.FinishEditing}" VerticalAlignment="Center" /></StackPanel></Button>
+            <!-- Board effects: explosions, shattering captures, atari alert — Off / Subtle / Full, also with F. -->
+            <Button Classes="bar icon" ToolTip.Tip="{Binding Effects.Tooltip}" x:Name="EffectsButton" Classes.dim="{Binding Effects.IsOff}">
+              <c:HoshiIcon Icon="{DynamicResource Icon.Effects}" Size="18" />
+              <Button.Flyout>
+                <Flyout Placement="TopEdgeAlignedRight">
+                  <StackPanel Width="250" Spacing="8" Margin="4" x:Name="EffectsPanel">
+                    <TextBlock Text="{l:T Effects.Title}" FontWeight="SemiBold" />
+                    <StackPanel Spacing="2" x:Name="EffectsLevels">
+                        <RadioButton GroupName="effects-bar" Content="{l:T Effects.Off}" IsChecked="{Binding Effects.IsOff}" />
+                        <RadioButton GroupName="effects-bar" Content="{l:T Effects.Subtle}" IsChecked="{Binding Effects.IsSubtle}" />
+                        <RadioButton GroupName="effects-bar" Content="{l:T Effects.Full}" IsChecked="{Binding Effects.IsFull}" />
+                      </StackPanel>
+                    <TextBlock Classes="secondary" FontSize="12" TextWrapping="Wrap" Text="{l:T Effects.Hint}" />
+                  </StackPanel>
+                </Flyout>
+              </Button.Flyout>
+            </Button>
             <!-- Sound: the panel mutes everything and sets the effects and music volumes. -->
             <Button Classes="bar icon" ToolTip.Tip="{Binding Audio.Tooltip, FallbackValue={x:Null}}" x:Name="AudioButton"
                     IsVisible="{Binding Audio, Converter={x:Static ObjectConverters.IsNotNull}}">
@@ -184,6 +201,13 @@
                       <TextBlock Classes="secondary" FontSize="12" TextWrapping="Wrap" Text="{Binding Audio.MusicProblem}"
                                  IsVisible="{Binding Audio.MusicProblem, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
                     </StackPanel>
+                    <Separator Margin="0,4" />
+                    <TextBlock Text="{l:T Effects.Title}" />
+                    <StackPanel Spacing="2" x:Name="AudioEffectsLevels">
+                        <RadioButton GroupName="effects-audio" Content="{l:T Effects.Off}" IsChecked="{Binding Effects.IsOff}" />
+                        <RadioButton GroupName="effects-audio" Content="{l:T Effects.Subtle}" IsChecked="{Binding Effects.IsSubtle}" />
+                        <RadioButton GroupName="effects-audio" Content="{l:T Effects.Full}" IsChecked="{Binding Effects.IsFull}" />
+                      </StackPanel>
                   </StackPanel>
                 </Flyout>
               </Button.Flyout>
@@ -235,6 +259,7 @@
           <KeyBinding Gesture="T" Command="{Binding Analysis.ToggleTerritoryCommand}" />
           <KeyBinding Gesture="A" Command="{Binding Analysis.ToggleAnalysisCommand}" />
           <KeyBinding Gesture="M" Command="{Binding ToggleMusicCommand}" />
+          <KeyBinding Gesture="F" Command="{Binding Effects.CycleCommand}" />
           <KeyBinding Gesture="J" Command="{Binding JosekiHints.ToggleCommand}" />
           <KeyBinding Gesture="N" Command="{Binding Joseki.NextCommand}" />
           <KeyBinding Gesture="H" Command="{Binding Joseki.ShowAnswerCommand}" />
@@ -250,6 +275,7 @@
                           Territory="{Binding Analysis.Territory}"
                           Suggestions="{Binding Analysis.BoardSuggestions}"
                           Impact="{Binding Analysis.Impact}"
+                          Effects="{Binding Effects.Level}"
                           AtariGroups="{Binding Analysis.AtariGroups}"
                           Animate="{DynamicResource Theme.Animations}"
                           LastMove="{Binding Game.LastMove}"

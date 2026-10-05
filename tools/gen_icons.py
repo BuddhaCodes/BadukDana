@@ -36,6 +36,7 @@ ICONS = {  # key: (phosphor, lucide, tabler)
     "Volume": ("speaker-high", "volume-2", "volume"),
     "Muted": ("speaker-slash", "volume-x", "volume-off"),
     "Engine": ("robot", "bot", "robot"),
+    "Effects": ("lightning", "zap", "bolt"),
 }
 
 def num(v): return float(v)

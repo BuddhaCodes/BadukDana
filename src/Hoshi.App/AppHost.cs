@@ -51,6 +51,7 @@ public static class AppHost
         services.AddSingleton<SystemSoundService>();
         services.AddSingleton<ISoundService>(sp => new MutableSoundService(sp.GetRequiredService<SystemSoundService>(), sp.GetRequiredService<ISettingsService>()));
         services.AddSingleton<AudioViewModel>();
+        services.AddSingleton<EffectsViewModel>();
         services.AddSingleton<Services.Music.IMusicService, Services.Music.MusicService>();
         services.AddSingleton<AnalysisEngineHost>();
         services.AddSingleton<Services.Engines.GtpEngineHost>();

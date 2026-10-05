@@ -181,6 +181,10 @@
     <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
     <Setter Property="FontSize" Value="{DynamicResource Font.Size.Small}" />
   </Style>
+  <!-- A bar button whose feature is switched off (e.g. visual effects): dimmed. -->
+  <Style Selector="Button.bar.dim">
+    <Setter Property="Opacity" Value="0.45" />
+  </Style>
   <Style Selector="Button.bar">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />

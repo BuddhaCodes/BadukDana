@@ -43,6 +43,16 @@ public static partial class Tr
         Add(d, "Engines.EndOfAnswer", "(end of answer)", "(fin de la respuesta)");
         Add(d, "Engines.NoAnalysisResult", "{0} sent no analysis.", "{0} no envió ningún análisis.");
 
+        Add(d, "Effects.Title", "Visual effects", "Efectos visuales");
+        Add(d, "Effects.Off", "Off", "Apagados");
+        Add(d, "Effects.Subtle", "Subtle", "Suaves");
+        Add(d, "Effects.Full", "Full", "Completos");
+        Add(d, "Effects.Tip", "Visual effects: {0} (F)", "Efectos visuales: {0} (F)");
+        Add(d, "Effects.Status", "Visual effects: {0}", "Efectos visuales: {0}");
+        Add(d, "Effects.Hint",
+            "Explosions of strong moves, shattering captures and the atari alert. Subtle keeps a small flash, a gentle fade and the sweat drop. F switches at any time.",
+            "Explosiones de las buenas jugadas, capturas que se rompen y el aviso de atari. Suaves deja un destello pequeño, un fundido y la gota de sudor. F los cambia en cualquier momento.");
+
         Add(d, "Prefs.EnginesTab", "Engines", "Motores");
         Add(d, "Prefs.EnginesIntro",
             "GTP engines to play against, to let play each other (Ctrl+G) and for the analysis panel. Hoshi's KataGo is ready when installed; add any other GTP engine with its command line.",

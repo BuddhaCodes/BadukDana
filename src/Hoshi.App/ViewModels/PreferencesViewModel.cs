@@ -176,8 +176,10 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         Services.Music.IMusicService? music = null,
         KataGoSetupViewModel? kataGoSetup = null,
         Services.Engines.IGtpEngineHost? engines = null,
-        Services.Engines.AnalysisEngineSwitch? analysisSwitch = null)
+        Services.Engines.AnalysisEngineSwitch? analysisSwitch = null,
+        EffectsViewModel? effects = null)
     {
+        Effects = effects ?? new EffectsViewModel(settings);
         _engines = engines;
         _analysisSwitch = analysisSwitch;
         KataGoSetup = kataGoSetup;
@@ -475,6 +477,9 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             _settings.Save(_settings.Current with { CheckForUpdates = value });
         }
     }
+
+    /// <summary>Board effects strength, shared with the bottom bar so a change mid-game shows here too.</summary>
+    public EffectsViewModel Effects { get; }
 
     /// <summary>One-click KataGo install (null without a host).</summary>
     public KataGoSetupViewModel? KataGoSetup { get; }

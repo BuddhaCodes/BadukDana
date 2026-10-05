@@ -76,7 +76,8 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     private IReadOnlyList<AtariGroup> _atariGroups = [];
 
     /// <summary>The atari alert is on and allowed (not while the user plays a live OGS game).</summary>
-    public bool IsAtariAlertActive => (_settings?.Current ?? new AppSettings()).AtariAlerts && !IsBlocked;
+    public bool IsAtariAlertActive =>
+        (_settings?.Current ?? new AppSettings()) is { AtariAlerts: true, Effects: not EffectsLevel.Off } && !IsBlocked;
 
     [ObservableProperty]
     private TerritoryEstimate? _territory;
