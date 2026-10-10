@@ -266,6 +266,7 @@
     <a class="brand" href="#top"><img src="icon.png" alt="">Hoshi <span>星</span></a>
     <div class="links">
       <a href="#features" data-i18n="nav.features">Features</a>
+      <a href="#review" data-i18n="nav.review">Review</a>
       <a href="#joseki" data-i18n="nav.joseki">Joseki</a>
       <a href="#craft" data-i18n="nav.craft">Boards &amp; stones</a>
       <a href="#effects" data-i18n="nav.effects">Effects</a>
@@ -344,6 +345,7 @@
         <li><span class="ico">↗</span><div><h3><span data-i18n="f20.t">Draw your thinking</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f20.d">Arrows, areas, circles, letters and numbered "what if" lines, without touching the game. During your OGS games it is notes only: no engine, and drawing never sends a move.</p></div></li>
         <li><span class="ico">⇆</span><div><h3><span data-i18n="f21.t">Share and discuss</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f21.d">Save the study as an SGF and send it to a friend or a teacher. Their notes and replies merge into yours; other programs still read it as comments.</p></div></li>
         <li><span class="ico">?</span><div><h3><span data-i18n="f22.t">What would you play?</span><span class="new" data-i18n="new">New</span></h3><p><span data-i18n="f22.d">A quiz built from your pins, and a printable game report with every moment, the notes and KataGo's verdict.</span> <a href="sample-report.html" data-i18n="f22.a">See a sample report</a></p></div></li>
+        <li><span class="ico">→</span><div><h3 data-i18n="f13.t">More below</h3><p><a href="#review" data-i18n="f23.d">How pins, drawings, sharing and the quiz work</a></p></div></li>
       </ul>
     </div>
 
@@ -383,6 +385,41 @@
         <li><span class="ico">♪</span><div><h3 data-i18n="f3.t">Adaptive music</h3><p data-i18n="f3.d">A calm lo-fi loop that adds drums, arpeggios and an overdrive layer as strong moves at key moments stack up. It stays calm through the opening and cools down when you slip.</p></div></li>
         <li><span class="ico">☾</span><div><h3><span data-i18n="f7.t">Themes, boards and stones</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f7.d">Five themes — Night sky, Ink and gold, Zen garden, Warm minimal and a Classic tribute — plus six gobans, five stone sets and ten backgrounds to mix with any of them.</p></div></li>
       </ul>
+    </div>
+  </div>
+</section>
+
+<section id="review" style="border-top:1px solid var(--line)">
+  <div class="wrap">
+    <div class="head reveal">
+      <p class="eyebrow" data-i18n="rv.eyebrow">Review</p>
+      <h2 data-i18n="rv.title">Study a game the way a teacher would.</h2>
+      <p data-i18n="rv.lead">Pin what mattered, draw what you saw, share it with a friend, and test yourself on it later. Everything stays inside the game's SGF file.</p>
+    </div>
+    <div class="joseki">
+      <figure class="reveal"><div class="shot"><img src="img/study.jpg" width="1120" height="704" alt="The study panel next to the board: tools, colours, the pins timeline and two pins with replies; arrows, an area, a circle, a letter and a numbered what-if line on the board" loading="lazy"></div>
+        <figcaption><b data-i18n="rv1.t">The study panel</b><span data-i18n="rv1.d">Press S in any game. Choose a category, write what happened (or nothing) and pin it to the move. Replies stay under each pin, and the timeline shows every pin along the game: click a dot to jump there, or filter by category.</span></figcaption></figure>
+      <figure class="reveal"><div class="shot"><img src="img/study-quiz.jpg" width="1120" height="704" alt="The What would you play? quiz: the position before a pinned mistake, with the right move circled in green and the try in red" loading="lazy"></div>
+        <figcaption><b data-i18n="rv2.t">What would you play?</b><span data-i18n="rv2.d">Your pins become a quiz. The board goes back to the position before each pinned move and you click your answer: green is the move to find, red is your try and ! is the move from the game.</span></figcaption></figure>
+    </div>
+    <ul class="legend" aria-label="Pin categories">
+      <li><i style="background:#d6403a"></i><span data-i18n="rc.mistake">Mistake</span></li>
+      <li><i style="background:#2e9e54"></i><span data-i18n="rc.good">Good move</span></li>
+      <li><i style="background:#3b82d6"></i><span data-i18n="rc.question">Question</span></li>
+      <li><i style="background:#d9a12a"></i><span data-i18n="rc.key">Key moment</span></li>
+      <li><i style="background:#8c50c8"></i><span data-i18n="rc.idea">Idea</span></li>
+      <li><i style="background:#1f9e9a"></i><span data-i18n="rc.joseki">Joseki</span></li>
+      <li><i style="background:#e0702a"></i><span data-i18n="rc.ld">Life and death</span></li>
+      <li><i style="background:#8a8f9e"></i><span data-i18n="rc.time">Time</span></li>
+      <li><i style="background:#c2577f"></i><span data-i18n="rc.lesson">Lesson</span></li>
+    </ul>
+    <div class="points">
+      <div class="reveal"><h3><span>01</span><b data-i18n="rp1.t">Pin it</b></h3><p data-i18n="rp1.d">S opens the study, or the Study button under the board. Pick a category, add a note and press Pin. Under “Sign as” you choose the name your notes carry.</p></div>
+      <div class="reveal"><h3><span>02</span><b data-i18n="rp2.t">Draw it</b></h3><p data-i18n="rp2.d">Drag for arrows and areas; click for circles and letters; the eraser removes a drawing. Five colours. Drawings belong to the move and never change the game.</p></div>
+      <div class="reveal"><h3><span>03</span><b data-i18n="rp3.t">What if…</b></h3><p data-i18n="rp3.d">Lay out a numbered line of stones without playing it; click the last stone to take it back. On a move pinned as a mistake the line starts with the better move, and that becomes the quiz's answer.</p></div>
+      <div class="reveal"><h3><span>04</span><b data-i18n="rp4.t">Share it</b></h3><p data-i18n="rp4.d">“Save study…” writes one SGF with the game and every note. Your friend opens it with “Open study…”, replies and sends it back: Hoshi merges it move by move without duplicates. Sabaki and other programs show it as comments.</p></div>
+      <div class="reveal"><h3><span>05</span><b data-i18n="rp5.t">Quiz and report</b></h3><p><span data-i18n="rp5.d">Mistakes, good moves, key moments, joseki and life-and-death pins make the questions. “Report…” saves a printable page with every moment on a small board, the notes and KataGo's verdict.</span> <a href="sample-report.html" data-i18n="f22.a">See a sample report</a></p></div>
+      <div class="reveal"><h3><span>06</span><b data-i18n="rp6.t">Fair on OGS</b></h3><p data-i18n="rp6.d">During your OGS games you can still take notes and draw, but there is no engine and no quiz, and a drawing tool never sends a move. Your notes stay with the game in your library.</p></div>
     </div>
   </div>
 </section>
@@ -589,7 +626,7 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
 
 <script>
   const ES = {
-    "nav.features": "Funciones", "nav.joseki": "Joseki", "nav.craft": "Tableros y piedras", "nav.effects": "Efectos", "nav.themes": "Temas", "nav.download": "Consíguelo",
+    "nav.features": "Funciones", "nav.review": "Repaso", "nav.joseki": "Joseki", "nav.craft": "Tableros y piedras", "nav.effects": "Efectos", "nav.themes": "Temas", "nav.download": "Consíguelo",
     "hero.eyebrow": "Go · Baduk · Weiqi",
     "hero.title": "Un tablero de Go que <em>siente</em> cada jugada.",
     "hero.lead": "Hoshi es una app de escritorio gratuita para jugar y estudiar Go. Un tablero precioso, KataGo valorando cada jugada en vivo, guía de josekis en cada esquina, efectos de cine cuando das con la mejor jugada y música lo-fi que se anima con tus rachas.",
@@ -622,6 +659,18 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
     "f21.t": "Comparte y comenta", "f21.d": "Guarda el estudio como SGF y envíalo a un amigo o a tu profesor. Sus notas y respuestas se suman a las tuyas; otros programas lo siguen leyendo como comentarios.",
     "f22.t": "¿Qué jugarías?", "f22.d": "Un test hecho con tus pins y un informe imprimible de la partida con cada momento, las notas y el veredicto de KataGo.", "f22.a": "Ver un informe de ejemplo",
     "f14.t": "Cara a cara", "f14.d": "Dos jugadores, una pantalla, en 19×19, 13×13 o 9×9, con pasar y deshacer, y KataGo valorando igualmente cada jugada.",
+    "f23.d": "Cómo funcionan los pins, los dibujos, compartir y el test",
+    "rv.eyebrow": "Repaso", "rv.title": "Estudia una partida como lo haría un profesor.",
+    "rv.lead": "Marca lo que importó, dibuja lo que viste, compártelo con un amigo y ponte a prueba después. Todo queda dentro del archivo SGF de la partida.",
+    "rv1.t": "El panel de estudio", "rv1.d": "Pulsa S en cualquier partida. Elige una categoría, escribe qué pasó (o nada) y márcalo en la jugada. Las respuestas quedan bajo cada pin, y la línea de tiempo muestra todos los pins de la partida: haz clic en un punto para ir allí, o filtra por categoría.",
+    "rv2.t": "¿Qué jugarías?", "rv2.d": "Tus pins se convierten en un test. El tablero vuelve a la posición anterior a cada jugada marcada y haces clic en tu respuesta: en verde la jugada a encontrar, en rojo tu intento y ! la jugada de la partida.",
+    "rc.mistake": "Error", "rc.good": "Buena jugada", "rc.question": "Pregunta", "rc.key": "Momento clave", "rc.idea": "Idea", "rc.joseki": "Joseki", "rc.ld": "Vida y muerte", "rc.time": "Tiempo", "rc.lesson": "Lección",
+    "rp1.t": "Márcalo", "rp1.d": "S abre el estudio, o el botón Estudio bajo el tablero. Elige una categoría, añade una nota y pulsa Marcar. En «Firmar como» eliges el nombre que llevan tus notas.",
+    "rp2.t": "Dibújalo", "rp2.d": "Arrastra para flechas y zonas; haz clic para círculos y letras; la goma quita un dibujo. Cinco colores. Los dibujos pertenecen a la jugada y nunca cambian la partida.",
+    "rp3.t": "¿Y si…?", "rp3.d": "Dibuja una línea numerada de piedras sin jugarla; clic en la última piedra para quitarla. En una jugada marcada como error la línea empieza con la jugada mejor, y esa es la respuesta del test.",
+    "rp4.t": "Compártelo", "rp4.d": "«Guardar estudio…» escribe un solo SGF con la partida y todas las notas. Tu amigo lo abre con «Abrir estudio…», responde y te lo devuelve: Hoshi lo suma jugada por jugada, sin duplicados. Sabaki y otros programas lo muestran como comentarios.",
+    "rp5.t": "Test e informe", "rp5.d": "Los pins de error, buena jugada, momento clave, joseki y vida y muerte forman las preguntas. «Informe…» guarda una página imprimible con cada momento en un mini tablero, las notas y el veredicto de KataGo.",
+    "rp6.t": "Limpio en OGS", "rp6.d": "Durante tus partidas de OGS puedes tomar notas y dibujar, pero sin motor ni test, y una herramienta de dibujo nunca envía una jugada. Tus notas quedan con la partida en tu biblioteca.",
     "jo.eyebrow": "Joseki", "jo.title": "Que no se te vuelva a olvidar un joseki.",
     "jo.lead": "Estudia las secuencias de esquina mientras juegas y luego practícalas hasta que se queden.",
     "jo1.t": "Josekis en el tablero", "jo1.d": "Pon una piedra y Hoshi busca esa esquina en el Joseki Explorer de OGS y en tu propia biblioteca. Las respuestas conocidas aparecen como discos, la valoración de tu última jugada arriba y los comentarios del explorador en la barra lateral.",
