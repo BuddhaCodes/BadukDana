@@ -169,8 +169,17 @@ public sealed class GameTreeControl : Control
             {
                 context.DrawEllipse(fill, outline, c, r, r);
             }
+
+            // Study notes or drawings on this move: a small violet badge.
+            if (node.HasProperty(Hoshi.Sgf.Study.StudyStore.Property))
+            {
+                context.DrawEllipse(StudyBadge, StudyBadgeOutline, new AvPoint(c.X + (r * 0.8), c.Y - (r * 0.8)), r * 0.48, r * 0.48);
+            }
         }
     }
+
+    private static readonly IBrush StudyBadge = new ImmutableSolidColorBrush(Color.FromRgb(167, 139, 250));
+    private static readonly IPen StudyBadgeOutline = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromRgb(30, 30, 36)), 1);
 
     /// <summary>Colour of a node as in Sabaki: move annotations, then comments, otherwise light grey.</summary>
     private static Color FillFor(GameNode node) =>

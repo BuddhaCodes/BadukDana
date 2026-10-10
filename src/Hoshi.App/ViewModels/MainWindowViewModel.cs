@@ -49,7 +49,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         EngineMatchViewModel? engineMatch = null,
         Services.Engines.IGtpEngineHost? engines = null,
         Services.Engines.IEngineWindows? engineWindows = null,
-        EffectsViewModel? effects = null)
+        EffectsViewModel? effects = null,
+        IFileDialogService? files = null,
+        IBrowserLauncher? browser = null)
     {
         Effects = effects ?? new EffectsViewModel(settings);
         EngineMatch = engineMatch;
@@ -74,6 +76,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
 
         Analysis = new AnalysisViewModel(game, engine, ui, sounds, settings);
+        Study = new StudyViewModel(game, Analysis, settings, files, dialogs, browser);
         Effects.Changed += (_, _) =>
         {
             Analysis.Refresh();
@@ -137,6 +140,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>Territory estimate and the background engine review.</summary>
     public AnalysisViewModel Analysis { get; }
+
+    /// <summary>The study panel: pins, drawings, the timeline, sharing, the quiz and the report (S).</summary>
+    public StudyViewModel Study { get; }
 
     /// <summary>False in design/test contexts without OGS services.</summary>
     public bool IsOnlineAvailable => _lobbyWindow is not null;

@@ -53,7 +53,18 @@ A full SGF editor with variation tree, comments, marks and setup stones.
 <td width="50%"><img src="docs/site/img/night-analysis.jpg" alt="Analysis panel and score graph"></td>
 </tr>
 <tr>
-<td width="50%"><img src="docs/site/img/engines.jpg" alt="KataGo and Leela Zero playing each other"></td>
+<td width="50%"><img src="docs/site/img/study.jpg" alt="The study panel: pins with replies, a timeline, and arrows, an area and a what-if line on the board"></td>
+<td width="50%" valign="top">
+
+### 📝 Review together
+Press **S** in any game to pin the moments that mattered — mistake, good move, question, key moment,
+joseki, life and death, lesson — and draw arrows, areas, letters and numbered "what if" lines without
+touching the game. Save the study as an SGF and send it: your friend's notes and replies merge into yours.
+Then test yourself with **What would you play?** or print a game report with KataGo's verdict on each moment.
+
+</td>
+</tr>
+<tr>
 <td width="50%" valign="top">
 
 ### ⚙️ Play any engine
@@ -62,8 +73,10 @@ Play against it (**Ctrl+G**) with any colour, handicap, komi and rules, let two 
 watch the traffic in the GTP console, or let your engine drive the analysis panel.
 
 </td>
+<td width="50%"><img src="docs/site/img/engines.jpg" alt="KataGo and Leela Zero playing each other"></td>
 </tr>
 <tr>
+<td width="50%"><img src="docs/site/img/joseki-hints.jpg" alt="Joseki continuations as coloured discs in the corners"></td>
 <td width="50%" valign="top">
 
 ### 📐 Never forget a joseki
@@ -71,10 +84,8 @@ Turn on **Joseki** and every corner shows the known continuations, coloured by h
 rates them. The trainer (**Ctrl+J**) drills lines on the main board with spaced repetition.
 
 </td>
-<td width="50%"><img src="docs/site/img/joseki-hints.jpg" alt="Joseki continuations as coloured discs in the corners"></td>
 </tr>
 <tr>
-<td width="50%"><img src="docs/site/img/weak-groups.jpg" alt="A weak group with a blue halo and a lost stone with a red glow"></td>
 <td width="50%" valign="top">
 
 ### ✦ A board that feels
@@ -83,8 +94,10 @@ faintly, captured stones shatter, and calm lo-fi music heats up at the key momen
 down to subtle or off at any time with **F**.
 
 </td>
+<td width="50%"><img src="docs/site/img/weak-groups.jpg" alt="A weak group with a blue halo and a lost stone with a red glow"></td>
 </tr>
 <tr>
+<td width="50%"><img src="docs/site/img/warm.jpg" alt="Hoshi with the Warm minimal theme"></td>
 <td width="50%" valign="top">
 
 ### 🌐 Play online
@@ -93,10 +106,8 @@ Fair play first: Hoshi only creates unranked games, and every engine, hint and a
 your live OGS games.
 
 </td>
-<td width="50%"><img src="docs/site/img/warm.jpg" alt="Hoshi with the Warm minimal theme"></td>
 </tr>
 <tr>
-<td width="50%"><img src="docs/site/img/zen-territory.jpg" alt="Zen garden theme with the territory estimate"></td>
 <td width="50%" valign="top">
 
 ### 🎨 Make it yours
@@ -105,6 +116,7 @@ five stone sets and ten backgrounds to mix freely. Every board and stone is rend
 English and Spanish.
 
 </td>
+<td width="50%"><img src="docs/site/img/zen-territory.jpg" alt="Zen garden theme with the territory estimate"></td>
 </tr>
 </table>
 

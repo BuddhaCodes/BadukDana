@@ -28,7 +28,7 @@ public sealed class BoardPointEventArgs(Point point, MouseButton button) : Event
 /// markers are all supplied through bindings, and clicks are forwarded through <see cref="PointClicked"/> /
 /// <see cref="PointClickedCommand"/>.
 /// </summary>
-public sealed class GoBoardControl : Control
+public sealed partial class GoBoardControl : Control
 {
     public static readonly StyledProperty<BoardState?> BoardProperty =
         AvaloniaProperty.Register<GoBoardControl, BoardState?>(nameof(Board));
@@ -139,7 +139,7 @@ public sealed class GoBoardControl : Control
     {
         AffectsRender<GoBoardControl>(
             BoardProperty, LastMoveProperty, MarkersProperty, ShowCoordinatesProperty,
-            HoverPointProperty, GhostStoneProperty, IsInteractiveProperty, BoardStyleProperty, TerritoryProperty, SuggestionsProperty, JosekiHintsProperty);
+            HoverPointProperty, GhostStoneProperty, IsInteractiveProperty, StudyDrawingsProperty, DragPreviewProperty, BoardStyleProperty, TerritoryProperty, SuggestionsProperty, JosekiHintsProperty);
         FocusableProperty.OverrideDefaultValue<GoBoardControl>(true);
         // Not clipped: the board's drop shadow falls on the tatami around it.
         ClipToBoundsProperty.OverrideDefaultValue<GoBoardControl>(false);
@@ -305,6 +305,7 @@ public sealed class GoBoardControl : Control
 
         DrawInfluence(context, g, board);
         DrawGroupHalos(context, g, board);
+        DrawStudyAreas(context, g, board);
         DrawStones(context, g, board, style);
         if (_capture is { } capture)
         {
@@ -323,6 +324,7 @@ public sealed class GoBoardControl : Control
         DrawJosekiHints(context, g, board);
         DrawLastMove(context, g, board, style);
         DrawMarkers(context, g, board, lines, style);
+        DrawStudy(context, g, board, style);
         DrawGhost(context, g, board);
     }
 
@@ -381,6 +383,7 @@ public sealed class GoBoardControl : Control
     {
         base.OnPointerMoved(e);
         HoverPoint = IsInteractive ? CurrentGeometry?.HitTest(e.GetPosition(this)) : null;
+        TrackDrag(e);
     }
 
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
@@ -416,6 +419,12 @@ public sealed class GoBoardControl : Control
 
         Focus();
         MouseButton button = e.InitialPressMouseButton;
+        if (button == MouseButton.Left && FinishDrag(point))
+        {
+            e.Handled = true;
+            return;
+        }
+
         PointClicked?.Invoke(this, new BoardPointEventArgs(point, button));
         if (button == MouseButton.Left && PointClickedCommand is { } command && command.CanExecute(point))
         {

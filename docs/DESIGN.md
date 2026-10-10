@@ -168,6 +168,13 @@ Arte de Hoshi renderizado por procedimiento (numpy + Pillow, semillas fijas; sin
 - Dibujo: halo radial bajo las piedras (1,6 × radio): azul `#4682DC` al 32 % (inestable) o 58 % (débil); rojo apagado `#CD483C` para el peligro serio, que respira despacio (2,6 s) con efectos completos y queda quieto con suaves. Con efectos apagados no se dibuja.
 - Al entrar en atari (una vez por grupo) sigue sonando un «uh-oh» suave. Desactivado en partidas de OGS en curso, como el análisis. Interruptor «Grupos débiles» en Preferencias → Análisis.
 
+## Estudio
+
+- Panel en la barra lateral en lugar del comentario (o del chat online), 500 px con desplazamiento: herramientas (Jugar · Flecha · Zona · Círculo · Letra · ¿Y si…? · Borrar) con iconos, cinco colores (dorado `#D6961E`, rojo `#D64034`, azul `#2E6ED6`, verde `#289650`, violeta `#8C50C8`), una línea de ayuda, la línea de tiempo (puntos del color de la categoría, apilados si una jugada tiene varios; marca de la jugada actual en acento), las tarjetas de pins (borde izquierdo del color de la categoría, autor y hora, respuestas con línea fina, caja «Responder…» con Intro), fichas de categoría para el pin nuevo y las acciones (Guardar estudio, Abrir estudio, Informe, ¿Qué jugarías?).
+- Colores de categoría: error `#D6403A`, buena jugada `#2E9E54`, pregunta `#3B82D6`, momento clave `#D9A12A`, idea `#8C50C8`, joseki `#1F9E9A`, vida y muerte `#E0702A`, tiempo `#8A8F9E`, lección `#C2577F`.
+- Tablero: zonas translúcidas con borde discontinuo bajo las piedras; flechas con halo blanco; círculos con halo; letras en disco de color; las líneas «¿y si…?» como piedras translúcidas numeradas con un aro del color. En el test, píldora arriba con la pregunta o el resultado; verde = la respuesta, rojo = tu intento, «!» = la jugada de la partida.
+- Informe: papel claro, serif para títulos, un mini tablero SVG por momento; se imprime bien.
+
 ## Atajos de teclado (mínimo)
 
 | Atajo | Acción |
@@ -182,6 +189,7 @@ Arte de Hoshi renderizado por procedimiento (numpy + Pillow, semillas fijas; sin
 | T | Territorio actual y potencial |
 | A | Mostrar el análisis de la IA (panel y sugerencias); KataGo trabaja siempre de fondo |
 | M | Música adaptativa on/off |
+| S | Panel de estudio (pins, dibujos, test e informe) |
 | Ctrl+L | Jugar en línea |
 | F11 | Modo zen *(pendiente)* |
 

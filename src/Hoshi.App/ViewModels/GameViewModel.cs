@@ -322,6 +322,9 @@ public sealed partial class GameViewModel : ViewModelBase
     public void LoadOnline(GameTree tree, OnlineGameViewModel online)
     {
         ArgumentNullException.ThrowIfNull(online);
+
+        // The same game again (reconnect, gamedata): keep the study notes made on it so far.
+        GameTree? previous = ReferenceEquals(Online, online) && !ReferenceEquals(Tree, tree) ? Tree : null;
         if (!ReferenceEquals(Online, online))
         {
             if (Online is not null)
@@ -332,6 +335,11 @@ public sealed partial class GameViewModel : ViewModelBase
             Online = online;
             online.PropertyChanged += OnOnlinePropertyChanged;
             IsEditMode = false;
+        }
+
+        if (previous is not null)
+        {
+            Hoshi.Sgf.Study.StudyStore.Merge(tree, previous, createMissingMoves: false);
         }
 
         Load(tree, path: null);
@@ -628,6 +636,7 @@ public sealed partial class GameViewModel : ViewModelBase
             }
 
             Online?.LeaveCommand.Execute(null);
+            Hoshi.Sgf.Study.StudyStore.StripMirror(parsed.Games[0]); // the copy for other programs, rebuilt on save
             Load(parsed.Games[0], path);
             int warnings = parsed.Warnings.Count + _cursor.Warnings.Count;
             _logger.LogInformation("Opened {File} ({Nodes} nodes, {Warnings} warnings)",
@@ -784,6 +793,20 @@ public sealed partial class GameViewModel : ViewModelBase
 
             MoveSettled?.Invoke(this, new PlacedMove(was, board, p, move.Color, now));
         }
+    }
+
+    /// <summary>
+    /// Study notes or drawings changed on a node (they live in the tree, so a local game needs saving; the tree view
+    /// redraws its study badges). Not an edit of the game itself: the board and the analysis stay as they are.
+    /// </summary>
+    public void StudyEdited()
+    {
+        if (Online is null)
+        {
+            IsDirty = true;
+        }
+
+        TreeVersion++;
     }
 
     /// <summary>A replay opened from the local store: stepping forward replays the AI effects.</summary>

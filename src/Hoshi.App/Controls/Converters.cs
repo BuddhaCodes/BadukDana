@@ -62,3 +62,15 @@ public sealed class BoolToAlignmentConverter : IValueConverter
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         Avalonia.Data.BindingOperations.DoNothing;
 }
+
+/// <summary>A study colour as a brush (the colour pickers of the study panel).</summary>
+public sealed class StudyColorBrushConverter : IValueConverter
+{
+    public static StudyColorBrushConverter Instance { get; } = new();
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is Hoshi.Sgf.Study.StudyColor c ? new Avalonia.Media.Immutable.ImmutableSolidColorBrush(GoBoardControl.StudyColorValue(c)) : null;
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        Avalonia.Data.BindingOperations.DoNothing;
+}

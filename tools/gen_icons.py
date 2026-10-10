@@ -37,6 +37,15 @@ ICONS = {  # key: (phosphor, lucide, tabler)
     "Muted": ("speaker-slash", "volume-x", "volume-off"),
     "Engine": ("robot", "bot", "robot"),
     "Effects": ("lightning", "zap", "bolt"),
+    "Study": ("notebook", "notebook-pen", "notebook"),
+    "Arrow": ("arrow-up-right", "arrow-up-right", "arrow-up-right"),
+    "Area": ("selection", "square-dashed", "square-dashed"),
+    "Mark": ("circle-dashed", "circle-dot", "circle-dot"),
+    "Sequence": ("list-numbers", "list-ordered", "list-numbers"),
+    "Erase": ("eraser", "eraser", "eraser"),
+    "Pin": ("push-pin", "pin", "pin"),
+    "Quiz": ("question", "circle-help", "help-circle"),
+    "Report": ("file-text", "file-text", "file-text"),
 }
 
 def num(v): return float(v)

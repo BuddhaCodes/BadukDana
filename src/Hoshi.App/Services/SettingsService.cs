@@ -82,6 +82,9 @@ public sealed record AppSettings
 
     /// <summary>The version that ran last time (to thank the player once after an update).</summary>
     public string? LastRunVersion { get; init; }
+
+    /// <summary>The name study notes are signed with (shared study files show who wrote what); null = "Me".</summary>
+    public string? StudyAuthor { get; init; }
 }
 
 /// <summary>How strong the visual effects on the board are (Preferences, the bottom bar, the sound panel and F).</summary>

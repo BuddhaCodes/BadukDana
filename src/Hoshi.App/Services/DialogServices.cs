@@ -14,6 +14,9 @@ public interface IFileDialogService
     Task<string?> PickSgfToOpenAsync();
 
     Task<string?> PickSgfToSaveAsync(string suggestedName);
+
+    /// <summary>Where to save a web page (the study report); null when cancelled or not available.</summary>
+    Task<string?> PickHtmlToSaveAsync(string suggestedName) => Task.FromResult<string?>(null);
 }
 
 /// <summary>Picks any existing file (e.g. the KataGo executable or network).</summary>
@@ -98,6 +101,25 @@ public sealed class AvaloniaFileDialogService : IFileDialogService
             SuggestedFileName = suggestedName,
             DefaultExtension = "sgf",
             FileTypeChoices = [Sgf],
+            ShowOverwritePrompt = true,
+        });
+        return file?.TryGetLocalPath();
+    }
+
+    public async Task<string?> PickHtmlToSaveAsync(string suggestedName)
+    {
+        if (MainWindowLocator.MainWindow?.StorageProvider is not { } storage)
+        {
+            return null;
+        }
+
+        var html = new FilePickerFileType(Tr.T("Dialog.WebPage")) { Patterns = ["*.html"], MimeTypes = ["text/html"] };
+        IStorageFile? file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = Tr.T("Study.SaveReport"),
+            SuggestedFileName = suggestedName,
+            DefaultExtension = "html",
+            FileTypeChoices = [html],
             ShowOverwritePrompt = true,
         });
         return file?.TryGetLocalPath();
