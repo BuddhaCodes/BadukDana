@@ -8,8 +8,9 @@ public partial class LobbyWindow : Window
 {
     public LobbyWindow()
     {
-        InitializeComponent();
+        // Created before InitializeComponent: Escape binds to it once, when the XAML loads.
         CloseCommand = new RelayCommand(Close);
+        InitializeComponent();
         this.FindControl<ListBox>("ActiveGamesList")!.DoubleTapped += (_, _) =>
         {
             if (DataContext is LobbyViewModel vm && this.FindControl<ListBox>("ActiveGamesList")!.SelectedItem is ActiveGameItem item)

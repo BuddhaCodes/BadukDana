@@ -585,6 +585,28 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private async Task BrowseConfig() => KataGoConfig = await Pick(Tr.T("Prefs.PickConfig")) ?? KataGoConfig;
 
+    /// <summary>
+    /// "Done": keeps whatever was typed but not saved yet (KataGo paths and visits, the engine list). Returns false
+    /// when the engine list cannot be saved (e.g. two engines with the same name): the window stays open to show why.
+    /// </summary>
+    public bool SavePending()
+    {
+        if (_settings is null)
+        {
+            return true;
+        }
+
+        Services.AppSettings current = _settings.Current;
+        if (Clean(KataGoExecutable) != current.KataGoExecutable || Clean(KataGoModel) != current.KataGoModel
+            || Clean(KataGoConfig) != current.KataGoConfig || Math.Clamp(AnalysisVisits, 10, 100_000) != current.AnalysisVisits)
+        {
+            ApplyEngine();
+        }
+
+        Services.EngineEntry[] entries = [.. EngineItems.Where(i => !i.IsBuiltIn).Select(i => i.ToEntry())];
+        return entries.SequenceEqual(_settings.Current.Engines) || TrySaveEngines();
+    }
+
     /// <summary>Saves the engine settings and restarts KataGo with them.</summary>
     [CommunityToolkit.Mvvm.Input.RelayCommand]
     private void ApplyEngine()

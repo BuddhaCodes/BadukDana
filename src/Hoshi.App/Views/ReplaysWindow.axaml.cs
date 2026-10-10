@@ -8,8 +8,9 @@ public partial class ReplaysWindow : Window
 {
     public ReplaysWindow()
     {
-        InitializeComponent();
+        // Created before InitializeComponent: Escape binds to it once, when the XAML loads.
         CloseCommand = new RelayCommand(Close);
+        InitializeComponent();
         this.FindControl<ListBox>("ReplayList")!.DoubleTapped += (_, _) =>
         {
             if (DataContext is ReplaysViewModel vm)
