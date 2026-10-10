@@ -320,6 +320,7 @@
     </div>
     <div class="tabs" role="tablist" aria-label="Features">
       <button role="tab" id="t-study" aria-controls="p-study" aria-selected="true" data-i18n="tab.study">Study</button>
+      <button role="tab" id="t-review" aria-controls="p-review" aria-selected="false" tabindex="-1" data-i18n="tab.review">Review</button>
       <button role="tab" id="t-joseki" aria-controls="p-joseki" aria-selected="false" tabindex="-1" data-i18n="tab.joseki">Joseki</button>
       <button role="tab" id="t-play" aria-controls="p-play" aria-selected="false" tabindex="-1" data-i18n="tab.play">Play</button>
       <button role="tab" id="t-engines" aria-controls="p-engines" aria-selected="false" tabindex="-1" data-i18n="tab.engines">Engines</button>
@@ -333,6 +334,16 @@
         <li><span class="ico">▦</span><div><h3 data-i18n="f4.t">Territory at a glance</h3><p data-i18n="f4.d">See secure and potential territory and the estimated score, from Hoshi's own estimator or KataGo's ownership map.</p></div></li>
         <li><span class="ico">▤</span><div><h3><span data-i18n="f11.t">Your game library</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f11.d">Every game you play is kept. Open one later and step through it: KataGo judges each move again, with all its effects and music.</p></div></li>
         <li><span class="ico">❖</span><div><h3 data-i18n="f6.t">SGF editor</h3><p data-i18n="f6.d">Open and save SGF files, explore variations in a game tree, add comments, marks and setup stones.</p></div></li>
+      </ul>
+    </div>
+
+    <div class="panel" role="tabpanel" id="p-review" aria-labelledby="t-review" hidden>
+      <div class="shot"><img src="img/study.jpg" width="1120" height="704" alt="Hoshi's study panel: pins by two players with replies, a timeline of the game, and arrows, an area and a numbered what-if line on the board" loading="lazy"></div>
+      <ul class="items">
+        <li><span class="ico">⚑</span><div><h3><span data-i18n="f19.t">Pin what mattered</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f19.d">Press S during any game and pin moments as a mistake, good move, question, key moment, joseki, life and death or lesson. A timeline shows them along the game.</p></div></li>
+        <li><span class="ico">↗</span><div><h3><span data-i18n="f20.t">Draw your thinking</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f20.d">Arrows, areas, circles, letters and numbered "what if" lines, without touching the game. During your OGS games it is notes only: no engine, and drawing never sends a move.</p></div></li>
+        <li><span class="ico">⇆</span><div><h3><span data-i18n="f21.t">Share and discuss</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f21.d">Save the study as an SGF and send it to a friend or a teacher. Their notes and replies merge into yours; other programs still read it as comments.</p></div></li>
+        <li><span class="ico">?</span><div><h3><span data-i18n="f22.t">What would you play?</span><span class="new" data-i18n="new">New</span></h3><p><span data-i18n="f22.d">A quiz built from your pins, and a printable game report with every moment, the notes and KataGo's verdict.</span> <a href="sample-report.html" data-i18n="f22.a">See a sample report</a></p></div></li>
       </ul>
     </div>
 
@@ -587,7 +598,7 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
     "board.black": "Juegan negras: pon una piedra", "board.white": "Juegan blancas: pon una piedra",
     "feat.eyebrow": "Funciones", "feat.title": "Todo lo que necesitas frente al tablero.",
     "feat.lead": "Juega con amigos en la misma pantalla, enfréntate a KataGo o a cualquier motor GTP, revisa tus partidas o mídete con el mundo en OGS.",
-    "tab.study": "Estudiar", "tab.joseki": "Joseki", "tab.play": "Jugar", "tab.engines": "Motores", "tab.feel": "Sentir",
+    "tab.study": "Estudiar", "tab.review": "Repasar", "tab.joseki": "Joseki", "tab.play": "Jugar", "tab.engines": "Motores", "tab.feel": "Sentir",
     "f1.t": "Análisis con IA en vivo", "f1.d": "KataGo trabaja de fondo desde que abres Hoshi y valora cada jugada: la mejor, excelente, buena, imprecisa, error o error grave, con los puntos perdidos.",
     "f2.t": "Jugadas que se sienten", "f2.d": "La jugada que gana una pelea hace temblar el tablero, agrieta la madera y lanza chispas; las jugadas normales de apertura solo suenan como piedra. Las piedras capturadas se rompen y los grupos débiles brillan levemente. ¿Demasiado? Bájalo a suave o apágalo cuando quieras con la tecla F.",
     "f3.t": "Música adaptativa", "f3.d": "Un lo-fi tranquilo que suma batería, arpegios y una capa «overdrive» a medida que encadenas buenas jugadas en los momentos clave. Se mantiene tranquilo durante la apertura y se calma cuando fallas.",
@@ -606,6 +617,10 @@ dotnet run --project src/Hoshi.App -c Release</pre></div>
     "f16.t": "Motor contra motor", "f16.d": "Pon a dos motores a jugar entre sí y mira crecer la partida en el árbol. Pausa, vuelve a cualquier jugada y prueba tu idea: el motor responde desde ahí.",
     "f17.t": "Consola GTP", "f17.d": "Mira cada comando y respuesta entre Hoshi y sus motores, lee sus registros y escribe tú mismo comandos GTP.",
     "f18.t": "Análisis con tu motor", "f18.d": "Cualquier motor con lz-analyze o kata-analyze puede llevar el panel de análisis en lugar del KataGo incluido. Todos los motores se apagan durante tus partidas de OGS.",
+    "f19.t": "Marca lo que importó", "f19.d": "Pulsa S en cualquier partida y marca momentos como error, buena jugada, pregunta, momento clave, joseki, vida y muerte o lección. Una línea de tiempo los muestra a lo largo de la partida.",
+    "f20.t": "Dibuja lo que piensas", "f20.d": "Flechas, zonas, círculos, letras y líneas numeradas «¿y si…?», sin tocar la partida. En tus partidas de OGS son solo notas: sin motor, y dibujar nunca envía una jugada.",
+    "f21.t": "Comparte y comenta", "f21.d": "Guarda el estudio como SGF y envíalo a un amigo o a tu profesor. Sus notas y respuestas se suman a las tuyas; otros programas lo siguen leyendo como comentarios.",
+    "f22.t": "¿Qué jugarías?", "f22.d": "Un test hecho con tus pins y un informe imprimible de la partida con cada momento, las notas y el veredicto de KataGo.", "f22.a": "Ver un informe de ejemplo",
     "f14.t": "Cara a cara", "f14.d": "Dos jugadores, una pantalla, en 19×19, 13×13 o 9×9, con pasar y deshacer, y KataGo valorando igualmente cada jugada.",
     "jo.eyebrow": "Joseki", "jo.title": "Que no se te vuelva a olvidar un joseki.",
     "jo.lead": "Estudia las secuencias de esquina mientras juegas y luego practícalas hasta que se queden.",

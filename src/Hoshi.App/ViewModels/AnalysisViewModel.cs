@@ -584,6 +584,72 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// KataGo's verdicts on these moves, for the study report: cached results first, then a quick search for the
+    /// rest. Empty when the engine is not set up, or during the player's live OGS games (no AI help there).
+    /// </summary>
+    public async Task<IReadOnlyDictionary<GameNode, Services.Study.StudyVerdict>> VerdictsAsync(IReadOnlyList<GameNode> nodes, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(nodes);
+        var verdicts = new Dictionary<GameNode, Services.Study.StudyVerdict>();
+        if (!IsEngineActive || _engine is null)
+        {
+            return verdicts;
+        }
+
+        GameCursor cursor = _game.Cursor;
+        foreach (GameNode node in nodes)
+        {
+            if (node.GetMove(cursor.BoardSize) is not { } move)
+            {
+                continue;
+            }
+
+            Position pos = Position.At(cursor, node);
+            int n = pos.Moves.Count;
+            if (n == 0)
+            {
+                continue;
+            }
+
+            var found = new Dictionary<int, TurnAnalysis>();
+            foreach (int t in new[] { n - 1, n })
+            {
+                if (_cache.TryGetValue(pos.Key(t), out TurnAnalysis? cached))
+                {
+                    found[t] = cached;
+                }
+            }
+
+            int[] missing = [.. new[] { n - 1, n }.Where(t => !found.ContainsKey(t))];
+            if (missing.Length > 0)
+            {
+                try
+                {
+                    AnalysisQuery query = pos.Query(missing, Math.Max(30, _engine.Visits / 2)) with { Priority = GraphPriority };
+                    foreach (TurnAnalysis t in await _engine.AnalyzeAsync(query, cancellationToken))
+                    {
+                        found[t.Turn] = t;
+                        string key = pos.Key(t.Turn);
+                        _ui.Post(() => _cache.TryAdd(key, t));
+                    }
+                }
+                catch (EngineException)
+                {
+                    break; // the report goes out without the remaining verdicts
+                }
+            }
+
+            if (found.TryGetValue(n - 1, out TurnAnalysis? before)
+                && MoveReview.Assess(before, found.GetValueOrDefault(n), new EngineMove(move.Color, move.Point)) is { } judged)
+            {
+                verdicts[node] = new Services.Study.StudyVerdict(judged.Quality, judged.PointsLost, judged.Best.Point);
+            }
+        }
+
+        return verdicts;
+    }
+
     /// <summary>Effect strength for a move quality: only good moves are celebrated.</summary>
     public static int ImpactStrength(MoveQuality quality) => quality switch
     {
@@ -678,14 +744,15 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     /// <summary>The shown position as the engine sees it: setup at the root plus the moves that led here.</summary>
     private sealed record Position(AnalysisQuery Base, IReadOnlyList<EngineMove> Moves, string Prefix)
     {
-        public static Position Of(GameViewModel game, bool followMainLine = false)
+        public static Position Of(GameViewModel game, bool followMainLine = false) => At(game.Cursor, game.Cursor.Current, followMainLine);
+
+        public static Position At(GameCursor cursor, GameNode at, bool followMainLine = false)
         {
-            GameCursor cursor = game.Cursor;
-            IReadOnlyList<GameNode> path = GameCursor.Path(cursor.Current);
+            IReadOnlyList<GameNode> path = GameCursor.Path(at);
             if (followMainLine)
             {
                 var extended = path.ToList();
-                GameNode n = cursor.Current;
+                GameNode n = at;
                 while (n.Children.Count > 0)
                 {
                     n = n.Children[0];
@@ -695,7 +762,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
                 path = extended;
             }
 
-            GameTree tree = game.Tree;
+            GameTree tree = cursor.Tree;
             RuleSet rules = tree.Info.Rules ?? RuleSet.Japanese;
             double komi = tree.Info.Komi ?? 0;
             BoardState rootBoard = cursor.GetBoard(tree.Root);
