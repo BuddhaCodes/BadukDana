@@ -1,0 +1,272 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Hoshi.App.ViewModels"
+             xmlns:v="using:Hoshi.App.Views"
+             xmlns:c="using:Hoshi.App.Controls"
+             xmlns:sys="using:System"
+             xmlns:l="using:Hoshi.App.Localization"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="860"
+             x:Class="Hoshi.App.Views.PhoneView"
+             x:DataType="vm:PhoneShellViewModel"
+             Background="{DynamicResource Bg.Surround}">
+  <!-- The phone layout (Android): the board on top, one sheet at a time below it, and a bar of buttons.
+       Windows of the desktop open here as full-screen pages; dialogs as a card. -->
+  <UserControl.Styles>
+    <Style Selector="Button.phone-bar">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="0,6" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="MinHeight" Value="48" />
+    </Style>
+    <Style Selector="Button.phone-bar.on">
+      <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+    </Style>
+    <Style Selector="Button.phone-bar TextBlock">
+      <Setter Property="FontSize" Value="10.5" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="0,2,0,0" />
+    </Style>
+    <Style Selector="Button.phone-bar:disabled /template/ ContentPresenter#PART_ContentPresenter, Button.menu-item:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.phone-bar:disabled, Button.menu-item:disabled">
+      <Setter Property="Opacity" Value="0.35" />
+    </Style>
+    <Style Selector="Button.menu-item">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Padding" Value="14,12" />
+      <Setter Property="MinHeight" Value="48" />
+    </Style>
+  </UserControl.Styles>
+
+  <Panel>
+    <c:ThemeBackground Kind="{DynamicResource Theme.Background}" Animate="False" />
+    <DockPanel x:Name="Shell">
+
+      <!-- Top: players and the turn (local), or the online panel with clocks and actions. -->
+      <Border DockPanel.Dock="Top" Background="{DynamicResource Bg.Sidebar}" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="0,0,0,1"
+              Padding="14,10,14,8" x:Name="PhoneTop">
+        <Panel>
+          <StackPanel Spacing="4" IsVisible="{Binding Main.IsLocal}">
+            <Grid ColumnDefinitions="*,Auto,*">
+              <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Left">
+                <Ellipse Width="11" Height="11" Fill="#141414" Stroke="#9A9A9A" StrokeThickness="1" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Main.Game.BlackName}" TextTrimming="CharacterEllipsis" MaxWidth="130" VerticalAlignment="Center"
+                           FontWeight="{Binding Main.Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" x:Name="PhoneBlackName" />
+                <TextBlock Classes="secondary" Text="{Binding Main.Game.Board.WhiteCaptures, StringFormat='+{0}'}" VerticalAlignment="Center"
+                           IsVisible="{Binding Main.Game.Board.WhiteCaptures}" />
+              </StackPanel>
+              <Border Grid.Column="1" Classes="turn-toggle" Margin="8,0">
+                <Panel>
+                  <Ellipse Classes="turn-knob black" IsVisible="{Binding Main.Game.IsBlackToMove}" HorizontalAlignment="Left" />
+                  <Ellipse Classes="turn-knob white" IsVisible="{Binding !Main.Game.IsBlackToMove}" HorizontalAlignment="Right" />
+                </Panel>
+              </Border>
+              <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+                <TextBlock Classes="secondary" Text="{Binding Main.Game.Board.BlackCaptures, StringFormat='+{0}'}" VerticalAlignment="Center"
+                           IsVisible="{Binding Main.Game.Board.BlackCaptures}" />
+                <TextBlock Text="{Binding Main.Game.WhiteName}" TextTrimming="CharacterEllipsis" MaxWidth="130" VerticalAlignment="Center"
+                           FontWeight="{Binding !Main.Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
+                <Ellipse Width="11" Height="11" Fill="#EEE" Stroke="#888" StrokeThickness="1" VerticalAlignment="Center" />
+              </StackPanel>
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Classes="secondary" FontSize="12" Text="{Binding Main.Game.StatusText}" TextTrimming="CharacterEllipsis" x:Name="PhoneStatus" />
+              <TextBlock Grid.Column="1" Classes="secondary" FontSize="12" Text="{Binding Main.Game.MoveNumberText}" Margin="8,0,0,0" />
+            </Grid>
+          </StackPanel>
+          <Border IsVisible="{Binding Main.IsOnline}" x:Name="PhoneOnline">
+            <v:OnlinePanelView DataContext="{Binding Main}" />
+          </Border>
+        </Panel>
+      </Border>
+
+      <!-- Bottom bar: navigation, the game's actions and the sheets. -->
+      <Border DockPanel.Dock="Bottom" Background="{DynamicResource Bg.Sidebar}" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="0,1,0,0"
+              x:Name="PhoneBar">
+        <UniformGrid Rows="1">
+          <Button Classes="phone-bar" Command="{Binding Main.Game.GoBackCommand}" ToolTip.Tip="{l:T Main.Previous}" x:Name="PhonePrevious">
+            <c:HoshiIcon Icon="{DynamicResource Icon.Previous}" Size="22" />
+          </Button>
+          <Button Classes="phone-bar" Command="{Binding Main.Game.GoForwardCommand}" ToolTip.Tip="{l:T Main.Next}" x:Name="PhoneNext">
+            <c:HoshiIcon Icon="{DynamicResource Icon.Next}" Size="22" />
+          </Button>
+          <Button Classes="phone-bar" Command="{Binding Main.Game.PassCommand}" IsVisible="{Binding Main.IsLocal}" x:Name="PhonePass">
+            <StackPanel><c:HoshiIcon Icon="{DynamicResource Icon.Pass}" Size="20" HorizontalAlignment="Center" /><TextBlock Text="{l:T Main.Pass}" /></StackPanel>
+          </Button>
+          <Button Classes="phone-bar" Command="{Binding Main.Game.UndoCommand}" IsVisible="{Binding Main.IsLocal}" x:Name="PhoneUndo">
+            <StackPanel><c:HoshiIcon Icon="{DynamicResource Icon.Undo}" Size="20" HorizontalAlignment="Center" /><TextBlock Text="{l:T Main.Undo}" /></StackPanel>
+          </Button>
+          <Button Classes="phone-bar" Classes.on="{Binding IsMoves}" Command="{Binding ToggleSheetCommand}" CommandParameter="{x:Static vm:PhoneSheet.Moves}" x:Name="PhoneMoves">
+            <StackPanel><c:HoshiIcon Icon="{DynamicResource Icon.Moves}" Size="20" HorizontalAlignment="Center" /><TextBlock Text="{l:T Phone.Moves}" /></StackPanel>
+          </Button>
+          <Button Classes="phone-bar" Classes.on="{Binding IsAnalysis}" Command="{Binding ToggleSheetCommand}" CommandParameter="{x:Static vm:PhoneSheet.Analysis}"
+                  IsVisible="{Binding !Main.Analysis.IsBlocked}" x:Name="PhoneAnalysis">
+            <StackPanel><c:HoshiIcon Icon="{DynamicResource Icon.Analysis}" Size="20" HorizontalAlignment="Center" /><TextBlock Text="{l:T Main.Analysis}" /></StackPanel>
+          </Button>
+          <Button Classes="phone-bar" Classes.on="{Binding IsChat}" Command="{Binding ToggleSheetCommand}" CommandParameter="{x:Static vm:PhoneSheet.Chat}"
+                  IsVisible="{Binding Main.IsOnline}" x:Name="PhoneChat">
+            <StackPanel><c:HoshiIcon Icon="{DynamicResource Icon.Chat}" Size="20" HorizontalAlignment="Center" /><TextBlock Text="{l:T Online.Chat}" /></StackPanel>
+          </Button>
+          <Button Classes="phone-bar" Classes.on="{Binding IsStudy}" Command="{Binding ToggleSheetCommand}" CommandParameter="{x:Static vm:PhoneSheet.Study}" x:Name="PhoneStudy">
+            <StackPanel><c:HoshiIcon Icon="{DynamicResource Icon.Study}" Size="20" HorizontalAlignment="Center" /><TextBlock Text="{l:T Main.Study}" /></StackPanel>
+          </Button>
+          <Button Classes="phone-bar" Classes.on="{Binding IsMenu}" Command="{Binding ToggleSheetCommand}" CommandParameter="{x:Static vm:PhoneSheet.Menu}" x:Name="PhoneMenu">
+            <c:HoshiIcon Icon="{DynamicResource Icon.Menu}" Size="22" />
+          </Button>
+        </UniformGrid>
+      </Border>
+
+      <!-- The sheet under the board. -->
+      <Border DockPanel.Dock="Bottom" IsVisible="{Binding HasSheet}" Height="330" Background="{DynamicResource Bg.Properties}"
+              BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="0,1,0,0" Classes="appear" x:Name="PhoneSheet">
+        <Panel>
+          <Grid RowDefinitions="*,Auto" IsVisible="{Binding IsMoves}" x:Name="PhoneMovesSheet">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+              <c:GameTreeControl Root="{Binding Main.Game.Tree.Root}" Current="{Binding Main.Game.CurrentNode}" Version="{Binding Main.Game.TreeVersion}"
+                                 BoardSize="{Binding Main.Game.Board.Width}" NodeClickedCommand="{Binding Main.Game.GoToNodeCommand}"
+                                 HorizontalAlignment="Left" VerticalAlignment="Top" Margin="6" />
+            </ScrollViewer>
+            <TextBox Grid.Row="1" Classes="comment" Height="96" AcceptsReturn="True" TextWrapping="Wrap" Watermark="{l:T Main.Comment}"
+                     Text="{Binding Main.Game.Comment}" IsVisible="{Binding Main.IsLocal}" x:Name="PhoneComment" />
+          </Grid>
+          <ScrollViewer IsVisible="{Binding IsAnalysis}" VerticalScrollBarVisibility="Auto">
+            <Border Classes="analysis">
+              <v:AnalysisPanelView DataContext="{Binding Main}" />
+            </Border>
+          </ScrollViewer>
+          <Border IsVisible="{Binding IsStudy}" x:Name="PhoneStudySheet">
+            <v:StudyPanelView DataContext="{Binding Main}" />
+          </Border>
+          <Border IsVisible="{Binding IsChat}" x:Name="PhoneChatSheet">
+            <v:ChatView DataContext="{Binding Main}" />
+          </Border>
+          <ScrollViewer IsVisible="{Binding IsMenu}" x:Name="PhoneMenuSheet">
+            <StackPanel Margin="0,6">
+              <Button Classes="menu-item" Command="{Binding Main.Game.NewGameCommand}" x:Name="MenuNew19">
+                <Button.CommandParameter><sys:Int32>19</sys:Int32></Button.CommandParameter>
+                <TextBlock Text="{l:T Main.New19}" />
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Game.NewGameCommand}">
+                <Button.CommandParameter><sys:Int32>13</sys:Int32></Button.CommandParameter>
+                <TextBlock Text="{l:T Main.New13}" />
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Game.NewGameCommand}">
+                <Button.CommandParameter><sys:Int32>9</sys:Int32></Button.CommandParameter>
+                <TextBlock Text="{l:T Main.New9}" />
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.PlayEngineCommand}" x:Name="MenuPlayKataGo">
+                <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Engine}" Size="18" /><TextBlock Text="{l:T Phone.PlayKataGo}" /></StackPanel>
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.OpenLobbyCommand}" x:Name="MenuOnline">
+                <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Online}" Size="18" /><TextBlock Text="{l:T Main.PlayOnline}" /></StackPanel>
+              </Button>
+              <Separator Margin="12,4" />
+              <Button Classes="menu-item" Command="{Binding Main.Game.OpenCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Folder}" Size="18" /><TextBlock Text="{l:T Main.Open}" /></StackPanel>
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Game.SaveAsCommand}">
+                <TextBlock Text="{l:T Main.SaveAs}" Margin="28,0,0,0" />
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.OpenReplaysCommand}" x:Name="MenuReplays">
+                <TextBlock Text="{l:T Main.Replays}" Margin="28,0,0,0" />
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Game.EditGameInfoCommand}">
+                <TextBlock Text="{l:T Main.GameInfo}" Margin="28,0,0,0" />
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Analysis.ToggleTerritoryCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Territory}" Size="18" /><TextBlock Text="{l:T Main.Territory}" /></StackPanel>
+              </Button>
+              <Separator Margin="12,4" />
+              <Button Classes="menu-item" Command="{Binding Main.OpenPreferencesCommand}" x:Name="MenuPreferences">
+                <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Settings}" Size="18" /><TextBlock Text="{l:T Main.Preferences}" /></StackPanel>
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Updates.SupportCommand, FallbackValue={x:Null}}"
+                      IsVisible="{Binding Main.Updates, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <TextBlock Text="{l:T Support.Menu}" Margin="28,0,0,0" />
+              </Button>
+            </StackPanel>
+          </ScrollViewer>
+        </Panel>
+      </Border>
+
+      <!-- The board. -->
+      <Panel x:Name="PhoneBoardArea">
+        <c:GoBoardControl x:Name="Board"
+                          Margin="6"
+                          ShowCoordinates="False"
+                          JosekiHints="{Binding Main.JosekiHints.Hints}"
+                          Board="{Binding Main.Game.Board}"
+                          BoardStyle="{DynamicResource Theme.Board}"
+                          Territory="{Binding Main.Analysis.Territory}"
+                          Suggestions="{Binding Main.Analysis.BoardSuggestions}"
+                          Impact="{Binding Main.Analysis.Impact}"
+                          Effects="{Binding Main.Effects.Level}"
+                          GroupStatuses="{Binding Main.Analysis.GroupStatuses}"
+                          Animate="{DynamicResource Theme.Animations}"
+                          LastMove="{Binding Main.Game.LastMove}"
+                          Markers="{Binding Main.Game.Markers}"
+                          HoverPoint="{Binding Main.Game.HoverPoint}"
+                          GhostStone="{Binding Main.Study.GhostStone}"
+                          PendingPoint="{Binding Main.Game.PendingMove}"
+                          PendingStone="{Binding Main.Game.PendingStone}"
+                          StudyDrawings="{Binding Main.Study.BoardDrawings}"
+                          DragPreview="{Binding Main.Study.DragPreview}"
+                          DragColor="{Binding Main.Study.Color}"
+                          PointClickedCommand="{Binding Main.Study.BoardClickCommand}"
+                          PointDraggedCommand="{Binding Main.Study.BoardDragCommand}" />
+        <Border Classes="warmup" IsHitTestVisible="False" IsVisible="{Binding Main.Study.IsQuizActive}"
+                HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <c:HoshiIcon Icon="{DynamicResource Icon.Quiz}" Size="14" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding Main.Study.QuizPrompt}" FontSize="12" IsVisible="{Binding Main.Study.CanReveal}" TextWrapping="Wrap" MaxWidth="300" />
+            <TextBlock Text="{Binding Main.Study.QuizResult}" FontSize="12" FontWeight="SemiBold" IsVisible="{Binding !Main.Study.CanReveal}" TextWrapping="Wrap" MaxWidth="300" />
+          </StackPanel>
+        </Border>
+        <Border Classes="warmup" IsHitTestVisible="False" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,8"
+                Opacity="{Binding Main.Analysis.IsWarmingUp, Converter={x:Static c:BoolToOpacityConverter.Instance}}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <ProgressBar IsIndeterminate="True" Width="40" MinWidth="40" Height="3" MinHeight="3" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding Main.Analysis.WarmupText}" FontSize="12" MaxWidth="280" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+        </Border>
+      </Panel>
+    </DockPanel>
+
+    <!-- A page: Preferences, the lobby, the library, game info, play against KataGo. -->
+    <DockPanel IsVisible="{Binding Navigation.HasPage}" Background="{DynamicResource Bg.Window}" x:Name="PhonePage">
+      <Border DockPanel.Dock="Top" Background="{DynamicResource Bg.Sidebar}" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="0,0,0,1">
+        <Grid ColumnDefinitions="Auto,*">
+          <Button Classes="phone-bar" Width="52" Command="{Binding Navigation.GoBackCommand}" ToolTip.Tip="{l:T Phone.Back}" x:Name="PhonePageBack">
+            <c:HoshiIcon Icon="{DynamicResource Icon.Back}" Size="22" />
+          </Button>
+          <TextBlock Grid.Column="1" Text="{Binding Navigation.Title}" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        </Grid>
+      </Border>
+      <ContentControl Content="{Binding Navigation.Page}" x:Name="PhonePageContent" />
+    </DockPanel>
+
+    <!-- A question or a message. -->
+    <Border IsVisible="{Binding Navigation.HasMessage}" Background="#A0000000" x:Name="PhoneMessage">
+      <Border Background="{DynamicResource Bg.Panel}" CornerRadius="14" Padding="20,18" Margin="24" VerticalAlignment="Center" MaxWidth="420"
+              BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="1">
+        <StackPanel Spacing="10">
+          <TextBlock Text="{Binding Navigation.Message.Title, FallbackValue={x:Null}}" FontWeight="SemiBold" FontSize="16" TextWrapping="Wrap" />
+          <TextBlock Text="{Binding Navigation.Message.Text, FallbackValue={x:Null}}" TextWrapping="Wrap" />
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+            <Button Content="{Binding Navigation.Message.NoLabel, FallbackValue={x:Null}}" Command="{Binding Navigation.NoCommand}"
+                    IsVisible="{Binding Navigation.Message.IsConfirm, FallbackValue=False}" MinWidth="80" x:Name="PhoneMessageNo" />
+            <Button Classes="accent" Content="{Binding Navigation.Message.OkLabel, FallbackValue={x:Null}}" Command="{Binding Navigation.YesCommand}" MinWidth="80"
+                    x:Name="PhoneMessageOk" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Border>
+  </Panel>
+</UserControl>

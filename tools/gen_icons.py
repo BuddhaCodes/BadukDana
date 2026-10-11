@@ -46,6 +46,8 @@ ICONS = {  # key: (phosphor, lucide, tabler)
     "Pin": ("push-pin", "pin", "pin"),
     "Quiz": ("question", "circle-help", "help-circle"),
     "Report": ("file-text", "file-text", "file-text"),
+    "Moves": ("git-branch", "git-branch", "git-branch"),
+    "Back": ("arrow-left", "arrow-left", "arrow-left"),
 }
 
 def num(v): return float(v)
