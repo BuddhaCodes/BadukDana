@@ -82,7 +82,7 @@ jobs:
       - name: Publish
         shell: bash
         run: >
-          dotnet publish src/Hoshi.App/Hoshi.App.csproj -c Release -r ${{ matrix.rid }} --self-contained
+          dotnet publish src/Hoshi.Desktop/Hoshi.Desktop.csproj -c Release -r ${{ matrix.rid }} --self-contained
           -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none
           -p:Version=${{ steps.v.outputs.version }} -o out/Hoshi
 

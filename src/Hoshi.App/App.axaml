@@ -5,13 +5,13 @@
   <Application.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceInclude Source="avares://Hoshi/Styles/Tokens.axaml" />
+        <ResourceInclude Source="avares://Hoshi.App/Styles/Tokens.axaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Application.Resources>
 
   <Application.Styles>
     <FluentTheme />
-    <StyleInclude Source="avares://Hoshi/Styles/Base.axaml" />
+    <StyleInclude Source="avares://Hoshi.App/Styles/Base.axaml" />
   </Application.Styles>
 </Application>

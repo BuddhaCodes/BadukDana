@@ -161,7 +161,7 @@ public sealed class SystemSoundService : ISoundService
 
             // The cache file is named after the content, so a Hoshi update with new sounds never plays a stale copy.
             byte[] data;
-            using (Stream asset = AssetLoader.Open(new Uri($"avares://Hoshi/Assets/Sounds/{name}.wav")))
+            using (Stream asset = AssetLoader.Open(new Uri($"avares://Hoshi.App/Assets/Sounds/{name}.wav")))
             using (var ms = new MemoryStream())
             {
                 asset.CopyTo(ms);

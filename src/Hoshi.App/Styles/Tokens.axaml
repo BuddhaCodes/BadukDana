@@ -42,10 +42,10 @@
   <SolidColorBrush x:Key="EditBar.Foreground" Color="#222222" />
   <SolidColorBrush x:Key="EditBar.Hover" Color="#B3AC53" />
   <SolidColorBrush x:Key="Bg.Surround" Color="#C2CB9C" />
-  <FontFamily x:Key="Font.UI">avares://Hoshi/Assets/Fonts/Manrope#Manrope</FontFamily>
-  <FontFamily x:Key="Font.Title">avares://Hoshi/Assets/Fonts/Manrope#Manrope</FontFamily>
-  <FontFamily x:Key="Font.Mono">avares://Hoshi/Assets/Fonts/JetBrainsMono#JetBrains Mono</FontFamily>
-  <FontFamily x:Key="Font.Brand">avares://Hoshi/Assets/Fonts/ShipporiMincho#Shippori Mincho</FontFamily>
+  <FontFamily x:Key="Font.UI">avares://Hoshi.App/Assets/Fonts/Manrope#Manrope</FontFamily>
+  <FontFamily x:Key="Font.Title">avares://Hoshi.App/Assets/Fonts/Manrope#Manrope</FontFamily>
+  <FontFamily x:Key="Font.Mono">avares://Hoshi.App/Assets/Fonts/JetBrainsMono#JetBrains Mono</FontFamily>
+  <FontFamily x:Key="Font.Brand">avares://Hoshi.App/Assets/Fonts/ShipporiMincho#Shippori Mincho</FontFamily>
   <x:Double x:Key="Font.Size.Title">14</x:Double>
 
   <x:Double x:Key="BottomBar.Height">40</x:Double>

@@ -21,7 +21,7 @@ public static class SkinThumbnails
     {
         ArgumentNullException.ThrowIfNull(style);
         return style.ShudanTexture
-            ? Skins.Image("avares://Hoshi/Assets/Sabaki/board.png")
+            ? Skins.Image("avares://Hoshi.App/Assets/Sabaki/board.png")
             : Skins.Image(style.Texture) ?? Cached("kaya:" + style.Wood, () => BoardTextures.KayaFor(style.Wood));
     }
 

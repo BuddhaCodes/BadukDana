@@ -50,7 +50,7 @@ public sealed class SkinTests
         BoardStyle s = Skins.Compose(HoshiThemes.Classic.Board, null, Skins.StoneSet("clam-slate"));
 
         s.ShudanTexture.Should().BeFalse();
-        s.Texture.Should().Be("avares://Hoshi/Assets/Sabaki/board.png", "Classic keeps Shudan's board");
+        s.Texture.Should().Be("avares://Hoshi.App/Assets/Sabaki/board.png", "Classic keeps Shudan's board");
         s.StoneSet.Should().Be("clam-slate");
     }
 

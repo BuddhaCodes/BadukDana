@@ -138,7 +138,7 @@ public sealed class HoshiTitleBar : Border
 
         IsVisible = AlwaysShow || _window.IsExtendedIntoWindowDecorations;
         _title.Text = _window.Title;
-        _icon.Source ??= Themes.Skins.Image("avares://Hoshi/Assets/hoshi.png");
+        _icon.Source ??= Themes.Skins.Image("avares://Hoshi.App/Assets/hoshi.png");
         _maximize.IsVisible = _window.CanResize;
         _minimize.IsVisible = _window.Owner is null; // dialogs close; only top-level windows minimise
         _maximizeGlyph.Data = _window.WindowState == WindowState.Maximized

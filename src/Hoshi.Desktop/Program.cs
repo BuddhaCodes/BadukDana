@@ -1,9 +1,10 @@
 using Avalonia;
+using Hoshi.App;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Hoshi.App;
+namespace Hoshi.Desktop;
 
 internal static class Program
 {
@@ -22,7 +23,7 @@ internal static class Program
         int exitCode = 1;
         try
         {
-            exitCode = BuildAvaloniaApp(() => new App(host.Services)).StartWithClassicDesktopLifetime(args);
+            exitCode = BuildAvaloniaApp(() => new Hoshi.App.App(host.Services)).StartWithClassicDesktopLifetime(args);
         }
         catch (Exception ex)
         {
@@ -66,8 +67,8 @@ internal static class Program
         try
         {
             // Synchronous and owned by the UI thread's objects: done here, before leaving it.
-            host.Services.GetService<ViewModels.MainWindowViewModel>()?.SaveCurrentGame();
-            host.Services.GetService<Services.Music.IMusicService>()?.Stop();
+            host.Services.GetService<Hoshi.App.ViewModels.MainWindowViewModel>()?.SaveCurrentGame();
+            host.Services.GetService<Hoshi.App.Services.Music.IMusicService>()?.Stop();
         }
         catch (Exception ex) when (ex is InvalidOperationException or IOException or UnauthorizedAccessException)
         {
@@ -78,10 +79,10 @@ internal static class Program
         {
             try
             {
-                Task kataGo = host.Services.GetService<Services.AnalysisEngineHost>() is { } engine
+                Task kataGo = host.Services.GetService<Hoshi.App.Services.AnalysisEngineHost>() is { } engine
                     ? engine.DisposeAsync().AsTask()
                     : Task.CompletedTask;
-                Task gtp = host.Services.GetService<Services.Engines.GtpEngineHost>() is { } engines
+                Task gtp = host.Services.GetService<Hoshi.App.Services.Engines.GtpEngineHost>() is { } engines
                     ? engines.DisposeAsync().AsTask()
                     : Task.CompletedTask;
                 await Task.WhenAll(kataGo, gtp).WaitAsync(TimeSpan.FromSeconds(4));
@@ -119,7 +120,7 @@ internal static class Program
     }
 
     /// <summary>Used by the Avalonia designer/previewer. Do not remove.</summary>
-    public static AppBuilder BuildAvaloniaApp() => BuildAvaloniaApp(() => new App());
+    public static AppBuilder BuildAvaloniaApp() => BuildAvaloniaApp(() => new Hoshi.App.App());
 
     private static AppBuilder BuildAvaloniaApp(Func<Avalonia.Application> appFactory) =>
         AppBuilder.Configure(appFactory)

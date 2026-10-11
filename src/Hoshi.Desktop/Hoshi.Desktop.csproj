@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The desktop app (Windows, macOS, Linux): entry point, window platform and installers. The UI is Hoshi.App. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Hoshi.Desktop</RootNamespace>
+    <AssemblyName>Hoshi</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\Hoshi.App\Assets\hoshi.ico</ApplicationIcon>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- A local KataGo dropped in Hoshi.App/Assets/katago (not in git) is copied next to the app, where Hoshi finds it as "bundled". -->
+    <None Include="..\Hoshi.App\Assets\katago\**" Exclude="..\Hoshi.App\Assets\katago\analysis_logs\**;..\Hoshi.App\Assets\katago\gtp_logs\**"
+          Condition="Exists('..\Hoshi.App\Assets\katago')"
+          Link="katago\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Velopack" />
+    <!-- Direct reference only to lift the transitive version (see Directory.Packages.props). -->
+    <PackageReference Include="Tmds.DBus.Protocol" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hoshi.App\Hoshi.App.csproj" />
+  </ItemGroup>
+</Project>

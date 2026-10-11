@@ -31,7 +31,7 @@ public sealed class ThemeBackground : Control
     private static readonly Star[] Stars = CreateStars();
     private static readonly Blob[] InkBlobs = CreateInkBlobs();
     private static readonly Fibre[] Fibres = CreateFibres();
-    private static readonly Lazy<Bitmap?> Tatami = new(() => LoadAsset("avares://Hoshi/Assets/Sabaki/tatami.png"));
+    private static readonly Lazy<Bitmap?> Tatami = new(() => LoadAsset("avares://Hoshi.App/Assets/Sabaki/tatami.png"));
     private static readonly Lazy<Bitmap> PaperGrain = new(() => Noise(256, 0xEF, 0xE9, 0xDD, 7));
     private static readonly Lazy<Bitmap> InkGrain = new(() => Noise(256, 0x14, 0x15, 0x18, 5));
 
