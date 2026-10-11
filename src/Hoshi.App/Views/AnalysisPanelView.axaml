@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Hoshi.App.ViewModels"
+             xmlns:c="using:Hoshi.App.Controls"
+             xmlns:l="using:Hoshi.App.Localization"
+             x:Class="Hoshi.App.Views.AnalysisPanelView"
+             x:DataType="vm:MainWindowViewModel">
+  <!-- Part of the main window, shared with the phone layout. -->
+          <StackPanel Spacing="6">
+            <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding Analysis.Analysis, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <TextBlock Text="{Binding Analysis.WinrateText}" FontWeight="SemiBold" x:Name="WinrateText" />
+              <TextBlock Grid.Column="1" Classes="secondary" Text="{Binding Analysis.LeadText}" VerticalAlignment="Center" x:Name="LeadText" />
+            </Grid>
+            <ProgressBar Classes="winrate" Minimum="0" Maximum="1" Value="{Binding Analysis.BlackWinrate}"
+                         IsVisible="{Binding Analysis.Analysis, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            <TextBlock Classes="assessment" Classes.good="{Binding Analysis.AssessmentClass, Converter={x:Static c:StringEqualsConverter.Instance}, ConverterParameter=good}"
+                       Classes.ok="{Binding Analysis.AssessmentClass, Converter={x:Static c:StringEqualsConverter.Instance}, ConverterParameter=ok}"
+                       Classes.warn="{Binding Analysis.AssessmentClass, Converter={x:Static c:StringEqualsConverter.Instance}, ConverterParameter=warn}"
+                       Classes.bad="{Binding Analysis.AssessmentClass, Converter={x:Static c:StringEqualsConverter.Instance}, ConverterParameter=bad}"
+                       Text="{Binding Analysis.AssessmentText}" TextWrapping="Wrap" x:Name="AssessmentText"
+                       IsVisible="{Binding Analysis.AssessmentText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <TextBlock Classes="secondary" Text="{Binding Analysis.BestText}" TextWrapping="Wrap"
+                       IsVisible="{Binding Analysis.BestText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <c:ScoreGraph Height="64" Values="{Binding Analysis.Graph}" CurrentIndex="{Binding Analysis.GraphIndex}"
+                          LineBrush="{DynamicResource Text.Primary}" Accent="{DynamicResource Accent}"
+                          MoveClickedCommand="{Binding Analysis.GoToMoveCommand}" x:Name="ScoreGraph"
+                          ToolTip.Tip="{l:T Main.GraphTip}" />
+            <TextBlock Classes="secondary" Text="{Binding Analysis.StatusText}" TextWrapping="Wrap" Foreground="{DynamicResource Accent}"
+                       IsVisible="{Binding Analysis.StatusText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" x:Name="AnalysisStatus" />
+            <TextBlock Classes="secondary" Text="{Binding Analysis.TerritoryText}" TextWrapping="Wrap" x:Name="TerritoryText"
+                       IsVisible="{Binding Analysis.TerritoryText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          </StackPanel>
+        
+</UserControl>

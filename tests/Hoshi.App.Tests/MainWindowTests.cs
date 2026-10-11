@@ -114,10 +114,10 @@ public sealed class MainWindowTests
 
         vm.Game.ToggleEditModeCommand.Execute(null);
 
-        Border bar = window.FindControl<Border>("BottomBar")!;
+        Border bar = window.FindDeep<Border>("BottomBar")!;
         bar.Classes.Should().Contain("edit");
-        window.FindControl<StackPanel>("EditBar")!.IsEffectivelyVisible.Should().BeTrue();
-        window.FindControl<Grid>("PlayerInfo")!.IsEffectivelyVisible.Should().BeFalse();
+        window.FindDeep<StackPanel>("EditBar")!.IsEffectivelyVisible.Should().BeTrue();
+        window.FindDeep<Grid>("PlayerInfo")!.IsEffectivelyVisible.Should().BeFalse();
         Application.Current!.TryGetResource("Bg.EditBar", null, out object? edit).Should().BeTrue();
         ((SolidColorBrush)edit!).Color.Should().Be(Hoshi.App.Themes.HoshiThemes.Default.EditBar);
     }

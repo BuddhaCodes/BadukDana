@@ -238,9 +238,9 @@ public sealed class AnalysisWindowTests
             await Task.Delay(20);
         }
 
-        window.FindControl<Border>("AnalysisPanel")!.IsEffectivelyVisible.Should().BeTrue();
-        window.FindControl<TextBlock>("AssessmentText")!.Text.Should().NotBeNullOrEmpty();
-        window.FindControl<Button>("TerritoryButton")!.Classes.Should().Contain("on");
+        window.FindDeep<Border>("AnalysisPanel")!.IsEffectivelyVisible.Should().BeTrue();
+        window.FindDeep<TextBlock>("AssessmentText")!.Text.Should().NotBeNullOrEmpty();
+        window.FindDeep<Button>("TerritoryButton")!.Classes.Should().Contain("on");
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
         frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "analysis.png"));
@@ -260,7 +260,7 @@ public sealed class AnalysisWindowTests
         window.Show();
         await Task.Delay(900);
 
-        window.FindControl<Border>("WarmupPill")!.Opacity.Should().BeApproximately(1, 0.01);
+        window.FindDeep<Border>("WarmupPill")!.Opacity.Should().BeApproximately(1, 0.01);
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
         frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "warmup.png"));

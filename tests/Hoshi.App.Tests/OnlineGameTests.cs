@@ -402,12 +402,12 @@ public sealed class MainWindowOnlineTests
         }
 
         ogs.OpenedGames.Should().Equal(70000001);
-        window.FindControl<StackPanel>("OnlinePanel")!.IsEffectivelyVisible.Should().BeTrue();
-        window.FindControl<TextBlock>("BlackClock")!.Text.Should().Be("9:50 + 5×0:30");
-        window.FindControl<TextBox>("CommentBox")!.IsEffectivelyVisible.Should().BeFalse();
-        window.FindControl<DockPanel>("ChatPanel")!.IsEffectivelyVisible.Should().BeTrue();
+        window.FindDeep<StackPanel>("OnlinePanel")!.IsEffectivelyVisible.Should().BeTrue();
+        window.FindDeep<TextBlock>("BlackClock")!.Text.Should().Be("9:50 + 5×0:30");
+        window.FindDeep<TextBox>("CommentBox")!.IsEffectivelyVisible.Should().BeFalse();
+        window.FindDeep<DockPanel>("ChatPanel")!.IsEffectivelyVisible.Should().BeTrue();
         vm.Online!.ChatLines.Should().HaveCount(2);
-        window.FindControl<ListBox>("ChatList")!.ItemCount.Should().Be(2);
+        window.FindDeep<ListBox>("ChatList")!.ItemCount.Should().Be(2);
         window.Title.Should().StartWith("OGS #70000001");
         game.Board.Width.Should().Be(9);
 
@@ -417,7 +417,7 @@ public sealed class MainWindowOnlineTests
 
         vm.Online!.LeaveCommand.Execute(null);
         vm.IsOnline.Should().BeFalse();
-        window.FindControl<TextBox>("CommentBox")!.IsEffectivelyVisible.Should().BeTrue();
+        window.FindDeep<TextBox>("CommentBox")!.IsEffectivelyVisible.Should().BeTrue();
     }
 
     [Fact]

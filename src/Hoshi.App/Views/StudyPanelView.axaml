@@ -1,0 +1,209 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Hoshi.App.ViewModels"
+             xmlns:c="using:Hoshi.App.Controls"
+             xmlns:l="using:Hoshi.App.Localization"
+             x:Class="Hoshi.App.Views.StudyPanelView"
+             x:DataType="vm:MainWindowViewModel">
+  <!-- Part of the main window, shared with the phone layout. -->
+          <DockPanel>
+            <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" Margin="12,8,6,2">
+              <c:HoshiIcon Icon="{DynamicResource Icon.Study}" Size="16" Foreground="{DynamicResource Accent}" Margin="0,0,8,0" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="{l:T Study.Title}" FontWeight="SemiBold" VerticalAlignment="Center" />
+              <Button Grid.Column="2" Classes="bar icon" Command="{Binding Study.ToggleCommand}" ToolTip.Tip="{l:T Study.Close}" x:Name="StudyClose">
+                <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="14" />
+              </Button>
+            </Grid>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" x:Name="StudyScroll">
+              <StackPanel Spacing="8" Margin="12,2,16,12">
+
+                <!-- The quiz: question, answer, the pin's note, next. -->
+                <Border x:Name="QuizCard" IsVisible="{Binding Study.IsQuizActive}" Padding="12,10" CornerRadius="10"
+                        Background="{DynamicResource Bg.Panel}" BorderBrush="{DynamicResource Accent}" BorderThickness="1">
+                  <StackPanel Spacing="6">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                      <c:HoshiIcon Icon="{DynamicResource Icon.Quiz}" Size="16" Foreground="{DynamicResource Accent}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="1" Text="{l:T Study.Quiz}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="2" Classes="secondary" Text="{Binding Study.QuizScore}" VerticalAlignment="Center" x:Name="QuizScore" />
+                    </Grid>
+                    <TextBlock Classes="secondary" FontSize="12" Text="{Binding Study.QuizProgress}" IsVisible="{Binding !Study.IsQuizFinished}" />
+                    <TextBlock Text="{Binding Study.QuizPrompt}" TextWrapping="Wrap" IsVisible="{Binding Study.CanReveal}" x:Name="QuizPrompt" />
+                    <TextBlock Text="{Binding Study.QuizResult}" FontWeight="SemiBold" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" x:Name="QuizResult"
+                               IsVisible="{Binding Study.QuizResult, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    <TextBlock Text="{Binding Study.QuizNote}" TextWrapping="Wrap" FontStyle="Italic" FontSize="12.5" IsVisible="{Binding Study.HasQuizNote}" x:Name="QuizNote" />
+                    <TextBlock Classes="secondary" FontSize="11.5" Text="{l:T Study.QuizPlayed}" IsVisible="{Binding Study.IsQuizAnswered}" />
+                    <WrapPanel Orientation="Horizontal">
+                      <WrapPanel.Styles>
+                        <Style Selector="Button"><Setter Property="Margin" Value="0,4,6,0" /></Style>
+                      </WrapPanel.Styles>
+                      <Button Content="{l:T Study.QuizReveal}" Command="{Binding Study.RevealAnswerCommand}" IsVisible="{Binding Study.CanReveal}" x:Name="QuizReveal" />
+                      <Button Classes="accent" Content="{l:T Study.QuizGotIt}" Command="{Binding Study.GotItCommand}" IsVisible="{Binding Study.CanSelfGrade}" x:Name="QuizGotIt" />
+                      <Button Content="{l:T Study.QuizMissed}" Command="{Binding Study.MissedCommand}" IsVisible="{Binding Study.CanSelfGrade}" />
+                      <Button Classes="accent" Content="{l:T Study.QuizNext}" Command="{Binding Study.NextQuestionCommand}" IsVisible="{Binding Study.CanGoNext}" x:Name="QuizNext" />
+                      <Button Content="{l:T Study.QuizEnd}" Command="{Binding Study.EndQuizCommand}" x:Name="QuizEnd" />
+                    </WrapPanel>
+                  </StackPanel>
+                </Border>
+
+                <StackPanel Spacing="8" IsVisible="{Binding !Study.IsQuizActive}">
+                  <TextBlock Classes="secondary" FontSize="11.5" TextWrapping="Wrap" Text="{l:T Study.OnlineNote}" IsVisible="{Binding Study.IsLiveOnline}" x:Name="StudyOnlineNote" />
+
+                  <!-- Tools and colours. -->
+                  <WrapPanel Orientation="Horizontal" x:Name="StudyTools">
+                    <RadioButton Classes="tool" GroupName="study-tool" ToolTip.Tip="{l:T Study.Tool.Note}"
+                                 IsChecked="{Binding Study.Tool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:StudyTool.Note}}"
+                                 Command="{Binding Study.SelectToolCommand}" CommandParameter="{x:Static vm:StudyTool.Note}"><Ellipse Width="13" Height="13" Fill="#141414" Stroke="#9A9A9A" StrokeThickness="1" /></RadioButton>
+                    <RadioButton Classes="tool" GroupName="study-tool" ToolTip.Tip="{l:T Study.Tool.Arrow}"
+                                 IsChecked="{Binding Study.Tool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:StudyTool.Arrow}}"
+                                 Command="{Binding Study.SelectToolCommand}" CommandParameter="{x:Static vm:StudyTool.Arrow}" x:Name="StudyArrowTool"><c:HoshiIcon Icon="{DynamicResource Icon.Arrow}" Size="16" /></RadioButton>
+                    <RadioButton Classes="tool" GroupName="study-tool" ToolTip.Tip="{l:T Study.Tool.Area}"
+                                 IsChecked="{Binding Study.Tool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:StudyTool.Area}}"
+                                 Command="{Binding Study.SelectToolCommand}" CommandParameter="{x:Static vm:StudyTool.Area}"><c:HoshiIcon Icon="{DynamicResource Icon.Area}" Size="16" /></RadioButton>
+                    <RadioButton Classes="tool" GroupName="study-tool" ToolTip.Tip="{l:T Study.Tool.Mark}"
+                                 IsChecked="{Binding Study.Tool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:StudyTool.Mark}}"
+                                 Command="{Binding Study.SelectToolCommand}" CommandParameter="{x:Static vm:StudyTool.Mark}"><c:HoshiIcon Icon="{DynamicResource Icon.Mark}" Size="16" /></RadioButton>
+                    <RadioButton Classes="tool" GroupName="study-tool" ToolTip.Tip="{l:T Study.Tool.Label}"
+                                 IsChecked="{Binding Study.Tool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:StudyTool.Label}}"
+                                 Command="{Binding Study.SelectToolCommand}" CommandParameter="{x:Static vm:StudyTool.Label}"><c:HoshiIcon Icon="{DynamicResource Icon.Label}" Size="16" /></RadioButton>
+                    <RadioButton Classes="tool" GroupName="study-tool" ToolTip.Tip="{l:T Study.Tool.Sequence}"
+                                 IsChecked="{Binding Study.Tool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:StudyTool.Sequence}}"
+                                 Command="{Binding Study.SelectToolCommand}" CommandParameter="{x:Static vm:StudyTool.Sequence}"><c:HoshiIcon Icon="{DynamicResource Icon.Sequence}" Size="16" /></RadioButton>
+                    <RadioButton Classes="tool" GroupName="study-tool" ToolTip.Tip="{l:T Study.Tool.Erase}"
+                                 IsChecked="{Binding Study.Tool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:StudyTool.Erase}}"
+                                 Command="{Binding Study.SelectToolCommand}" CommandParameter="{x:Static vm:StudyTool.Erase}"><c:HoshiIcon Icon="{DynamicResource Icon.Erase}" Size="16" /></RadioButton>
+                  </WrapPanel>
+                  <Grid ColumnDefinitions="Auto,*">
+                    <ListBox Classes="swatches" AutoScrollToSelectedItem="False" ItemsSource="{Binding Study.Colors}" SelectedItem="{Binding Study.Color}" x:Name="StudyColors">
+                      <ListBox.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ListBox.ItemsPanel>
+                      <ListBox.ItemTemplate>
+                        <DataTemplate>
+                          <Ellipse Width="14" Height="14" Fill="{Binding Converter={x:Static c:StudyColorBrushConverter.Instance}}" Stroke="#C0FFFFFF" StrokeThickness="1" />
+                        </DataTemplate>
+                      </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="2">
+                      <Button Classes="bar" Padding="6,2" FontSize="11.5" Content="{l:T Study.NewSequence}" ToolTip.Tip="{l:T Study.NewSequenceTip}"
+                              Command="{Binding Study.NewSequenceCommand}" IsVisible="{Binding Study.IsSequenceTool}" />
+                      <Button Classes="bar icon" ToolTip.Tip="{l:T Study.ClearDrawingsTip}" Command="{Binding Study.ClearDrawingsCommand}" x:Name="StudyClear">
+                        <c:HoshiIcon Icon="{DynamicResource Icon.Erase}" Size="14" />
+                      </Button>
+                    </StackPanel>
+                  </Grid>
+                  <TextBlock Classes="secondary" FontSize="11.5" TextWrapping="Wrap" Text="{Binding Study.ToolHint}" x:Name="StudyToolHint" />
+
+                  <!-- The pins along the game. -->
+                  <Border Height="1" Background="{DynamicResource Border.Subtle}" Margin="0,2" />
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Classes="secondary" FontSize="12" FontWeight="SemiBold" Text="{l:T Study.Timeline}" VerticalAlignment="Center" />
+                    <ComboBox Grid.Column="1" ItemsSource="{Binding Study.Filters}" SelectedItem="{Binding Study.Filter}" FontSize="12" MinHeight="26" Padding="8,2" x:Name="StudyFilter">
+                      <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:StudyCategoryOption">
+                          <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Ellipse Width="8" Height="8" Fill="{Binding Brush}" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Name}" FontSize="12" />
+                          </StackPanel>
+                        </DataTemplate>
+                      </ComboBox.ItemTemplate>
+                    </ComboBox>
+                  </Grid>
+                  <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Button Classes="bar icon" Command="{Binding Study.PreviousPinCommand}" ToolTip.Tip="{l:T Study.PrevPin}" VerticalAlignment="Bottom" x:Name="StudyPrevPin">
+                      <c:HoshiIcon Icon="{DynamicResource Icon.Previous}" Size="14" />
+                    </Button>
+                    <c:StudyTimeline Grid.Column="1" x:Name="StudyTimeline" Height="30" Marks="{Binding Study.Timeline}" Total="{Binding Study.TimelineTotal}"
+                                     Current="{Binding Study.TimelineCurrent}" LineBrush="{DynamicResource Border.Subtle}" Accent="{DynamicResource Accent}"
+                                     MarkClickedCommand="{Binding Study.GoToMarkCommand}" />
+                    <Button Grid.Column="2" Classes="bar icon" Command="{Binding Study.NextPinCommand}" ToolTip.Tip="{l:T Study.NextPin}" VerticalAlignment="Bottom" x:Name="StudyNextPin">
+                      <c:HoshiIcon Icon="{DynamicResource Icon.Next}" Size="14" />
+                    </Button>
+                  </Grid>
+                  <TextBlock Classes="secondary" FontSize="11.5" Text="{Binding Study.TimelineText}" HorizontalAlignment="Center" x:Name="StudyTimelineText" />
+
+                  <!-- This move: its pins, replies and a new pin. -->
+                  <Border Height="1" Background="{DynamicResource Border.Subtle}" Margin="0,2" />
+                  <TextBlock Text="{Binding Study.MoveTitle}" FontWeight="SemiBold" x:Name="StudyMoveTitle" />
+                  <TextBlock Classes="secondary" FontSize="12" Text="{l:T Study.NoPins}" IsVisible="{Binding !Study.HasPins}" />
+                  <ItemsControl ItemsSource="{Binding Study.Pins}" x:Name="StudyPins">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:StudyPinRow">
+                        <Border Margin="0,0,0,6" Padding="10,7" CornerRadius="8" Background="{DynamicResource Bg.PanelAlt}" BorderBrush="{Binding Brush}" BorderThickness="3,0,0,0">
+                          <StackPanel Spacing="4">
+                            <Grid ColumnDefinitions="*,Auto">
+                              <WrapPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding CategoryName}" Foreground="{Binding Brush}" FontWeight="SemiBold" FontSize="12" Margin="0,0,6,0" />
+                                <TextBlock Text="{Binding Author}" FontSize="11.5" FontWeight="SemiBold" Margin="0,0,6,0" />
+                                <TextBlock Classes="secondary" Text="{Binding When}" FontSize="11" VerticalAlignment="Center" />
+                              </WrapPanel>
+                              <Button Grid.Column="1" Classes="bar icon" Padding="3" Command="{Binding DeleteCommand}" ToolTip.Tip="{l:T Study.Delete}" VerticalAlignment="Top">
+                                <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="11" />
+                              </Button>
+                            </Grid>
+                            <TextBlock Text="{Binding Text}" IsVisible="{Binding HasText}" TextWrapping="Wrap" FontSize="12.5" />
+                            <ItemsControl ItemsSource="{Binding Replies}" IsVisible="{Binding HasReplies}">
+                              <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:StudyReplyRow">
+                                  <Border BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="2,0,0,0" Padding="8,1,0,1" Margin="0,2,0,0">
+                                    <TextBlock TextWrapping="Wrap" FontSize="12" ToolTip.Tip="{Binding When}">
+                                      <Run Text="{Binding Author}" FontWeight="SemiBold" /><Run Text=" " /><Run Text="{Binding Text}" />
+                                    </TextBlock>
+                                  </Border>
+                                </DataTemplate>
+                              </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBox Watermark="{l:T Study.ReplyWatermark}" Text="{Binding ReplyText}" FontSize="12" MinHeight="26" Padding="6,3" MaxLength="1000">
+                              <TextBox.KeyBindings>
+                                <KeyBinding Gesture="Enter" Command="{Binding ReplyCommand}" />
+                              </TextBox.KeyBindings>
+                            </TextBox>
+                          </StackPanel>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+
+                  <TextBlock Classes="secondary" FontSize="12" FontWeight="SemiBold" Text="{l:T Study.NewPin}" />
+                  <ListBox Classes="chips" AutoScrollToSelectedItem="False" ItemsSource="{Binding Study.Categories}" SelectedItem="{Binding Study.NewCategory}" x:Name="StudyCategories">
+                    <ListBox.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:StudyCategoryOption">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                          <Ellipse Width="8" Height="8" Fill="{Binding Brush}" VerticalAlignment="Center" />
+                          <TextBlock Text="{Binding Name}" FontSize="11.5" />
+                        </StackPanel>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                  <TextBox Watermark="{l:T Study.NoteWatermark}" Text="{Binding Study.NewPinText}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="54" MaxLength="4000" x:Name="StudyNewPin" />
+                  <Button Classes="accent" HorizontalAlignment="Right" Command="{Binding Study.AddPinCommand}" x:Name="StudyAddPin">
+                    <StackPanel Orientation="Horizontal" Spacing="6"><c:HoshiIcon Icon="{DynamicResource Icon.Pin}" Size="14" /><TextBlock Text="{l:T Study.AddPin}" /></StackPanel>
+                  </Button>
+
+                  <!-- Share, quiz and report. -->
+                  <Border Height="1" Background="{DynamicResource Border.Subtle}" Margin="0,2" />
+                  <Grid ColumnDefinitions="Auto,*" ToolTip.Tip="{l:T Study.SignAsTip}">
+                    <TextBlock Classes="secondary" FontSize="12" Text="{l:T Study.SignAs}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <TextBox Grid.Column="1" Text="{Binding Study.Author}" FontSize="12" MinHeight="26" Padding="6,3" MaxLength="40" x:Name="StudyAuthor" />
+                  </Grid>
+                  <WrapPanel Orientation="Horizontal" x:Name="StudyActions">
+                    <WrapPanel.Styles>
+                      <Style Selector="Button"><Setter Property="Margin" Value="0,0,6,6" /><Setter Property="Padding" Value="9,5" /></Style>
+                    </WrapPanel.Styles>
+                    <Button Command="{Binding Study.SaveStudyCommand}" ToolTip.Tip="{l:T Study.SaveStudyTip}" x:Name="StudySave">
+                      <StackPanel Orientation="Horizontal" Spacing="6"><c:HoshiIcon Icon="{DynamicResource Icon.Study}" Size="14" /><TextBlock Text="{l:T Study.SaveStudy}" FontSize="12" /></StackPanel>
+                    </Button>
+                    <Button Command="{Binding Study.OpenStudyCommand}" ToolTip.Tip="{l:T Study.OpenStudyTip}">
+                      <StackPanel Orientation="Horizontal" Spacing="6"><c:HoshiIcon Icon="{DynamicResource Icon.Folder}" Size="14" /><TextBlock Text="{l:T Study.OpenStudy}" FontSize="12" /></StackPanel>
+                    </Button>
+                    <Button Command="{Binding Study.ReportCommand}" ToolTip.Tip="{l:T Study.ReportTip}" x:Name="StudyReport">
+                      <StackPanel Orientation="Horizontal" Spacing="6"><c:HoshiIcon Icon="{DynamicResource Icon.Report}" Size="14" /><TextBlock Text="{l:T Study.ReportButton}" FontSize="12" /></StackPanel>
+                    </Button>
+                    <Button Command="{Binding Study.StartQuizCommand}" ToolTip.Tip="{l:T Study.QuizTip}" x:Name="StudyQuiz">
+                      <StackPanel Orientation="Horizontal" Spacing="6"><c:HoshiIcon Icon="{DynamicResource Icon.Quiz}" Size="14" /><TextBlock Text="{l:T Study.Quiz}" FontSize="12" /></StackPanel>
+                    </Button>
+                  </WrapPanel>
+                </StackPanel>
+              </StackPanel>
+            </ScrollViewer>
+          </DockPanel>
+        
+</UserControl>

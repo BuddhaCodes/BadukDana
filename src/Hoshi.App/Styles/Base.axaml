@@ -319,4 +319,40 @@
   <Style Selector="Border.theme-card.selected">
     <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
   </Style>
+
+  <!-- Panels shared by the main window and the phone layout (chips, chat lines, results). -->
+    <Style Selector="Button.chip">
+      <Setter Property="CornerRadius" Value="999" />
+      <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="Border.chat-line">
+      <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
+    </Style>
+    <Style Selector="Border.chat-line.mine">
+      <Setter Property="Background" Value="#33D9B45A" />
+    </Style>
+    <Style Selector="TextBlock.good">
+      <Setter Property="Foreground" Value="#7FD08A" />
+    </Style>
+    <Style Selector="TextBlock.bad">
+      <Setter Property="Foreground" Value="#F08A7A" />
+    </Style>
+    <Style Selector="ListBox.chips, ListBox.swatches">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="ListBox.chips ListBoxItem">
+      <Setter Property="Padding" Value="8,3" />
+      <Setter Property="Margin" Value="0,0,4,4" />
+      <Setter Property="CornerRadius" Value="999" />
+      <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
+      <Setter Property="MinHeight" Value="0" />
+    </Style>
+    <Style Selector="ListBox.swatches ListBoxItem">
+      <Setter Property="Padding" Value="5" />
+      <Setter Property="Margin" Value="0,0,2,0" />
+      <Setter Property="CornerRadius" Value="999" />
+      <Setter Property="MinHeight" Value="0" />
+    </Style>
 </Styles>

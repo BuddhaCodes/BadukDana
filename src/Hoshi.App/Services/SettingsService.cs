@@ -83,6 +83,9 @@ public sealed record AppSettings
     /// <summary>The version that ran last time (to thank the player once after an update).</summary>
     public string? LastRunVersion { get; init; }
 
+    /// <summary>Tap and confirm: a first tap shows the stone, a second plays it. Null = on for phones, off on the desktop.</summary>
+    public bool? ConfirmMoves { get; init; }
+
     /// <summary>The name study notes are signed with (shared study files show who wrote what); null = "Me".</summary>
     public string? StudyAuthor { get; init; }
 }
