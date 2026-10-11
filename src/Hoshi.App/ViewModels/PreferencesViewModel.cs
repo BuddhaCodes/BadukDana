@@ -252,6 +252,12 @@ public sealed partial class PreferencesViewModel : ViewModelBase
 
     public bool HasEngineHost => _engines is not null;
 
+    /// <summary>The list of GTP engines (programs with a command line): desktop only; phones use Hoshi's KataGo.</summary>
+    public bool HasEngineList => HasEngineHost && IsDesktop;
+
+    /// <summary>Settings that only make sense on a computer: KataGo's files, other engines, updates (phones update through the APK).</summary>
+    public bool IsDesktop => !Services.PlatformInfo.IsPhone;
+
     public System.Collections.ObjectModel.ObservableCollection<EngineItem> EngineItems { get; } = [];
 
     public System.Collections.ObjectModel.ObservableCollection<AnalysisEngineOption> AnalysisEngineOptions { get; } = [];

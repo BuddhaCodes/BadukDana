@@ -47,6 +47,22 @@ public static class AppHost
 
     public const string UpdatesHttpClient = "updates";
 
+    /// <summary>
+    /// Phones (Android): windows become pages of the single view and dialogs a card (<see cref="Services.Phone.PhoneNavigation"/>).
+    /// Call after <see cref="AddAppServices"/>; the later registrations win.
+    /// </summary>
+    public static IServiceCollection AddPhoneShell(this IServiceCollection services)
+    {
+        services.AddSingleton<Services.Phone.PhoneNavigation>();
+        services.AddSingleton<IPreferencesWindowService>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
+        services.AddSingleton<ILobbyWindowService>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
+        services.AddSingleton<IReplaysWindowService>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
+        services.AddSingleton<Services.Engines.IEngineWindows>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
+        services.AddSingleton<IDialogService>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
+        services.AddSingleton<PhoneShellViewModel>();
+        return services;
+    }
+
     /// <summary>Registers the application's own services, view models and views.</summary>
     public static IServiceCollection AddAppServices(this IServiceCollection services)
     {
