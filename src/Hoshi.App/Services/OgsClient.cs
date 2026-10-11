@@ -88,7 +88,7 @@ public sealed class AvaloniaBrowserLauncher : IBrowserLauncher
     public async Task OpenAsync(Uri uri, CancellationToken cancellationToken)
     {
         bool opened = await Dispatcher.UIThread.InvokeAsync(async () =>
-            MainWindowLocator.MainWindow?.Launcher is { } launcher && await launcher.LaunchUriAsync(uri));
+            MainWindowLocator.Top?.Launcher is { } launcher && await launcher.LaunchUriAsync(uri));
         if (!opened)
         {
             throw new OgsAuthException(Tr.T("Online.BrowserFailed"));

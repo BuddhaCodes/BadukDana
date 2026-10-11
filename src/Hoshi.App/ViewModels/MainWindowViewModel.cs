@@ -33,7 +33,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IUiDispatcher? ui = null,
         IDialogService? dialogs = null,
         ILogger<MainWindowViewModel>? logger = null,
-        IPreferencesWindowService? preferences = null,
+        IPreferencesWindowService? preferencesWindow = null,
         IAnalysisEngine? engine = null,
         ISoundService? sounds = null,
         ISettingsService? settings = null,
@@ -51,8 +51,15 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Services.Engines.IEngineWindows? engineWindows = null,
         EffectsViewModel? effects = null,
         IFileDialogService? files = null,
-        IBrowserLauncher? browser = null)
+        IBrowserLauncher? browser = null,
+        PreferencesViewModel? preferences = null)
     {
+        game.ConfirmMoves = PlatformInfo.ConfirmMoves(settings?.Current ?? new AppSettings());
+        if (preferences is not null)
+        {
+            preferences.ConfirmMovesChanged += (_, on) => game.ConfirmMoves = on;
+        }
+
         Effects = effects ?? new EffectsViewModel(settings);
         EngineMatch = engineMatch;
         _engines = engines;
@@ -62,7 +69,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         KataGoSetup = kataGoSetup;
         Joseki = joseki ?? new JosekiTrainerViewModel(Services.Joseki.NullJosekiLibrary.Instance, game);
         JosekiHints = josekiHints ?? new JosekiAssistantViewModel(game);
-        _preferences = preferences;
+        _preferences = preferencesWindow;
         _replaysWindow = replaysWindow;
         _replayStore = replays;
         if (replays is not null)

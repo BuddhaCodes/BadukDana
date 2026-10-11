@@ -127,7 +127,7 @@ public sealed class EffectsLevelTests
         var vm = new MainWindowViewModel(new GameViewModel(), ui: new ImmediateDispatcher(), settings: settings, audio: new AudioViewModel(settings));
         var window = new MainWindow(vm) { Width = 1100, Height = 720 };
         window.Show();
-        Button button = window.FindControl<Button>("EffectsButton")!;
+        Button button = window.FindDeep<Button>("EffectsButton")!;
         button.Flyout!.ShowAt(button);
         await Task.Delay(80);
         using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
@@ -137,10 +137,10 @@ public sealed class EffectsLevelTests
 
         button.Flyout.Hide();
         vm.Effects.IsSubtle = true;
-        window.FindControl<GoBoardControl>("Board")!.Effects.Should().Be(EffectsLevel.Subtle);
+        window.FindDeep<GoBoardControl>("Board")!.Effects.Should().Be(EffectsLevel.Subtle);
         settings.Current.Effects.Should().Be(EffectsLevel.Subtle);
 
-        Button audio = window.FindControl<Button>("AudioButton")!;
+        Button audio = window.FindDeep<Button>("AudioButton")!;
         audio.Flyout!.ShowAt(audio);
         await Task.Delay(80);
         using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))

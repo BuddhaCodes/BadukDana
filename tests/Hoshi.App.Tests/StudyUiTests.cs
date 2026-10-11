@@ -80,20 +80,20 @@ public sealed class StudyUiTests
         window.Show();
         Study(vm.Game, english: false);
 
-        window.FindControl<GoBoardControl>("Board")!.Focus();
+        window.FindDeep<GoBoardControl>("Board")!.Focus();
         window.KeyPressQwerty(PhysicalKey.S, RawInputModifiers.None);
         vm.Study.IsActive.Should().BeTrue();
         window.UpdateLayout();
-        window.FindControl<Border>("StudyPanel")!.IsEffectivelyVisible.Should().BeTrue();
-        window.FindControl<TextBox>("CommentBox")!.IsEffectivelyVisible.Should().BeFalse();
-        window.FindControl<GoBoardControl>("Board")!.StudyDrawings.Should().HaveCount(5);
-        window.FindControl<TextBlock>("StudyMoveTitle")!.Text.Should().Be("Jugada 14 · Blancas M4");
-        window.FindControl<StudyTimeline>("StudyTimeline")!.Marks.Should().HaveCount(6);
+        window.FindDeep<Border>("StudyPanel")!.IsEffectivelyVisible.Should().BeTrue();
+        window.FindDeep<TextBox>("CommentBox")!.IsEffectivelyVisible.Should().BeFalse();
+        window.FindDeep<GoBoardControl>("Board")!.StudyDrawings.Should().HaveCount(5);
+        window.FindDeep<TextBlock>("StudyMoveTitle")!.Text.Should().Be("Jugada 14 · Blancas M4");
+        window.FindDeep<StudyTimeline>("StudyTimeline")!.Marks.Should().HaveCount(6);
 
         string dir = Path.Combine(AppContext.BaseDirectory, "screenshots");
         Directory.CreateDirectory(dir);
         // The whole panel, for a look at the Spanish texts (the window is made tall enough for everything).
-        window.FindControl<Border>("StudyPanel")!.Height = 1080;
+        window.FindDeep<Border>("StudyPanel")!.Height = 1080;
         window.UpdateLayout();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
         using (Avalonia.Media.Imaging.WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
@@ -102,16 +102,16 @@ public sealed class StudyUiTests
         }
 
         // Typing an "s" in a note does not close the panel.
-        window.FindControl<TextBox>("StudyNewPin")!.Focus();
+        window.FindDeep<TextBox>("StudyNewPin")!.Focus();
         window.KeyPressQwerty(PhysicalKey.S, RawInputModifiers.None);
         window.KeyTextInput("s");
         vm.Study.IsActive.Should().BeTrue();
         vm.Study.NewPinText.Should().Be("s");
 
-        window.FindControl<Button>("StudyClose")!.Command!.Execute(null);
+        window.FindDeep<Button>("StudyClose")!.Command!.Execute(null);
         window.UpdateLayout();
-        window.FindControl<TextBox>("CommentBox")!.IsEffectivelyVisible.Should().BeTrue();
-        window.FindControl<GoBoardControl>("Board")!.StudyDrawings.Should().BeEmpty();
+        window.FindDeep<TextBox>("CommentBox")!.IsEffectivelyVisible.Should().BeTrue();
+        window.FindDeep<GoBoardControl>("Board")!.StudyDrawings.Should().BeEmpty();
         window.Close();
     }
 
@@ -121,7 +121,7 @@ public sealed class StudyUiTests
         var vm = new MainWindowViewModel();
         var window = new MainWindow(vm) { Width = 1200, Height = 820 };
         window.Show();
-        GoBoardControl board = window.FindControl<GoBoardControl>("Board")!;
+        GoBoardControl board = window.FindDeep<GoBoardControl>("Board")!;
         Avalonia.Point At(int x, int y) => board.TranslatePoint(board.CurrentGeometry!.Value.Center(new Point(x, y)), window)!.Value;
 
         // Without a drawing tool a slightly sliding click still plays.

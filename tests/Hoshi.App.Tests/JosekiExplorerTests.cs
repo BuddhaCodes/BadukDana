@@ -221,11 +221,11 @@ public sealed class JosekiMainWindowTests
             trainer.PlayCommand.Execute(new Point(9, 3));
             await Settle();
 
-            window.FindControl<GoBoardControl>("Board")!.IsVisible.Should().BeFalse();
-            window.FindControl<GoBoardControl>("JosekiBoard")!.IsVisible.Should().BeTrue();
-            window.FindControl<Border>("JosekiPanel")!.IsVisible.Should().BeTrue();
-            window.FindControl<Border>("BottomBar")!.IsVisible.Should().BeFalse();
-            window.FindControl<TextBlock>("JosekiLineName")!.Text.Should().Be("Invasión en 3-3 bajo el hoshi");
+            window.FindDeep<GoBoardControl>("Board")!.IsVisible.Should().BeFalse();
+            window.FindDeep<GoBoardControl>("JosekiBoard")!.IsVisible.Should().BeTrue();
+            window.FindDeep<Border>("JosekiPanel")!.IsVisible.Should().BeTrue();
+            window.FindDeep<Border>("BottomBar")!.IsVisible.Should().BeFalse();
+            window.FindDeep<TextBlock>("JosekiLineName")!.Text.Should().Be("Invasión en 3-3 bajo el hoshi");
             Save(window, "joseki-trainer.png");
 
             trainer.CloseCommand.Execute(null);
@@ -234,11 +234,11 @@ public sealed class JosekiMainWindowTests
             game.PlayCommand.Execute(Point.FromHuman("Q16", 19));
             await hints.Pending;
             await Settle();
-            window.FindControl<GoBoardControl>("Board")!.IsVisible.Should().BeTrue();
-            window.FindControl<GoBoardControl>("Board")!.JosekiHints.Should().NotBeEmpty();
-            window.FindControl<TextBlock>("JosekiText")!.Text.Should().StartWith("Joseki (OGS)");
-            window.FindControl<Border>("JosekiInfo")!.IsVisible.Should().BeTrue();
-            window.FindControl<TextBlock>("JosekiNote")!.Text.Should().Be("The 4-4 point.");
+            window.FindDeep<GoBoardControl>("Board")!.IsVisible.Should().BeTrue();
+            window.FindDeep<GoBoardControl>("Board")!.JosekiHints.Should().NotBeEmpty();
+            window.FindDeep<TextBlock>("JosekiText")!.Text.Should().StartWith("Joseki (OGS)");
+            window.FindDeep<Border>("JosekiInfo")!.IsVisible.Should().BeTrue();
+            window.FindDeep<TextBlock>("JosekiNote")!.Text.Should().Be("The 4-4 point.");
             Save(window, "joseki-hints.png");
         }
         finally

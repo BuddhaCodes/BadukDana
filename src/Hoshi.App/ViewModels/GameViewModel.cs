@@ -431,9 +431,61 @@ public sealed partial class GameViewModel : ViewModelBase
 
     // ---------- Play and edit ----------
 
+    /// <summary>
+    /// Tap and confirm (phones): the first tap shows the stone, a second tap on the same point plays it. Avoids
+    /// stones played by a slip of the finger on a small 19×19 board, online and locally.
+    /// </summary>
+    public bool ConfirmMoves
+    {
+        get => _confirmMoves;
+        set
+        {
+            if (_confirmMoves != value)
+            {
+                _confirmMoves = value;
+                OnPropertyChanged();
+                PendingMove = null;
+            }
+        }
+    }
+
+    private bool _confirmMoves;
+
+    /// <summary>The stone waiting for its second tap (with <see cref="ConfirmMoves"/>), or null.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PendingStone))]
+    private Point? _pendingMove;
+
+    /// <summary>The colour of the waiting stone.</summary>
+    public Stone PendingStone => PendingMove is null ? Stone.Empty : Online is { } o ? o.MyColor : Board.ToMove;
+
+    /// <summary>With <see cref="ConfirmMoves"/>, true when this tap only shows the stone (or moves it elsewhere).</summary>
+    private bool WaitsForConfirmation(Point point)
+    {
+        if (!ConfirmMoves || IsEditMode)
+        {
+            return false;
+        }
+
+        bool placeable = Online is { } online ? online.CanPlayAt(point) : !IsEngineTurn && Board.IsLegal(Board.ToMove, point);
+        if (!placeable || PendingMove == point)
+        {
+            PendingMove = null;
+            return false;
+        }
+
+        PendingMove = point;
+        return true;
+    }
+
     [RelayCommand(CanExecute = nameof(CanPlay))]
     private void Play(Point point)
     {
+        if (WaitsForConfirmation(point))
+        {
+            return;
+        }
+
         if (Online is { } online)
         {
             online.OnBoardClicked(point);
@@ -689,6 +741,11 @@ public sealed partial class GameViewModel : ViewModelBase
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
         await File.WriteAllBytesAsync(path, SgfWriter.WriteBytes(Tree));
+        if (_files is not null)
+        {
+            await _files.FinishSaveAsync(path);
+        }
+
         FilePath = path;
         IsDirty = false;
         SetStatus(Tr.F("Game.Saved", System.IO.Path.GetFileName(path)));
@@ -768,6 +825,7 @@ public sealed partial class GameViewModel : ViewModelBase
     private void OnCursorChanged(object? sender, EventArgs e)
     {
         _statusOverride = null;
+        PendingMove = null; // the position changed (a move, navigation, or the opponent's move online)
         GameNode now = _cursor.Current;
         GameNode? before = _shownNode;
         _shownNode = now;

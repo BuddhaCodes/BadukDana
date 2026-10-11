@@ -77,7 +77,7 @@ public sealed class AudioTests
         var vm = new MainWindowViewModel(new GameViewModel(), ui: new ImmediateDispatcher(), settings: settings, audio: audio);
         var window = new MainWindow(vm) { Width = 1100, Height = 720 };
         window.Show();
-        Button button = window.FindControl<Button>("AudioButton")!;
+        Button button = window.FindDeep<Button>("AudioButton")!;
         button.IsVisible.Should().BeTrue();
 
         button.Flyout!.ShowAt(button);

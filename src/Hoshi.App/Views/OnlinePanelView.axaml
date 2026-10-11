@@ -1,0 +1,39 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Hoshi.App.ViewModels"
+             xmlns:c="using:Hoshi.App.Controls"
+             xmlns:l="using:Hoshi.App.Localization"
+             x:Class="Hoshi.App.Views.OnlinePanelView"
+             x:DataType="vm:MainWindowViewModel">
+  <!-- Part of the main window, shared with the phone layout. -->
+  <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+                <Ellipse Grid.Row="0" Width="10" Height="10" Fill="#1A1A1A" Stroke="#9A9A9A" StrokeThickness="1" Margin="0,0,8,0" />
+                <TextBlock Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Online.BlackName}" TextTrimming="CharacterEllipsis"
+                           FontWeight="{Binding Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
+                <TextBlock Grid.Row="1" Grid.Column="1" Classes="clock" Classes.low="{Binding Online.IsBlackClockLow}"
+                           Text="{Binding Online.BlackClock}" x:Name="BlackClock" />
+                <TextBlock Grid.Row="1" Grid.Column="2" Classes="secondary" VerticalAlignment="Center" Text="{Binding Game.Board.BlackCaptures, StringFormat='+{0}'}" />
+                <Ellipse Grid.Row="2" Width="10" Height="10" Fill="#EEE" Stroke="#888" StrokeThickness="1" Margin="0,10,8,0" />
+                <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Online.WhiteName}" TextTrimming="CharacterEllipsis" Margin="0,10,0,0"
+                           FontWeight="{Binding !Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
+                <TextBlock Grid.Row="3" Grid.Column="1" Classes="clock" Classes.low="{Binding Online.IsWhiteClockLow}"
+                           Text="{Binding Online.WhiteClock}" x:Name="WhiteClock" />
+                <TextBlock Grid.Row="3" Grid.Column="2" Classes="secondary" VerticalAlignment="Center" Text="{Binding Game.Board.WhiteCaptures, StringFormat='+{0}'}" />
+              </Grid>
+              <TextBlock Text="{Binding Online.StatusText}" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" x:Name="OnlineStatus" />
+              <WrapPanel Orientation="Horizontal">
+                <WrapPanel.Styles>
+                  <Style Selector="Button"><Setter Property="Margin" Value="0,0,6,6" /></Style>
+                </WrapPanel.Styles>
+                <Button Content="{l:T Main.Pass}" Command="{Binding Online.PassCommand}" IsVisible="{Binding Online.IsPlayPhase}" x:Name="OnlinePassButton" />
+                <Button Content="{l:T Main.Resign}" Command="{Binding Online.ResignCommand}" IsVisible="{Binding Online.IsPlayPhase}" x:Name="ResignButton" />
+                <Button Content="{l:T Main.RequestUndo}" Command="{Binding Online.RequestUndoCommand}" IsVisible="{Binding Online.IsPlayPhase}" />
+                <Button Classes="accent" Content="{l:T Main.AcceptUndo}" Command="{Binding Online.AcceptUndoCommand}" IsVisible="{Binding Online.IsUndoRequested}" />
+                <Button Classes="accent" Content="{l:T Main.AcceptScore}" Command="{Binding Online.AcceptScoreCommand}" IsVisible="{Binding Online.IsStoneRemoval}" x:Name="AcceptScoreButton" />
+                <Button Content="{l:T Main.ResumeGame}" Command="{Binding Online.RejectScoreCommand}" IsVisible="{Binding Online.IsStoneRemoval}" />
+                <Button Content="{l:T Main.Leave}" Command="{Binding Online.LeaveCommand}" ToolTip.Tip="{l:T Main.LeaveTip}" x:Name="LeaveButton" />
+              </WrapPanel>
+            
+  </StackPanel>
+</UserControl>

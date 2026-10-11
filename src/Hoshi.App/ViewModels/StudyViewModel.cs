@@ -590,6 +590,7 @@ public sealed partial class StudyViewModel : ViewModelBase
         try
         {
             await File.WriteAllTextAsync(path, StudyStore.WriteWithMirror(_game.Tree), new UTF8Encoding(false));
+            await _files.FinishSaveAsync(path);
             _game.ShowStatus(Tr.F("Study.Saved", Path.GetFileName(path)));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -714,6 +715,7 @@ public sealed partial class StudyViewModel : ViewModelBase
             }
 
             await File.WriteAllTextAsync(path, StudyReport.Html(_game.Tree, verdicts, _time.GetLocalNow()), new UTF8Encoding(false));
+            await _files.FinishSaveAsync(path);
             _game.ShowStatus(Tr.F("Study.ReportSaved", Path.GetFileName(path)));
             if (_browser is not null)
             {

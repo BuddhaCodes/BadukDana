@@ -31,6 +31,8 @@
             </StackPanel>
             <ToggleSwitch IsChecked="{Binding Animations}" OnContent="{l:T Prefs.Animations}" OffContent="{l:T Prefs.Animations}" x:Name="AnimationsSwitch" />
             <TextBlock Classes="secondary" Text="{l:T Prefs.AnimationsHint}" TextWrapping="Wrap" />
+            <ToggleSwitch IsChecked="{Binding ConfirmMoves}" OnContent="{l:T Prefs.ConfirmMoves}" OffContent="{l:T Prefs.ConfirmMoves}" x:Name="ConfirmMovesSwitch" Margin="0,6,0,0" />
+            <TextBlock Classes="secondary" Text="{l:T Prefs.ConfirmMovesHint}" TextWrapping="Wrap" />
             <CheckBox IsChecked="{Binding CheckForUpdates}" Content="{l:T Prefs.CheckForUpdates}" Margin="0,8,0,0" x:Name="UpdatesBox" />
             <TextBlock Classes="secondary" Text="{Binding UpdatesHint}" TextWrapping="Wrap" />
           </StackPanel>

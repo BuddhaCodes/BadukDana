@@ -200,6 +200,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             _music = s.Music;
             _stoneSounds = s.StoneSounds;
             _chatSounds = s.ChatSounds;
+            _confirmMoves = Services.PlatformInfo.ConfirmMoves(s);
             _atariAlerts = s.AtariAlerts;
             _musicVolume = s.MusicVolume;
             _checkForUpdates = s.CheckForUpdates;
@@ -513,6 +514,23 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     partial void OnStoneSoundsChanged(bool value) => SaveEffects();
 
     partial void OnChatSoundsChanged(bool value) => SaveEffects();
+
+    /// <summary>Tap and confirm: a first tap shows the stone, a second one plays it.</summary>
+    [ObservableProperty]
+    private bool _confirmMoves;
+
+    /// <summary>Raised when tap-and-confirm is switched, so the board follows at once.</summary>
+    public event EventHandler<bool>? ConfirmMovesChanged;
+
+    partial void OnConfirmMovesChanged(bool value)
+    {
+        if (_settings is not null && _settings.Current.ConfirmMoves != value)
+        {
+            _settings.Save(_settings.Current with { ConfirmMoves = value });
+        }
+
+        ConfirmMovesChanged?.Invoke(this, value);
+    }
 
     partial void OnAtariAlertsChanged(bool value) => SaveEffects();
 

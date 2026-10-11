@@ -76,7 +76,7 @@ public sealed class GameTreeTests
         await vm.Game.OpenFileAsync(GameViewModelPhase3Tests.SamplePath);
         window.UpdateLayout();
 
-        GameTreeControl tree = window.FindControl<GameTreeControl>("GameTree")!;
+        GameTreeControl tree = window.FindDeep<GameTreeControl>("GameTree")!;
         GameNode target = vm.Game.Tree.Root.Children[0].Children[0].Children[0]; // B[pp]
         Avalonia.Point local = GameTreeControl.CenterOf(tree.Layout!.Positions[target]);
         Avalonia.Point at = tree.TranslatePoint(local, window)!.Value;
@@ -97,13 +97,13 @@ public sealed class GameTreeTests
         vm.Game.PlayCommand.Execute(new Point(3, 3));
         vm.Game.PlayCommand.Execute(new Point(15, 15));
 
-        window.FindControl<GoBoardControl>("Board")!.Focus();
+        window.FindDeep<GoBoardControl>("Board")!.Focus();
         window.KeyPressQwerty(PhysicalKey.ArrowLeft, RawInputModifiers.None);
         vm.Game.MoveNumber.Should().Be(1);
         window.KeyPressQwerty(PhysicalKey.ArrowRight, RawInputModifiers.None);
         vm.Game.MoveNumber.Should().Be(2);
 
-        window.FindControl<Avalonia.Controls.TextBox>("CommentBox")!.Focus();
+        window.FindDeep<Avalonia.Controls.TextBox>("CommentBox")!.Focus();
         window.KeyPressQwerty(PhysicalKey.P, RawInputModifiers.None);
         window.KeyTextInput("p");
 

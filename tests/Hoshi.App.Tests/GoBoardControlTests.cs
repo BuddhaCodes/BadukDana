@@ -23,7 +23,7 @@ public sealed class GoBoardControlTests
         var game = new GameViewModel(size, RuleSet.Japanese);
         var window = new MainWindow(new MainWindowViewModel(game)) { Width = width, Height = height };
         window.Show();
-        return (window, window.FindControl<GoBoardControl>("Board")!, game);
+        return (window, window.FindDeep<GoBoardControl>("Board")!, game);
     }
 
     private static Avalonia.Point InWindow(MainWindow window, GoBoardControl board, Point p)
