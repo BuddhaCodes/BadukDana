@@ -461,16 +461,16 @@ public sealed class LobbyWindowTests
         var window = new LobbyWindow { DataContext = new LobbyViewModel(new FakeOgsClient(), new ImmediateDispatcher()) };
         window.Show();
 
-        window.FindControl<TextBox>("UsernameBox")!.IsEffectivelyVisible.Should().BeTrue();
-        window.FindControl<TextBox>("PasswordBox")!.PasswordChar.Should().Be('•');
-        window.FindControl<Button>("BrowserSignInButton")!.IsEffectivelyVisible.Should().BeFalse();
-        window.FindControl<Button>("GoogleSignInButton")!.IsEffectivelyVisible.Should().BeTrue();
-        window.FindControl<ComboBox>("ServerBox")!.IsEffectivelyVisible.Should().BeTrue();
+        window.FindDeep<TextBox>("UsernameBox")!.IsEffectivelyVisible.Should().BeTrue();
+        window.FindDeep<TextBox>("PasswordBox")!.PasswordChar.Should().Be('•');
+        window.FindDeep<Button>("BrowserSignInButton")!.IsEffectivelyVisible.Should().BeFalse();
+        window.FindDeep<Button>("GoogleSignInButton")!.IsEffectivelyVisible.Should().BeTrue();
+        window.FindDeep<ComboBox>("ServerBox")!.IsEffectivelyVisible.Should().BeTrue();
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
         frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "phase4-lobby-beta.png"));
-        window.FindControl<TabControl>("Tabs")!.IsVisible.Should().BeFalse();
-        window.FindControl<TextBlock>("SocialAccountHint")!.IsEffectivelyVisible.Should().BeTrue();
+        window.FindDeep<TabControl>("Tabs")!.IsVisible.Should().BeFalse();
+        window.FindDeep<TextBlock>("SocialAccountHint")!.IsEffectivelyVisible.Should().BeTrue();
     }
 
     [AvaloniaFact]
@@ -480,9 +480,9 @@ public sealed class LobbyWindowTests
         var window = new LobbyWindow { DataContext = new LobbyViewModel(ogs, new ImmediateDispatcher()) };
         window.Show();
 
-        window.FindControl<Button>("GoogleSignInButton")!.IsEffectivelyVisible.Should().BeTrue();
-        window.FindControl<Button>("BrowserSignInButton")!.IsEffectivelyVisible.Should().BeTrue();
-        window.FindControl<TextBox>("UsernameBox")!.IsEffectivelyVisible.Should().BeFalse();
+        window.FindDeep<Button>("GoogleSignInButton")!.IsEffectivelyVisible.Should().BeTrue();
+        window.FindDeep<Button>("BrowserSignInButton")!.IsEffectivelyVisible.Should().BeTrue();
+        window.FindDeep<TextBox>("UsernameBox")!.IsEffectivelyVisible.Should().BeFalse();
 
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         string outDir = Path.Combine(AppContext.BaseDirectory, "screenshots");
@@ -501,9 +501,9 @@ public sealed class LobbyWindowTests
         ogs.SetOpen(new OgsOpenChallenge(1, 2, FakeOgsClient.Rival, "x", 19, 19, false, 0, null, RuleSet.Japanese, "automatic", "live", "byoyomi 10:00 + 5×30 s", -1000, 1000));
         ogs.SetState(OgsConnectionState.Connected);
 
-        window.FindControl<TabControl>("Tabs")!.IsVisible.Should().BeTrue();
-        window.FindControl<TextBlock>("UserLabel")!.Text.Should().Be("hoshi-dev [5k]");
-        window.FindControl<TabControl>("Tabs")!.SelectedIndex = 1;
+        window.FindDeep<TabControl>("Tabs")!.IsVisible.Should().BeTrue();
+        window.FindDeep<TextBlock>("UserLabel")!.Text.Should().Be("hoshi-dev [5k]");
+        window.FindDeep<TabControl>("Tabs")!.SelectedIndex = 1;
 
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         string outDir = Path.Combine(AppContext.BaseDirectory, "screenshots");

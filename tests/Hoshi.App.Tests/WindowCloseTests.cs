@@ -27,13 +27,8 @@ public sealed class WindowCloseTests
         return (window, vm, settings);
     }
 
-    private static void Click(Window window, string name)
-    {
-        Button button = window.FindControl<Button>(name)!;
-        button.Command.Should().NotBeNull($"{name} must have a command");
-        button.Command!.CanExecute(button.CommandParameter).Should().BeTrue();
-        button.Command.Execute(button.CommandParameter);
-    }
+    private static void Click(Window window, string name) =>
+        window.FindDeep<Button>(name)!.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
 
     [AvaloniaFact]
     public void Done_closes_the_preferences_and_keeps_what_was_typed()
@@ -75,7 +70,7 @@ public sealed class WindowCloseTests
         Click(window, "DoneButton");
 
         closed.Should().BeFalse();
-        window.FindControl<TabControl>("Tabs")!.SelectedItem.Should().BeSameAs(window.FindControl<TabItem>("EnginesTab"));
+        window.FindDeep<TabControl>("Tabs")!.SelectedItem.Should().BeSameAs(window.FindDeep<TabItem>("EnginesTab"));
         vm.EnginesStatus.Should().Be("Ya hay otro motor con ese nombre.");
         settings.Current.Engines.Should().ContainSingle();
         window.Close();

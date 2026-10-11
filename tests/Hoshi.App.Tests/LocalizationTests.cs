@@ -77,7 +77,7 @@ public sealed class LanguageSwitchTests
         {
             Tr.SetLanguage(Tr.English);
             Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-            window.FindControl<TextBlock>("PassLabel")!.Text.Should().Be("Pass");
+            window.FindDeep<TextBlock>("PassLabel")!.Text.Should().Be("Pass");
             using (Avalonia.Media.Imaging.WriteableBitmap frame = window.CaptureRenderedFrame()!)
             {
                 Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
@@ -92,7 +92,7 @@ public sealed class LanguageSwitchTests
             }
             Tr.SetLanguage(Tr.Spanish);
             Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-            window.FindControl<TextBlock>("PassLabel")!.Text.Should().Be("Pasar");
+            window.FindDeep<TextBlock>("PassLabel")!.Text.Should().Be("Pasar");
         }
         finally
         {
