@@ -109,9 +109,7 @@ public sealed class SystemSoundService : ISoundService
         try
         {
             bool stone = effect is SoundEffect.Stone or SoundEffect.StoneFirm;
-            string file = stone
-                ? ResolveName(FileName(effect), $"{FileName(effect)}_{(Interlocked.Increment(ref _stoneVariant) % 3) + 1}")
-                : Resolve(effect);
+            string file = SoundFile(effect);
             if (OperatingSystem.IsWindows() && stone && file.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
             {
                 PlayQuickWindows(file, volume);
@@ -134,6 +132,15 @@ public sealed class SystemSoundService : ISoundService
             Report(effect.ToString(), $"Could not play {effect}: {ex.Message}");
         }
     }
+
+    /// <summary>
+    /// The file to play for an effect (stones rotate through three recordings), for platforms that play files
+    /// with their own audio API (Android).
+    /// </summary>
+    public string SoundFile(SoundEffect effect) =>
+        effect is SoundEffect.Stone or SoundEffect.StoneFirm
+            ? ResolveName(FileName(effect), $"{FileName(effect)}_{(Interlocked.Increment(ref _stoneVariant) % 3) + 1}")
+            : Resolve(effect);
 
     /// <summary>The user's replacement file if there is one, otherwise the built-in WAV (copied out of the assembly once).</summary>
     internal string Resolve(SoundEffect effect) =>

@@ -17,12 +17,19 @@ public static class SecureTokenStore
 {
     public const string ServiceName = "Hoshi";
 
+    /// <summary>Set by platforms with their own secure store (Android Keystore); used instead of the desktop ones.</summary>
+    public static Func<ITokenStore>? PlatformFactory { get; set; }
+
     public static ITokenStore Create(ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(loggerFactory);
         ILogger logger = loggerFactory.CreateLogger(typeof(SecureTokenStore));
         ITokenStore primary;
-        if (OperatingSystem.IsWindows())
+        if (PlatformFactory is { } platform)
+        {
+            primary = platform();
+        }
+        else if (OperatingSystem.IsWindows())
         {
             primary = new DpapiTokenStore(Path.Combine(AppPaths.DataDirectory, "secrets"));
         }
