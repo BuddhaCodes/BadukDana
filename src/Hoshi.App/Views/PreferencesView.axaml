@@ -1,0 +1,267 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:Hoshi.App.Localization"
+             xmlns:vm="using:Hoshi.App.ViewModels"
+             xmlns:c="using:Hoshi.App.Controls"
+             x:Class="Hoshi.App.Views.PreferencesView"
+             x:DataType="vm:PreferencesViewModel"
+             x:Name="Root">
+  <!-- The content of PreferencesWindow, shared with the phone layout (Hoshi.Android shows it as a page). -->
+  <DockPanel Margin="24,20">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="0,0,0,16">
+      <TextBlock Text="星" FontFamily="{DynamicResource Font.Brand}" FontSize="30" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
+      <StackPanel VerticalAlignment="Center">
+        <TextBlock Text="{l:T Prefs.Appearance}" FontFamily="{DynamicResource Font.Title}" FontSize="22" />
+        <TextBlock Classes="secondary" Text="{l:T Prefs.ThemeHint}" />
+      </StackPanel>
+    </StackPanel>
+
+    <Button DockPanel.Dock="Bottom" HorizontalAlignment="Right" Classes="accent" Content="{l:T Prefs.Done}" Click="OnDone" Margin="0,12,0,0" x:Name="DoneButton" />
+    <TabControl x:Name="Tabs">
+      <TabItem Header="{l:T Prefs.Appearance}">
+        <DockPanel Margin="0,10,0,0">
+          <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
+            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,0,0,8">
+              <TextBlock Text="{l:T Prefs.Language}" VerticalAlignment="Center" />
+              <ComboBox ItemsSource="{Binding LanguageOptions}" SelectedItem="{Binding SelectedLanguage}" MinWidth="160" x:Name="LanguageBox">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:LanguageOption"><TextBlock Text="{Binding Name}" /></DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+            <ToggleSwitch IsChecked="{Binding Animations}" OnContent="{l:T Prefs.Animations}" OffContent="{l:T Prefs.Animations}" x:Name="AnimationsSwitch" />
+            <TextBlock Classes="secondary" Text="{l:T Prefs.AnimationsHint}" TextWrapping="Wrap" />
+            <CheckBox IsChecked="{Binding CheckForUpdates}" Content="{l:T Prefs.CheckForUpdates}" Margin="0,8,0,0" x:Name="UpdatesBox" />
+            <TextBlock Classes="secondary" Text="{Binding UpdatesHint}" TextWrapping="Wrap" />
+          </StackPanel>
+        <ListBox ItemsSource="{Binding Cards}" SelectedItem="{Binding Selected}" Background="Transparent" x:Name="ThemeList">
+          <ListBox.ItemsPanel>
+            <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+          </ListBox.ItemsPanel>
+          <ListBox.Styles>
+            <Style Selector="ListBoxItem">
+              <Setter Property="Padding" Value="0" />
+              <Setter Property="Margin" Value="0,0,14,14" />
+              <Setter Property="CornerRadius" Value="10" />
+            </Style>
+          </ListBox.Styles>
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:ThemeCard">
+              <Border Classes="theme-card" Classes.selected="{Binding IsSelected}" Width="220">
+                <StackPanel>
+                  <Panel Height="120" ClipToBounds="True">
+                    <c:ThemeBackground Kind="{Binding Theme.Background}" Animate="False" />
+                    <c:GoBoardControl Board="{Binding SampleBoard}" BoardStyle="{Binding Theme.Board}" ShowCoordinates="False"
+                                      IsInteractive="False" Margin="14" />
+                  </Panel>
+                  <Border Background="{Binding Chrome}" Padding="12,10">
+                    <StackPanel Spacing="3">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Ellipse Width="9" Height="9" Fill="{Binding Accent}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding Name}" FontFamily="{Binding TitleFont}" FontSize="16" Foreground="#F2F0EA" />
+                      </StackPanel>
+                      <TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontSize="11" Foreground="#B8B4AC" />
+                    </StackPanel>
+                  </Border>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        </DockPanel>
+      </TabItem>
+      <TabItem Header="{l:T Prefs.BoardTab}">
+        <Grid ColumnDefinitions="*,250" Margin="0,10,0,0">
+          <Border CornerRadius="10" ClipToBounds="True" Margin="0,0,18,0">
+            <Panel>
+              <c:ThemeBackground Kind="{Binding PreviewBackground}" Animate="False" />
+              <c:GoBoardControl Board="{Binding PreviewBoard}" BoardStyle="{Binding PreviewStyle}" ShowCoordinates="False"
+                                IsInteractive="False" Margin="26" x:Name="SkinPreview" />
+            </Panel>
+          </Border>
+          <ScrollViewer Grid.Column="1">
+            <StackPanel Spacing="6">
+              <TextBlock Classes="secondary" Text="{l:T Prefs.BoardHint}" TextWrapping="Wrap" Margin="0,0,0,6" />
+                <TextBlock Classes="label" Text="{l:T Prefs.Board}" />
+                <ComboBox ItemsSource="{Binding BoardOptions}" SelectedItem="{Binding SelectedBoard}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" x:Name="BoardBox">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SkinOption">
+                      <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Border Width="{Binding PreviewWidth}" Height="30" CornerRadius="4" ClipToBounds="True" VerticalAlignment="Center">
+                          <Image Source="{Binding Preview}" Stretch="UniformToFill" />
+                        </Border>
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Classes="label" Text="{l:T Prefs.Stones}" />
+                <ComboBox ItemsSource="{Binding StoneOptions}" SelectedItem="{Binding SelectedStones}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" x:Name="StonesBox">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SkinOption">
+                      <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Border Width="{Binding PreviewWidth}" Height="30" CornerRadius="4" ClipToBounds="True" VerticalAlignment="Center">
+                          <Image Source="{Binding Preview}" Stretch="UniformToFill" />
+                        </Border>
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Classes="label" Text="{l:T Prefs.Background}" />
+                <ComboBox ItemsSource="{Binding BackgroundOptions}" SelectedItem="{Binding SelectedBackground}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" x:Name="BackgroundBox">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SkinOption">
+                      <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Border Width="{Binding PreviewWidth}" Height="30" CornerRadius="4" ClipToBounds="True" VerticalAlignment="Center">
+                          <Image Source="{Binding Preview}" Stretch="UniformToFill" />
+                        </Border>
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Content="{l:T Prefs.ResetSkins}" Command="{Binding ResetSkinsCommand}" Margin="0,10,0,0" />
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+      </TabItem>
+      <TabItem Header="{l:T Main.Analysis}">
+        <ScrollViewer Margin="0,10,0,0">
+          <StackPanel Spacing="10" MaxWidth="640" HorizontalAlignment="Left">
+            <TextBlock TextWrapping="Wrap"
+                       Text="{l:T Prefs.KataGoIntro}" />
+            <Grid ColumnDefinitions="140,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+              <Grid.Styles>
+                <Style Selector="TextBox"><Setter Property="Margin" Value="0,3" /></Style>
+                <Style Selector="Button"><Setter Property="Margin" Value="8,3,0,3" /></Style>
+              </Grid.Styles>
+              <TextBlock Classes="label" Text="{l:T Prefs.Executable}" VerticalAlignment="Center" />
+              <TextBox Grid.Column="1" Text="{Binding KataGoExecutable}" Watermark="katago.exe" x:Name="ExecutableBox" />
+              <Button Grid.Column="2" Content="{l:T Prefs.Browse}" Command="{Binding BrowseExecutableCommand}" />
+              <TextBlock Grid.Row="1" Classes="label" Text="{l:T Prefs.Network}" VerticalAlignment="Center" />
+              <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding KataGoModel}" Watermark="kata1-…bin.gz" />
+              <Button Grid.Row="1" Grid.Column="2" Content="{l:T Prefs.Browse}" Command="{Binding BrowseModelCommand}" />
+              <TextBlock Grid.Row="2" Classes="label" Text="{l:T Prefs.Config}" VerticalAlignment="Center" />
+              <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding KataGoConfig}" Watermark="analysis_example.cfg" />
+              <Button Grid.Row="2" Grid.Column="2" Content="{l:T Prefs.Browse}" Command="{Binding BrowseConfigCommand}" />
+              <TextBlock Grid.Row="3" Classes="label" Text="{l:T Prefs.MaxVisits}" VerticalAlignment="Center" />
+              <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding AnalysisVisits}" Minimum="10" Maximum="100000" Increment="50"
+                             FormatString="0" HorizontalAlignment="Left" Width="160" Margin="0,3" />
+            </Grid>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Button Content="{l:T Main.Save}" Command="{Binding ApplyEngineCommand}" />
+              <Button Classes="accent" Content="{l:T Prefs.TestKataGo}" Command="{Binding TestEngineCommand}" IsEnabled="{Binding !IsTesting}" />
+            </StackPanel>
+            <TextBlock Text="{Binding EngineStatus}" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" x:Name="EngineStatus" />
+            <StackPanel Spacing="6" IsVisible="{Binding KataGoSetup, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <TextBlock Classes="secondary" Text="{l:T KataGo.PrefsHint}" TextWrapping="Wrap" />
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Button Content="{Binding KataGoSetup.InstallLabel}" Command="{Binding KataGoSetup.InstallCommand}"
+                        IsVisible="{Binding KataGoSetup.CanInstallHere, FallbackValue=False}" x:Name="PrefsInstallKataGo" />
+                <ProgressBar Minimum="0" Maximum="1" Value="{Binding KataGoSetup.Progress}" Width="160" IsVisible="{Binding KataGoSetup.IsInstalling, FallbackValue=False}" />
+              </StackPanel>
+              <TextBlock Classes="secondary" Text="{Binding KataGoSetup.StatusText}" TextWrapping="Wrap" IsVisible="{Binding KataGoSetup.HasStatus, FallbackValue=False}" />
+            </StackPanel>
+            <TextBlock Classes="secondary" TextWrapping="Wrap"
+                       Text="{l:T Prefs.LiveHint}" />
+
+            <TextBlock Classes="label" Text="{l:T Prefs.Celebrate}" Margin="0,14,0,0" />
+            <CheckBox IsChecked="{Binding MoveEffects}" x:Name="MoveEffectsBox"
+                      Content="{l:T Prefs.CelebrateBox}" />
+            <StackPanel Orientation="Horizontal" Spacing="10" IsEnabled="{Binding MoveEffects}">
+              <TextBlock Text="{l:T Prefs.Volume}" VerticalAlignment="Center" />
+              <Slider Minimum="0" Maximum="100" Value="{Binding SoundVolume}" Width="220" x:Name="VolumeSlider" />
+              <TextBlock Text="{Binding SoundVolume, StringFormat={}{0} %}" VerticalAlignment="Center" MinWidth="44" />
+              <Button Content="{l:T Prefs.TestSound}" Command="{Binding TestSoundCommand}" />
+            </StackPanel>
+
+            <CheckBox IsChecked="{Binding StoneSounds}" x:Name="StoneSoundsBox"
+                      Content="{l:T Prefs.StoneSoundsBox}" />
+            <CheckBox IsChecked="{Binding ChatSounds}" x:Name="ChatSoundsBox"
+                      Content="{l:T Prefs.ChatSoundsBox}" />
+
+            <TextBlock Classes="label" Text="{l:T Effects.Title}" Margin="0,14,0,0" />
+            <StackPanel Orientation="Horizontal" Spacing="14" x:Name="PrefsEffectsLevels">
+              <RadioButton GroupName="effects-prefs" Content="{l:T Effects.Off}" IsChecked="{Binding Effects.IsOff}" />
+              <RadioButton GroupName="effects-prefs" Content="{l:T Effects.Subtle}" IsChecked="{Binding Effects.IsSubtle}" />
+              <RadioButton GroupName="effects-prefs" Content="{l:T Effects.Full}" IsChecked="{Binding Effects.IsFull}" />
+            </StackPanel>
+            <TextBlock Classes="secondary" TextWrapping="Wrap" Text="{l:T Effects.Hint}" />
+            <CheckBox IsChecked="{Binding AtariAlerts}" x:Name="AtariAlertsBox"
+                      Content="{l:T Prefs.AtariBox}" />
+
+            <TextBlock Classes="label" Text="{l:T Prefs.Music}" Margin="0,14,0,0" />
+            <CheckBox IsChecked="{Binding Music}" x:Name="MusicBox"
+                      Content="{l:T Prefs.MusicBox}" />
+            <StackPanel Orientation="Horizontal" Spacing="10" IsEnabled="{Binding Music}">
+              <TextBlock Text="{l:T Prefs.Volume}" VerticalAlignment="Center" />
+              <Slider Minimum="0" Maximum="100" Value="{Binding MusicVolume}" Width="220" />
+              <TextBlock Text="{Binding MusicVolume, StringFormat={}{0} %}" VerticalAlignment="Center" MinWidth="44" />
+            </StackPanel>
+            <TextBlock Classes="secondary" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" Text="{Binding MusicProblem}"
+                       IsVisible="{Binding MusicProblem, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <TextBlock Classes="secondary" TextWrapping="Wrap"
+                       Text="{Binding SoundsHelp}" />
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="{l:T Prefs.EnginesTab}" IsVisible="{Binding HasEngineHost}" x:Name="EnginesTab">
+        <Grid ColumnDefinitions="200,*" Margin="0,10,0,0">
+          <DockPanel Margin="0,0,16,0">
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
+              <Button Content="{l:T Prefs.EngineAdd}" Command="{Binding AddEngineCommand}" x:Name="AddEngineButton" />
+              <Button Content="{l:T Prefs.EngineRemove}" Command="{Binding RemoveEngineCommand}" />
+            </StackPanel>
+            <ListBox ItemsSource="{Binding EngineItems}" SelectedItem="{Binding SelectedEngineItem}" x:Name="EngineList"
+                     Background="{DynamicResource Bg.Panel}" CornerRadius="8">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:EngineItem">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <c:HoshiIcon Icon="{DynamicResource Icon.Engine}" Size="14" VerticalAlignment="Center" Opacity="0.75" />
+                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </DockPanel>
+          <ScrollViewer Grid.Column="1">
+            <StackPanel Spacing="8" Margin="0,0,16,0">
+              <TextBlock TextWrapping="Wrap" Text="{l:T Prefs.EnginesIntro}" />
+              <TextBlock Classes="secondary" TextWrapping="Wrap" Text="{Binding BuiltInEngineHint}" IsVisible="{Binding SelectedIsBuiltIn}" />
+              <Grid ColumnDefinitions="130,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" IsEnabled="{Binding HasEditableEngine}"
+                    IsVisible="{Binding SelectedEngineItem, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <Grid.Styles>
+                  <Style Selector="TextBox"><Setter Property="Margin" Value="0,3" /></Style>
+                  <Style Selector="Button"><Setter Property="Margin" Value="8,3,0,3" /></Style>
+                </Grid.Styles>
+                <TextBlock Classes="label" Text="{l:T Prefs.EngineName}" VerticalAlignment="Center" />
+                <TextBox Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedEngineItem.Name, FallbackValue={x:Null}}" x:Name="EngineNameBox" />
+                <TextBlock Grid.Row="1" Classes="label" Text="{l:T Prefs.Executable}" VerticalAlignment="Center" />
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEngineItem.Executable, FallbackValue={x:Null}}" Watermark="leelaz.exe, gnugo, katago…" x:Name="EngineExeBox" />
+                <Button Grid.Row="1" Grid.Column="2" Content="{l:T Prefs.Browse}" Command="{Binding BrowseEngineExecutableCommand}" />
+                <TextBlock Grid.Row="2" Classes="label" Text="{l:T Prefs.EngineArguments}" VerticalAlignment="Center" />
+                <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedEngineItem.Arguments, FallbackValue={x:Null}}" Watermark="--gtp -w network.gz" x:Name="EngineArgsBox" TextWrapping="Wrap" />
+                <TextBlock Grid.Row="3" Classes="label" Text="{l:T Prefs.EngineInit}" VerticalAlignment="Top" Margin="0,8,0,0" />
+                <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedEngineItem.InitCommands, FallbackValue={x:Null}}" AcceptsReturn="True"
+                         MinHeight="64" Watermark="time_settings 0 5 1" FontFamily="Cascadia Mono, Consolas, Menlo, DejaVu Sans Mono, monospace" />
+              </Grid>
+              <TextBlock Classes="secondary" TextWrapping="Wrap" Text="{l:T Prefs.EngineInitHint}" IsVisible="{Binding HasEditableEngine}" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="{l:T Main.Save}" Command="{Binding SaveEnginesCommand}" x:Name="SaveEnginesButton" />
+                <Button Classes="accent" Content="{l:T Prefs.EngineTest}" Command="{Binding TestGtpEngineCommand}" x:Name="TestGtpButton" />
+              </StackPanel>
+              <TextBlock Text="{Binding EnginesStatus}" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" x:Name="EnginesStatusText"
+                         IsVisible="{Binding EnginesStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+              <TextBlock Classes="secondary" TextWrapping="Wrap" Text="{l:T Prefs.EngineExamples}" />
+
+              <TextBlock Classes="label" Text="{l:T Prefs.AnalysisEngine}" Margin="0,14,0,0" />
+              <ComboBox ItemsSource="{Binding AnalysisEngineOptions}" SelectedItem="{Binding SelectedAnalysisEngine}" MinWidth="260" x:Name="AnalysisEngineBox" />
+              <TextBlock Classes="secondary" TextWrapping="Wrap" Text="{l:T Prefs.AnalysisEngineHint}" />
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+      </TabItem>
+    </TabControl>
+  </DockPanel>
+</UserControl>

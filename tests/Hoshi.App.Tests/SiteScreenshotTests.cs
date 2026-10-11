@@ -240,7 +240,7 @@ public sealed class SiteScreenshotTests
             vm.SelectedBackground = vm.BackgroundOptions.First(o => o.Id == "sashiko");
             var window = new PreferencesWindow { DataContext = vm, Width = 900, Height = 600 };
             window.Show();
-            Avalonia.Controls.ControlExtensions.FindControl<Avalonia.Controls.TabControl>(window, "Tabs")!.SelectedIndex = 1;
+            window.FindDeep<Avalonia.Controls.TabControl>("Tabs")!.SelectedIndex = 1;
             await Task.Delay(60);
             using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
             frame.Save(Path.Combine(dir, "board-prefs.png"));

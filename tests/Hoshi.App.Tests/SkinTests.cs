@@ -190,7 +190,7 @@ public sealed class SkinTests
         vm.SelectedBackground = vm.BackgroundOptions.First(o => o.Id == "sashiko");
         var window = new PreferencesWindow { DataContext = vm };
         window.Show();
-        window.FindControl<TabControl>("Tabs")!.SelectedIndex = 1;
+        window.FindDeep<TabControl>("Tabs")!.SelectedIndex = 1;
         await Task.Delay(50);
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
         frame.Save(Path.Combine(dir, "preferences-board.png"));
@@ -210,11 +210,11 @@ public sealed class SkinTests
         var vm = new PreferencesViewModel(themes, settings);
         var window = new PreferencesWindow { DataContext = vm, Height = 700 };
         window.Show();
-        window.FindControl<TabControl>("Tabs")!.SelectedIndex = 1;
+        window.FindDeep<TabControl>("Tabs")!.SelectedIndex = 1;
         await Task.Delay(50);
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
         frame.Save(Path.Combine(dir, "preferences-board-theme.png"));
-        window.FindControl<ComboBox>("StonesBox")!.IsDropDownOpen = true;
+        window.FindDeep<ComboBox>("StonesBox")!.IsDropDownOpen = true;
         await Task.Delay(80);
         using (WriteableBitmap open = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
         {

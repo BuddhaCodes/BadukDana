@@ -121,7 +121,7 @@ public sealed class ThemeTests
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
         frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "preferences.png"));
-        window.FindControl<Avalonia.Controls.ListBox>("ThemeList")!.ItemCount.Should().Be(5);
+        window.FindDeep<Avalonia.Controls.ListBox>("ThemeList")!.ItemCount.Should().Be(5);
         ThemeService.Apply(HoshiThemes.Default, animations: false, Application.Current!.Resources);
     }
 

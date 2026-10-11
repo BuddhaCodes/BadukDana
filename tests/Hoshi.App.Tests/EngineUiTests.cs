@@ -85,9 +85,9 @@ public sealed class EngineUiTests
         var vm = new PreferencesViewModel(themes, settings, engines: host) { EnginesStatus = "Funciona: Leela Zero 0.17, 31 comandos GTP, análisis con lz-analyze." };
         var window = new PreferencesWindow { DataContext = vm, Width = 900, Height = 680 };
         window.Show();
-        window.FindControl<TabControl>("Tabs")!.SelectedIndex = 3;
+        window.FindDeep<TabControl>("Tabs")!.SelectedIndex = 3;
         await Task.Delay(60);
-        window.FindControl<TextBox>("EngineArgsBox")!.Text.Should().Be("--gtp --noponder -w best-network.gz");
+        window.FindDeep<TextBox>("EngineArgsBox")!.Text.Should().Be("--gtp --noponder -w best-network.gz");
         Save(window, "preferences-engines.png");
         window.Close();
     }
@@ -113,8 +113,8 @@ public sealed class EngineUiTests
         var window = new MainWindow(vm) { Width = 1100, Height = 720 };
         window.Show();
         await Task.Delay(120);
-        window.FindControl<Border>("EngineBar")!.IsVisible.Should().BeTrue();
-        window.FindControl<TextBlock>("EngineStatusText")!.Text.Should().Be("KataGo de Hoshi está pensando…");
+        window.FindDeep<Border>("EngineBar")!.IsVisible.Should().BeTrue();
+        window.FindDeep<TextBlock>("EngineStatusText")!.Text.Should().Be("KataGo de Hoshi está pensando…");
         Save(window, "engine-bar-thinking.png");
 
         host.Gate.SetResult();
@@ -127,14 +127,14 @@ public sealed class EngineUiTests
         game.MoveNumber.Should().Be(2);
         match.TogglePauseCommand.Execute(null);
         await Task.Delay(60);
-        window.FindControl<Button>("EnginePause")!.Content.Should().Be("Continuar");
+        window.FindDeep<Button>("EnginePause")!.Content.Should().Be("Continuar");
         Save(window, "engine-bar-paused.png");
         window.Close();
 
         var dialog = new NewEngineGameWindow { DataContext = new NewEngineGameViewModel(host.Engines) { Handicap = 2 } };
         dialog.Show();
         await Task.Delay(60);
-        dialog.FindControl<Button>("StartButton")!.IsEnabled.Should().BeTrue();
+        dialog.FindDeep<Button>("StartButton")!.IsEnabled.Should().BeTrue();
         Save(dialog, "new-engine-game.png");
         dialog.Close();
 
