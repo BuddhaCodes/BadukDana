@@ -1,33 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <!-- Hoshi's UI and services, shared by the desktop app (Hoshi.Desktop) and Android (Hoshi.Android). -->
     <RootNamespace>Hoshi.App</RootNamespace>
-    <AssemblyName>Hoshi</AssemblyName>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>Assets\hoshi.ico</ApplicationIcon>
+    <AssemblyName>Hoshi.App</AssemblyName>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
   </PropertyGroup>
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" Exclude="Assets\katago\**" />
-    <!-- A local KataGo dropped in Assets/katago (not in git) is copied next to the app, where Hoshi finds it as "bundled". -->
-    <None Include="Assets\katago\**" Exclude="Assets\katago\analysis_logs\**;Assets\katago\gtp_logs\**" Condition="Exists('Assets\katago')"
-          Link="katago\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <EmbeddedResource Include="Joseki\starter.sgf" LogicalName="Hoshi.Joseki.starter.sgf" />
     <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Also inside the assembly, for platforms without files next to the app (Android). -->
+    <EmbeddedResource Include="appsettings.json" LogicalName="Hoshi.appsettings.json" />
     <None Update="appsettings.Development.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" />
-    <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Velopack" />
-    <!-- Direct reference only to lift the transitive version (see Directory.Packages.props). -->
-    <PackageReference Include="Tmds.DBus.Protocol" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Serilog.Extensions.Hosting" />

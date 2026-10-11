@@ -32,7 +32,7 @@ public sealed record BackgroundSkin(string Id, string NameKey, BackgroundKind Ki
 /// </summary>
 public static class Skins
 {
-    private const string Art = "avares://Hoshi/Assets/Art/";
+    private const string Art = "avares://Hoshi.App/Assets/Art/";
 
     public static IReadOnlyList<BoardSkin> Boards { get; } =
     [
@@ -42,7 +42,7 @@ public static class Skins
         new("katsura", "Skin.Board.Katsura", Art + "Boards/katsura.jpg", C("#E0AA72"), C("#3C220E"), C("#B03C220E"), C("#B98150"), 0.05),
         new("bamboo", "Skin.Board.Bamboo", Art + "Boards/bamboo.jpg", C("#D1AB71"), C("#3A2812"), C("#B03A2812"), C("#A88350"), 0.06),
         new("walnut", "Skin.Board.Walnut", Art + "Boards/walnut.jpg", C("#63442F"), C("#EADCC0"), C("#C0EADCC0"), C("#3E2A1C"), 0.06),
-        new("sabaki", "Skin.Board.Sabaki", "avares://Hoshi/Assets/Sabaki/board.png", C("#F1B458"), C("#5E2E0C"), C("#D05E2E0C"), C("#CA933A"), 0.15),
+        new("sabaki", "Skin.Board.Sabaki", "avares://Hoshi.App/Assets/Sabaki/board.png", C("#F1B458"), C("#5E2E0C"), C("#D05E2E0C"), C("#CA933A"), 0.15),
         new("kaya", "Skin.Board.Kaya", null, C("#E3C28A"), C("#5E2E0C"), C("#D05E2E0C"), C("#CA933A"), 0.05),
     ];
 
@@ -69,7 +69,7 @@ public static class Skins
         new("linen", "Skin.Bg.Linen", BackgroundKind.Linen, C("#2C2D32"), Art + "Backgrounds/linen.jpg"),
         new("sudare", "Skin.Bg.Sudare", BackgroundKind.Sudare, C("#B08E5A"), Art + "Backgrounds/sudare.jpg"),
         new("washi", "Skin.Bg.Washi", BackgroundKind.Washi, C("#EFE9DD")),
-        new("tatami", "Skin.Bg.Tatami", BackgroundKind.Tatami, C("#C2CB9C"), "avares://Hoshi/Assets/Sabaki/tatami.png"),
+        new("tatami", "Skin.Bg.Tatami", BackgroundKind.Tatami, C("#C2CB9C"), "avares://Hoshi.App/Assets/Sabaki/tatami.png"),
     ];
 
     public static BoardSkin? Board(string? id) => Boards.FirstOrDefault(b => b.Id == id);
@@ -138,7 +138,7 @@ public static class Skins
     public static BoardStyle Expand(BoardStyle s) => !s.ShudanTexture ? s : s with
     {
         ShudanTexture = false,
-        Texture = "avares://Hoshi/Assets/Sabaki/board.png",
+        Texture = "avares://Hoshi.App/Assets/Sabaki/board.png",
         Wood = C("#F1B458"),
         Border = C("#CA933A"),
         BorderWidth = 0.15,

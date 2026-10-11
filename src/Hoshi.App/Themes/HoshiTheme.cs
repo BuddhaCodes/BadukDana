@@ -179,7 +179,7 @@ public sealed record HoshiTheme
 /// <summary>The built-in themes. Fonts: OFL; icons: Phosphor/Tabler (MIT), Lucide (ISC); see THIRD_PARTY_NOTICES.md.</summary>
 public static class HoshiThemes
 {
-    private const string Fonts = "avares://Hoshi/Assets/Fonts/";
+    private const string Fonts = "avares://Hoshi.App/Assets/Fonts/";
 
     public static HoshiTheme NightSky { get; } = new()
     {
@@ -207,7 +207,7 @@ public static class HoshiThemes
         Background = BackgroundKind.NightSky,
         Board = new BoardStyle
         {
-            Texture = "avares://Hoshi/Assets/Art/Boards/kaya-masame.jpg",
+            Texture = "avares://Hoshi.App/Assets/Art/Boards/kaya-masame.jpg",
             StoneSet = "glass",
             WhiteVariants = 3,
             BlackVariants = 3,
@@ -253,7 +253,7 @@ public static class HoshiThemes
         Background = BackgroundKind.InkMist,
         Board = new BoardStyle
         {
-            Texture = "avares://Hoshi/Assets/Art/Boards/kaya-itame.jpg",
+            Texture = "avares://Hoshi.App/Assets/Art/Boards/kaya-itame.jpg",
             StoneSet = "clam-slate",
             WhiteVariants = 8,
             BlackVariants = 4,
@@ -297,7 +297,7 @@ public static class HoshiThemes
         Background = BackgroundKind.ZenSand,
         Board = new BoardStyle
         {
-            Texture = "avares://Hoshi/Assets/Art/Boards/shin-kaya.jpg",
+            Texture = "avares://Hoshi.App/Assets/Art/Boards/shin-kaya.jpg",
             StoneSet = "clam-slate",
             WhiteVariants = 8,
             BlackVariants = 4,
@@ -341,7 +341,7 @@ public static class HoshiThemes
         Background = BackgroundKind.Washi,
         Board = new BoardStyle
         {
-            Texture = "avares://Hoshi/Assets/Art/Boards/katsura.jpg",
+            Texture = "avares://Hoshi.App/Assets/Art/Boards/katsura.jpg",
             StoneSet = "ceramic",
             WhiteVariants = 2,
             BlackVariants = 2,

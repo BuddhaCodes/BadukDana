@@ -21,6 +21,13 @@ public static class AppHost
             ApplicationName = "Hoshi",
         });
 
+        // Android has no files next to the app: the defaults travel inside the assembly.
+        if (!File.Exists(Path.Combine(AppContext.BaseDirectory, "appsettings.json"))
+            && typeof(AppHost).Assembly.GetManifestResourceStream("Hoshi.appsettings.json") is { } defaults)
+        {
+            builder.Configuration.AddJsonStream(defaults);
+        }
+
         string logDirectory = Path.Combine(AppPaths.DataDirectory, "logs");
         builder.Services.AddSerilog((_, logger) => logger
             .ReadFrom.Configuration(builder.Configuration)

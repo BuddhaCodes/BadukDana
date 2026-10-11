@@ -118,7 +118,7 @@ internal static class BoardTextures
     {
         try
         {
-            using Stream s = AssetLoader.Open(new Uri("avares://Hoshi/Assets/Sabaki/board.png"));
+            using Stream s = AssetLoader.Open(new Uri("avares://Hoshi.App/Assets/Sabaki/board.png"));
             return new Bitmap(s);
         }
         catch (Exception ex) when (ex is IOException or InvalidOperationException or FileNotFoundException)

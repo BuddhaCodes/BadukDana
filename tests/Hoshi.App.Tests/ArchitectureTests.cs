@@ -14,7 +14,7 @@ public sealed class ArchitectureTests
         { "Hoshi.Sgf", ["Hoshi.Core"] },
         { "Hoshi.Ogs", ["Hoshi.Core"] },
         { "Hoshi.Engines", ["Hoshi.Core"] },
-        { "Hoshi", ["Hoshi.Core", "Hoshi.Sgf", "Hoshi.Ogs", "Hoshi.Engines"] },
+        { "Hoshi.App", ["Hoshi.Core", "Hoshi.Sgf", "Hoshi.Ogs", "Hoshi.Engines"] },
     };
 
     [Theory]
