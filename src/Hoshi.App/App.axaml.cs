@@ -73,7 +73,11 @@ public partial class App : Application
             };
         }
 
-        _services?.GetService<UpdateViewModel>()?.Start();
+        // Phones update by installing a new APK (from the website); the in-place updater is for desktops.
+        if (!Hoshi.App.Services.PlatformInfo.IsPhone)
+        {
+            _services?.GetService<UpdateViewModel>()?.Start();
+        }
         base.OnFrameworkInitializationCompleted();
     }
 }

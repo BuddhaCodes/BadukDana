@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+  <!-- Dark from the first frame, like the app (Night sky background). -->
+  <style name="HoshiTheme" parent="@style/Theme.AppCompat.NoActionBar">
+    <item name="android:windowBackground">@color/hoshi_background</item>
+    <item name="android:statusBarColor">@color/hoshi_background</item>
+    <item name="android:navigationBarColor">@color/hoshi_background</item>
+  </style>
+</resources>

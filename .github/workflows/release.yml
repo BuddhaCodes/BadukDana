@@ -191,8 +191,19 @@ jobs:
           path: ${{ matrix.asset }}
           retention-days: 3
 
+  android:
+    name: Android
+    needs: changes
+    if: needs.changes.outputs.release == 'true'
+    uses: ./.github/workflows/android.yml
+    with:
+      ref: ${{ github.event.workflow_run.head_sha }}
+    secrets: inherit
+
   release:
-    needs: build
+    needs: [build, android]
+    # The Android APK is a bonus: when its build fails, the desktop release still goes out (without the APK).
+    if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4

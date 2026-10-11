@@ -175,6 +175,12 @@ Arte de Hoshi renderizado por procedimiento (numpy + Pillow, semillas fijas; sin
 - Tablero: zonas translúcidas con borde discontinuo bajo las piedras; flechas con halo blanco; círculos con halo; letras en disco de color; las líneas «¿y si…?» como piedras translúcidas numeradas con un aro del color. En el test, píldora arriba con la pregunta o el resultado; verde = la respuesta, rojo = tu intento, «!» = la jugada de la partida.
 - Informe: papel claro, serif para títulos, un mini tablero SVG por momento; se imprime bien.
 
+## Teléfono (Android)
+
+- Vertical: arriba los jugadores y el turno (online: el panel con relojes y acciones); el tablero ocupa el ancho, sin coordenadas; debajo, una hoja a la vez (330 px: jugadas y comentario, análisis, estudio, chat o menú) y la barra inferior de 48 px con iconos y etiquetas pequeñas (anterior, siguiente, pasar, deshacer, jugadas, análisis, chat, estudio, menú). El botón activo se pinta con el acento; los desactivados al 35 %.
+- Tocar y confirmar: el primer toque deja la piedra al 72 % con un aro de acento y líneas guía en su fila y columna; el segundo toque en el mismo punto la juega.
+- Las ventanas del escritorio son páginas a pantalla completa con cabecera (flecha atrás + título); las preguntas, una tarjeta centrada sobre un velo oscuro.
+
 ## Atajos de teclado (mínimo)
 
 | Atajo | Acción |
