@@ -1,0 +1,135 @@
+name: Android
+
+# Builds Hoshi for Android: KataGo for arm64 with the NDK (cached per KataGo version and build script), then the
+# signed APK. Run by hand (Actions → Android → Run workflow) or when Android files change on main, it leaves the
+# APK as a workflow artifact; the Release workflow calls it to attach Hoshi-android.apk to each release.
+#
+# Signing: with the repository secrets ANDROID_KEYSTORE_BASE64 (base64 of the .keystore), ANDROID_KEYSTORE_PASSWORD
+# and ANDROID_KEY_ALIAS the APK is signed with that key (needed so new versions install over old ones); without
+# them it is signed with a throwaway debug key, fine for testing.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/Hoshi.Android/**'
+      - 'tools/android/**'
+      - '.github/workflows/android.yml'
+  workflow_call:
+    inputs:
+      ref:
+        description: Commit to build
+        type: string
+        required: true
+      version:
+        description: Version (e.g. 0.1.42); its last number becomes the Android versionCode. Default <major.minor>.<run number>, as the release.
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  KATAGO_VERSION: v1.17.1
+
+jobs:
+  katago:
+    name: KataGo (Android arm64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - id: cache
+        uses: actions/cache@v4
+        with:
+          path: src/Hoshi.Android/katago
+          key: katago-android-${{ env.KATAGO_VERSION }}-${{ hashFiles('tools/android/build-katago.sh') }}
+
+      - name: Build KataGo with the NDK
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: tools/android/build-katago.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: katago-android-arm64
+          path: src/Hoshi.Android/katago/arm64-v8a/libkatago.so
+          retention-days: 3
+
+  apk:
+    name: APK
+    needs: katago
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: katago-android-arm64
+          path: src/Hoshi.Android/katago/arm64-v8a
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: .NET Android workload and Android SDK packages
+        run: |
+          dotnet workload install android
+          dotnet build src/Hoshi.Android/Hoshi.Android.csproj -t:InstallAndroidDependencies -f net10.0-android \
+            -p:AndroidSdkDirectory="$ANDROID_HOME" -p:AcceptAndroidSdkLicenses=True
+
+      - name: Version
+        id: v
+        run: |
+          version="${{ inputs.version }}"
+          if [ -z "$version" ]; then
+            base=$(sed -n 's:.*<Version>\([0-9]*\.[0-9]*\)\..*</Version>.*:\1:p' Directory.Build.props | head -1)
+            version="${base:-0.1}.${{ github.run_number }}"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "code=${version##*.}" >> "$GITHUB_OUTPUT"
+
+      - name: Signing key
+        id: key
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE" ]; then
+            echo "$KEYSTORE" | base64 -d > "$RUNNER_TEMP/hoshi.keystore"
+            echo "args=-p:AndroidKeyStore=true -p:AndroidSigningKeyStore=$RUNNER_TEMP/hoshi.keystore -p:AndroidSigningStorePass=env:ANDROID_KEYSTORE_PASSWORD -p:AndroidSigningKeyPass=env:ANDROID_KEYSTORE_PASSWORD -p:AndroidSigningKeyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::No ANDROID_KEYSTORE_BASE64 secret: the APK is signed with a debug key (fine for testing; set the secrets before publishing)."
+          fi
+
+      - name: Build the APK
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          test -f src/Hoshi.Android/katago/arm64-v8a/libkatago.so
+          dotnet publish src/Hoshi.Android/Hoshi.Android.csproj -c Release -f net10.0-android \
+            -p:AndroidSdkDirectory="$ANDROID_HOME" \
+            -p:Version=${{ steps.v.outputs.version }} \
+            -p:ApplicationDisplayVersion=${{ steps.v.outputs.version }} \
+            -p:ApplicationVersion=${{ steps.v.outputs.code }} \
+            ${{ steps.key.outputs.args }}
+          apk=$(find src/Hoshi.Android/bin/Release -name '*-Signed.apk' | head -1)
+          echo "APK: $apk"; ls -la "$apk"
+          cp "$apk" Hoshi-android.apk
+          unzip -l Hoshi-android.apk | grep -E 'libkatago|b10c128' 
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: legacy-Hoshi-android.apk
+          path: Hoshi-android.apk
+          retention-days: 14

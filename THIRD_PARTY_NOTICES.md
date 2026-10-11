@@ -46,6 +46,16 @@ Shippori Mincho B1 Japanese subsets that hold 星 and 正). No Reserved Font Nam
 | bzip2 (`bz2.dll`, Windows) | shipped inside KataGo's Windows build | bzip2 (BSD-style) | `licenses/bzip2.txt` |
 | Microsoft Visual C++ runtime (`msvcp140*.dll`, `vcruntime140*.dll`, Windows) | shipped inside KataGo's Windows build | Microsoft Visual C++ Redistributable terms | — |
 
+### Android (Hoshi-android.apk)
+
+| Component | Source | License | Text |
+|---|---|---|---|
+| KataGo v1.17.1 (CPU/Eigen build for arm64, `libkatago.so`) | built from github.com/lightvector/KataGo sources, unmodified, by `tools/android/build-katago.sh` | MIT, © David J Wu ("lightvector") and contributors; parts under the licenses in its `cpp/external` | `licenses/MIT-KataGo.txt` |
+| Eigen 3.4.0 (header-only, compiled into `libkatago.so`) | gitlab.com/libeigen/eigen, unmodified | MPL-2.0 (source at gitlab.com/libeigen/eigen) | `licenses/MPL-2.0-Eigen.txt` |
+| zlib, LLVM libc++ (static) | Android NDK | zlib; Apache-2.0 with LLVM exception | `licenses/Zlib-zlib.txt` |
+| Network `g170e-b10c128` | as above | as above | — |
+| Avalonia.Android and AndroidX libraries | NuGet (Avalonia, Microsoft/Google) | MIT; Apache-2.0 | — |
+
 ### Installers and updates (Velopack)
 
 | Component | Where | License | Text |

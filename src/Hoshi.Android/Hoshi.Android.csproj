@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Hoshi for Android: the phone layout of Hoshi.App with Hoshi's own KataGo (CPU) inside the APK.
+    Not part of Hoshi.sln (it needs the .NET Android workload and the Android SDK); built by .github/workflows/android.yml:
+      dotnet publish src/Hoshi.Android -c Release -f net10.0-android
+    The KataGo executable (libkatago.so, built with the NDK by tools/android/build-katago.sh) goes in katago/arm64-v8a/.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
+    <RootNamespace>Hoshi.Droid</RootNamespace>
+    <AssemblyName>Hoshi.Android</AssemblyName>
+    <ApplicationId>io.github.buddhacodes.hoshi</ApplicationId>
+    <ApplicationTitle>Hoshi</ApplicationTitle>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <RuntimeIdentifiers>android-arm64</RuntimeIdentifiers>
+    <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+    <!-- Android builds report toolchain warnings (XA*) we do not control. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AndroidResource Include="..\Hoshi.App\Assets\hoshi.png" Link="Resources\drawable\icon.png" />
+    <!-- Hoshi's network, copied to the app's files on first start (KataGo reads it from a path). -->
+    <AndroidAsset Include="..\..\engines\katago\b10c128.txt.gz" Link="Assets\katago\b10c128.txt.gz" />
+    <!-- KataGo itself: an executable named like a library, so Android installs it where apps may run programs. -->
+    <AndroidNativeLibrary Include="katago\arm64-v8a\libkatago.so" Abi="arm64-v8a" Condition="Exists('katago\arm64-v8a\libkatago.so')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Android" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hoshi.App\Hoshi.App.csproj" />
+  </ItemGroup>
+</Project>

@@ -5,7 +5,7 @@
 
 ## 1. Qué estamos construyendo
 
-Una aplicación de escritorio multiplataforma (Windows, macOS, Linux) para jugar y estudiar Baduk (Go/Weiqi):
+Una aplicación multiplataforma (Windows, macOS, Linux y, desde 2026-10-11, Android) para jugar y estudiar Baduk (Go/Weiqi):
 
 1. **Tablero y editor SGF local** con estética inspirada en [Sabaki](https://github.com/SabakiHQ/Sabaki): tablero de madera, piedras con textura, interfaz oscura y minimalista, árbol de variantes, panel de comentarios.
 2. **Juego en línea mediante la API de OGS** ([online-go.com](https://online-go.com)): iniciar sesión, buscar/aceptar desafíos, automatch, jugar partidas en tiempo real con reloj, chat, fase de conteo y revisión de partidas terminadas.
@@ -40,7 +40,9 @@ src/
   Hoshi.Sgf/         # Parser/serializer SGF (FF[4]), árbol de juego, propiedades, GameCursor.
   Hoshi.Ogs/         # Cliente OGS: auth, REST, WebSocket, DTOs, mapeo a modelos de Core. Emite eventos de dominio.
   Hoshi.Engines/     # Cliente del motor de análisis de KataGo (JSON) y cliente GTP genérico (jugar, motor contra motor, análisis).
-  Hoshi.App/         # Avalonia: Views, ViewModels, controles, estilos, assets. Une Ogs con Sgf.
+  Hoshi.App/         # Avalonia (biblioteca compartida): Views, ViewModels, controles, estilos, assets. Une Ogs con Sgf.
+  Hoshi.Desktop/     # Ejecutable de escritorio (Windows/macOS/Linux): Program, plataforma de ventanas, Velopack. Se llama «Hoshi».
+  Hoshi.Android/     # App de Android (fuera de Hoshi.sln: necesita la carga de trabajo de Android; la compila .github/workflows/android.yml).
 tests/
   Hoshi.Core.Tests/
   Hoshi.Sgf.Tests/
@@ -50,7 +52,7 @@ tests/
 docs/
 ```
 
-Regla de dependencias: `App → Ogs, Sgf, Engines, Core` · `Ogs → Core` · `Sgf → Core` · `Engines → Core` · `Core → (nada)`.
+Regla de dependencias: `Desktop → App` · `Android → App` · `App → Ogs, Sgf, Engines, Core` · `Ogs → Core` · `Sgf → Core` · `Engines → Core` · `Core → (nada)`.
 
 `Hoshi.Ogs` **no** conoce `GameCursor` ni el árbol SGF: expone eventos (jugada recibida, reloj, fase, chat…) con modelos de Core, y es `Hoshi.App` quien los aplica al cursor (decisión 2026-09-29, ver `docs/ARCHITECTURE.md`).
 
