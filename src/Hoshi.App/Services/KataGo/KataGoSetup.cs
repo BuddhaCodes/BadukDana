@@ -73,6 +73,46 @@ public static class KataGoLocator
         reportAnalysisWinratesAs = SIDETOMOVE
         """;
 
+    /// <summary>Phones: one analysis at a time on the CPU (Eigen), with fewer threads and a smaller cache.</summary>
+    public const string PhoneConfig = """
+        # Written by Hoshi for phones. KataGo analysis engine settings (CPU).
+        numAnalysisThreads = 1
+        numSearchThreadsPerAnalysisThread = 4
+        numEigenThreadsPerModel = 4
+        nnMaxBatchSize = 8
+        nnCacheSizePowerOfTwo = 18
+        nnMutexPoolSizePowerOfTwo = 14
+        nnRandomize = true
+        maxVisits = 200
+        reportAnalysisWinratesAs = BLACK
+        """;
+
+    /// <summary>Phones: playing against KataGo answers within a few seconds.</summary>
+    public const string PhoneGtpConfig = """
+        # Written by Hoshi for phones. KataGo GTP settings used when you play against KataGo.
+        # Change maxVisits or maxTime (seconds per move) to make it weaker or stronger.
+        logAllGTPCommunication = false
+        logSearchInfo = false
+        logToStderr = false
+        rules = japanese
+        allowResignation = true
+        resignThreshold = -0.90
+        resignConsecTurns = 3
+        maxVisits = 300
+        maxTime = 5
+        ponderingEnabled = false
+        numSearchThreads = 4
+        numEigenThreadsPerModel = 4
+        nnCacheSizePowerOfTwo = 18
+        reportAnalysisWinratesAs = SIDETOMOVE
+        """;
+
+    /// <summary>
+    /// Set by platforms that ship KataGo inside the app (Android: <c>libkatago.so</c> in the native library folder,
+    /// the network copied out of the APK). Used as the bundled copy.
+    /// </summary>
+    public static (string Executable, string ModelFolder)? PlatformBundle { get; set; }
+
     private static readonly string[] SystemPaths = ["/opt/homebrew/bin/katago", "/usr/local/bin/katago", "/usr/bin/katago"];
 
     public static string ExecutableName => OperatingSystem.IsWindows() ? "katago.exe" : "katago";
@@ -99,6 +139,11 @@ public static class KataGoLocator
         }
 
         string logs = "logDir=" + Path.Combine(DataFolder(dataDirectory), "logs");
+        if (PlatformBundle is { } bundle && File.Exists(bundle.Executable) && FindModel(bundle.ModelFolder) is { } bundledModel)
+        {
+            return new ResolvedKataGo(new KataGoOptions(bundle.Executable, bundledModel, EnsureConfig(dataDirectory), logs), KataGoSource.Bundled);
+        }
+
         foreach ((string folder, KataGoSource source) in new[] { (Path.Combine(baseDirectory, FolderName), KataGoSource.Bundled), (DataFolder(dataDirectory), KataGoSource.Installed) })
         {
             string exe = Path.Combine(folder, ExecutableName);
@@ -142,10 +187,10 @@ public static class KataGoLocator
     }
 
     /// <summary>Writes Hoshi's analysis config into the data folder (once) and returns its path.</summary>
-    public static string EnsureConfig(string dataDirectory) => EnsureFile(dataDirectory, ConfigName, DefaultConfig);
+    public static string EnsureConfig(string dataDirectory) => EnsureFile(dataDirectory, ConfigName, PlatformInfo.IsPhone ? PhoneConfig : DefaultConfig);
 
     /// <summary>Writes Hoshi's GTP config into the data folder (once) and returns its path.</summary>
-    public static string EnsureGtpConfig(string dataDirectory) => EnsureFile(dataDirectory, GtpConfigName, DefaultGtpConfig);
+    public static string EnsureGtpConfig(string dataDirectory) => EnsureFile(dataDirectory, GtpConfigName, PlatformInfo.IsPhone ? PhoneGtpConfig : DefaultGtpConfig);
 
     /// <summary>
     /// The resolved KataGo as a GTP engine: <c>katago gtp -model … -config hoshi_gtp.cfg</c>, logging into the data folder.

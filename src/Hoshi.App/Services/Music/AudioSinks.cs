@@ -12,12 +12,20 @@ public interface IPcmSink : IDisposable
 
 public static class PcmSinks
 {
+    /// <summary>Set by platforms with their own audio output (Android's AudioTrack); tried first.</summary>
+    public static Func<int, IPcmSink?>? PlatformFactory { get; set; }
+
     /// <summary>The sink for this OS, or null (with a reason) when there is none.</summary>
     public static IPcmSink? Create(int sampleRate, out string? problem)
     {
         problem = null;
         try
         {
+            if (PlatformFactory is { } platform)
+            {
+                return platform(sampleRate) ?? throw new InvalidOperationException("no audio track");
+            }
+
             if (OperatingSystem.IsWindows())
             {
                 return new WaveOutSink(sampleRate);
