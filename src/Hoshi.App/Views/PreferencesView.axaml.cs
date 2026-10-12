@@ -10,6 +10,21 @@ public partial class PreferencesView : UserControl
     public PreferencesView()
     {
         InitializeComponent();
+        if (Services.PlatformInfo.IsPhone)
+        {
+            UsePhoneLayout();
+        }
+    }
+
+    /// <summary>A narrow screen: the styles take the "phone" class; the board tab puts its preview above the choices.</summary>
+    private void UsePhoneLayout()
+    {
+        Classes.Add("phone");
+        BoardTabGrid.ColumnDefinitions = new ColumnDefinitions("*");
+        BoardTabGrid.RowDefinitions = new RowDefinitions("230,*");
+        BoardTabPreview.Margin = new Avalonia.Thickness(0, 0, 0, 12);
+        Grid.SetRow(BoardTabOptions, 1);
+        Grid.SetColumn(BoardTabOptions, 0);
     }
 
     /// <summary>Done was pressed and everything typed is saved: the host closes the window or the page.</summary>

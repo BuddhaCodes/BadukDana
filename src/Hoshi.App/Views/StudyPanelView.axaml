@@ -14,6 +14,23 @@
                 <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="14" />
               </Button>
             </Grid>
+            <!-- Tap and confirm: drawings made on the board wait, faded, until they are saved or discarded. -->
+            <Border DockPanel.Dock="Top" IsVisible="{Binding Study.HasPendingEdit}" x:Name="StudyPending"
+                    Margin="10,4,10,4" Padding="12,6,6,6" CornerRadius="10"
+                    Background="{DynamicResource Bg.Panel}" BorderBrush="{DynamicResource Accent}" BorderThickness="1">
+              <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                  <Ellipse Width="8" Height="8" Fill="{DynamicResource Accent}" VerticalAlignment="Center" />
+                  <TextBlock Text="{l:T Study.PendingEdit}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <Button Grid.Column="1" Command="{Binding Study.CancelEditCommand}" MinHeight="36" Padding="14,0"
+                        VerticalContentAlignment="Center" HorizontalContentAlignment="Center" x:Name="StudyPendingDiscard"
+                        Content="{l:T Study.CancelEdit}" />
+                <Button Grid.Column="2" Classes="accent" Command="{Binding Study.ConfirmEditCommand}" MinHeight="36" Padding="14,0"
+                        VerticalContentAlignment="Center" HorizontalContentAlignment="Center" x:Name="StudyPendingSave"
+                        Content="{l:T Study.ConfirmEdit}" />
+              </Grid>
+            </Border>
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" x:Name="StudyScroll">
               <StackPanel Spacing="8" Margin="12,2,16,12">
 
