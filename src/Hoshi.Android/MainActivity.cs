@@ -34,6 +34,6 @@ public class MainActivity : AvaloniaMainActivity<global::Hoshi.App.App>
     protected override void OnResume()
     {
         base.OnResume();
-        AndroidPlatform.OnResume();
+        AndroidPlatform.OnResume(this);
     }
 }

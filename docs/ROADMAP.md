@@ -103,4 +103,6 @@ Alcance pedido: Android primero (iOS más adelante), con KataGo desde la primera
 - [x] Primera compilación en GitHub Actions (2026-10-12).
 - [ ] Prueba en un teléfono real (KataGo, sonido, OGS con OAuth en el navegador y vuelta a la app).
 - [x] Enlace de descarga del APK en la web (tarjeta Android con captura; el botón principal ofrece el APK a los visitantes con Android) y en el README.
+- [x] Efectos con IA más rápidos en el teléfono (2026-10-12): la gráfica espera mientras se juzga la jugada, 12 visitas bastan para el veredicto y, si KataGo tarda más de 0,8 s, el efecto sigue la pelea del tablero (el veredicto llega después para la música).
+- [x] Calidad de vida (escritorio y teléfono): coordenadas opcionales, números de jugada (ninguno / últimas 10 / todas), ancho de la barra lateral recordado; en el teléfono, hoja inferior redimensionable (altura recordada), deslizar en la cabecera para recorrer la partida, vibración al colocar piedra y pantalla encendida durante la partida.
 - [ ] Pulido: diseño apaisado/tabletas, páginas de Preferencias y lobby pensadas para pantallas estrechas, entrenador de josekis en el teléfono, aviso de versión nueva.

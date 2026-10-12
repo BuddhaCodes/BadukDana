@@ -177,9 +177,15 @@ Arte de Hoshi renderizado por procedimiento (numpy + Pillow, semillas fijas; sin
 
 ## Teléfono (Android)
 
-- Vertical: arriba los jugadores y el turno (online: el panel con relojes y acciones); el tablero ocupa el ancho, sin coordenadas; debajo, una hoja a la vez (330 px: jugadas y comentario, análisis, estudio, chat o menú) y la barra inferior de 48 px con iconos y etiquetas pequeñas (anterior, siguiente, pasar, deshacer, jugadas, análisis, chat, estudio, menú). El botón activo se pinta con el acento; los desactivados al 35 %.
+- Vertical: arriba los jugadores y el turno (online: el panel con relojes y acciones); el tablero ocupa el ancho, sin coordenadas por defecto (se activan en Preferencias); debajo, una hoja a la vez (330 px por defecto; se ajusta arrastrando el asa de arriba y se recuerda; arrastrada casi hasta abajo se cierra: jugadas y comentario, análisis, estudio, chat o menú) y la barra inferior de 48 px con iconos y etiquetas pequeñas (anterior, siguiente, pasar, deshacer, jugadas, análisis, chat, estudio, menú). El botón activo se pinta con el acento; los desactivados al 35 %.
 - Tocar y confirmar: el primer toque deja la piedra al 72 % con un aro de acento y líneas guía en su fila y columna; el segundo toque en el mismo punto la juega.
+- Deslizar el dedo a los lados sobre la cabecera recorre la partida (derecha: adelante; una jugada cada 28 px). Cada piedra da un toque de vibración (se apaga en Preferencias) y la pantalla no se apaga mientras hay una partida en curso.
 - Las ventanas del escritorio son páginas a pantalla completa con cabecera (flecha atrás + título); las preguntas, una tarjeta centrada sobre un velo oscuro.
+
+## Números de jugada y coordenadas
+
+- Preferencias → Apariencia: coordenadas (escritorio sí, teléfono no, por defecto) y números de jugada (ninguno, las 10 últimas o todas). El número va centrado en la piedra, blanco sobre negras y negro sobre blancas; en la última jugada el aro de acento rodea el número. En un ko, el punto muestra el número más reciente.
+- El ancho de la barra lateral del escritorio se recuerda entre sesiones.
 
 ## Atajos de teclado (mínimo)
 

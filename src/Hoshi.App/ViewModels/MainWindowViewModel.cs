@@ -20,6 +20,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(IsOnline), nameof(IsLocal))]
     private OnlineGameViewModel? _online;
 
+    /// <summary>Coordinates around the main board (Preferences → Appearance; hidden on phones by default).</summary>
+    [ObservableProperty]
+    private bool _showCoordinates = true;
+
     public MainWindowViewModel()
         : this(new GameViewModel())
     {
@@ -54,10 +58,18 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IBrowserLauncher? browser = null,
         PreferencesViewModel? preferences = null)
     {
-        game.ConfirmMoves = PlatformInfo.ConfirmMoves(settings?.Current ?? new AppSettings());
+        AppSettings initial = settings?.Current ?? new AppSettings();
+        game.ConfirmMoves = PlatformInfo.ConfirmMoves(initial);
+        game.MoveNumberMode = initial.MoveNumbers;
+        _showCoordinates = PlatformInfo.ShowCoordinates(initial);
         if (preferences is not null)
         {
             preferences.ConfirmMovesChanged += (_, on) => game.ConfirmMoves = on;
+            preferences.BoardDisplayChanged += (_, _) =>
+            {
+                ShowCoordinates = preferences.ShowCoordinates;
+                game.MoveNumberMode = preferences.MoveNumbers;
+            };
         }
 
         Effects = effects ?? new EffectsViewModel(settings);
@@ -297,6 +309,17 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         if (_settings is not null)
         {
             _settings.Save(_settings.Current with { Music = on });
+        }
+    }
+
+    /// <summary>The sidebar's width as last dragged (null = the default), kept between sessions.</summary>
+    public double? SidebarWidth => _settings?.Current.SidebarWidth;
+
+    public void RememberSidebarWidth(double width)
+    {
+        if (_settings is not null && width > 0 && Math.Abs((_settings.Current.SidebarWidth ?? 0) - width) >= 1)
+        {
+            _settings.Save(_settings.Current with { SidebarWidth = Math.Round(width) });
         }
     }
 

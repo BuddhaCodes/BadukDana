@@ -25,6 +25,22 @@ public partial class MainWindow : Window
     {
         base.OnOpened(e);
         this.FindControl<Control>("Board")?.Focus();
+        if (DataContext is MainWindowViewModel { SidebarWidth: { } width } && Content is Grid root && root.ColumnDefinitions.Count > 2)
+        {
+            root.ColumnDefinitions[2].Width = new GridLength(Math.Clamp(width, 220, 420));
+        }
+
+        // The sidebar keeps the width it was dragged to.
+        if (this.FindControl<GridSplitter>("SidebarSplitter") is { } splitter)
+        {
+            splitter.DragCompleted += (_, _) =>
+            {
+                if (DataContext is MainWindowViewModel vm && Content is Grid grid)
+                {
+                    vm.RememberSidebarWidth(grid.ColumnDefinitions[2].ActualWidth);
+                }
+            };
+        }
     }
 
     // View-only plumbing: keep the newest chat line in view.

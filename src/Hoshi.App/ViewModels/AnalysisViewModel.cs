@@ -37,6 +37,12 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     /// <summary>Visits a partial analysis needs before its verdict on a move is trusted enough to celebrate.</summary>
     public const int JudgeVisits = 40;
 
+    /// <summary>
+    /// The same on phones: KataGo runs on the CPU there, a few times slower, and an explosion seconds after the stone
+    /// feels broken. A dozen visits already separate good moves from bad ones well enough for the effects.
+    /// </summary>
+    public const int PhoneJudgeVisits = 12;
+
     private const int LivePriority = 10;
     private const int GraphPriority = -10;
 
@@ -56,6 +62,17 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     private int _impacts;
     private CancellationTokenSource? _current;
     private CancellationTokenSource? _graphCts;
+    private GameNode? _fellBackNode;
+    private int _fallbacks;
+
+    /// <summary>Visits a verdict needs before the move is celebrated (fewer on phones).</summary>
+    public int JudgeThreshold { get; set; } = PlatformInfo.IsPhone ? PhoneJudgeVisits : JudgeVisits;
+
+    /// <summary>
+    /// How long a move waits for KataGo's verdict before its effect follows the fight on the board instead (as without
+    /// an engine); the verdict still drives the music when it arrives. Phones only by default; null waits.
+    /// </summary>
+    public TimeSpan? JudgeFallback { get; set; } = PlatformInfo.IsPhone ? TimeSpan.FromMilliseconds(800) : null;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsAnalysisActive), nameof(StatusText))]
@@ -558,7 +575,49 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         // Usually instant: the position before the move was being analysed while the user thought, so the move is
         // already among KataGo's candidates there.
         _awaitingJudgement = IsEngineActive ? node : null;
+        if (_awaitingJudgement is not null)
+        {
+            // The verdict comes first: the score graph waits (with one analysis thread, as on phones, a graph turn
+            // in progress would hold the move's search back). It resumes once the move is analysed.
+            _graphCts?.Cancel();
+            _graphCts = null;
+        }
+
         TryCelebrate(Position.Of(_game));
+        if (_awaitingJudgement == node && JudgeFallback is { } wait)
+        {
+            int fallback = ++_fallbacks;
+            _ = Task.Delay(wait).ContinueWith(_ => _ui.Post(() => FallBack(node, fallback)), TaskScheduler.Default);
+        }
+    }
+
+    /// <summary>KataGo is still thinking: the effect follows the fight on the board now, the verdict comes later.</summary>
+    private void FallBack(GameNode node, int fallback)
+    {
+        if (fallback != _fallbacks || _awaitingJudgement != node || node != _game.CurrentNode || !IsEngineActive)
+        {
+            return;
+        }
+
+        _fellBackNode = node;
+        AppSettings settings = _settings?.Current ?? new AppSettings();
+        if (LastFight is not { } reading || _fightAt is not { } at || at.Node != node || !settings.MoveEffects
+            || node.GetMove(_game.Cursor.BoardSize) is not { Point: { } point })
+        {
+            return;
+        }
+
+        int strength = MoveImportance.IsOpening(_game.MoveNumber, _game.Board.Width, _game.Board.Height)
+            ? Math.Max(0, reading.Strength - 1)
+            : reading.Strength;
+        LastImportance = strength;
+        if (strength > 0)
+        {
+            Impact = new BoardImpact(point, strength, ++_impacts);
+            _sounds?.Play(
+                strength switch { 3 => SoundEffect.ExplosionBig, 2 => SoundEffect.ExplosionMedium, _ => SoundEffect.ImpactSmall },
+                settings.SoundVolume / 100.0);
+        }
     }
 
     /// <summary>Celebrates the awaited move once its verdict rests on enough visits (partial results are fine).</summary>
@@ -571,7 +630,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
             return;
         }
 
-        int enough = Math.Min(JudgeVisits, _engine?.Visits ?? JudgeVisits);
+        int enough = Math.Min(JudgeThreshold, _engine?.Visits ?? JudgeThreshold);
         bool beforeSolid = before.Visits >= enough || _complete.Contains(pos.Key(n - 1));
         bool afterSolid = judged.Rank is not null
             || (_cache.TryGetValue(pos.Key(n), out TurnAnalysis? after) && (after.Visits >= enough || _complete.Contains(pos.Key(n))));
@@ -669,8 +728,13 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         double fight = _fightAt is { } f && f.Node == node ? f.Intensity : 0;
         bool opening = MoveImportance.IsOpening(moveNumber, _game.Board.Width, _game.Board.Height);
         int strength = MoveImportance.Strength(judged.Quality, MoveImportance.Criticality(before, judged.Played.Color), fight, opening);
-        LastImportance = strength;
         MoveWeighed?.Invoke(this, new MoveWeight(judged.Quality, strength, opening));
+        if (node == _fellBackNode)
+        {
+            return; // its effect already went off, following the fight
+        }
+
+        LastImportance = strength;
         if (!settings.MoveEffects || strength == 0 || judged.Played.Point is not { } point || !IsEngineActive)
         {
             return;

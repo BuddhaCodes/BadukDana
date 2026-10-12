@@ -266,6 +266,8 @@
                           GroupStatuses="{Binding Analysis.GroupStatuses}"
                           Animate="{DynamicResource Theme.Animations}"
                           LastMove="{Binding Game.LastMove}"
+                          ShowCoordinates="{Binding ShowCoordinates}"
+                          MoveNumbers="{Binding Game.MoveNumberLabels}"
                           Markers="{Binding Game.Markers}"
                           HoverPoint="{Binding Game.HoverPoint}"
                           GhostStone="{Binding Study.GhostStone}"
@@ -377,7 +379,7 @@
       </Panel>
     </DockPanel>
 
-    <GridSplitter Grid.Column="1" Width="1" Background="{DynamicResource Border.Subtle}" ResizeDirection="Columns" />
+    <GridSplitter Grid.Column="1" Width="1" Background="{DynamicResource Border.Subtle}" ResizeDirection="Columns" x:Name="SidebarSplitter" />
 
     <!-- Sidebar: players, variation tree, comment. Width 220–420 (DESIGN.md). -->
       <Grid Grid.Column="2" x:Name="Sidebar" MinWidth="220" MaxWidth="420"
