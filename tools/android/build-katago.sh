@@ -22,6 +22,7 @@ jobs="$(nproc 2>/dev/null || sysctl -n hw.ncpu)"
 echo "KataGo $KATAGO_VERSION · Eigen $EIGEN_VERSION · android-$API · NDK $NDK"
 [ -d "$work/KataGo" ] || git clone --depth 1 --branch "$KATAGO_VERSION" https://github.com/lightvector/KataGo "$work/KataGo"
 # x86-only compiler flags, if any, do not apply to arm64 (clang rejects them for this target).
+# -include endian.h (below): KataGo's sha2.cpp needs BYTE_ORDER, which Android's libc only defines there.
 sed -i 's/-mfpmath=sse//g; s/-march=native//g' "$work/KataGo/cpp/CMakeLists.txt"
 if [ ! -d "$work/eigen-install" ]; then
   curl -fsSL "https://gitlab.com/libeigen/eigen/-/archive/$EIGEN_VERSION/eigen-$EIGEN_VERSION.tar.gz" | tar -xz -C "$work"
@@ -33,10 +34,9 @@ cmake -S "$work/KataGo/cpp" -B "$work/build" \
   -DCMAKE_TOOLCHAIN_FILE="$NDK/build/cmake/android.toolchain.cmake" \
   -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM="android-$API" -DANDROID_STL=c++_static \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH \
-  -DEigen3_DIR="$work/eigen-install/share/eigen3/cmake" \
+  -DCMAKE_CXX_FLAGS="-include endian.h" \
   -DEIGEN3_INCLUDE_DIRS="$work/eigen-install/include/eigen3" \
-  -DUSE_BACKEND=EIGEN -DUSE_AVX2=0 -DNO_GIT_REVISION=1 -DNO_LIBZIP=1
+  -DUSE_BACKEND=EIGEN -DUSE_AVX2=0 -DNO_GIT_REVISION=1
 cmake --build "$work/build" -j"$jobs"
 
 mkdir -p "$out"
