@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using Android.Security.Keystore;
 using Hoshi.Ogs.Auth;
@@ -55,7 +54,7 @@ internal sealed class KeystoreTokenStore(string directory) : ITokenStore
     }
 
     private string PathFor(string key) =>
-        Path.Combine(directory, Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key)))[..32] + ".bin");
+        Path.Combine(directory, Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(key)))[..32] + ".bin");
 
     private static IKey Key()
     {
