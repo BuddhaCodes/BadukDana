@@ -71,7 +71,9 @@ public sealed class PhoneTests
         game.MoveNumber.Should().Be(2, "without confirmation one tap plays");
     }
 
-    [Fact]
+    // On the headless UI thread: these build view models that touch Avalonia (themes, dispatcher). Built on a
+    // test-pool thread first, they can bind Avalonia's UI dispatcher to that thread and break later UI tests.
+    [AvaloniaFact]
     public void Tap_and_confirm_follows_the_preference_and_defaults_on_for_phones()
     {
         bool was = PlatformInfo.IsPhone;
@@ -187,7 +189,9 @@ public sealed class PhoneTests
         window.Close();
     }
 
-    [Fact]
+    // On the headless UI thread: these build view models that touch Avalonia (themes, dispatcher). Built on a
+    // test-pool thread first, they can bind Avalonia's UI dispatcher to that thread and break later UI tests.
+    [AvaloniaFact]
     public void The_phone_host_resolves_pages_and_dialogs_instead_of_windows()
     {
         ServiceProvider services = new ServiceCollection()

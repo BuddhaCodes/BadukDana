@@ -83,7 +83,7 @@ public sealed class MainWindowTests
         window.Title.Should().Be("Sin título * — Hoshi");
     }
 
-    [Fact]
+    [AvaloniaFact] // builds view models that touch Avalonia: only on the headless UI thread
     public void Host_resolves_main_window_and_view_model()
     {
         var services = new ServiceCollection()
@@ -97,7 +97,7 @@ public sealed class MainWindowTests
             .Should().BeSameAs(services.GetRequiredService<MainWindowViewModel>());
     }
 
-    [Fact]
+    [AvaloniaFact] // builds view models that touch Avalonia: only on the headless UI thread
     public void The_host_uses_the_desktop_lifetime_not_the_console_one()
     {
         // ConsoleLifetime blocks process exit until the host is disposed, which kept Hoshi alive after closing.

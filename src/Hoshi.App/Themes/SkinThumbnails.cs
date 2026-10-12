@@ -74,7 +74,9 @@ public static class SkinThumbnails
 
             // Off the UI thread (e.g. the DI container resolved in a plain test) nothing is drawn: touching the board
             // textures there would fail their type initialiser and break them for the rest of the process.
-            if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+            // Before any Avalonia app exists, even asking the dispatcher would create it on this thread and break
+            // the real UI thread later (tests that resolve the DI container first).
+            if (Avalonia.Application.Current is null || !Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
             {
                 return null;
             }

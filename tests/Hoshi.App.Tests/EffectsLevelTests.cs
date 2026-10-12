@@ -43,7 +43,7 @@ public sealed class EffectsLevelTests
         effects.IsOff.Should().BeTrue();
     }
 
-    [Fact]
+    [AvaloniaFact] // builds view models that touch Avalonia: only on the headless UI thread
     public void Turning_effects_off_mid_game_also_quiets_the_atari_alert_and_says_so()
     {
         var settings = new TestSettings();
