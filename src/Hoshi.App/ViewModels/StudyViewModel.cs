@@ -642,10 +642,12 @@ public sealed partial class StudyViewModel : ViewModelBase
                 else if (start == point)
                 {
                     _shapeStart = null;
+                    _game.ClearStatus();
                 }
                 else
                 {
                     _shapeStart = null;
+                    _game.ClearStatus();
                     Add(new StudyDrawing(StudyStore.NewId(), Tool == StudyTool.Arrow ? DrawingKind.Arrow : DrawingKind.Area, AuthorName, Color, [start, point]));
                 }
 

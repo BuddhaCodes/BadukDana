@@ -152,6 +152,13 @@ public sealed partial class GameViewModel : ViewModelBase
     /// <summary>Shows a message in the status line until the next change.</summary>
     public void ShowStatus(string text) => SetStatus(text);
 
+    /// <summary>Back to the usual status line (whose turn it is…) after a passing message.</summary>
+    public void ClearStatus()
+    {
+        _statusOverride = null;
+        OnPropertyChanged(nameof(StatusText));
+    }
+
     /// <summary>Last node of the main line (where online moves are appended).</summary>
     public GameNode MainLineEnd
     {

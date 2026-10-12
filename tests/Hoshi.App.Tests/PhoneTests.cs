@@ -386,7 +386,7 @@ public sealed class PhoneTests
         game.PlayCommand.Execute(new Point(3, 3));
         shell.ToggleSheetCommand.Execute(PhoneSheet.Study);
         shell.Main.Study.SelectToolCommand.Execute(Hoshi.App.ViewModels.StudyTool.Arrow);
-        window.FindDeep<Border>("PhoneStudyConfirm")!.IsVisible.Should().BeFalse();
+        window.FindDeep<Border>("StudyPending")!.IsVisible.Should().BeFalse();
 
         GoBoardControl board = window.FindDeep<GoBoardControl>("Board")!;
         Avalonia.Point At(int x, int y) => board.TranslatePoint(board.CurrentGeometry!.Value.Center(new Point(x, y)), window)!.Value;
@@ -397,9 +397,9 @@ public sealed class PhoneTests
 
         board.StudyDrawings.Should().ContainSingle(d => d.Kind == Hoshi.Sgf.Study.DrawingKind.Arrow);
         board.PendingDrawingIds.Should().ContainSingle();
-        window.FindDeep<Border>("PhoneStudyConfirm")!.IsVisible.Should().BeTrue();
-        Press(window.FindDeep<Button>("PhoneStudyConfirmSave")!);
-        window.FindDeep<Border>("PhoneStudyConfirm")!.IsVisible.Should().BeFalse();
+        window.FindDeep<Border>("StudyPending")!.IsVisible.Should().BeTrue();
+        Press(window.FindDeep<Button>("StudyPendingSave")!);
+        window.FindDeep<Border>("StudyPending")!.IsVisible.Should().BeFalse();
         Hoshi.Sgf.Study.StudyStore.Read(game.CurrentNode).Drawings.Should().ContainSingle();
         window.Close();
     }
@@ -415,6 +415,28 @@ public sealed class PhoneTests
             PlatformInfo.AnalysisVisits(new AppSettings { AnalysisVisits = 300 }).Should().Be(300);
             PlatformInfo.IsPhone = false;
             PlatformInfo.AnalysisVisits(new AppSettings()).Should().Be(200);
+        }
+        finally
+        {
+            PlatformInfo.IsPhone = was;
+        }
+    }
+
+    [AvaloniaFact]
+    public void Preferences_on_a_phone_scroll_as_a_whole_and_stack_the_board_tab()
+    {
+        bool was = PlatformInfo.IsPhone;
+        try
+        {
+            PlatformInfo.IsPhone = true;
+            var settings = new TestSettings();
+            var view = new PreferencesView { DataContext = new PreferencesViewModel(new ThemeService(settings), settings) };
+            var window = new Window { Width = 412, Height = 892, Content = view };
+            window.Show();
+            view.Classes.Should().Contain("phone");
+            window.FindDeep<ScrollViewer>("AppearanceScroll")!.VerticalScrollBarVisibility.Should().Be(Avalonia.Controls.Primitives.ScrollBarVisibility.Auto);
+            window.FindDeep<ListBox>("ThemeList")!.Bounds.Height.Should().BeGreaterThan(500, "every theme card is shown, two per row");
+            window.Close();
         }
         finally
         {
