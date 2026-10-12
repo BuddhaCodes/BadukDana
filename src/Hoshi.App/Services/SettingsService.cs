@@ -88,6 +88,29 @@ public sealed record AppSettings
 
     /// <summary>The name study notes are signed with (shared study files show who wrote what); null = "Me".</summary>
     public string? StudyAuthor { get; init; }
+
+    /// <summary>Coordinates around the board. Null = shown on the desktop, hidden on phones (the board gets the room).</summary>
+    public bool? ShowCoordinates { get; init; }
+
+    /// <summary>Numbers on the stones: none, the last few moves, or every move still on the board.</summary>
+    public MoveNumbers MoveNumbers { get; init; } = MoveNumbers.Off;
+
+    /// <summary>Height of the phone's bottom sheet in device-independent pixels; null = the default.</summary>
+    public double? PhoneSheetHeight { get; init; }
+
+    /// <summary>Width of the main window's sidebar (players, tree, comment) as last dragged; null = the default.</summary>
+    public double? SidebarWidth { get; init; }
+
+    /// <summary>Phones: a short vibration when a stone is placed.</summary>
+    public bool Haptics { get; init; } = true;
+}
+
+/// <summary>Move numbers drawn on the stones.</summary>
+public enum MoveNumbers
+{
+    Off,
+    Recent,
+    All,
 }
 
 /// <summary>How strong the visual effects on the board are (Preferences, the bottom bar, the sound panel and F).</summary>

@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using Hoshi.App.Services;
 using Hoshi.App.Themes;
 using Hoshi.Core;
 using Hoshi.Core.Localization;
@@ -89,6 +90,9 @@ public sealed record AnalysisEngineOption(string? Id, string Label)
 
 /// <summary>A user interface language choice ("en", "es") with its own name.</summary>
 public sealed record LanguageOption(string Code, string Name);
+
+/// <summary>A choice of move numbers on the stones, with its translated name.</summary>
+public sealed record MoveNumbersOption(MoveNumbers Mode, string Name);
 
 /// <summary>Preferences: theme and animations, and the KataGo analysis engine. Changes apply immediately and are saved.</summary>
 public sealed partial class PreferencesViewModel : ViewModelBase
@@ -201,6 +205,9 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             _stoneSounds = s.StoneSounds;
             _chatSounds = s.ChatSounds;
             _confirmMoves = Services.PlatformInfo.ConfirmMoves(s);
+            _showCoordinates = Services.PlatformInfo.ShowCoordinates(s);
+            _haptics = s.Haptics;
+            _moveNumbers = s.MoveNumbers;
             _atariAlerts = s.AtariAlerts;
             _musicVolume = s.MusicVolume;
             _checkForUpdates = s.CheckForUpdates;
@@ -539,6 +546,69 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     }
 
     partial void OnAtariAlertsChanged(bool value) => SaveEffects();
+
+    /// <summary>Coordinates around the board.</summary>
+    [ObservableProperty]
+    private bool _showCoordinates = !Services.PlatformInfo.IsPhone;
+
+    /// <summary>Phones: vibrate when a stone is placed.</summary>
+    [ObservableProperty]
+    private bool _haptics = true;
+
+    public IReadOnlyList<MoveNumbersOption> MoveNumbersOptions { get; } =
+    [
+        new(MoveNumbers.Off, Tr.T("Prefs.MoveNumbers.Off")),
+        new(MoveNumbers.Recent, Tr.T("Prefs.MoveNumbers.Recent")),
+        new(MoveNumbers.All, Tr.T("Prefs.MoveNumbers.All")),
+    ];
+
+    /// <summary>Which stones show their move number.</summary>
+    public MoveNumbersOption SelectedMoveNumbers
+    {
+        get => MoveNumbersOptions.First(o => o.Mode == MoveNumbers);
+        set
+        {
+            if (value is not null)
+            {
+                MoveNumbers = value.Mode;
+            }
+        }
+    }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SelectedMoveNumbers))]
+    private MoveNumbers _moveNumbers;
+
+    /// <summary>Raised when coordinates or move numbers change, so the board follows at once.</summary>
+    public event EventHandler? BoardDisplayChanged;
+
+    partial void OnShowCoordinatesChanged(bool value)
+    {
+        if (_settings is not null && _settings.Current.ShowCoordinates != value)
+        {
+            _settings.Save(_settings.Current with { ShowCoordinates = value });
+        }
+
+        BoardDisplayChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    partial void OnMoveNumbersChanged(MoveNumbers value)
+    {
+        if (_settings is not null && _settings.Current.MoveNumbers != value)
+        {
+            _settings.Save(_settings.Current with { MoveNumbers = value });
+        }
+
+        BoardDisplayChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    partial void OnHapticsChanged(bool value)
+    {
+        if (_settings is not null && _settings.Current.Haptics != value)
+        {
+            _settings.Save(_settings.Current with { Haptics = value });
+        }
+    }
 
     /// <summary>Why the music cannot play on this system, if so.</summary>
     public string? MusicProblem => _musicService?.Problem;

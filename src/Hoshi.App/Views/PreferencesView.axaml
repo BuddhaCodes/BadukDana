@@ -33,6 +33,16 @@
             <TextBlock Classes="secondary" Text="{l:T Prefs.AnimationsHint}" TextWrapping="Wrap" />
             <ToggleSwitch IsChecked="{Binding ConfirmMoves}" OnContent="{l:T Prefs.ConfirmMoves}" OffContent="{l:T Prefs.ConfirmMoves}" x:Name="ConfirmMovesSwitch" Margin="0,6,0,0" />
             <TextBlock Classes="secondary" Text="{l:T Prefs.ConfirmMovesHint}" TextWrapping="Wrap" />
+            <ToggleSwitch IsChecked="{Binding ShowCoordinates}" OnContent="{l:T Prefs.ShowCoordinates}" OffContent="{l:T Prefs.ShowCoordinates}" x:Name="CoordinatesSwitch" Margin="0,6,0,0" />
+            <ToggleSwitch IsChecked="{Binding Haptics}" OnContent="{l:T Prefs.Haptics}" OffContent="{l:T Prefs.Haptics}" x:Name="HapticsSwitch" IsVisible="{Binding !IsDesktop}" />
+            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,6,0,0">
+              <TextBlock Text="{l:T Prefs.MoveNumbers}" VerticalAlignment="Center" />
+              <ComboBox ItemsSource="{Binding MoveNumbersOptions}" SelectedItem="{Binding SelectedMoveNumbers}" MinWidth="160" x:Name="MoveNumbersBox">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:MoveNumbersOption"><TextBlock Text="{Binding Name}" /></DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
             <CheckBox IsChecked="{Binding CheckForUpdates}" Content="{l:T Prefs.CheckForUpdates}" Margin="0,8,0,0" x:Name="UpdatesBox" IsVisible="{Binding IsDesktop}" />
             <TextBlock Classes="secondary" Text="{Binding UpdatesHint}" TextWrapping="Wrap" />
           </StackPanel>

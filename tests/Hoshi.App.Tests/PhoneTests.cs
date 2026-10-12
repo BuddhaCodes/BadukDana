@@ -260,4 +260,119 @@ public sealed class PhoneTests
             Tr.SetLanguage(Tr.Spanish);
         }
     }
+
+    [AvaloniaFact]
+    public void Phones_judge_moves_with_fewer_visits_and_do_not_wait_long()
+    {
+        bool was = PlatformInfo.IsPhone;
+        try
+        {
+            PlatformInfo.IsPhone = true;
+            var phone = new AnalysisViewModel(new GameViewModel(), ui: new ImmediateDispatcher());
+            phone.JudgeThreshold.Should().Be(AnalysisViewModel.PhoneJudgeVisits);
+            phone.JudgeFallback.Should().NotBeNull();
+            PlatformInfo.IsPhone = false;
+            var desktop = new AnalysisViewModel(new GameViewModel(), ui: new ImmediateDispatcher());
+            desktop.JudgeThreshold.Should().Be(AnalysisViewModel.JudgeVisits);
+            desktop.JudgeFallback.Should().BeNull();
+        }
+        finally
+        {
+            PlatformInfo.IsPhone = was;
+        }
+    }
+
+    [AvaloniaFact]
+    public void The_sheet_is_resized_by_its_handle_and_closes_when_dragged_away()
+    {
+        var settings = new TestSettings();
+        var navigation = new PhoneNavigation();
+        var main = new MainWindowViewModel(new GameViewModel(), ui: new ImmediateDispatcher(), dialogs: navigation, preferencesWindow: navigation);
+        var shell = new PhoneShellViewModel(main, navigation, settings);
+        var window = new Window { Width = 400, Height = 860, Content = new PhoneView { DataContext = shell } };
+        window.Show();
+        shell.ToggleSheetCommand.Execute(PhoneSheet.Moves);
+        window.UpdateLayout();
+        Border sheet = window.FindDeep<Border>("PhoneSheet")!;
+        sheet.Bounds.Height.Should().Be(PhoneShellViewModel.DefaultSheetHeight);
+
+        Border handle = window.FindDeep<Border>("PhoneSheetHandle")!;
+        Avalonia.Point at = handle.TranslatePoint(new Avalonia.Point(handle.Bounds.Width / 2, 10), window)!.Value;
+        window.MouseDown(at, MouseButton.Left);
+        window.MouseMove(at.WithY(at.Y - 150), RawInputModifiers.LeftMouseButton);
+        window.MouseUp(at.WithY(at.Y - 150), MouseButton.Left);
+        window.UpdateLayout();
+        shell.SheetHeight.Should().BeApproximately(480, 1);
+        sheet.Bounds.Height.Should().BeApproximately(480, 1);
+        settings.Current.PhoneSheetHeight.Should().Be(480, "the height is kept for next time");
+
+        shell.DragSheet(5000, 860);
+        shell.SheetHeight.Should().Be(860 - PhoneShellViewModel.MinBoardRoom, "the board keeps some room");
+
+        // Dragged almost away: the sheet closes and opens again at its last height.
+        shell.DragSheet(30, 860);
+        shell.EndSheetDrag(480);
+        shell.Sheet.Should().Be(PhoneSheet.None);
+        shell.SheetHeight.Should().Be(480);
+        new PhoneShellViewModel(main, navigation, settings).SheetHeight.Should().Be(480);
+        window.Close();
+    }
+
+    [AvaloniaFact]
+    public void A_swipe_on_the_header_steps_through_the_game()
+    {
+        var game = new GameViewModel();
+        (Window window, _) = Phone(game);
+        foreach ((int x, int y) in new[] { (3, 3), (15, 15), (3, 15), (15, 3), (9, 9) })
+        {
+            game.PlayCommand.Execute(new Point(x, y));
+        }
+
+        Border top = window.FindDeep<Border>("PhoneTop")!;
+        Avalonia.Point start = top.TranslatePoint(new Avalonia.Point(300, top.Bounds.Height / 2), window)!.Value;
+        window.MouseDown(start, MouseButton.Left);
+        window.MouseMove(start.WithX(start.X - (3 * PhoneView.SwipeStep) - 2), RawInputModifiers.LeftMouseButton);
+        game.MoveNumber.Should().Be(2, "a swipe to the left goes back one move per step");
+        window.MouseMove(start.WithX(start.X - PhoneView.SwipeStep + 2), RawInputModifiers.LeftMouseButton);
+        game.MoveNumber.Should().Be(4, "and back to the right goes forward");
+        window.MouseUp(start, MouseButton.Left);
+        window.Close();
+    }
+
+    [AvaloniaFact]
+    public void Stones_buzz_and_the_screen_stays_on_during_a_game()
+    {
+        int buzzes = 0;
+        var awake = new List<bool>();
+        Action? vibrate = PlatformInfo.Vibrate;
+        Action<bool>? keep = PlatformInfo.KeepScreenOn;
+        try
+        {
+            PlatformInfo.Vibrate = () => buzzes++;
+            PlatformInfo.KeepScreenOn = awake.Add;
+            var settings = new TestSettings();
+            var navigation = new PhoneNavigation();
+            var game = new GameViewModel();
+            var main = new MainWindowViewModel(game, ui: new ImmediateDispatcher(), dialogs: navigation, preferencesWindow: navigation);
+            var shell = new PhoneShellViewModel(main, navigation, settings);
+            shell.KeepAwake.Should().BeFalse();
+
+            game.PlayCommand.Execute(new Point(3, 3));
+            buzzes.Should().Be(1);
+            shell.KeepAwake.Should().BeTrue();
+            awake.Should().Equal(true);
+
+            settings.Save(settings.Current with { Haptics = false });
+            game.PlayCommand.Execute(new Point(15, 15));
+            buzzes.Should().Be(1, "vibration can be switched off");
+
+            game.GoFirstCommand.Execute(null);
+            awake.Should().Equal(true, false);
+        }
+        finally
+        {
+            PlatformInfo.Vibrate = vibrate;
+            PlatformInfo.KeepScreenOn = keep;
+        }
+    }
 }

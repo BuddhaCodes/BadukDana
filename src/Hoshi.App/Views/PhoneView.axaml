@@ -124,8 +124,13 @@
       </Border>
 
       <!-- The sheet under the board. -->
-      <Border DockPanel.Dock="Bottom" IsVisible="{Binding HasSheet}" Height="330" Background="{DynamicResource Bg.Properties}"
+      <Border DockPanel.Dock="Bottom" IsVisible="{Binding HasSheet}" Height="{Binding SheetHeight}" Background="{DynamicResource Bg.Properties}"
               BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="0,1,0,0" Classes="appear" x:Name="PhoneSheet">
+        <DockPanel>
+        <!-- The handle: drag it to make the sheet taller or shorter; dragged almost away, the sheet closes. -->
+        <Border DockPanel.Dock="Top" Height="22" Background="Transparent" Cursor="SizeNorthSouth" ToolTip.Tip="{l:T Phone.Resize}" x:Name="PhoneSheetHandle">
+          <Border Width="40" Height="4" CornerRadius="2" Background="{DynamicResource Border.Subtle}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
         <Panel>
           <Grid RowDefinitions="*,Auto" IsVisible="{Binding IsMoves}" x:Name="PhoneMovesSheet">
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
@@ -194,13 +199,15 @@
             </StackPanel>
           </ScrollViewer>
         </Panel>
+        </DockPanel>
       </Border>
 
       <!-- The board. -->
       <Panel x:Name="PhoneBoardArea">
         <c:GoBoardControl x:Name="Board"
                           Margin="6"
-                          ShowCoordinates="False"
+                          ShowCoordinates="{Binding Main.ShowCoordinates}"
+                          MoveNumbers="{Binding Main.Game.MoveNumberLabels}"
                           JosekiHints="{Binding Main.JosekiHints.Hints}"
                           Board="{Binding Main.Game.Board}"
                           BoardStyle="{DynamicResource Theme.Board}"

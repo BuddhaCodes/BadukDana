@@ -526,6 +526,33 @@ public sealed class BattleAndReplayTests
     }
 
     [AvaloniaFact]
+    public async Task A_slow_engine_lets_the_effect_follow_the_fight()
+    {
+        var game = new GameViewModel();
+        var engine = new PonderingEngine { PartialVisits = 5 }; // never enough visits for a verdict
+        var sounds = new FakeSoundService();
+        var vm = new AnalysisViewModel(game, engine, new ImmediateDispatcher(), sounds, new TestSettings())
+        {
+            JudgeFallback = TimeSpan.FromMilliseconds(40),
+        };
+
+        game.Load(Hoshi.Sgf.GameTree.Create(9, Hoshi.Core.RuleSet.Japanese), path: null); // past the opening by move 8
+        foreach ((int x, int y) in new[] { (8, 0), (4, 4), (5, 4), (6, 4), (0, 8), (5, 5), (8, 8), (5, 3) })
+        {
+            game.PlayCommand.Execute(new Point(x, y));
+        }
+
+        vm.Impact.Should().BeNull("the engine gets its chance first");
+        for (int i = 0; i < 100 && vm.Impact is null; i++)
+        {
+            await Task.Delay(20);
+        }
+
+        vm.Impact.Should().NotBeNull("after the wait the capture in the fight explodes");
+        vm.Impact!.Point.Should().Be(new Point(5, 3));
+    }
+
+    [AvaloniaFact]
     public async Task Played_games_are_kept_and_a_replay_is_reviewed_with_AI_effects()
     {
         string root = Directory.CreateTempSubdirectory("hoshi-replays").FullName;

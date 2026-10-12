@@ -39,6 +39,10 @@ public sealed partial class GoBoardControl : Control
     public static readonly StyledProperty<IReadOnlyList<Markup>?> MarkersProperty =
         AvaloniaProperty.Register<GoBoardControl, IReadOnlyList<Markup>?>(nameof(Markers));
 
+    /// <summary>Move numbers to draw on stones (see <c>GameViewModel.MoveNumberLabels</c>); null or empty for none.</summary>
+    public static readonly StyledProperty<IReadOnlyDictionary<Point, int>?> MoveNumbersProperty =
+        AvaloniaProperty.Register<GoBoardControl, IReadOnlyDictionary<Point, int>?>(nameof(MoveNumbers));
+
     public static readonly StyledProperty<bool> ShowCoordinatesProperty =
         AvaloniaProperty.Register<GoBoardControl, bool>(nameof(ShowCoordinates), defaultValue: true);
 
@@ -138,7 +142,7 @@ public sealed partial class GoBoardControl : Control
     static GoBoardControl()
     {
         AffectsRender<GoBoardControl>(
-            BoardProperty, LastMoveProperty, MarkersProperty, ShowCoordinatesProperty,
+            BoardProperty, LastMoveProperty, MarkersProperty, MoveNumbersProperty, ShowCoordinatesProperty,
             HoverPointProperty, GhostStoneProperty, PendingPointProperty, PendingStoneProperty, IsInteractiveProperty, StudyDrawingsProperty, DragPreviewProperty, BoardStyleProperty, TerritoryProperty, SuggestionsProperty, JosekiHintsProperty);
         FocusableProperty.OverrideDefaultValue<GoBoardControl>(true);
         // Not clipped: the board's drop shadow falls on the tatami around it.
@@ -229,6 +233,12 @@ public sealed partial class GoBoardControl : Control
     {
         get => GetValue(MarkersProperty);
         set => SetValue(MarkersProperty, value);
+    }
+
+    public IReadOnlyDictionary<Point, int>? MoveNumbers
+    {
+        get => GetValue(MoveNumbersProperty);
+        set => SetValue(MoveNumbersProperty, value);
     }
 
     public bool ShowCoordinates
@@ -323,6 +333,7 @@ public sealed partial class GoBoardControl : Control
         DrawSuggestions(context, g, board);
         DrawJosekiHints(context, g, board);
         DrawLastMove(context, g, board, style);
+        DrawMoveNumbers(context, g, board);
         DrawMarkers(context, g, board, lines, style);
         DrawStudy(context, g, board, style);
         DrawPending(context, g, board, style);
@@ -1024,8 +1035,34 @@ public sealed partial class GoBoardControl : Control
         IBrush brush = style.LastMove.A > 0
             ? new ImmutableSolidColorBrush(style.LastMove)
             : board[p] == Stone.Black ? Brushes.White : Brushes.Black;
-        double radius = g.Cell * 0.2;
-        context.DrawEllipse(null, new Pen(brush, Math.Max(1, g.Cell * 0.06)), StoneCenter(g, p), radius, radius);
+
+        // With its number on the stone, the ring goes around the number, near the stone's edge.
+        bool numbered = MoveNumbers?.ContainsKey(p) ?? false;
+        double radius = g.Cell * (numbered ? 0.39 : 0.2);
+        context.DrawEllipse(null, new Pen(brush, Math.Max(1, g.Cell * (numbered ? 0.045 : 0.06))), StoneCenter(g, p), radius, radius);
+    }
+
+    /// <summary>Numbers on the stones, in the colour that reads best on each stone.</summary>
+    private void DrawMoveNumbers(DrawingContext context, BoardGeometry g, BoardState board)
+    {
+        if (MoveNumbers is not { Count: > 0 } numbers)
+        {
+            return;
+        }
+
+        foreach ((Point p, int n) in numbers)
+        {
+            if (!board.IsOnBoard(p) || board[p] == Stone.Empty || (Markers?.Any(m => m.Point == p) ?? false))
+            {
+                continue;
+            }
+
+            string text = n.ToString(CultureInfo.InvariantCulture);
+            IBrush brush = board[p] == Stone.Black ? Brushes.White : Brushes.Black;
+            double size = g.Cell * (text.Length switch { 1 or 2 => 0.46, 3 => 0.36, _ => 0.3 });
+            AvPoint c = StoneCenter(g, p);
+            DrawCentredText(context, text, Math.Max(6, size), LabelTypeface, brush, c.X, c.Y);
+        }
     }
 
     private void DrawMarkers(DrawingContext context, BoardGeometry g, BoardState board, IBrush LineBrush, BoardStyle style)

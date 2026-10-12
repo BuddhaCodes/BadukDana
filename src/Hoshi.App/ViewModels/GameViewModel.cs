@@ -183,6 +183,64 @@ public sealed partial class GameViewModel : ViewModelBase
 
     public int MoveNumber => _cursor.MoveNumber;
 
+    /// <summary>How many of the latest moves get a number with <see cref="Services.MoveNumbers.Recent"/>.</summary>
+    public const int RecentMoveNumbers = 10;
+
+    /// <summary>Which stones show their move number (Preferences → Appearance).</summary>
+    public Services.MoveNumbers MoveNumberMode
+    {
+        get => _moveNumberMode;
+        set
+        {
+            if (SetProperty(ref _moveNumberMode, value))
+            {
+                OnPropertyChanged(nameof(MoveNumberLabels));
+            }
+        }
+    }
+
+    private Services.MoveNumbers _moveNumberMode;
+
+    /// <summary>
+    /// The move number of each stone to label: the latest move played on each point that still holds its stone
+    /// (a recapture in a ko shows the newer number). Empty when numbers are off.
+    /// </summary>
+    public IReadOnlyDictionary<Point, int> MoveNumberLabels
+    {
+        get
+        {
+            if (MoveNumberMode == Services.MoveNumbers.Off)
+            {
+                return EmptyLabels;
+            }
+
+            var labels = new Dictionary<Point, int>();
+            BoardState board = Board;
+            int number = MoveNumber;
+            int limit = MoveNumberMode == Services.MoveNumbers.Recent ? RecentMoveNumbers : int.MaxValue;
+            int counted = 0;
+            for (GameNode? node = _cursor.Current; node is not null && number > 0 && counted < limit; node = node.Parent)
+            {
+                if (node.GetMove(_cursor.BoardSize) is not { } move)
+                {
+                    continue;
+                }
+
+                if (move is { IsPass: false, Point: { } p } && board.IsOnBoard(p) && board[p] == move.Color && !labels.ContainsKey(p))
+                {
+                    labels[p] = number;
+                }
+
+                number--;
+                counted++;
+            }
+
+            return labels;
+        }
+    }
+
+    private static readonly IReadOnlyDictionary<Point, int> EmptyLabels = new Dictionary<Point, int>();
+
     public string MoveNumberText => Tr.F("Game.MoveNumber", MoveNumber);
 
     public string CapturesText => Tr.F("Game.Captures", Board.BlackCaptures, Board.WhiteCaptures);
@@ -902,6 +960,7 @@ public sealed partial class GameViewModel : ViewModelBase
         OnPropertyChanged(nameof(Tree));
         OnPropertyChanged(nameof(Comment));
         OnPropertyChanged(nameof(MoveNumber));
+        OnPropertyChanged(nameof(MoveNumberLabels));
         OnPropertyChanged(nameof(MoveNumberText));
         OnPropertyChanged(nameof(CapturesText));
         OnPropertyChanged(nameof(BlackName));

@@ -18,6 +18,8 @@ internal static class AndroidPlatform
 {
     private static bool _initialized;
     private static bool _musicWasPlaying;
+    private static Activity? _activity;
+    private static bool _keepScreenOn;
 
     public static void Initialize(Activity activity)
     {
@@ -27,8 +29,17 @@ internal static class AndroidPlatform
         }
 
         _initialized = true;
+        _activity = activity;
         Context context = activity.ApplicationContext ?? activity;
         PlatformInfo.IsPhone = true;
+
+        // A light tick with each stone (follows the system's touch feedback setting; needs no permission).
+        PlatformInfo.Vibrate = () => _activity?.Window?.DecorView?.PerformHapticFeedback(Android.Views.FeedbackConstants.VirtualKey);
+        PlatformInfo.KeepScreenOn = on =>
+        {
+            _keepScreenOn = on;
+            ApplyKeepScreenOn();
+        };
 
         // KataGo: the executable is installed with the app's native libraries; the network is copied out of the APK.
         string nativeDirectory = context.ApplicationInfo?.NativeLibraryDir ?? string.Empty;
@@ -79,13 +90,36 @@ internal static class AndroidPlatform
         }
     }
 
-    public static void OnResume()
+    public static void OnResume(Activity activity)
     {
+        _activity = activity;
+        ApplyKeepScreenOn();
+
         if (_musicWasPlaying && global::Hoshi.App.App.Services?.GetService<IMusicService>() is { } music)
         {
             _musicWasPlaying = false;
             music.Start();
         }
+    }
+
+    private static void ApplyKeepScreenOn()
+    {
+        if (_activity is not { } activity)
+        {
+            return;
+        }
+
+        activity.RunOnUiThread(() =>
+        {
+            if (_keepScreenOn)
+            {
+                activity.Window?.AddFlags(Android.Views.WindowManagerFlags.KeepScreenOn);
+            }
+            else
+            {
+                activity.Window?.ClearFlags(Android.Views.WindowManagerFlags.KeepScreenOn);
+            }
+        });
     }
 
     /// <summary>Copies an asset once (again when the APK brings a different size, i.e. a new network).</summary>
