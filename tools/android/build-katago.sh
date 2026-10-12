@@ -21,6 +21,8 @@ jobs="$(nproc 2>/dev/null || sysctl -n hw.ncpu)"
 
 echo "KataGo $KATAGO_VERSION · Eigen $EIGEN_VERSION · android-$API · NDK $NDK"
 [ -d "$work/KataGo" ] || git clone --depth 1 --branch "$KATAGO_VERSION" https://github.com/lightvector/KataGo "$work/KataGo"
+# x86-only compiler flags, if any, do not apply to arm64 (clang rejects them for this target).
+sed -i 's/-mfpmath=sse//g; s/-march=native//g' "$work/KataGo/cpp/CMakeLists.txt"
 if [ ! -d "$work/eigen-install" ]; then
   curl -fsSL "https://gitlab.com/libeigen/eigen/-/archive/$EIGEN_VERSION/eigen-$EIGEN_VERSION.tar.gz" | tar -xz -C "$work"
   cmake -S "$work/eigen-$EIGEN_VERSION" -B "$work/eigen-build" -DCMAKE_INSTALL_PREFIX="$work/eigen-install" -DBUILD_TESTING=OFF -DEIGEN_BUILD_DOC=OFF >/dev/null
