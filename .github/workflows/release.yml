@@ -255,6 +255,7 @@ jobs:
           body: |
             **Install Hoshi** and it keeps itself up to date (only the changes are downloaded):
             Windows: HoshiGo-win-x64-Setup.exe (ARM: HoshiGo-win-arm64-Setup.exe) · macOS: HoshiGo-osx-arm64-Setup.pkg (Apple Silicon) or HoshiGo-osx-x64-Setup.pkg (Intel) · Linux: HoshiGo-linux-x64.AppImage (ARM: HoshiGo-linux-arm64.AppImage)
+            Android (8.0+, 64-bit phones): Hoshi-android.apk; install a new one over the old one to update.
             Portable, no installer: HoshiGo-*-Portable.zip, or the classic Hoshi-windows-x64.zip / Hoshi-macos-*.zip / Hoshi-linux-*.tar.gz.
             The builds are not signed by Microsoft or Apple yet; the website explains the first-launch warning.
 
