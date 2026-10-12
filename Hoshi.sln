@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.11.12224.323 insiders
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E78AE8F9-EB49-483E-B403-BB66B8B46A98}"
 EndProject
@@ -28,6 +28,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hoshi.Engines.Tests", "tests\Hoshi.Engines.Tests\Hoshi.Engines.Tests.csproj", "{6770D3E3-AB22-45DD-B241-2BE7F3AA3007}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hoshi.Desktop", "src\Hoshi.Desktop\Hoshi.Desktop.csproj", "{4C91976D-0CFC-4BA1-9CB1-CE68D45BB972}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hoshi.Android", "src\Hoshi.Android\Hoshi.Android.csproj", "{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -171,6 +173,24 @@ Global
 		{4C91976D-0CFC-4BA1-9CB1-CE68D45BB972}.Release|x64.Build.0 = Release|Any CPU
 		{4C91976D-0CFC-4BA1-9CB1-CE68D45BB972}.Release|x86.ActiveCfg = Release|Any CPU
 		{4C91976D-0CFC-4BA1-9CB1-CE68D45BB972}.Release|x86.Build.0 = Release|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Debug|x64.Build.0 = Debug|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Debug|x64.Deploy.0 = Debug|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Debug|x86.Build.0 = Debug|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Debug|x86.Deploy.0 = Debug|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Release|x64.ActiveCfg = Release|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Release|x64.Build.0 = Release|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Release|x64.Deploy.0 = Release|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Release|x86.ActiveCfg = Release|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Release|x86.Build.0 = Release|Any CPU
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC}.Release|x86.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -187,5 +207,9 @@ Global
 		{A9F200CA-0A62-4D8C-A6C8-3CAD25022757} = {177EF086-F5E5-4978-9538-5F5C2E8369F5}
 		{6770D3E3-AB22-45DD-B241-2BE7F3AA3007} = {177EF086-F5E5-4978-9538-5F5C2E8369F5}
 		{4C91976D-0CFC-4BA1-9CB1-CE68D45BB972} = {E78AE8F9-EB49-483E-B403-BB66B8B46A98}
+		{4D8D6F11-AEE3-1AAF-4FD3-4066CB980CDC} = {E78AE8F9-EB49-483E-B403-BB66B8B46A98}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {10023D34-2F7B-4FD4-9F21-9BBEA6771DB4}
 	EndGlobalSection
 EndGlobal
