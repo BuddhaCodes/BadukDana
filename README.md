@@ -24,7 +24,7 @@ joseki guidance, engines, and online play on OGS.
 
 ## Download
 
-Ready-to-run builds, no .NET needed. The installers keep Hoshi up to date by themselves (small delta updates).
+Ready-to-run builds, no .NET needed. The desktop installers keep Hoshi up to date by themselves (small delta updates).
 
 | | Installer | Portable |
 |---|---|---|
@@ -34,9 +34,11 @@ Ready-to-run builds, no .NET needed. The installers keep Hoshi up to date by the
 | **macOS** (Intel) | [.pkg](https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-osx-x64-Setup.pkg) | [.zip](https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-osx-x64-Portable.zip) |
 | **Linux** (x64) | [.AppImage](https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-linux-x64.AppImage) | [.tar.gz](https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-linux-x64.tar.gz) |
 | **Linux** (ARM64) | [.AppImage](https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-linux-arm64.AppImage) | [.tar.gz](https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-linux-arm64.tar.gz) |
+| **Android** (8.0+, 64-bit phones) | [.apk](https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-android.apk) | — |
 
 > Windows may show a SmartScreen warning for new, unsigned apps: **More info → Run anyway**.
-> KataGo comes with the Windows and Linux x64 downloads; elsewhere Hoshi installs it in one click.
+> KataGo comes with the Windows, Linux x64 and Android downloads; elsewhere Hoshi installs it in one click.
+> Android: Hoshi is not on Google Play yet. Open the APK and allow your browser to install apps; if Play Protect warns, choose **Install anyway**. To update, install the new APK over the old one. On the phone you tap a point, then tap it again to play.
 
 ## Features
 
@@ -151,7 +153,7 @@ Requires the .NET SDK 10.0 (`global.json` pins the minimum feature band 10.0.100
 ```bash
 dotnet build
 dotnet test
-dotnet run --project src/Hoshi.App
+dotnet run --project src/Hoshi.Desktop
 ```
 
 Logs are written to the per-user data folder (`%LOCALAPPDATA%\Hoshi\logs` on Windows,
@@ -165,7 +167,9 @@ src/
   Hoshi.Sgf/      SGF parser/serializer and game tree
   Hoshi.Ogs/      online-go.com client (OAuth + PKCE, REST, WebSocket)
   Hoshi.Engines/  KataGo analysis engine (JSON) and a GTP client for any engine
-  Hoshi.App/      Avalonia application
+  Hoshi.App/      Avalonia application (shared library: views, view models, controls)
+  Hoshi.Desktop/  Desktop executable (Windows, macOS, Linux)
+  Hoshi.Android/  Android app (built by .github/workflows/android.yml; needs the Android workload)
 tests/            xUnit + FluentAssertions, Avalonia.Headless for UI
 docs/             Architecture, design, OGS API notes, roadmap; docs/site is the website
 ```

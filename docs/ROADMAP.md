@@ -100,6 +100,7 @@ Alcance pedido: Android primero (iOS más adelante), con KataGo desde la primera
 - [x] Diseño de teléfono (`PhoneView`): barra inferior, hojas, páginas en lugar de ventanas, tarjeta para diálogos, botón atrás.
 - [x] Ganchos de plataforma: KataGo incluido, AudioTrack, SoundPool, Keystore, archivos `content://`.
 - [x] `Hoshi.Android` + `tools/android/build-katago.sh` + `.github/workflows/android.yml` (APK firmado si existen los secretos; adjunto a cada versión).
-- [ ] Primera compilación en GitHub Actions y prueba en un teléfono real (KataGo, sonido, OGS con OAuth en el navegador y vuelta a la app).
-- [ ] Enlace de descarga del APK en la web y el README cuando la primera compilación funcione.
+- [x] Primera compilación en GitHub Actions (2026-10-12).
+- [ ] Prueba en un teléfono real (KataGo, sonido, OGS con OAuth en el navegador y vuelta a la app).
+- [x] Enlace de descarga del APK en la web (tarjeta Android con captura; el botón principal ofrece el APK a los visitantes con Android) y en el README.
 - [ ] Pulido: diseño apaisado/tabletas, páginas de Preferencias y lobby pensadas para pantallas estrechas, entrenador de josekis en el teléfono, aviso de versión nueva.
