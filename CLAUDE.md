@@ -42,7 +42,8 @@ src/
   Hoshi.Engines/     # Cliente del motor de análisis de KataGo (JSON) y cliente GTP genérico (jugar, motor contra motor, análisis).
   Hoshi.App/         # Avalonia (biblioteca compartida): Views, ViewModels, controles, estilos, assets. Une Ogs con Sgf.
   Hoshi.Desktop/     # Ejecutable de escritorio (Windows/macOS/Linux): Program, plataforma de ventanas, Velopack. Se llama «Hoshi».
-  Hoshi.Android/     # App de Android (fuera de Hoshi.sln: necesita la carga de trabajo de Android; la compila .github/workflows/android.yml).
+  Hoshi.Android/     # App de Android (en Hoshi.sln desde 2026-10-12; necesita la carga de trabajo de Android; la compila .github/workflows/android.yml).
+Hoshi.Desktop.slnf   # Hoshi.sln sin Android: escritorio y tests. Lo usan CI y la línea de comandos.
 tests/
   Hoshi.Core.Tests/
   Hoshi.Sgf.Tests/
@@ -71,7 +72,7 @@ Regla de dependencias: `Desktop → App` · `Android → App` · `App → Ogs, S
 1. **Antes de programar una funcionalidad**, revisa `docs/ROADMAP.md` y confirma en qué fase/tarea estamos.
 2. Para cualquier cosa de OGS, **verifica el protocolo contra el código fuente oficial** (`github.com/online-go/goban`, carpeta `src/engine/protocol/` y `GobanSocket`) o la documentación de la API antes de implementar. `docs/OGS_API.md` es un resumen de trabajo y puede estar desactualizado; si encuentras discrepancias, actualízalo.
 3. Escribe tests primero para `Hoshi.Core` y `Hoshi.Sgf` (reglas y parsing tienen muchos casos borde).
-4. Al terminar una tarea: compila (`dotnet build`), ejecuta tests (`dotnet test`), y resume en 2–4 líneas qué cambió y qué queda pendiente.
+4. Al terminar una tarea: compila (`dotnet build Hoshi.Desktop.slnf`), ejecuta tests (`dotnet test Hoshi.Desktop.slnf`), y resume en 2–4 líneas qué cambió y qué queda pendiente.
 5. Si una decisión afecta la arquitectura, la UX o la privacidad del usuario, pregunta antes.
 6. Cuando pruebes contra OGS real, usa **beta.online-go.com** (servidor de pruebas) con usuario y contraseña (se elige en el selector de servidor del lobby). Como beta no admite aplicaciones OAuth, el flujo OAuth solo puede probarse en online-go.com: ahí, **solo partidas no clasificatorias y privadas contra una segunda cuenta propia**; nunca clasificatorias (Hoshi siempre envía `ranked: false`). *(Actualizado 2026-09-29.)*
 

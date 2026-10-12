@@ -1,0 +1,18 @@
+{
+  "solution": {
+    "path": "Hoshi.sln",
+    "projects": [
+      "src\\Hoshi.Core\\Hoshi.Core.csproj",
+      "src\\Hoshi.Sgf\\Hoshi.Sgf.csproj",
+      "src\\Hoshi.Ogs\\Hoshi.Ogs.csproj",
+      "src\\Hoshi.Engines\\Hoshi.Engines.csproj",
+      "src\\Hoshi.App\\Hoshi.App.csproj",
+      "tests\\Hoshi.Core.Tests\\Hoshi.Core.Tests.csproj",
+      "tests\\Hoshi.Sgf.Tests\\Hoshi.Sgf.Tests.csproj",
+      "tests\\Hoshi.Ogs.Tests\\Hoshi.Ogs.Tests.csproj",
+      "tests\\Hoshi.App.Tests\\Hoshi.App.Tests.csproj",
+      "tests\\Hoshi.Engines.Tests\\Hoshi.Engines.Tests.csproj",
+      "src\\Hoshi.Desktop\\Hoshi.Desktop.csproj"
+    ]
+  }
+}
