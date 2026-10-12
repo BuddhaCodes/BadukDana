@@ -137,7 +137,15 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     private string _kataGoConfig = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(AnalysisVisitsBox))]
     private int _analysisVisits = 200;
+
+    /// <summary>The visits box (empty or out of range: a clear message, the last good value stays).</summary>
+    public decimal? AnalysisVisitsBox
+    {
+        get => AnalysisVisits;
+        set => AnalysisVisits = NumberBox.Whole(value, 10, 100_000);
+    }
 
     [ObservableProperty]
     private string? _engineStatus;
@@ -198,7 +206,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             _kataGoExecutable = s.KataGoExecutable ?? string.Empty;
             _kataGoModel = s.KataGoModel ?? string.Empty;
             _kataGoConfig = s.KataGoConfig ?? string.Empty;
-            _analysisVisits = s.AnalysisVisits;
+            _analysisVisits = PlatformInfo.AnalysisVisits(s);
             _moveEffects = s.MoveEffects;
             _soundVolume = s.SoundVolume;
             _music = s.Music;
@@ -692,7 +700,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
 
         Services.AppSettings current = _settings.Current;
         if (Clean(KataGoExecutable) != current.KataGoExecutable || Clean(KataGoModel) != current.KataGoModel
-            || Clean(KataGoConfig) != current.KataGoConfig || Math.Clamp(AnalysisVisits, 10, 100_000) != current.AnalysisVisits)
+            || Clean(KataGoConfig) != current.KataGoConfig || Math.Clamp(AnalysisVisits, 10, 100_000) != PlatformInfo.AnalysisVisits(current))
         {
             ApplyEngine();
         }

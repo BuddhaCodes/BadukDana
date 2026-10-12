@@ -118,7 +118,15 @@ public sealed partial class LobbyViewModel : ViewModelBase
     private RulesChoice _selectedRules;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HandicapBox))]
     private int _handicap;
+
+    /// <summary>The handicap box (empty or out of range: a clear message, the last good value stays).</summary>
+    public decimal? HandicapBox
+    {
+        get => Handicap;
+        set => Handicap = NumberBox.Whole(value, 0, 9);
+    }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(CreateChallengeCommand), nameof(CancelWaitingCommand), nameof(AcceptCommand))]

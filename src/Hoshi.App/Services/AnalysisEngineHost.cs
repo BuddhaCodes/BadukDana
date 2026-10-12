@@ -72,7 +72,7 @@ public sealed class AnalysisEngineHost : IAnalysisEngine, IAsyncDisposable
         ArgumentNullException.ThrowIfNull(settings);
         KataGo.ResolvedKataGo? resolved = KataGo.KataGoLocator.Resolve(settings, _baseDirectory, _dataDirectory);
         KataGoOptions options = resolved?.Options ?? new KataGoOptions(string.Empty, string.Empty, string.Empty);
-        Visits = Math.Clamp(settings.AnalysisVisits, 10, 100_000);
+        Visits = PlatformInfo.AnalysisVisits(settings);
         if (options == _options && _engine is not null)
         {
             Changed?.Invoke(this, EventArgs.Empty);

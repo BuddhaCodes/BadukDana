@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:l="using:Hoshi.App.Localization"
              xmlns:vm="using:Hoshi.App.ViewModels"
+             xmlns:c="using:Hoshi.App.Controls"
              x:Class="Hoshi.App.Views.NewEngineGameView"
              x:DataType="vm:NewEngineGameViewModel"
              x:Name="Root">
@@ -53,7 +54,7 @@
           </ComboBox.ItemTemplate>
         </ComboBox>
         <TextBlock Grid.Row="3" Grid.Column="2" Classes="label" Text="Komi" Margin="16,0,14,0" />
-        <NumericUpDown Grid.Row="3" Grid.Column="3" Value="{Binding Komi}" Increment="0.5" Minimum="-50" Maximum="50" FormatString="0.0" x:Name="KomiBox" />
+        <NumericUpDown Grid.Row="3" Grid.Column="3" Value="{Binding KomiBox}" Increment="0.5" Minimum="-50" Maximum="50" FormatString="0.0" x:Name="KomiBox" />
       </Grid>
       <TextBlock Classes="secondary" Text="{Binding Hint}" TextWrapping="Wrap" Margin="0,12,0,0" x:Name="HintText" />
     </StackPanel>

@@ -120,6 +120,13 @@ public sealed partial class StudyViewModel : ViewModelBase
     private string? _sequenceId;
     private IReadOnlyList<QuizQuestion> _quiz = [];
 
+    // Tap and confirm (phones): drawings made on the board wait here, for this move, until ✓ (or ✗).
+    private IReadOnlyList<StudyDrawing>? _pendingDrawings;
+    private GameNode? _pendingNode;
+
+    // Arrows and areas by two taps: where the first tap was.
+    private Point? _shapeStart;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(BoardDrawings), nameof(GhostStone), nameof(DragPreview))]
     private bool _isActive;
@@ -228,7 +235,30 @@ public sealed partial class StudyViewModel : ViewModelBase
     /// <summary>What the board draws: this move's drawings while studying, plus the quiz's answer marks.</summary>
     public IReadOnlyList<StudyDrawing> BoardDrawings => IsQuizActive
         ? [.. QuizOverlay]
-        : IsActive ? Drawings : [];
+        : IsActive ? WithShapeStart(Drawings) : [];
+
+    /// <summary>Id of the marker that shows where a two-tap arrow or area starts.</summary>
+    public const string ShapeStartId = "shape-start";
+
+    private IReadOnlyList<StudyDrawing> WithShapeStart(IReadOnlyList<StudyDrawing> drawings)
+    {
+        if (_shapeStart is not { } start)
+        {
+            return drawings;
+        }
+
+        // On a desktop the shape follows the mouse; on a phone the starting point is marked until the second tap.
+        if (_game.HoverPoint is { } hover && hover != start && _game.Board.IsOnBoard(hover))
+        {
+            DrawingKind kind = Tool == StudyTool.Area ? DrawingKind.Area : DrawingKind.Arrow;
+            return [.. drawings, new StudyDrawing(ShapeStartId, kind, AuthorName, Color, [start, hover])];
+        }
+
+        return [.. drawings, new StudyDrawing(ShapeStartId, DrawingKind.Mark, AuthorName, Color, [start])];
+    }
+
+    /// <summary>A two-tap arrow or area has its first point.</summary>
+    public Point? ShapeStart => _shapeStart;
 
     /// <summary>The ghost stone under the mouse: the next sequence stone, the quiz's colour, nothing for the other tools.</summary>
     public Stone GhostStone
@@ -283,6 +313,13 @@ public sealed partial class StudyViewModel : ViewModelBase
         {
             _sequenceId = null;
         }
+
+        if (_shapeStart is not null)
+        {
+            _shapeStart = null;
+            OnPropertyChanged(nameof(BoardDrawings));
+            OnPropertyChanged(nameof(PendingDrawingIds));
+        }
     }
 
     [RelayCommand]
@@ -316,6 +353,12 @@ public sealed partial class StudyViewModel : ViewModelBase
 
     partial void OnIsActiveChanged(bool value)
     {
+        if (!value && (_pendingDrawings is not null || _shapeStart is not null))
+        {
+            DropPending();
+            Sync();
+        }
+
         _game.ShowStatus(Tr.T(value ? "Study.Opened" : "Study.Closed"));
         BoardClickCommand.NotifyCanExecuteChanged();
     }
@@ -352,11 +395,120 @@ public sealed partial class StudyViewModel : ViewModelBase
         Update(s => s with { Pins = [.. s.Pins.Select(p => p.Id == row.Pin.Id ? p with { Replies = [.. p.Replies, reply] } : p)] });
     }
 
-    internal void DeletePin(StudyPinRow row) =>
+    internal async void DeletePin(StudyPinRow row)
+    {
+        // With tap and confirm (phones), a slip of the finger must not lose a note and its replies.
+        if (ConfirmEdits && _dialogs is not null && !await _dialogs.ConfirmAsync(Tr.T("Study.DeletePinTitle"), Tr.T("Study.DeletePinAsk")))
+        {
+            return;
+        }
+
         Update(s => s with { Pins = [.. s.Pins.Where(p => p.Id != row.Pin.Id)] });
+    }
 
     [RelayCommand]
-    private void ClearDrawings() => Update(s => s with { Drawings = [] });
+    private async Task ClearDrawings()
+    {
+        if (ConfirmEdits && Drawings.Count > 0 && _dialogs is not null
+            && !await _dialogs.ConfirmAsync(Tr.T("Study.ClearTitle"), Tr.T("Study.ClearAsk")))
+        {
+            return;
+        }
+
+        DropPending();
+        Update(s => s with { Drawings = [] });
+    }
+
+    // ---------- Tap and confirm ----------
+
+    /// <summary>Board drawings wait for ✓ before they are saved: on with "Tap twice to play" (phones by default).</summary>
+    public bool ConfirmEdits => _game.ConfirmMoves;
+
+    /// <summary>Drawings were made on this move and wait for ✓ or ✗.</summary>
+    public bool HasPendingEdit => _pendingDrawings is not null;
+
+    /// <summary>The drawings shown faded because they are not saved yet.</summary>
+    public IReadOnlyCollection<string> PendingDrawingIds
+    {
+        get
+        {
+            var ids = new List<string>();
+            if (_shapeStart is not null)
+            {
+                ids.Add(ShapeStartId); // the two-tap shape in the making
+            }
+
+            if (_pendingDrawings is not null)
+            {
+                var saved = StudyStore.Read(_game.CurrentNode).Drawings.ToHashSet();
+                ids.AddRange(_pendingDrawings.Where(d => !saved.Contains(d)).Select(d => d.Id));
+            }
+
+            return ids;
+        }
+    }
+
+    /// <summary>✓: the drawings made since the last confirmation are saved.</summary>
+    [RelayCommand]
+    private void ConfirmEdit()
+    {
+        if (_pendingDrawings is not { } drawings || _pendingNode != _game.CurrentNode)
+        {
+            DropPending();
+            return;
+        }
+
+        DropPending();
+        Update(s => s with { Drawings = drawings });
+        _game.ShowStatus(Tr.T("Study.EditSaved"));
+    }
+
+    /// <summary>✗: the drawings made since the last confirmation go away.</summary>
+    [RelayCommand]
+    private void CancelEdit()
+    {
+        DropPending();
+        _sequenceId = null;
+        Sync();
+    }
+
+    private void DropPending()
+    {
+        bool had = _pendingDrawings is not null || _shapeStart is not null;
+        _pendingDrawings = null;
+        _pendingNode = null;
+        _shapeStart = null;
+        if (had)
+        {
+            OnPropertyChanged(nameof(HasPendingEdit));
+            OnPropertyChanged(nameof(PendingDrawingIds));
+            OnPropertyChanged(nameof(BoardDrawings));
+        }
+    }
+
+    /// <summary>This move's drawings as the board shows them: waiting ones included.</summary>
+    private NodeStudy Current()
+    {
+        NodeStudy saved = StudyStore.Read(_game.CurrentNode);
+        return _pendingDrawings is { } pending && _pendingNode == _game.CurrentNode ? saved with { Drawings = pending } : saved;
+    }
+
+    /// <summary>A drawing made on the board: saved at once, or kept waiting for ✓ with tap and confirm.</summary>
+    private void EditDrawings(Func<IReadOnlyList<StudyDrawing>, IReadOnlyList<StudyDrawing>> change)
+    {
+        if (!ConfirmEdits)
+        {
+            Update(s => s with { Drawings = change(s.Drawings) });
+            return;
+        }
+
+        _pendingDrawings = change(Current().Drawings);
+        _pendingNode = _game.CurrentNode;
+        Drawings = _pendingDrawings;
+        OnPropertyChanged(nameof(HasPendingEdit));
+        OnPropertyChanged(nameof(PendingDrawingIds));
+        OnPropertyChanged(nameof(GhostStone));
+    }
 
     [RelayCommand]
     private void PreviousPin() => GoToPin(forward: false);
@@ -431,7 +583,9 @@ public sealed partial class StudyViewModel : ViewModelBase
         };
         if (kind is { } k)
         {
+            _shapeStart = null;
             Add(new StudyDrawing(StudyStore.NewId(), k, AuthorName, Color, [drag.From, drag.To]));
+            OnPropertyChanged(nameof(PendingDrawingIds));
         }
     }
 
@@ -442,7 +596,7 @@ public sealed partial class StudyViewModel : ViewModelBase
             return;
         }
 
-        NodeStudy study = StudyStore.Read(_game.CurrentNode);
+        NodeStudy study = Current();
         switch (Tool)
         {
             case StudyTool.Mark:
@@ -474,12 +628,30 @@ public sealed partial class StudyViewModel : ViewModelBase
                 string[] hit = [.. study.Drawings.Where(d => Touches(d, point)).Select(d => d.Id)];
                 if (hit.Length > 0)
                 {
-                    Update(s => s with { Drawings = [.. s.Drawings.Where(d => !hit.Contains(d.Id))] });
+                    EditDrawings(ds => [.. ds.Where(d => !hit.Contains(d.Id))]);
                 }
 
                 break;
             case StudyTool.Arrow or StudyTool.Area:
-                _game.ShowStatus(Tr.T("Study.DragToDraw"));
+                // Drag, or tap the start and then the end (a finger does not hide the point that way).
+                if (_shapeStart is not { } start)
+                {
+                    _shapeStart = point;
+                    _game.ShowStatus(Tr.T(Tool == StudyTool.Arrow ? "Study.ArrowEnd" : "Study.AreaEnd"));
+                }
+                else if (start == point)
+                {
+                    _shapeStart = null;
+                }
+                else
+                {
+                    _shapeStart = null;
+                    Add(new StudyDrawing(StudyStore.NewId(), Tool == StudyTool.Arrow ? DrawingKind.Arrow : DrawingKind.Area, AuthorName, Color, [start, point]));
+                }
+
+                OnPropertyChanged(nameof(BoardDrawings));
+                OnPropertyChanged(nameof(ShapeStart));
+                OnPropertyChanged(nameof(PendingDrawingIds));
                 break;
         }
     }
@@ -523,7 +695,7 @@ public sealed partial class StudyViewModel : ViewModelBase
 
     private Stone NextSequenceColor()
     {
-        NodeStudy study = StudyStore.Read(_game.CurrentNode);
+        NodeStudy study = Current();
         if (_sequenceId is { } id && study.Drawings.FirstOrDefault(d => d.Id == id) is { } line)
         {
             return line.Points.Count % 2 == 0 ? line.FirstColor : line.FirstColor.Opponent();
@@ -561,11 +733,11 @@ public sealed partial class StudyViewModel : ViewModelBase
         return "?";
     }
 
-    private void Add(StudyDrawing drawing) => Update(s => s with { Drawings = [.. s.Drawings, drawing] });
+    private void Add(StudyDrawing drawing) => EditDrawings(ds => [.. ds, drawing]);
 
-    private void Remove(string id) => Update(s => s with { Drawings = [.. s.Drawings.Where(d => d.Id != id)] });
+    private void Remove(string id) => EditDrawings(ds => [.. ds.Where(d => d.Id != id)]);
 
-    private void Replace(StudyDrawing drawing) => Update(s => s with { Drawings = [.. s.Drawings.Select(d => d.Id == drawing.Id ? drawing : d)] });
+    private void Replace(StudyDrawing drawing) => EditDrawings(ds => [.. ds.Select(d => d.Id == drawing.Id ? drawing : d)]);
 
     /// <summary>Changes the study of the current move, saves it in the tree and refreshes everything.</summary>
     private void Update(Func<NodeStudy, NodeStudy> change)
@@ -978,6 +1150,19 @@ public sealed partial class StudyViewModel : ViewModelBase
                 break;
             case nameof(GameViewModel.GhostStone) or nameof(GameViewModel.HoverPoint):
                 OnPropertyChanged(nameof(GhostStone));
+                if (_shapeStart is not null)
+                {
+                    OnPropertyChanged(nameof(BoardDrawings));
+                }
+
+                break;
+            case nameof(GameViewModel.ConfirmMoves):
+                if (!ConfirmEdits && _pendingDrawings is not null)
+                {
+                    ConfirmEdit(); // switched off: what was waiting is kept
+                }
+
+                OnPropertyChanged(nameof(ConfirmEdits));
                 break;
             case nameof(GameViewModel.Online) or nameof(GameViewModel.IsOnline):
                 OnPropertyChanged(nameof(IsLiveOnline));
@@ -1010,9 +1195,10 @@ public sealed partial class StudyViewModel : ViewModelBase
         {
             _node = _game.CurrentNode;
             _sequenceId = null;
+            DropPending(); // like a waiting stone, unconfirmed drawings stay behind when the move changes
         }
 
-        NodeStudy study = StudyStore.Read(_game.CurrentNode);
+        NodeStudy study = Current();
         Drawings = study.Drawings;
         RebuildPins(study);
         RebuildTimeline();

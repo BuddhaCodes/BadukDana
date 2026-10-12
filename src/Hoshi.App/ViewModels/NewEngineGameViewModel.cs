@@ -37,7 +37,15 @@ public sealed partial class NewEngineGameViewModel : ViewModelBase
     private int _handicap;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(KomiBox))]
     private double _komi = 6.5;
+
+    /// <summary>The komi box (empty or out of range: a clear message, the last good value stays).</summary>
+    public decimal? KomiBox
+    {
+        get => (decimal)Komi;
+        set => Komi = NumberBox.Number(value, -50, 50);
+    }
 
     [ObservableProperty]
     private RulesOption _rules;

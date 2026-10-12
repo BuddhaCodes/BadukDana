@@ -12,6 +12,12 @@ public static class PlatformInfo
     /// <summary>Coordinates around the board, as saved or the platform's default (hidden on phones).</summary>
     public static bool ShowCoordinates(AppSettings settings) => settings.ShowCoordinates ?? !IsPhone;
 
+    /// <summary>
+    /// KataGo's visits per analysed position, as saved or the platform's default: 200 on a desktop, 12 on a phone
+    /// (its CPU is several times slower; a dozen visits already rank the moves well enough to follow a game).
+    /// </summary>
+    public static int AnalysisVisits(AppSettings settings) => Math.Clamp(settings.AnalysisVisits ?? (IsPhone ? 12 : 200), 10, 100_000);
+
     /// <summary>A short tap of the vibration motor (set by Android); null where there is none.</summary>
     public static Action? Vibrate { get; set; }
 

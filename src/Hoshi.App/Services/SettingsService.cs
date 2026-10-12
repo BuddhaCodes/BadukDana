@@ -36,7 +36,7 @@ public sealed record AppSettings
     public string? AnalysisEngine { get; init; }
 
     /// <summary>Search visits per analysed position (more = stronger and slower).</summary>
-    public int AnalysisVisits { get; init; } = 200;
+    public int? AnalysisVisits { get; init; }
 
     /// <summary>Celebrate strong moves (by KataGo's judgement) with a sound and a board impact.</summary>
     public bool MoveEffects { get; init; } = true;

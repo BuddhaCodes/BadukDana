@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:l="using:Hoshi.App.Localization"
              xmlns:vm="using:Hoshi.App.ViewModels"
+             xmlns:c="using:Hoshi.App.Controls"
              x:Class="Hoshi.App.Views.LobbyView"
              x:DataType="vm:LobbyViewModel"
              x:Name="Root">
@@ -198,7 +199,7 @@
 
               <TextBlock Grid.Row="5" Classes="label" Text="{l:T Lobby.Handicap}" />
               <NumericUpDown Grid.Row="5" Grid.Column="1" Minimum="0" Maximum="9" Increment="1" FormatString="0"
-                             Value="{Binding Handicap}" />
+                             Value="{Binding HandicapBox}" />
             </Grid>
             <TextBlock Classes="secondary" TextWrapping="Wrap"
                        Text="{l:T Lobby.UnrankedNote}" />

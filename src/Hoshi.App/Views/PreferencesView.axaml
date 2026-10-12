@@ -158,7 +158,7 @@
               <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding KataGoConfig}" Watermark="analysis_example.cfg" IsVisible="{Binding IsDesktop}" />
               <Button Grid.Row="2" Grid.Column="2" Content="{l:T Prefs.Browse}" Command="{Binding BrowseConfigCommand}" IsVisible="{Binding IsDesktop}" />
               <TextBlock Grid.Row="3" Classes="label" Text="{l:T Prefs.MaxVisits}" VerticalAlignment="Center" />
-              <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding AnalysisVisits}" Minimum="10" Maximum="100000" Increment="50"
+              <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding AnalysisVisitsBox}" x:Name="VisitsBox" Minimum="10" Maximum="100000" Increment="50"
                              FormatString="0" HorizontalAlignment="Left" Width="160" Margin="0,3" />
             </Grid>
             <StackPanel Orientation="Horizontal" Spacing="8">

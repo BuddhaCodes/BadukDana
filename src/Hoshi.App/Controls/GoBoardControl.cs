@@ -143,7 +143,7 @@ public sealed partial class GoBoardControl : Control
     {
         AffectsRender<GoBoardControl>(
             BoardProperty, LastMoveProperty, MarkersProperty, MoveNumbersProperty, ShowCoordinatesProperty,
-            HoverPointProperty, GhostStoneProperty, PendingPointProperty, PendingStoneProperty, IsInteractiveProperty, StudyDrawingsProperty, DragPreviewProperty, BoardStyleProperty, TerritoryProperty, SuggestionsProperty, JosekiHintsProperty);
+            HoverPointProperty, GhostStoneProperty, PendingPointProperty, PendingStoneProperty, IsInteractiveProperty, StudyDrawingsProperty, PendingDrawingIdsProperty, DragPreviewProperty, BoardStyleProperty, TerritoryProperty, SuggestionsProperty, JosekiHintsProperty);
         FocusableProperty.OverrideDefaultValue<GoBoardControl>(true);
         // Not clipped: the board's drop shadow falls on the tatami around it.
         ClipToBoundsProperty.OverrideDefaultValue<GoBoardControl>(false);
@@ -426,6 +426,7 @@ public sealed partial class GoBoardControl : Control
         base.OnPointerReleased(e);
         if (!IsInteractive || CurrentGeometry?.HitTest(e.GetPosition(this)) is not { } point)
         {
+            CancelDrag(); // let go off the board: no shape
             return;
         }
 
