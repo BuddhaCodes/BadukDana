@@ -375,4 +375,50 @@ public sealed class PhoneTests
             PlatformInfo.KeepScreenOn = keep;
         }
     }
+
+    [AvaloniaFact]
+    public void Study_drawings_on_the_phone_wait_for_save()
+    {
+        var game = new GameViewModel();
+        (Window window, PhoneShellViewModel shell) = Phone(game);
+        game.ConfirmMoves = true; // the phone's default (the tests run on the desktop)
+        game.PlayCommand.Execute(new Point(3, 3));
+        game.PlayCommand.Execute(new Point(3, 3));
+        shell.ToggleSheetCommand.Execute(PhoneSheet.Study);
+        shell.Main.Study.SelectToolCommand.Execute(Hoshi.App.ViewModels.StudyTool.Arrow);
+        window.FindDeep<Border>("PhoneStudyConfirm")!.IsVisible.Should().BeFalse();
+
+        GoBoardControl board = window.FindDeep<GoBoardControl>("Board")!;
+        Avalonia.Point At(int x, int y) => board.TranslatePoint(board.CurrentGeometry!.Value.Center(new Point(x, y)), window)!.Value;
+        window.MouseDown(At(10, 10), MouseButton.Left);
+        window.MouseUp(At(10, 10), MouseButton.Left);
+        window.MouseDown(At(13, 10), MouseButton.Left);
+        window.MouseUp(At(13, 10), MouseButton.Left);
+
+        board.StudyDrawings.Should().ContainSingle(d => d.Kind == Hoshi.Sgf.Study.DrawingKind.Arrow);
+        board.PendingDrawingIds.Should().ContainSingle();
+        window.FindDeep<Border>("PhoneStudyConfirm")!.IsVisible.Should().BeTrue();
+        Press(window.FindDeep<Button>("PhoneStudyConfirmSave")!);
+        window.FindDeep<Border>("PhoneStudyConfirm")!.IsVisible.Should().BeFalse();
+        Hoshi.Sgf.Study.StudyStore.Read(game.CurrentNode).Drawings.Should().ContainSingle();
+        window.Close();
+    }
+
+    [AvaloniaFact]
+    public void Phones_analyse_with_fewer_visits_by_default()
+    {
+        bool was = PlatformInfo.IsPhone;
+        try
+        {
+            PlatformInfo.IsPhone = true;
+            PlatformInfo.AnalysisVisits(new AppSettings()).Should().Be(12);
+            PlatformInfo.AnalysisVisits(new AppSettings { AnalysisVisits = 300 }).Should().Be(300);
+            PlatformInfo.IsPhone = false;
+            PlatformInfo.AnalysisVisits(new AppSettings()).Should().Be(200);
+        }
+        finally
+        {
+            PlatformInfo.IsPhone = was;
+        }
+    }
 }

@@ -274,6 +274,7 @@
                           PendingPoint="{Binding Game.PendingMove}"
                           PendingStone="{Binding Game.PendingStone}"
                           StudyDrawings="{Binding Study.BoardDrawings}"
+                          PendingDrawingIds="{Binding Study.PendingDrawingIds}"
                           DragPreview="{Binding Study.DragPreview}"
                           DragColor="{Binding Study.Color}"
                           PointClickedCommand="{Binding Study.BoardClickCommand}"
@@ -315,6 +316,19 @@
             <TextBlock Text="{Binding Study.QuizPrompt}" VerticalAlignment="Center" FontSize="12.5" IsVisible="{Binding Study.CanReveal}" />
             <TextBlock Text="{Binding Study.QuizResult}" VerticalAlignment="Center" FontSize="12.5" FontWeight="SemiBold" MaxWidth="520" TextTrimming="CharacterEllipsis"
                        IsVisible="{Binding !Study.CanReveal}" />
+          </StackPanel>
+        </Border>
+        <!-- Tap and confirm in the study: drawings wait, faded, until they are saved or discarded. -->
+        <Border Classes="warmup" x:Name="StudyConfirm" IsVisible="{Binding Study.HasPendingEdit}"
+                HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,24" Padding="10,6" CornerRadius="26">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="secondary" Text="{l:T Study.PendingEdit}" FontSize="12" VerticalAlignment="Center" />
+            <Button Classes="accent" Command="{Binding Study.ConfirmEditCommand}" MinHeight="40" Padding="14,6" x:Name="StudyConfirmSave">
+              <TextBlock Text="{l:T Study.ConfirmEdit}" />
+            </Button>
+            <Button Command="{Binding Study.CancelEditCommand}" MinHeight="40" Padding="14,6" x:Name="StudyConfirmDiscard">
+              <TextBlock Text="{l:T Study.CancelEdit}" />
+            </Button>
           </StackPanel>
         </Border>
         <!-- No KataGo yet: install it with one click (the AI analysis, effects and music need it). -->

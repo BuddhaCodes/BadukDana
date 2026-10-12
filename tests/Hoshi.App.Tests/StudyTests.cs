@@ -421,6 +421,82 @@ public sealed class StudyViewModelTests : IDisposable
         return n;
     }
 
+    [Fact]
+    public void Arrows_and_areas_can_be_drawn_with_two_taps()
+    {
+        _game.PlayCommand.Execute(new Point(2, 2));
+        _study.IsActive = true;
+        _study.SelectToolCommand.Execute(StudyTool.Arrow);
+
+        _study.BoardClickCommand.Execute(new Point(3, 3));
+        _study.ShapeStart.Should().Be(new Point(3, 3));
+        _study.BoardDrawings.Should().ContainSingle(d => d.Id == StudyViewModel.ShapeStartId, "the start is marked");
+        _study.PendingDrawingIds.Should().Contain(StudyViewModel.ShapeStartId, "and drawn faded");
+        _study.BoardClickCommand.Execute(new Point(3, 3));
+        _study.ShapeStart.Should().BeNull("tapping the start again cancels");
+
+        _study.BoardClickCommand.Execute(new Point(3, 3));
+        _study.BoardClickCommand.Execute(new Point(6, 3));
+        _study.Drawings.Should().ContainSingle().Which.Should().Match<StudyDrawing>(d => d.Kind == DrawingKind.Arrow && d.Points[0] == new Point(3, 3) && d.Points[1] == new Point(6, 3));
+        _study.BoardDrawings.Should().HaveCount(1);
+
+        _study.SelectToolCommand.Execute(StudyTool.Area);
+        _study.BoardClickCommand.Execute(new Point(0, 0));
+        _study.BoardClickCommand.Execute(new Point(2, 1));
+        _study.Drawings.Should().HaveCount(2);
+        _study.Drawings[1].Kind.Should().Be(DrawingKind.Area);
+    }
+
+    [Fact]
+    public void With_tap_and_confirm_drawings_wait_for_save_or_discard()
+    {
+        _game.PlayCommand.Execute(new Point(2, 2));
+        _game.ConfirmMoves = true;
+        _study.IsActive = true;
+        _study.SelectToolCommand.Execute(StudyTool.Mark);
+        _study.BoardClickCommand.Execute(new Point(4, 4));
+        _study.BoardClickCommand.Execute(new Point(5, 5));
+
+        _study.HasPendingEdit.Should().BeTrue();
+        _study.BoardDrawings.Should().HaveCount(2, "shown while they wait");
+        _study.PendingDrawingIds.Should().HaveCount(2, "faded");
+        StudyStore.Read(_game.CurrentNode).Drawings.Should().BeEmpty("nothing is saved yet");
+
+        _study.BoardClickCommand.Execute(new Point(5, 5)); // a second tap still toggles the mark off
+        _study.Drawings.Should().ContainSingle();
+        _study.ConfirmEditCommand.Execute(null);
+        _study.HasPendingEdit.Should().BeFalse();
+        StudyStore.Read(_game.CurrentNode).Drawings.Should().ContainSingle().Which.Points[0].Should().Be(new Point(4, 4));
+        _study.PendingDrawingIds.Should().BeEmpty();
+
+        // A "what if" line, then discarded.
+        _study.SelectToolCommand.Execute(StudyTool.Sequence);
+        _study.BoardClickCommand.Execute(new Point(6, 6));
+        _study.BoardClickCommand.Execute(new Point(7, 6));
+        _study.Drawings.Should().HaveCount(2);
+        _study.CancelEditCommand.Execute(null);
+        _study.Drawings.Should().ContainSingle();
+        StudyStore.Read(_game.CurrentNode).Drawings.Should().ContainSingle();
+
+        // Moving to another move leaves unsaved drawings behind, like a waiting stone.
+        _study.SelectToolCommand.Execute(StudyTool.Mark);
+        _study.BoardClickCommand.Execute(new Point(1, 1));
+        _game.GoBackCommand.Execute(null);
+        _game.GoForwardCommand.Execute(null);
+        _study.HasPendingEdit.Should().BeFalse();
+        _study.Drawings.Should().ContainSingle();
+
+        // A pin is only deleted after a yes.
+        _study.NewPinText = "Slow";
+        _study.AddPinCommand.Execute(null);
+        _dialogs.Answer = false;
+        _study.Pins[0].DeleteCommand.Execute(null);
+        _study.Pins.Should().ContainSingle();
+        _dialogs.Answer = true;
+        _study.Pins[0].DeleteCommand.Execute(null);
+        _study.Pins.Should().BeEmpty();
+    }
+
     private sealed class FixedTime(DateTimeOffset now) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => now;

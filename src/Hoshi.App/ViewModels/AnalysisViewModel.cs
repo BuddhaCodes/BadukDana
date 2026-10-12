@@ -486,7 +486,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
 
     private async Task RunGraphAsync(Position track, int[] turns, CancellationTokenSource cts)
     {
-        await RunAsync(track, turns, Math.Max(20, _engine!.Visits / 4), cts, isGraph: true);
+        await RunAsync(track, turns, Math.Max(Math.Min(20, _engine!.Visits), _engine.Visits / 4), cts, isGraph: true);
         _ui.Post(() =>
         {
             if (ReferenceEquals(_graphCts, cts))

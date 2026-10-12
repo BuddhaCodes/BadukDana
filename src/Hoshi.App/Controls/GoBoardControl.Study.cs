@@ -44,6 +44,25 @@ public sealed partial class GoBoardControl
     private Point? _dragFrom;
     private Point? _dragTo;
 
+    // A finger drawing: where it is (a bubble above it names the point it hides).
+    private AvPoint? _fingerAt;
+
+    /// <summary>Drawings drawn faded: not saved yet (tap and confirm).</summary>
+    public static readonly StyledProperty<IReadOnlyCollection<string>?> PendingDrawingIdsProperty =
+        AvaloniaProperty.Register<GoBoardControl, IReadOnlyCollection<string>?>(nameof(PendingDrawingIds));
+
+    public IReadOnlyCollection<string>? PendingDrawingIds
+    {
+        get => GetValue(PendingDrawingIdsProperty);
+        set => SetValue(PendingDrawingIdsProperty, value);
+    }
+
+    /// <summary>Pushes the faded look for a drawing that waits for confirmation.</summary>
+    private DrawingContext.PushedState? Faded(DrawingContext context, StudyDrawing d) =>
+        PendingDrawingIds?.Contains(d.Id) ?? false
+            ? context.PushOpacity(0.7)
+            : null;
+
     public IReadOnlyList<StudyDrawing>? StudyDrawings
     {
         get => GetValue(StudyDrawingsProperty);
@@ -85,6 +104,7 @@ public sealed partial class GoBoardControl
             ? CurrentGeometry?.HitTest(e.GetPosition(this))
             : null;
         _dragTo = _dragFrom;
+        _fingerAt = _dragFrom is not null && e.Pointer.Type == PointerType.Touch ? e.GetPosition(this) : null;
     }
 
     /// <summary>Called from <see cref="OnPointerMoved"/>: follows a drag for the preview.</summary>
@@ -96,6 +116,11 @@ public sealed partial class GoBoardControl
         }
 
         Point? to = CurrentGeometry?.HitTest(e.GetPosition(this));
+        if (_fingerAt is not null)
+        {
+            _fingerAt = e.GetPosition(this);
+        }
+
         if (to is not null && to != _dragTo)
         {
             _dragTo = to;
@@ -107,8 +132,7 @@ public sealed partial class GoBoardControl
     private bool FinishDrag(Point released)
     {
         Point? from = _dragFrom;
-        _dragFrom = null;
-        _dragTo = null;
+        CancelDrag();
         if (from is not { } start || start == released || PointDraggedCommand is not { } command)
         {
             return false;
@@ -124,11 +148,25 @@ public sealed partial class GoBoardControl
         return true;
     }
 
+    /// <summary>Forgets a drag in progress (also when the finger is lifted off the board).</summary>
+    private void CancelDrag()
+    {
+        bool had = _dragFrom is not null;
+        _dragFrom = null;
+        _dragTo = null;
+        _fingerAt = null;
+        if (had)
+        {
+            InvalidateVisual();
+        }
+    }
+
     /// <summary>Areas go on the wood, under the stones, so the stones inside keep their colours.</summary>
     private void DrawStudyAreas(DrawingContext context, BoardGeometry g, BoardState board)
     {
         foreach (StudyDrawing d in (StudyDrawings ?? []).Where(d => d.Kind == DrawingKind.Area))
         {
+            using DrawingContext.PushedState? faded = Faded(context, d);
             DrawArea(context, g, board, d.AreaPoints(), StudyColorValue(d.Color));
         }
 
@@ -144,24 +182,28 @@ public sealed partial class GoBoardControl
         // Arrows, then sequences, then marks and labels on top (areas are under the stones).
         foreach (StudyDrawing d in drawings.Where(d => d.Kind == DrawingKind.Arrow && d.Points.Count >= 2))
         {
+            using DrawingContext.PushedState? faded = Faded(context, d);
             DrawArrow(context, g, Centre(g, board, d.Points[0]), Centre(g, board, d.Points[1]), StudyColorValue(d.Color), 1);
         }
 
         foreach (StudyDrawing d in drawings.Where(d => d.Kind == DrawingKind.Sequence))
         {
+            using DrawingContext.PushedState? faded = Faded(context, d);
             DrawSequence(context, g, board, style, d);
         }
 
         foreach (StudyDrawing d in drawings.Where(d => d.Kind == DrawingKind.Mark))
         {
+            using DrawingContext.PushedState? faded = Faded(context, d);
             AvPoint c = Centre(g, board, d.Points[0]);
             Color col = StudyColorValue(d.Color);
-            context.DrawEllipse(null, new Pen(new ImmutableSolidColorBrush(Color.FromArgb(200, 255, 255, 255)), g.Cell * 0.14), c, g.Cell * 0.36, g.Cell * 0.36);
-            context.DrawEllipse(null, new Pen(new ImmutableSolidColorBrush(col), g.Cell * 0.08), c, g.Cell * 0.36, g.Cell * 0.36);
+            context.DrawEllipse(null, new Pen(new ImmutableSolidColorBrush(Color.FromArgb(200, 255, 255, 255)), Math.Max(4, g.Cell * 0.14)), c, g.Cell * 0.36, g.Cell * 0.36);
+            context.DrawEllipse(null, new Pen(new ImmutableSolidColorBrush(col), Math.Max(2.5, g.Cell * 0.08)), c, g.Cell * 0.36, g.Cell * 0.36);
         }
 
         foreach (StudyDrawing d in drawings.Where(d => d.Kind == DrawingKind.Label && !string.IsNullOrEmpty(d.Text)))
         {
+            using DrawingContext.PushedState? faded = Faded(context, d);
             AvPoint c = Centre(g, board, d.Points[0]);
             Color col = StudyColorValue(d.Color);
             double r = g.Cell * 0.36;
@@ -178,6 +220,34 @@ public sealed partial class GoBoardControl
                 DrawArrow(context, g, Centre(g, board, from), Centre(g, board, to), col, 0.6);
             }
         }
+
+        DrawFingerBubble(context, g, board);
+    }
+
+    /// <summary>
+    /// While a finger drags an arrow or an area, it hides the point it is on: a ring marks that point and a bubble
+    /// above the finger names it (e.g. "Q16").
+    /// </summary>
+    private void DrawFingerBubble(DrawingContext context, BoardGeometry g, BoardState board)
+    {
+        if (_fingerAt is not { } finger || _dragTo is not { } to || !board.IsOnBoard(to))
+        {
+            return;
+        }
+
+        Color col = StudyColorValue(DragColor);
+        AvPoint c = Centre(g, board, to);
+        context.DrawEllipse(null, new Pen(new ImmutableSolidColorBrush(Color.FromArgb(220, 255, 255, 255)), Math.Max(2, g.Cell * 0.12)), c, g.Cell * 0.62, g.Cell * 0.62);
+        context.DrawEllipse(null, new Pen(new ImmutableSolidColorBrush(col), Math.Max(1.5, g.Cell * 0.07)), c, g.Cell * 0.62, g.Cell * 0.62);
+
+        string text = to.ToHuman(board.Height);
+        var ft = new FormattedText(text, System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, LabelTypeface, 18, Brushes.White);
+        double w = ft.Width + 22, h = ft.Height + 10;
+        double y = Math.Max(4, finger.Y - 70 - h);
+        double x = Math.Clamp(finger.X - (w / 2), 4, Math.Max(4, Bounds.Width - w - 4));
+        var bubble = new Rect(x, y, w, h);
+        context.DrawRectangle(new ImmutableSolidColorBrush(Color.FromArgb(230, 20, 22, 30)), new Pen(new ImmutableSolidColorBrush(col), 2), bubble, h / 2, h / 2);
+        context.DrawText(ft, new AvPoint(x + 11, y + 5));
     }
 
     private static AvPoint Centre(BoardGeometry g, BoardState board, Point p) =>
@@ -213,8 +283,9 @@ public sealed partial class GoBoardControl
         }
 
         double ux = dx / len, uy = dy / len;
-        double width = g.Cell * 0.13;
-        double head = g.Cell * 0.42;
+        // At least a few pixels wide: on a phone a 19×19 cell is under 20 pixels.
+        double width = Math.Max(3, g.Cell * 0.13);
+        double head = Math.Max(10, g.Cell * 0.42);
         var start = new AvPoint(from.X + (ux * g.Cell * 0.18), from.Y + (uy * g.Cell * 0.18));
         var tip = new AvPoint(to.X - (ux * g.Cell * 0.12), to.Y - (uy * g.Cell * 0.12));
         var neck = new AvPoint(tip.X - (ux * head), tip.Y - (uy * head));

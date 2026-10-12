@@ -49,6 +49,32 @@ public sealed class WindowCloseTests
     }
 
     [AvaloniaFact]
+    public void An_emptied_number_box_says_what_it_expects_and_keeps_the_last_value()
+    {
+        (PreferencesWindow window, PreferencesViewModel vm, _) = Preferences();
+        TabControl tabs = window.FindDeep<TabControl>("Tabs")!;
+        NumericUpDown? box = null;
+        for (int i = 0; i < tabs.ItemCount && box is null; i++)
+        {
+            tabs.SelectedIndex = i;
+            window.UpdateLayout();
+            box = window.FindDeep<NumericUpDown>("VisitsBox");
+        }
+
+        box.Should().NotBeNull();
+        int before = vm.AnalysisVisits;
+        box!.Value = null;
+        vm.AnalysisVisits.Should().Be(before);
+        DataValidationErrors.GetErrors(box)!.Cast<object>().Select(e => e is Exception x ? x.Message : e.ToString())
+            .Should().ContainSingle().Which.Should().Be(Hoshi.Core.Localization.Tr.F("Common.WholeNumberRange", "10", "100000"));
+
+        box.Value = 12;
+        vm.AnalysisVisits.Should().Be(12);
+        DataValidationErrors.GetHasErrors(box).Should().BeFalse();
+        window.Close();
+    }
+
+    [AvaloniaFact]
     public void Escape_closes_the_preferences()
     {
         (PreferencesWindow window, _, _) = Preferences();
