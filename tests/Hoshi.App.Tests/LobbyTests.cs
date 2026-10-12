@@ -584,7 +584,7 @@ public sealed class OgsConfigurationTests
         text.Should().NotContainEquivalentOf("password\":");
     }
 
-    [Fact]
+    [AvaloniaFact] // builds view models that touch Avalonia: only on the headless UI thread
     public void Host_resolves_the_online_services()
     {
         using Microsoft.Extensions.Hosting.IHost host = AppHost.Create([]);
