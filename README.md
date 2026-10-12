@@ -149,10 +149,12 @@ visual design: [`docs/DESIGN.md`](docs/DESIGN.md) · OGS notes: [`docs/OGS_API.m
 ### Build, test, run
 
 Requires the .NET SDK 10.0 (`global.json` pins the minimum feature band 10.0.100).
+`Hoshi.sln` includes the Android app, which needs the Android workload (`dotnet workload install android`);
+`Hoshi.Desktop.slnf` is the same solution without it, for the desktop app and the tests (what CI builds).
 
 ```bash
-dotnet build
-dotnet test
+dotnet build Hoshi.Desktop.slnf
+dotnet test Hoshi.Desktop.slnf
 dotnet run --project src/Hoshi.Desktop
 ```
 

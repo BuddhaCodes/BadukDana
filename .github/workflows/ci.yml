@@ -36,13 +36,13 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - name: Restore
-        run: dotnet restore Hoshi.sln
+        run: dotnet restore Hoshi.Desktop.slnf
 
       - name: Build
-        run: dotnet build Hoshi.sln --configuration Release --no-restore
+        run: dotnet build Hoshi.Desktop.slnf --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test Hoshi.sln --configuration Release --no-build --logger "trx;LogFilePrefix=${{ runner.os }}" --results-directory TestResults
+        run: dotnet test Hoshi.Desktop.slnf --configuration Release --no-build --logger "trx;LogFilePrefix=${{ runner.os }}" --results-directory TestResults
 
       - name: Report failed tests
         if: failure()
