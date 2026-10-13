@@ -1,0 +1,8 @@
+(;GM[1]FF[4]CA[UTF-8]SZ[9]GN[Tsumego.P1]PL[B]AB[ed][de][fe]AW[ee]C[Tsumego.Ask.Capture];B[ef]C[RIGHT])
+(;GM[1]FF[4]CA[UTF-8]SZ[9]GN[Tsumego.P2]PL[B]AB[ca][ab][bc][cb]AW[aa][ba]C[Tsumego.Ask.Capture];B[bb]C[RIGHT])
+(;GM[1]FF[4]CA[UTF-8]SZ[9]GN[Tsumego.P3]PL[B]AB[aa][ab][bc][cc][dc][eb][ea]AW[ba][bb][cb][db]C[Tsumego.Ask.Capture](;B[ca];W[da];B[ca]C[RIGHT])(;B[da]C[RIGHT]))
+(;GM[1]FF[4]CA[UTF-8]SZ[9]GN[Tsumego.P4]PL[B]AB[ce][dd][ge][fd]AW[de][fe]C[Tsumego.Ask.Capture];B[ee];W[df];B[ff]C[RIGHT])
+(;GM[1]FF[4]CA[UTF-8]SZ[9]GN[Tsumego.P5]PL[B]AB[ac][bc][cc][dc][ec][eb][ea]AW[ab][bb][cb][db][da]C[Tsumego.Ask.Kill];B[ba]C[RIGHT])
+(;GM[1]FF[4]CA[UTF-8]SZ[9]GN[Tsumego.P6]PL[B]AB[ab][bb][cb][db][da]AW[ac][bc][cc][dc][ec][eb][ea]C[Tsumego.Ask.Live];B[ba]C[RIGHT])
+(;GM[1]FF[4]CA[UTF-8]SZ[9]GN[Tsumego.P7]PL[B]AB[da][db][dc][cc][cd][bd][ad]AW[ca][cb][bb][bc][ac]C[Tsumego.Ask.Kill];B[aa]C[RIGHT])
+(;GM[1]FF[4]CA[UTF-8]SZ[9]GN[Tsumego.P8]PL[B]AB[ca][cb][bb][bc][ac]AW[da][db][dc][cc][cd][bd][ad]C[Tsumego.Ask.Live];B[aa]C[RIGHT])

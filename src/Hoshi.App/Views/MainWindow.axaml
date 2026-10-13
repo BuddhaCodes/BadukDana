@@ -33,6 +33,7 @@
     <KeyBinding Gesture="Ctrl+O" Command="{Binding Game.OpenCommand}" />
     <KeyBinding Gesture="Ctrl+R" Command="{Binding OpenReplaysCommand}" />
     <KeyBinding Gesture="Ctrl+J" Command="{Binding OpenJosekiCommand}" />
+    <KeyBinding Gesture="Ctrl+P" Command="{Binding OpenTsumegoCommand}" />
     <KeyBinding Gesture="Ctrl+S" Command="{Binding Game.SaveCommand}" />
     <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding Game.SaveAsCommand}" />
     <KeyBinding Gesture="Ctrl+E" Command="{Binding Game.ToggleEditModeCommand}" />
@@ -236,6 +237,7 @@
                 <MenuItem Header="{l:T Main.GtpConsole}" Command="{Binding OpenGtpConsoleCommand}" x:Name="GtpConsoleItem" />
                 <MenuItem Header="{l:T Main.Replays}" Command="{Binding OpenReplaysCommand}" InputGesture="Ctrl+R" />
                 <MenuItem Header="{l:T Main.Joseki}" Command="{Binding OpenJosekiCommand}" InputGesture="Ctrl+J" />
+                <MenuItem Header="{l:T Tsumego.Menu}" Command="{Binding OpenTsumegoCommand}" InputGesture="Ctrl+P" x:Name="TsumegoItem" />
                 <MenuItem Header="{l:T Main.StudyMenu}" Command="{Binding Study.ToggleCommand}" InputGesture="S" />
                 <MenuItem Header="{l:T Study.Quiz}" Command="{Binding Study.StartQuizCommand}" />
                 <MenuItem Header="{l:T Count.Menu}" Command="{Binding Counting.StartCommand}" x:Name="CountItem" />

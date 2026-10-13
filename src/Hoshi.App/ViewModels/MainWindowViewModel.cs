@@ -45,6 +45,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IReplayStore? replays = null,
         ReplaysViewModel? replaysList = null,
         IReplaysWindowService? replaysWindow = null,
+        ITsumegoWindowService? tsumegoWindow = null,
         JosekiTrainerViewModel? joseki = null,
         JosekiAssistantViewModel? josekiHints = null,
         UpdateViewModel? updates = null,
@@ -85,6 +86,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         JosekiHints = josekiHints ?? new JosekiAssistantViewModel(game);
         _preferences = preferencesWindow;
         _replaysWindow = replaysWindow;
+        _tsumegoWindow = tsumegoWindow;
         _replayStore = replays;
         if (replays is not null)
         {
@@ -277,6 +279,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private void OpenJoseki() => Joseki.ToggleCommand.Execute(null);
 
     private readonly IReplaysWindowService? _replaysWindow;
+    private readonly ITsumegoWindowService? _tsumegoWindow;
+
+    public bool HasTsumego => _tsumegoWindow is not null;
+
+    [RelayCommand]
+    private void OpenTsumego() => _tsumegoWindow?.Show();
     private readonly IReplayStore? _replayStore;
     private readonly ReplayRecorder? _recorder;
 

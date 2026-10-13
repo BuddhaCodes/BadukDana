@@ -57,6 +57,7 @@ public static class AppHost
         services.AddSingleton<IPreferencesWindowService>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
         services.AddSingleton<ILobbyWindowService>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
         services.AddSingleton<IReplaysWindowService>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
+        services.AddSingleton<ITsumegoWindowService>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
         services.AddSingleton<Services.Engines.IEngineWindows>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
         services.AddSingleton<IDialogService>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
         services.AddSingleton<PhoneShellViewModel>();
@@ -93,6 +94,10 @@ public static class AppHost
         services.AddSingleton<IReplayStore, ReplayStore>();
         services.AddSingleton<ReplaysViewModel>();
         services.AddSingleton<IReplaysWindowService, ReplaysWindowService>();
+        services.AddSingleton(_ => new Services.Tsumego.TsumegoLibrary(AppPaths.DataDirectory));
+        services.AddSingleton(sp => new TsumegoViewModel(
+            sp.GetRequiredService<Services.Tsumego.TsumegoLibrary>(), sp.GetRequiredService<IFileDialogService>(), sp.GetRequiredService<GameViewModel>()));
+        services.AddSingleton<ITsumegoWindowService, TsumegoWindowService>();
         services.AddSingleton<Services.Joseki.IJosekiLibrary, Services.Joseki.JosekiLibrary>();
         services.AddSingleton<Hoshi.Ogs.Joseki.IJosekiExplorerSource>(sp => new Hoshi.Ogs.Joseki.OgsJosekiClient(
             sp.GetRequiredService<IHttpClientFactory>().CreateClient(OgsServiceRegistration.HttpClientName),
