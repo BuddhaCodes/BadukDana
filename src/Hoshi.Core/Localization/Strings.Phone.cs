@@ -15,6 +15,25 @@ public static partial class Tr
         Add(d, "Phone.Resize", "Drag to resize", "Arrastra para cambiar el tamaño");
         Add(d, "Prefs.Haptics", "Vibrate when a stone is placed", "Vibrar al colocar una piedra");
 
+        // Counting at the end of a local game.
+        Add(d, "Count.Title", "Counting", "Conteo");
+        Add(d, "Count.Hint", "Counting: tap a group to mark it dead or alive, then accept.", "Conteo: toca un grupo para marcarlo muerto o vivo y acepta.");
+        Add(d, "Count.Wins", "{0} wins by {1}", "Ganan {0} por {1}");
+        Add(d, "Count.Draw", "Draw (jigo)", "Empate (jigo)");
+        Add(d, "Count.TerritoryLine", "{0}: {1} territory + {2} prisoners + {3} komi = {4}", "{0}: {1} de territorio + {2} prisioneros + {3} de komi = {4}");
+        Add(d, "Count.AreaLine", "{0}: {1} stones + {2} territory + {3} komi = {4}", "{0}: {1} piedras + {2} de territorio + {3} de komi = {4}");
+        Add(d, "Count.Accept", "Accept result", "Aceptar resultado");
+        Add(d, "Count.KeepPlaying", "Keep playing", "Seguir jugando");
+        Add(d, "Count.Saved", "Result saved: {0}.", "Resultado guardado: {0}.");
+        Add(d, "Count.Menu", "Count the game", "Contar la partida");
+
+        // Local clock.
+        Add(d, "Clock.Menu", "Clock", "Reloj");
+        Add(d, "Clock.Pause", "Pause / resume", "Pausar / seguir");
+        Add(d, "Clock.Remove", "No clock", "Sin reloj");
+        Add(d, "Clock.Started", "Clock: {0}. It runs for the player to move.", "Reloj: {0}. Corre para quien juega.");
+        Add(d, "Clock.Flagged", "{0} ran out of time.", "{0} se quedaron sin tiempo.");
+
         // Zen mode.
         Add(d, "Zen.Menu", "Zen mode", "Modo zen");
         Add(d, "Zen.Exit", "Leave zen", "Salir del zen");

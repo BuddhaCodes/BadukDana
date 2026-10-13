@@ -98,6 +98,22 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         Analysis = new AnalysisViewModel(game, engine, ui, sounds, settings);
         Study = new StudyViewModel(game, Analysis, settings, files, dialogs, browser);
+        Counting = new CountingViewModel(game, Analysis);
+        Clock = new LocalClockViewModel(game, ui, sounds: sounds);
+        Counting.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(CountingViewModel.IsActive) or nameof(CountingViewModel.Territory))
+            {
+                OnPropertyChanged(nameof(BoardTerritory));
+            }
+        };
+        Analysis.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(AnalysisViewModel.Territory))
+            {
+                OnPropertyChanged(nameof(BoardTerritory));
+            }
+        };
         Effects.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(EffectsViewModel.Level))
@@ -320,6 +336,15 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             _settings.Save(_settings.Current with { Music = on });
         }
     }
+
+    /// <summary>The clock of a local game (menu → Clock).</summary>
+    public LocalClockViewModel Clock { get; }
+
+    /// <summary>Counting at the end of a local game.</summary>
+    public CountingViewModel Counting { get; }
+
+    /// <summary>The territory the board shows: the count while counting, otherwise the estimate (T).</summary>
+    public Hoshi.Core.TerritoryEstimate? BoardTerritory => Counting.IsActive ? Counting.Territory : Analysis.Territory;
 
     // ---------- Zen mode ----------
 

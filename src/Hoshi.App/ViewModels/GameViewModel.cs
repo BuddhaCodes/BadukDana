@@ -186,7 +186,22 @@ public sealed partial class GameViewModel : ViewModelBase
 
     public IReadOnlyList<Markup> Markers => Online is { } online
         ? [.. _cursor.Current.GetMarkup(), .. online.Overlay]
-        : _cursor.Current.GetMarkup();
+        : _boardOverlay.Count > 0 ? [.. _cursor.Current.GetMarkup(), .. _boardOverlay] : _cursor.Current.GetMarkup();
+
+    private Func<Point, bool>? _boardOverride;
+    private IReadOnlyList<Markup> _boardOverlay = [];
+
+    /// <summary>
+    /// Lets another mode take the board's clicks and add marks (counting at the end of a local game): the handler
+    /// gets each click first and returns true when it used it. Null gives the board back.
+    /// </summary>
+    public void SetBoardOverride(Func<Point, bool>? handler, IReadOnlyList<Markup>? overlay = null)
+    {
+        _boardOverride = handler;
+        _boardOverlay = overlay ?? [];
+        OnPropertyChanged(nameof(Markers));
+        PlayCommand.NotifyCanExecuteChanged();
+    }
 
     public int MoveNumber => _cursor.MoveNumber;
 
@@ -546,6 +561,11 @@ public sealed partial class GameViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanPlay))]
     private void Play(Point point)
     {
+        if (_boardOverride?.Invoke(point) == true)
+        {
+            return;
+        }
+
         if (WaitsForConfirmation(point))
         {
             return;
@@ -841,7 +861,7 @@ public sealed partial class GameViewModel : ViewModelBase
 
     // ---------- Internals ----------
 
-    private bool CanPlay() => Online is not null || IsEditMode || !IsGameOver;
+    private bool CanPlay() => Online is not null || IsEditMode || !IsGameOver || _boardOverride is not null;
 
     private bool CanUndo() => Online is null && _cursor.CanGoBack;
 

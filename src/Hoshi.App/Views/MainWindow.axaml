@@ -69,6 +69,9 @@
           <Grid Grid.Column="1" ColumnDefinitions="*,Auto,*" VerticalAlignment="Center" Margin="12,0" ClipToBounds="True"
                 IsVisible="{Binding !Game.IsEditMode}" x:Name="PlayerInfo">
             <DockPanel HorizontalAlignment="Right">
+              <Border DockPanel.Dock="Left" Classes="clock" Classes.low="{Binding Clock.IsBlackLow}" IsVisible="{Binding Clock.HasClock}" Margin="0,0,8,0" x:Name="BlackClock">
+                <TextBlock Text="{Binding Clock.BlackText}" />
+              </Border>
               <TextBlock DockPanel.Dock="Left" Classes="secondary" VerticalAlignment="Center" Margin="0,0,6,0" Text="{Binding Game.Board.WhiteCaptures, StringFormat='+{0}'}"
                          IsVisible="{Binding Game.Board.WhiteCaptures}" ToolTip.Tip="{l:T Main.BlackCaptures}" />
               <TextBlock Classes="player" Text="{Binding Game.BlackName}" TextTrimming="CharacterEllipsis" MaxWidth="160"
@@ -81,6 +84,9 @@
               </Panel>
             </Border>
             <DockPanel Grid.Column="2" HorizontalAlignment="Left">
+              <Border DockPanel.Dock="Right" Classes="clock" Classes.low="{Binding Clock.IsWhiteLow}" IsVisible="{Binding Clock.HasClock}" Margin="8,0,0,0" x:Name="WhiteClock">
+                <TextBlock Text="{Binding Clock.WhiteText}" />
+              </Border>
               <TextBlock DockPanel.Dock="Right" Classes="secondary" VerticalAlignment="Center" Margin="6,0,0,0" Text="{Binding Game.Board.BlackCaptures, StringFormat='+{0}'}"
                          IsVisible="{Binding Game.Board.BlackCaptures}" ToolTip.Tip="{l:T Main.WhiteCaptures}" />
               <TextBlock Classes="player" Text="{Binding Game.WhiteName}" TextTrimming="CharacterEllipsis" MaxWidth="160"
@@ -232,6 +238,18 @@
                 <MenuItem Header="{l:T Main.Joseki}" Command="{Binding OpenJosekiCommand}" InputGesture="Ctrl+J" />
                 <MenuItem Header="{l:T Main.StudyMenu}" Command="{Binding Study.ToggleCommand}" InputGesture="S" />
                 <MenuItem Header="{l:T Study.Quiz}" Command="{Binding Study.StartQuizCommand}" />
+                <MenuItem Header="{l:T Count.Menu}" Command="{Binding Counting.StartCommand}" x:Name="CountItem" />
+                <MenuItem Header="{l:T Clock.Menu}" x:Name="ClockMenu">
+                  <MenuItem Header="{Binding Clock.Presets[0].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[0]}" />
+                  <MenuItem Header="{Binding Clock.Presets[1].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[1]}" />
+                  <MenuItem Header="{Binding Clock.Presets[2].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[2]}" />
+                  <MenuItem Header="{Binding Clock.Presets[3].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[3]}" />
+                  <MenuItem Header="{Binding Clock.Presets[4].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[4]}" />
+                  <MenuItem Header="{Binding Clock.Presets[5].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[5]}" />
+                  <Separator />
+                  <MenuItem Header="{l:T Clock.Pause}" Command="{Binding Clock.TogglePauseCommand}" IsEnabled="{Binding Clock.HasClock}" />
+                  <MenuItem Header="{l:T Clock.Remove}" Command="{Binding Clock.RemoveCommand}" IsEnabled="{Binding Clock.HasClock}" />
+                </MenuItem>
                 <MenuItem Header="{l:T Zen.Menu}" Command="{Binding ToggleZenCommand}" InputGesture="Z" x:Name="ZenItem" />
                 <Separator />
                 <MenuItem Header="{l:T Main.Preferences}" Command="{Binding OpenPreferencesCommand}" InputGesture="Ctrl+OemComma" />
@@ -267,7 +285,7 @@
                           JosekiHints="{Binding JosekiHints.Hints}"
                           Board="{Binding Game.Board}"
                           BoardStyle="{DynamicResource Theme.Board}"
-                          Territory="{Binding Analysis.Territory}"
+                          Territory="{Binding BoardTerritory}"
                           Suggestions="{Binding Analysis.BoardSuggestions}"
                           Impact="{Binding Analysis.Impact}"
                           Effects="{Binding BoardEffects}"
@@ -288,6 +306,30 @@
                           PointClickedCommand="{Binding Study.BoardClickCommand}"
                           PointDraggedCommand="{Binding Study.BoardDragCommand}"
                           ScrollCommand="{Binding Game.ScrollCommand}" />
+        <!-- Counting at the end of a local game: the result, and accept or keep playing. -->
+        <Border x:Name="CountingCard" IsVisible="{Binding Counting.IsActive}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,24"
+                MaxWidth="460" Padding="14,10" CornerRadius="12" Background="{DynamicResource Bg.Panel}"
+                BorderBrush="{DynamicResource Accent}" BorderThickness="1">
+          <StackPanel Spacing="6">
+            <TextBlock Text="{Binding Counting.ResultText}" FontWeight="SemiBold" FontSize="15" x:Name="CountingCardResult" />
+            <TextBlock Classes="secondary" Text="{Binding Counting.DetailText}" TextWrapping="Wrap" FontSize="12" />
+            <TextBlock Classes="secondary" Text="{l:T Count.Hint}" TextWrapping="Wrap" FontSize="11.5" />
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+              <Button Content="{l:T Count.KeepPlaying}" Command="{Binding Counting.KeepPlayingCommand}" MinHeight="36" VerticalContentAlignment="Center" />
+              <Button Classes="accent" Content="{l:T Count.Accept}" Command="{Binding Counting.AcceptCommand}" MinHeight="36" VerticalContentAlignment="Center" x:Name="CountingCardAccept" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+        <!-- Zen mode keeps the players and the clock, small, top left. -->
+        <Border x:Name="ZenPlayers" IsVisible="{Binding IsZen}" Classes="warmup" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="12,10,0,0" Opacity="0.75">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <TextBlock Text="{Binding Game.BlackName}" FontSize="12" FontWeight="{Binding Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
+            <TextBlock Text="{Binding Clock.BlackText}" FontSize="12" IsVisible="{Binding Clock.HasClock}" />
+            <TextBlock Text="·" FontSize="12" Classes="secondary" />
+            <TextBlock Text="{Binding Game.WhiteName}" FontSize="12" FontWeight="{Binding !Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
+            <TextBlock Text="{Binding Clock.WhiteText}" FontSize="12" IsVisible="{Binding Clock.HasClock}" />
+          </StackPanel>
+        </Border>
         <!-- Zen mode: only a quiet way out, top right (or Z). -->
         <Button x:Name="ZenExit" IsVisible="{Binding IsZen}" Command="{Binding ToggleZenCommand}" Classes="zen-exit"
                 HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,12,0" ToolTip.Tip="{l:T Zen.ExitHint}">

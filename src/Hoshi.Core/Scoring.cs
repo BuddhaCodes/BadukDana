@@ -125,6 +125,56 @@ public static class Scoring
         };
     }
 
+    /// <summary>
+    /// Stones an ownership map (an engine's, in [-1, 1], positive = black) gives to the other side: the dead stones to
+    /// propose when counting. A stone counts as dead when the map is at least 0.5 the other way.
+    /// </summary>
+    public static IReadOnlyList<Point> SuggestDead(BoardState board, IReadOnlyList<double> ownership)
+    {
+        ArgumentNullException.ThrowIfNull(board);
+        ArgumentNullException.ThrowIfNull(ownership);
+        if (ownership.Count != board.Width * board.Height)
+        {
+            return [];
+        }
+
+        var dead = new List<Point>();
+        foreach (Point p in board.AllPoints)
+        {
+            double o = ownership[(p.Y * board.Width) + p.X];
+            if ((board[p] == Stone.Black && o <= -0.5) || (board[p] == Stone.White && o >= 0.5))
+            {
+                dead.Add(p);
+            }
+        }
+
+        return dead;
+    }
+
+    /// <summary>Marks a clicked group dead, or alive again when it already was (the whole group at once).</summary>
+    public static IReadOnlySet<Point> ToggleDead(BoardState board, IReadOnlySet<Point> dead, Point point)
+    {
+        ArgumentNullException.ThrowIfNull(board);
+        ArgumentNullException.ThrowIfNull(dead);
+        if (!board.IsOnBoard(point) || board[point] == Stone.Empty)
+        {
+            return dead;
+        }
+
+        var next = new HashSet<Point>(dead);
+        IReadOnlyList<Point> group = board.GetGroup(point);
+        if (dead.Contains(point))
+        {
+            next.ExceptWith(group);
+        }
+        else
+        {
+            next.UnionWith(group);
+        }
+
+        return next;
+    }
+
     private static (List<int> Region, bool TouchesBlack, bool TouchesWhite) FloodRegion(
         Stone[] cells, bool[] visited, int start, int width, int height)
     {
@@ -235,6 +285,14 @@ public sealed class ScoreResult
     public Stone Winner => BlackScore > WhiteScore ? Stone.Black : WhiteScore > BlackScore ? Stone.White : Stone.Empty;
 
     public double Margin => Math.Abs(BlackScore - WhiteScore);
+
+    /// <summary>The result as SGF writes it (<c>RE</c>): "B+3.5", "W+0.5", or "0" for a draw.</summary>
+    public string ToSgfResult() => Winner switch
+    {
+        Stone.Black => "B+" + Margin.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture),
+        Stone.White => "W+" + Margin.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture),
+        _ => "0",
+    };
 
     /// <summary>Who owns a point after scoring: living stones, territory (including dead stones) or Empty for dame.</summary>
     public Stone OwnerAt(Point point) => _owner[(point.Y * _width) + point.X];
