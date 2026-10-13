@@ -45,15 +45,27 @@ public interface ISoundService
 }
 
 /// <summary>Silences every effect while <see cref="AppSettings.Muted"/> is on (the speaker button).</summary>
-public sealed class MutableSoundService(ISoundService inner, ISettingsService settings) : ISoundService
+public sealed class MutableSoundService(ISoundService inner, ISettingsService settings, ZenMode? zen = null) : ISoundService
 {
     public void Play(SoundEffect effect, double volume)
     {
+        // A silent zen mode keeps only the stones' own click.
+        if (zen is { Silent: true } && effect is not (SoundEffect.Stone or SoundEffect.StoneFirm))
+        {
+            return;
+        }
+
         if (!settings.Current.Muted && volume > 0)
         {
             inner.Play(effect, volume);
         }
     }
+}
+
+/// <summary>Zen mode as the sound service sees it: when silent, only stone clicks play.</summary>
+public sealed class ZenMode
+{
+    public bool Silent { get; set; }
 }
 
 /// <summary>

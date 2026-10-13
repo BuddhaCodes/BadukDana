@@ -215,6 +215,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             _confirmMoves = Services.PlatformInfo.ConfirmMoves(s);
             _showCoordinates = Services.PlatformInfo.ShowCoordinates(s);
             _haptics = s.Haptics;
+            _zenSilence = s.ZenSilence;
             _moveNumbers = s.MoveNumbers;
             _atariAlerts = s.AtariAlerts;
             _musicVolume = s.MusicVolume;
@@ -608,6 +609,18 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         }
 
         BoardDisplayChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Zen mode also silences effects, music and sounds.</summary>
+    [ObservableProperty]
+    private bool _zenSilence;
+
+    partial void OnZenSilenceChanged(bool value)
+    {
+        if (_settings is not null && _settings.Current.ZenSilence != value)
+        {
+            _settings.Save(_settings.Current with { ZenSilence = value });
+        }
     }
 
     partial void OnHapticsChanged(bool value)

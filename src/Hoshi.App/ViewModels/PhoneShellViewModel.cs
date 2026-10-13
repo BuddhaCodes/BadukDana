@@ -92,6 +92,11 @@ public sealed partial class PhoneShellViewModel : ViewModelBase
             {
                 UpdateKeepAwake();
             }
+
+            if (e.PropertyName is nameof(MainWindowViewModel.IsZen) && main.IsZen)
+            {
+                Sheet = PhoneSheet.None; // zen: the board alone
+            }
         };
         navigation.PropertyChanged += (_, e) =>
         {
@@ -192,6 +197,12 @@ public sealed partial class PhoneShellViewModel : ViewModelBase
     {
         if (Navigation.Back())
         {
+            return true;
+        }
+
+        if (Main.IsZen)
+        {
+            Main.IsZen = false;
             return true;
         }
 

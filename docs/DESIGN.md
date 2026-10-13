@@ -189,6 +189,12 @@ Arte de Hoshi renderizado por procedimiento (numpy + Pillow, semillas fijas; sin
 - Preferencias → Apariencia: coordenadas (escritorio sí, teléfono no, por defecto) y números de jugada (ninguno, las 10 últimas o todas). El número va centrado en la piedra, blanco sobre negras y negro sobre blancas; en la última jugada el aro de acento rodea el número. En un ko, el punto muestra el número más reciente.
 - El ancho de la barra lateral del escritorio se recuerda entre sesiones.
 
+## Modo zen y arranque
+
+- Modo zen (Z, menú o menú del teléfono): solo el tablero; se ocultan barra lateral, barras y hojas; fondo quieto; efectos como máximo sutiles. «Modo zen silencioso» (Preferencias) apaga también efectos, música y sonidos salvo el de las piedras. Para salir: Z, el botón «Salir del zen» (35 % de opacidad hasta pasar el puntero) o Atrás en Android.
+- Arranque: en escritorio, una ventana sin bordes de 440×300 con el fondo del tema, el icono, «Hoshi 星» en Shippori Mincho, la versión y una barra fina, mientras se construye la ventana principal. En Android, el fondo de la ventana ya es el color nocturno con el icono y el nombre (y en Android 12+ la pantalla de inicio del sistema usa ese color e icono): nunca una pantalla negra o blanca.
+- Arrastres en el tablero (flechas, áreas): terminan en la intersección más cercana aunque el puntero se suelte entre dos puntos o un poco fuera del tablero.
+
 ## Atajos de teclado (mínimo)
 
 | Atajo | Acción |

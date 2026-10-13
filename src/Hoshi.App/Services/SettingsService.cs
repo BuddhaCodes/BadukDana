@@ -101,6 +101,9 @@ public sealed record AppSettings
     /// <summary>Width of the main window's sidebar (players, tree, comment) as last dragged; null = the default.</summary>
     public double? SidebarWidth { get; init; }
 
+    /// <summary>Zen mode also turns off the effects, the music and every sound but the stones' click.</summary>
+    public bool ZenSilence { get; init; }
+
     /// <summary>Phones: a short vibration when a stone is placed.</summary>
     public bool Haptics { get; init; } = true;
 }

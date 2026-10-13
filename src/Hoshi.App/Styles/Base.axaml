@@ -185,6 +185,18 @@
   <Style Selector="Button.bar.dim">
     <Setter Property="Opacity" Value="0.45" />
   </Style>
+  <!-- Zen mode's way out: barely there until the pointer comes near. -->
+  <Style Selector="Button.zen-exit">
+    <Setter Property="Opacity" Value="0.35" />
+    <Setter Property="Background" Value="{DynamicResource Bg.Bar}" />
+    <Setter Property="CornerRadius" Value="14" />
+    <Setter Property="Padding" Value="12,5" />
+    <Setter Property="Transitions">
+      <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.25" /></Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Button.zen-exit:pointerover"><Setter Property="Opacity" Value="1" /></Style>
+
   <Style Selector="Button.bar">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />

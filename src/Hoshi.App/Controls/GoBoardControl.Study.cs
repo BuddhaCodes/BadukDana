@@ -101,7 +101,7 @@ public sealed partial class GoBoardControl
     {
         base.OnPointerPressed(e);
         _dragFrom = IsInteractive && PointDraggedCommand is not null && DragPreview != DragPreview.None && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed
-            ? CurrentGeometry?.HitTest(e.GetPosition(this))
+            ? CurrentGeometry?.Nearest(e.GetPosition(this))
             : null;
         _dragTo = _dragFrom;
         _fingerAt = _dragFrom is not null && e.Pointer.Type == PointerType.Touch ? e.GetPosition(this) : null;
@@ -115,7 +115,7 @@ public sealed partial class GoBoardControl
             return;
         }
 
-        Point? to = CurrentGeometry?.HitTest(e.GetPosition(this));
+        Point? to = CurrentGeometry?.Nearest(e.GetPosition(this));
         if (_fingerAt is not null)
         {
             _fingerAt = e.GetPosition(this);

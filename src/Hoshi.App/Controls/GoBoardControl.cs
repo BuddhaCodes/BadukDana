@@ -424,7 +424,20 @@ public sealed partial class GoBoardControl : Control
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
-        if (!IsInteractive || CurrentGeometry?.HitTest(e.GetPosition(this)) is not { } point)
+
+        // A drag ends on the nearest intersection, however fast it was and wherever the pointer was let go (a
+        // quick flick often ends between two intersections or just past the edge).
+        if (IsInteractive && _dragFrom is not null && e.InitialPressMouseButton == MouseButton.Left
+            && (CurrentGeometry?.Nearest(e.GetPosition(this)) ?? _dragTo) is { } dragEnd && FinishDrag(dragEnd))
+        {
+            Focus();
+            e.Handled = true;
+            return;
+        }
+
+        // Arrows and areas by two taps take the nearest intersection too; a stone needs a tap near its point.
+        Point? tapped = DragPreview != DragPreview.None ? CurrentGeometry?.Nearest(e.GetPosition(this)) : CurrentGeometry?.HitTest(e.GetPosition(this));
+        if (!IsInteractive || tapped is not { } point)
         {
             CancelDrag(); // let go off the board: no shape
             return;

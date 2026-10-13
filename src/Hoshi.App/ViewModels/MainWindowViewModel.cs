@@ -56,8 +56,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         EffectsViewModel? effects = null,
         IFileDialogService? files = null,
         IBrowserLauncher? browser = null,
-        PreferencesViewModel? preferences = null)
+        PreferencesViewModel? preferences = null,
+        ZenMode? zen = null)
     {
+        _zen = zen;
         AppSettings initial = settings?.Current ?? new AppSettings();
         game.ConfirmMoves = PlatformInfo.ConfirmMoves(initial);
         game.MoveNumberMode = initial.MoveNumbers;
@@ -96,6 +98,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         Analysis = new AnalysisViewModel(game, engine, ui, sounds, settings);
         Study = new StudyViewModel(game, Analysis, settings, files, dialogs, browser);
+        Effects.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(EffectsViewModel.Level))
+            {
+                OnPropertyChanged(nameof(BoardEffects));
+            }
+        };
         Effects.Changed += (_, _) =>
         {
             Analysis.Refresh();
@@ -310,6 +319,55 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         {
             _settings.Save(_settings.Current with { Music = on });
         }
+    }
+
+    // ---------- Zen mode ----------
+
+    private readonly ZenMode? _zen;
+    private bool _musicBeforeZen;
+
+    /// <summary>Zen mode: the board alone, a still background, quieter effects (Z, or the menu).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BoardEffects), nameof(IsBackgroundStill))]
+    private bool _isZen;
+
+    /// <summary>Zen mode also silences effects, music and sounds (Preferences).</summary>
+    public bool ZenSilence => _settings?.Current.ZenSilence ?? false;
+
+    /// <summary>The effects the board shows: as chosen, at most subtle in zen mode, none in a silent zen mode.</summary>
+    public EffectsLevel BoardEffects => !IsZen ? Effects.Level
+        : ZenSilence ? EffectsLevel.Off
+        : Effects.Level == EffectsLevel.Off ? EffectsLevel.Off : EffectsLevel.Subtle;
+
+    /// <summary>The theme's background stops moving in zen mode.</summary>
+    public bool IsBackgroundStill => IsZen;
+
+    [RelayCommand]
+    private void ToggleZen() => IsZen = !IsZen;
+
+    partial void OnIsZenChanged(bool value)
+    {
+        bool silent = value && ZenSilence;
+        if (_zen is not null)
+        {
+            _zen.Silent = silent;
+        }
+
+        if (_music is not null)
+        {
+            if (silent && _music.IsPlaying)
+            {
+                _musicBeforeZen = true;
+                _music.Stop();
+            }
+            else if (!value && _musicBeforeZen)
+            {
+                _musicBeforeZen = false;
+                _music.Start();
+            }
+        }
+
+        Game.ShowStatus(Tr.T(value ? "Zen.On" : "Zen.Off"));
     }
 
     /// <summary>The sidebar's width as last dragged (null = the default), kept between sessions.</summary>

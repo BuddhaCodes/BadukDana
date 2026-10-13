@@ -1,0 +1,26 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:Hoshi.App.Controls"
+        x:Class="Hoshi.App.Views.SplashWindow"
+        Title="Hoshi"
+        Width="440" Height="300"
+        CanResize="False"
+        SystemDecorations="None"
+        WindowStartupLocation="CenterScreen"
+        TransparencyLevelHint="Transparent"
+        Background="Transparent"
+        Icon="/Assets/hoshi.ico">
+  <!-- Shown at once while the main window is built (KataGo, the theme's textures, the music…): no black window. -->
+  <Border CornerRadius="16" ClipToBounds="True" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="1">
+    <Panel>
+      <c:ThemeBackground Kind="{DynamicResource Theme.Background}" Animate="False" />
+      <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
+        <Image Source="/Assets/hoshi.png" Width="96" Height="96" HorizontalAlignment="Center" />
+        <TextBlock Text="Hoshi 星" FontFamily="{DynamicResource Font.Brand}" FontSize="32" HorizontalAlignment="Center"
+                   Foreground="{DynamicResource Accent}" />
+        <TextBlock x:Name="SplashVersion" Classes="secondary" FontSize="12" HorizontalAlignment="Center" />
+        <ProgressBar IsIndeterminate="True" Width="120" MinWidth="120" Height="3" MinHeight="3" HorizontalAlignment="Center" Margin="0,6,0,0" />
+      </StackPanel>
+    </Panel>
+  </Border>
+</Window>
