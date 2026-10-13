@@ -800,6 +800,44 @@ public sealed partial class GameViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Opens a game given as SGF text (downloaded from OGS, pasted): replaces the board's game like Open does.
+    /// Returns false when it is not a game, or when the user keeps the unsaved one.
+    /// </summary>
+    public async Task<bool> OpenSgfTextAsync(string sgf, string description, bool confirm = true)
+    {
+        ArgumentNullException.ThrowIfNull(sgf);
+        if (confirm && !await ConfirmDiscardAsync())
+        {
+            return false;
+        }
+
+        try
+        {
+            SgfParseResult parsed = SgfParser.ParseCollection(sgf);
+            if (parsed.Games.Count == 0)
+            {
+                throw new FormatException(Tr.T("Game.NoSgfGame"));
+            }
+
+            Online?.LeaveCommand.Execute(null);
+            Hoshi.Sgf.Study.StudyStore.StripMirror(parsed.Games[0]);
+            Load(parsed.Games[0], path: null);
+            SetStatus(Tr.F("Game.OpenedFrom", description));
+            return true;
+        }
+        catch (FormatException ex)
+        {
+            if (_dialogs is not null)
+            {
+                await _dialogs.ShowErrorAsync(Tr.T("Game.CouldNotOpenFile"), ex.Message);
+            }
+
+            SetStatus(Tr.T("Game.CouldNotOpenFile"));
+            return false;
+        }
+    }
+
     [RelayCommand]
     private async Task Save()
     {

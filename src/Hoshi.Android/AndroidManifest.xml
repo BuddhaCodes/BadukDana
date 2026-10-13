@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto">
   <uses-permission android:name="android.permission.INTERNET" />
+  <!-- "Your move" in another OGS game (asked the first time it is needed, Android 13+). -->
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
   <!-- extractNativeLibs: KataGo (libkatago.so) must exist as a file to be started as a process. -->
   <application android:label="Hoshi" android:icon="@drawable/icon" android:extractNativeLibs="true"
                android:allowBackup="true" android:supportsRtl="true" />

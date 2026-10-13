@@ -21,6 +21,9 @@ public static class PlatformInfo
     /// <summary>A short tap of the vibration motor (set by Android); null where there is none.</summary>
     public static Action? Vibrate { get; set; }
 
+    /// <summary>A system notification (title, text, the OGS game to open when tapped); set by Android.</summary>
+    public static Action<string, string, long>? Notify { get; set; }
+
     /// <summary>Keeps the screen from dimming while true (set by Android); null where it does not apply.</summary>
     public static Action<bool>? KeepScreenOn { get; set; }
 }

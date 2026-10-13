@@ -64,6 +64,30 @@ public interface IOgsClient
 
     /// <summary>Joins a game on the current server (not yet connected: call <see cref="IOnlineGame.Connect"/>).</summary>
     IOnlineGame OpenGame(long gameId);
+
+    /// <summary>The signed-in player's finished games, newest first.</summary>
+    Task<IReadOnlyList<OgsFinishedGame>> GetFinishedGamesAsync(CancellationToken cancellationToken);
+
+    /// <summary>Any game on the current server as SGF (to open it in the editor).</summary>
+    Task<string> GetGameSgfAsync(long gameId, CancellationToken cancellationToken);
+
+    /// <summary>An automatch search is waiting for an opponent.</summary>
+    bool IsSearchingMatch { get; }
+
+    /// <summary>Starts an automatch search (signed in only). Automatch games on OGS are ranked.</summary>
+    void FindMatch(Hoshi.Ogs.Realtime.OgsAutomatchRequest request);
+
+    /// <summary>Cancels every automatch search.</summary>
+    void CancelMatch();
+
+    /// <summary>The search state changed (started, cancelled, found).</summary>
+    event EventHandler? MatchSearchChanged;
+
+    /// <summary>Automatch found an opponent: the new game's id.</summary>
+    event EventHandler<long>? MatchFound;
+
+    /// <summary>One of the player's games changed (the server's <c>active_game</c>): whose turn it is.</summary>
+    event EventHandler<Hoshi.Ogs.Realtime.OgsGameTurn>? GameTurnChanged;
 }
 
 /// <summary>Opens a URL in the user's browser.</summary>
@@ -105,6 +129,8 @@ public sealed class OgsClient : IOgsClient, IAsyncDisposable
     private readonly Dictionary<Uri, OgsConnection> _connections = [];
     private OgsConnection _current;
     private OgsSeekGraph? _seekGraph;
+    private OgsAutomatch? _automatch;
+    private OgsActiveGames? _activeGames;
 
     public OgsClient(OgsServerCatalog servers, IOgsConnectionFactory factory, IBrowserLauncher browser, ILogger<OgsClient> logger)
     {
@@ -132,6 +158,32 @@ public sealed class OgsClient : IOgsClient, IAsyncDisposable
     public OgsConnectionState ConnectionState => _current.Realtime.State;
 
     public IReadOnlyList<OgsOpenChallenge> OpenChallenges => _seekGraph?.Challenges ?? [];
+
+    public event EventHandler? MatchSearchChanged;
+
+    public event EventHandler<long>? MatchFound;
+
+    public event EventHandler<OgsGameTurn>? GameTurnChanged;
+
+    public bool IsSearchingMatch => _automatch?.Searching.Count > 0;
+
+    public void FindMatch(OgsAutomatchRequest request)
+    {
+        if (Session is null || _automatch is null)
+        {
+            throw new InvalidOperationException(Tr.T("Online.SignInToOpen"));
+        }
+
+        _automatch.Find(request);
+    }
+
+    public void CancelMatch()
+    {
+        foreach (string uuid in _automatch?.Searching ?? [])
+        {
+            _automatch!.Cancel(uuid);
+        }
+    }
 
     public void SelectServer(OgsOptions server)
     {
@@ -200,6 +252,14 @@ public sealed class OgsClient : IOgsClient, IAsyncDisposable
 
     public Task<IReadOnlyList<OgsActiveGame>> GetActiveGamesAsync(CancellationToken cancellationToken) =>
         _current.Rest.GetActiveGamesAsync(cancellationToken);
+
+    public Task<IReadOnlyList<OgsFinishedGame>> GetFinishedGamesAsync(CancellationToken cancellationToken) =>
+        Session is { } s
+            ? _current.Rest.GetFinishedGamesAsync(s.User.Id, cancellationToken)
+            : throw new InvalidOperationException(Tr.T("Online.SignInToOpen"));
+
+    public Task<string> GetGameSgfAsync(long gameId, CancellationToken cancellationToken) =>
+        _current.Rest.GetGameSgfAsync(gameId, cancellationToken);
 
     public Task<OgsUser?> FindPlayerAsync(string username, CancellationToken cancellationToken) =>
         _current.Rest.FindPlayerAsync(username, cancellationToken);
@@ -276,6 +336,15 @@ public sealed class OgsClient : IOgsClient, IAsyncDisposable
             _seekGraph.Changed += (_, _) => OpenChallengesChanged?.Invoke(this, EventArgs.Empty);
         }
 
+        if (_automatch is null)
+        {
+            _automatch = new OgsAutomatch(_current.Realtime);
+            _automatch.Changed += (_, _) => MatchSearchChanged?.Invoke(this, EventArgs.Empty);
+            _automatch.Started += (_, s) => MatchFound?.Invoke(this, s.GameId);
+            _activeGames = new OgsActiveGames(_current.Realtime);
+            _activeGames.Updated += (_, t) => GameTurnChanged?.Invoke(this, t);
+        }
+
         _logger.LogInformation("Signed in to {Host} as user {UserId}", Options.BaseUrl.Host, Session?.User.Id);
         cancellationToken.ThrowIfCancellationRequested();
     }
@@ -284,6 +353,11 @@ public sealed class OgsClient : IOgsClient, IAsyncDisposable
     {
         _seekGraph?.Dispose();
         _seekGraph = null;
+        CancelMatch();
+        _automatch?.Dispose();
+        _automatch = null;
+        _activeGames?.Dispose();
+        _activeGames = null;
         OpenChallengesChanged?.Invoke(this, EventArgs.Empty);
         await _current.Realtime.StopAsync();
     }

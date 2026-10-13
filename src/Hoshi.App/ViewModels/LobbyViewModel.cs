@@ -33,6 +33,9 @@ public sealed record ActiveGameItem(OgsActiveGame Game, string Opponent, string 
     };
 }
 
+/// <summary>One of the user's finished games, to open in the editor.</summary>
+public sealed record FinishedGameItem(OgsFinishedGame Game, string Opponent, string Board, string When, string ResultText);
+
 /// <summary>An open challenge from the seek graph.</summary>
 public sealed record OpenChallengeItem(OgsOpenChallenge Challenge, bool IsOwn)
 {
@@ -149,6 +152,18 @@ public sealed partial class LobbyViewModel : ViewModelBase
         _ogs.ConnectionStateChanged += (_, _) => _ui.Post(UpdateConnectionText);
         _ogs.OpenChallengesChanged += (_, _) => _ui.Post(RefreshOpenChallenges);
         _ogs.ServerChanged += (_, _) => _ui.Post(OnServerChanged);
+        _ogs.MatchSearchChanged += (_, _) => _ui.Post(() =>
+        {
+            OnPropertyChanged(nameof(IsSearchingMatch));
+            FindMatchCommand.NotifyCanExecuteChanged();
+            CancelMatchCommand.NotifyCanExecuteChanged();
+        });
+        _ogs.MatchFound += (_, gameId) => _ui.Post(() =>
+        {
+            StatusMessage = Tr.F("Lobby.GameStarted", gameId);
+            GameStarted?.Invoke(this, gameId);
+        });
+        _selectedMatchSpeed = MatchSpeeds[1];
         Servers = [.. ogs.Servers.Select(o => new ServerChoice(
             o.IsProduction ? "online-go.com" : Tr.F("Lobby.TestServer", o.BaseUrl.Host), o))];
         UpdateConnectionText();
@@ -158,6 +173,49 @@ public sealed partial class LobbyViewModel : ViewModelBase
     public event EventHandler<long>? GameStarted;
 
     public ObservableCollection<ActiveGameItem> ActiveGames { get; } = [];
+
+    public ObservableCollection<FinishedGameItem> FinishedGames { get; } = [];
+
+    /// <summary>A game was downloaded as SGF to open in the editor (finished games, pasted links): the text and a description.</summary>
+    public event EventHandler<(string Sgf, string Description)>? SgfOpened;
+
+    /// <summary>A game number or an OGS link, typed or pasted.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(OpenLinkCommand))]
+    private string _gameLink = string.Empty;
+
+    [RelayCommand(CanExecute = nameof(CanUseSession))]
+    private Task RefreshFinishedAsync() => RunAsync(async ct =>
+    {
+        IReadOnlyList<OgsFinishedGame> games = await _ogs.GetFinishedGamesAsync(ct);
+        long me = Session?.User.Id ?? 0;
+        FinishedGames.Clear();
+        foreach (OgsFinishedGame g in games)
+        {
+            bool won = g.Winner is { } w && (w == "B" ? g.Black.Id == me : g.White.Id == me);
+            FinishedGames.Add(new FinishedGameItem(
+                g,
+                g.OpponentOf(me).DisplayName,
+                string.Create(CultureInfo.InvariantCulture, $"{g.Width}×{g.Height}"),
+                g.Ended?.ToLocalTime().ToString("d", CultureInfo.CurrentCulture) ?? string.Empty,
+                g.Winner is null ? g.Outcome : Tr.F(won ? "Lobby.Won" : "Lobby.Lost", g.Outcome)));
+        }
+    });
+
+    /// <summary>Downloads a finished game and opens it in the editor (with the study and KataGo).</summary>
+    [RelayCommand]
+    private Task OpenFinishedAsync(FinishedGameItem? item) => item is null ? Task.CompletedTask : DownloadAsync(item.Game.Id);
+
+    [RelayCommand(CanExecute = nameof(CanOpenLink))]
+    private Task OpenLinkAsync() => OgsLinks.TryGameId(GameLink) is { } id ? DownloadAsync(id) : Task.CompletedTask;
+
+    private bool CanOpenLink() => !IsBusy && OgsLinks.TryGameId(GameLink) is not null;
+
+    private Task DownloadAsync(long gameId) => RunAsync(async ct =>
+    {
+        string sgf = await _ogs.GetGameSgfAsync(gameId, ct);
+        SgfOpened?.Invoke(this, (sgf, string.Create(CultureInfo.InvariantCulture, $"OGS #{gameId}")));
+    });
 
     public ObservableCollection<OpenChallengeItem> OpenChallenges { get; } = [];
 
@@ -188,6 +246,56 @@ public sealed partial class LobbyViewModel : ViewModelBase
     ];
 
     public IReadOnlyList<ServerChoice> Servers { get; }
+
+    // ---------- Automatch (always ranked on OGS) ----------
+
+    public IReadOnlyList<MatchSpeedChoice> MatchSpeeds { get; } =
+    [
+        new(Tr.T("Lobby.Time.Blitz"), "blitz", "byoyomi"),
+        new(Tr.T("Lobby.Time.Live"), "live", "byoyomi"),
+        new(Tr.T("Lobby.Match.Rapid"), "rapid", "fischer"),
+        new(Tr.T("Lobby.Time.Correspondence"), "correspondence", "fischer"),
+    ];
+
+    [ObservableProperty]
+    private int _matchSize = 19;
+
+    [ObservableProperty]
+    private MatchSpeedChoice _selectedMatchSpeed;
+
+    [ObservableProperty]
+    private RulesChoice? _matchRules;
+
+    public bool IsSearchingMatch => _ogs.IsSearchingMatch;
+
+    [RelayCommand(CanExecute = nameof(CanFindMatch))]
+    private void FindMatch()
+    {
+        try
+        {
+            RuleSet rules = (MatchRules ?? RulesChoices[0]).Rules;
+            _ogs.FindMatch(new OgsAutomatchRequest(MatchSize, SelectedMatchSpeed.Speed, SelectedMatchSpeed.System, OgsRuleName(rules), AllowHandicap: false, RankRange: 3));
+            StatusMessage = Tr.T("Lobby.Match.Searching");
+        }
+        catch (InvalidOperationException ex)
+        {
+            StatusMessage = ex.Message;
+        }
+    }
+
+    private bool CanFindMatch() => CanUseSession() && !IsSearchingMatch && !IsWaiting;
+
+    [RelayCommand(CanExecute = nameof(CanCancelMatch))]
+    private void CancelMatch()
+    {
+        _ogs.CancelMatch();
+        StatusMessage = Tr.T("Lobby.Match.Cancelled");
+    }
+
+    private bool CanCancelMatch() => IsSearchingMatch;
+
+    private static string OgsRuleName(RuleSet rules) =>
+        rules == RuleSet.Chinese ? "chinese" : rules == RuleSet.Korean ? "korean" : rules == RuleSet.Aga ? "aga" : "japanese";
 
     /// <summary>The server to sign in to; changing it is only possible while signed out.</summary>
     public ServerChoice? SelectedServer
@@ -539,3 +647,6 @@ public sealed partial class LobbyViewModel : ViewModelBase
         }
     }
 }
+
+/// <summary>An automatch speed with the time system OGS uses for it.</summary>
+public sealed record MatchSpeedChoice(string Label, string Speed, string System);

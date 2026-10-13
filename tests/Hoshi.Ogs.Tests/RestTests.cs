@@ -55,6 +55,27 @@ public sealed class OgsRestClientTests
     }
 
     [Fact]
+    public async Task Finished_games_and_their_SGF_are_downloaded()
+    {
+        (OgsRestClient rest, FakeHttpHandler http) = Create();
+        http.On("GET", "/api/v1/players/1001/games/?ended__isnull=false&ordering=-ended&page_size=30", HttpStatusCode.OK, Fixtures.Read("player_games_finished.json"));
+        http.On("GET", "/api/v1/games/61000001/sgf", HttpStatusCode.OK, "(;GM[1]FF[4]SZ[19]PB[kuro_test]PW[shiro_test]RE[B+R];B[pd];W[dp])");
+
+        IReadOnlyList<OgsFinishedGame> games = await rest.GetFinishedGamesAsync(1001, CancellationToken.None);
+        games.Should().HaveCount(2);
+        games[0].Id.Should().Be(61000001);
+        games[0].White.Username.Should().Be("shiro_test");
+        games[0].Winner.Should().Be("B");
+        games[0].Outcome.Should().Be("Resignation");
+        games[0].Ended.Should().Be(new DateTimeOffset(2026, 10, 10, 18, 30, 11, 123, TimeSpan.Zero).AddTicks(4560));
+        games[1].Width.Should().Be(9);
+        games[1].Winner.Should().Be("W");
+
+        string sgf = await rest.GetGameSgfAsync(61000001, CancellationToken.None);
+        sgf.Should().StartWith("(;GM[1]");
+    }
+
+    [Fact]
     public async Task Open_challenge_payload_matches_the_web_client()
     {
         (OgsRestClient rest, FakeHttpHandler http) = Create();
@@ -214,4 +235,23 @@ public sealed class OgsRestClientTests
             return Task.CompletedTask;
         }
     }
+}
+
+public sealed class OgsLinksTests
+{
+    [Theory]
+    [InlineData("12345", 12345L)]
+    [InlineData(" #987 ", 987L)]
+    [InlineData("https://online-go.com/game/76543210", 76543210L)]
+    [InlineData("look at this https://online-go.com/game/view/42 please", 42L)]
+    [InlineData("https://beta.online-go.com/game/5", 5L)]
+    [InlineData("https://example.com/game/5", null)]
+    [InlineData("hello", null)]
+    [InlineData("", null)]
+    public void Game_numbers_are_found_in_what_people_paste(string text, long? expected) =>
+        OgsLinks.TryGameId(text).Should().Be(expected);
+
+    [Fact]
+    public void A_game_page_is_on_its_server() =>
+        OgsLinks.GameUri(new Uri("https://online-go.com"), 12).ToString().Should().Be("https://online-go.com/game/12");
 }

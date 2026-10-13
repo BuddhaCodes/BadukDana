@@ -54,6 +54,48 @@ internal sealed class FakeOgsClient : IOgsClient
 
     public event EventHandler? OpenChallengesChanged;
 
+    public event EventHandler? MatchSearchChanged;
+
+    public event EventHandler<long>? MatchFound;
+
+    public event EventHandler<Hoshi.Ogs.Realtime.OgsGameTurn>? GameTurnChanged;
+
+    public List<Hoshi.Ogs.Realtime.OgsAutomatchRequest> MatchRequests { get; } = [];
+
+    public List<OgsFinishedGame> Finished { get; } = [];
+
+    public Dictionary<long, string> Sgf { get; } = [];
+
+    public Task<IReadOnlyList<OgsFinishedGame>> GetFinishedGamesAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<OgsFinishedGame>>(Finished);
+
+    public Task<string> GetGameSgfAsync(long gameId, CancellationToken cancellationToken) =>
+        Sgf.TryGetValue(gameId, out string? s) ? Task.FromResult(s) : throw new OgsApiException(System.Net.HttpStatusCode.NotFound, "Not found");
+
+    public bool IsSearchingMatch { get; private set; }
+
+    public void FindMatch(Hoshi.Ogs.Realtime.OgsAutomatchRequest request)
+    {
+        MatchRequests.Add(request);
+        IsSearchingMatch = true;
+        MatchSearchChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void CancelMatch()
+    {
+        IsSearchingMatch = false;
+        MatchSearchChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void RaiseMatchFound(long gameId)
+    {
+        IsSearchingMatch = false;
+        MatchSearchChanged?.Invoke(this, EventArgs.Empty);
+        MatchFound?.Invoke(this, gameId);
+    }
+
+    public void RaiseTurn(Hoshi.Ogs.Realtime.OgsGameTurn turn) => GameTurnChanged?.Invoke(this, turn);
+
     public bool HasStoredSession { get; set; }
 
     public (string User, string Password)? PasswordSignIn { get; private set; }
@@ -491,6 +533,34 @@ public sealed class LobbyWindowTests
     }
 
     [AvaloniaFact]
+    public async Task Automatch_searches_with_the_chosen_preferences_and_opens_the_game_it_finds()
+    {
+        var ogs = new FakeOgsClient { HasStoredSession = true };
+        var vm = new LobbyViewModel(ogs, new ImmediateDispatcher());
+        var window = new LobbyWindow { DataContext = vm };
+        window.Show();
+        await vm.InitializeAsync();
+        long? started = null;
+        vm.GameStarted += (_, id) => started = id;
+        window.FindDeep<TabControl>("Tabs")!.SelectedIndex = 3;
+        window.UpdateLayout();
+        window.FindDeep<TextBlock>("AutomatchRankedNote")!.IsEffectivelyVisible.Should().BeTrue("automatch games are ranked: say so");
+
+        vm.MatchSize = 9;
+        vm.SelectedMatchSpeed = vm.MatchSpeeds[0];
+        vm.FindMatchCommand.Execute(null);
+        ogs.MatchRequests.Should().ContainSingle().Which.Should().Be(new Hoshi.Ogs.Realtime.OgsAutomatchRequest(9, "blitz", "byoyomi", "japanese", false, 3));
+        vm.IsSearchingMatch.Should().BeTrue();
+        vm.FindMatchCommand.CanExecute(null).Should().BeFalse("one search at a time");
+        window.FindDeep<Button>("CancelMatchButton")!.IsVisible.Should().BeTrue();
+
+        ogs.RaiseMatchFound(70099);
+        started.Should().Be(70099);
+        vm.IsSearchingMatch.Should().BeFalse();
+        window.Close();
+    }
+
+    [AvaloniaFact]
     public async Task Signed_in_view_lists_challenges_and_is_saved_as_screenshot()
     {
         var ogs = new FakeOgsClient { HasStoredSession = true };
@@ -700,5 +770,70 @@ public sealed class SecureTokenStoreTests
 
         public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
             lines.Add(formatter(state, exception));
+    }
+}
+
+public sealed class TurnNoticeTests
+{
+    [AvaloniaFact]
+    public async Task Your_turn_in_another_game_is_announced_once()
+    {
+        var ogs = new FakeOgsClient { HasStoredSession = true };
+        await ogs.RestoreAsync(CancellationToken.None);
+        var sounds = new FakeSoundService();
+        var notified = new List<long>();
+        Action<string, string, long>? before = PlatformInfo.Notify;
+        PlatformInfo.Notify = (_, _, id) => notified.Add(id);
+        try
+        {
+            var vm = new MainWindowViewModel(new GameViewModel(), ui: new ImmediateDispatcher(), ogs: ogs, sounds: sounds, settings: new TestSettings());
+            ogs.RaiseTurn(new Hoshi.Ogs.Realtime.OgsGameTurn(5, "play", FakeOgsClient.Rival.Id, "hoshi-dev", "rival", "", false));
+            vm.TurnNotice.Should().BeNull("the opponent is to move");
+
+            ogs.RaiseTurn(new Hoshi.Ogs.Realtime.OgsGameTurn(5, "play", FakeOgsClient.Me.Id, "hoshi-dev", "rival", "", false));
+            vm.TurnNotice.Should().NotBeNull();
+            vm.TurnNotice!.GameId.Should().Be(5);
+            vm.TurnNotice.Text.Should().Contain("rival");
+            sounds.Played.Should().ContainSingle(p => p.Effect == SoundEffect.Chat);
+            notified.Should().Equal(5);
+
+            vm.DismissTurnNoticeCommand.Execute(null);
+            ogs.RaiseTurn(new Hoshi.Ogs.Realtime.OgsGameTurn(5, "play", FakeOgsClient.Me.Id, "hoshi-dev", "rival", "", false));
+            vm.TurnNotice.Should().BeNull("still the same turn: no second notice");
+        }
+        finally
+        {
+            PlatformInfo.Notify = before;
+        }
+    }
+}
+
+public sealed class FinishedGamesTests
+{
+    [AvaloniaFact]
+    public async Task Finished_games_and_pasted_links_open_in_the_editor()
+    {
+        var ogs = new FakeOgsClient { HasStoredSession = true };
+        ogs.Finished.Add(new OgsFinishedGame(61, "Friendly", FakeOgsClient.Me, FakeOgsClient.Rival, 19, 19, new DateTimeOffset(2026, 10, 10, 18, 0, 0, TimeSpan.Zero), "Resignation", "B"));
+        ogs.Sgf[61] = "(;GM[1]FF[4]SZ[19]PB[hoshi-dev]PW[rival]RE[B+R];B[pd];W[dp])";
+        ogs.Sgf[777] = "(;GM[1]FF[4]SZ[9];B[ee])";
+        var lobby = new LobbyViewModel(ogs, new ImmediateDispatcher());
+        await lobby.InitializeAsync();
+        var game = new GameViewModel();
+        var main = new MainWindowViewModel(game, ui: new ImmediateDispatcher(), ogs: ogs, lobby: lobby);
+
+        await lobby.RefreshFinishedCommand.ExecuteAsync(null);
+        lobby.FinishedGames.Should().ContainSingle().Which.Opponent.Should().Contain("rival");
+        lobby.FinishedGames[0].ResultText.Should().Contain("Resignation");
+
+        await lobby.OpenFinishedCommand.ExecuteAsync(lobby.FinishedGames[0]);
+        game.Tree.Info.WhitePlayer.Should().Be("rival");
+        game.Tree.Info.Result.Should().Be("B+R");
+
+        lobby.GameLink = "https://online-go.com/game/777";
+        lobby.OpenLinkCommand.CanExecute(null).Should().BeTrue();
+        await lobby.OpenLinkCommand.ExecuteAsync(null);
+        game.Board.Width.Should().Be(9);
+        main.Game.Should().BeSameAs(game);
     }
 }
