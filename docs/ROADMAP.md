@@ -107,3 +107,44 @@ Alcance pedido: Android primero (iOS más adelante), con KataGo desde la primera
 - [x] Calidad de vida (escritorio y teléfono): coordenadas opcionales, números de jugada (ninguno / últimas 10 / todas), ancho de la barra lateral recordado; en el teléfono, hoja inferior redimensionable (altura recordada), deslizar en la cabecera para recorrer la partida, vibración al colocar piedra y pantalla encendida durante la partida.
 - [x] Estudio en el teléfono (2026-10-12): dibujos pendientes con Guardar/Descartar, flechas y áreas con dos toques o arrastrando (burbuja con el punto bajo el dedo), confirmación al borrar notas; 12 visitas de análisis por defecto en el teléfono; las casillas numéricas vacías explican qué esperan en vez del error de Int32.
 - [ ] Pulido: diseño apaisado/tabletas, páginas de Preferencias y lobby pensadas para pantallas estrechas, entrenador de josekis en el teléfono, aviso de versión nueva.
+
+## Fase 9 — Camino a la 1.0 (lista acordada 2026-10-12)
+Para estudiantes y jugadores por igual. Numeradas para referirse a ellas; el orden dentro de cada bloque es la prioridad propuesta.
+
+### Imprescindible para la 1.0
+- [ ] 1. **Conteo en partidas locales y contra motores**: marcar piedras muertas (sugeridas por KataGo o por el estimador propio), resultado con reglas japonesas o chinas y guardado en el SGF (`RE`).
+- [ ] 2. **Reloj local** (absoluto, byo-yomi, Fischer) para partidas entre dos personas y contra motores; pierde por tiempo, pausa.
+- [ ] 3. **Automatch de OGS** (hoy «llegará pronto» en el lobby).
+- [ ] 4. **Aviso de turno** en otras partidas de OGS: sonido y notificación del sistema (escritorio y Android), sobre todo para correspondencia.
+- [ ] 5. **Abrir partidas terminadas de OGS** en el editor (descargar el SGF) para revisarlas con el estudio y KataGo.
+- [ ] 6. **Problemas (tsumego)**: colecciones SGF con respuestas en variantes, acierto/fallo, siguiente problema, progreso y repetición espaciada (como el entrenador de josekis). Solo colecciones con licencia clara (ver §6 de CLAUDE.md).
+- [ ] 7. **Errores en el árbol de variantes** (marca de color por calidad) y **exportar la revisión de KataGo al SGF** como comentarios.
+- [ ] 8. **Primera vez y tutorial**: recorrido corto por la interfaz y, para principiantes, las reglas básicas con ejercicios en el tablero.
+- [ ] 9. **Prueba real en Android** (KataGo, sonido, OAuth de OGS volviendo a la app) y firma del APK configurada para que las actualizaciones se instalen encima.
+- [ ] 10. **Fixtures reales de beta.online-go.com** para cerrar las diferencias del protocolo (Fase 5).
+
+### Muy deseables
+- [ ] 11. **Exportar el tablero** como imagen (PNG) y una secuencia como GIF animado.
+- [ ] 12. **Biblioteca de partidas con búsqueda**: por jugador, fecha y resultado, y por patrón en una zona del tablero (al estilo Kombilo).
+- [ ] 13. **Problemas desde tus partidas**: los momentos donde KataGo vio un error grande se convierten en «encuentra la mejor jugada».
+- [ ] 14. **KataGo con nivel humano** (p. ej. 15k–1d, modelo «human-like») para practicar contra un rival a tu medida.
+- [ ] 15. **Tablet y horizontal en Android**, y aviso de versión nueva en el teléfono.
+- [ ] 16. **Accesibilidad**: jugadas y estado legibles por lector de pantalla, alto contraste, tamaño de letra.
+
+### Compartir y redes sociales
+Todo lo que sale del equipo es una acción explícita del usuario; los nombres de los jugadores se pueden ocultar al compartir y la marca de Hoshi es opcional.
+- [ ] 17. **Tarjeta para compartir un momento**: imagen del tablero con los jugadores, la jugada, la nota del estudio y el veredicto de KataGo, en formatos cuadrado (Instagram), 16:9 (X/Twitter, Discord) y vertical (historias).
+- [ ] 18. **Vídeo o GIF de la partida completa** («timelapse», con los efectos de las jugadas importantes) o de una línea «¿y si…?», listo para redes.
+- [ ] 19. **Menú «Compartir» del sistema** en Android (y portapapeles en escritorio) para imágenes, SGF y estudios.
+- [ ] 20. **Copiar como diagrama de texto**: formato de Sensei's Library (`$$`) para foros y Reddit, y bloque de código para Discord.
+- [ ] 21. **Problema para compartir**: imagen «negras juegan» con la respuesta oculta (spoiler de Discord/Reddit) sacada de tu estudio o de tus errores.
+- [ ] 22. **Visor web independiente**: exportar la partida con su estudio a un único `.html` que se abre en cualquier navegador (para un blog, la web del club o un mensaje).
+- [ ] 23. **Copiar/pegar SGF y enlaces de OGS**: pegar un SGF o un enlace de partida de OGS lo abre; copiar la partida actual como SGF.
+- [ ] 24. **Resumen del mes / del año**: tarjeta con partidas jugadas, mejores jugadas, precisión media según KataGo y josekis aprendidos (calculado en el equipo, nada se envía).
+- [ ] 25. **Estado en Discord** (opcional, apagado por defecto): «Estudiando una partida» / «Jugando en OGS», sin datos del rival.
+
+### Después de la 1.0
+- [ ] 26. Sincronizar estudios y progreso entre escritorio y teléfono.
+- [ ] 27. Más servidores (KGS, Fox) si sus términos lo permiten.
+- [ ] 28. iOS.
+- [ ] 29. Modo profesor: tablero compartido en vivo con alumnos.
