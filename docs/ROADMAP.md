@@ -111,6 +111,11 @@ Alcance pedido: Android primero (iOS más adelante), con KataGo desde la primera
 ## Fase 9 — Camino a la 1.0 (lista acordada 2026-10-12)
 Para estudiantes y jugadores por igual. Numeradas para referirse a ellas; el orden dentro de cada bloque es la prioridad propuesta.
 
+### Pedidos el 2026-10-13
+- [x] Modo zen (Z), con variante silenciosa.
+- [x] Pantalla de inicio (escritorio y Android) en lugar de la pantalla negra.
+- [x] Flechas y áreas rápidas: el arrastre termina en la intersección más cercana.
+
 ### Imprescindible para la 1.0
 - [ ] 1. **Conteo en partidas locales y contra motores**: marcar piedras muertas (sugeridas por KataGo o por el estimador propio), resultado con reglas japonesas o chinas y guardado en el SGF (`RE`).
 - [ ] 2. **Reloj local** (absoluto, byo-yomi, Fischer) para partidas entre dos personas y contra motores; pierde por tiempo, pausa.

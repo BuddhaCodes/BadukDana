@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+  <!-- Android 12+ shows its own splash first: Hoshi's colour and icon instead of the system's white. -->
+  <style name="HoshiTheme" parent="@style/Theme.AppCompat.NoActionBar">
+    <item name="android:windowBackground">@drawable/splash_background</item>
+    <item name="android:statusBarColor">@color/hoshi_background</item>
+    <item name="android:navigationBarColor">@color/hoshi_background</item>
+    <item name="android:windowSplashScreenBackground">@color/hoshi_background</item>
+    <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+  </style>
+</resources>

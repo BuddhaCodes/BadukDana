@@ -80,6 +80,27 @@ public readonly record struct BoardGeometry
         return (dx * dx) + (dy * dy) <= (Cell * Cell / 4) ? new Point(x, y) : null;
     }
 
+    /// <summary>
+    /// The intersection nearest to a position, for drags: unlike <see cref="HitTest"/> there is no dead zone between
+    /// intersections, and a drag let go just off the board (up to one cell) lands on its edge.
+    /// </summary>
+    public Point? Nearest(AvPoint position)
+    {
+        if (Cell <= 0)
+        {
+            return null;
+        }
+
+        double fx = (position.X - OriginX) / Cell;
+        double fy = (position.Y - OriginY) / Cell;
+        if (fx < -1 || fy < -1 || fx > Columns || fy > Rows)
+        {
+            return null;
+        }
+
+        return new Point(Math.Clamp((int)Math.Round(fx), 0, Columns - 1), Math.Clamp((int)Math.Round(fy), 0, Rows - 1));
+    }
+
     /// <summary>Star points for the usual board sizes (none for sizes without a convention).</summary>
     public static IReadOnlyList<Point> StarPoints(int columns, int rows)
     {

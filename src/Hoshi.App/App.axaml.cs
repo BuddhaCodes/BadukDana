@@ -59,9 +59,14 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = _services is not null
-                ? _services.GetRequiredService<MainWindow>()
-                : new MainWindow { DataContext = new MainWindowViewModel() };
+            if (_services is not null)
+            {
+                ShowSplashThenMainWindow(desktop, _services);
+                base.OnFrameworkInitializationCompleted();
+                return;
+            }
+
+            desktop.MainWindow = new MainWindow { DataContext = new MainWindowViewModel() };
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime single)
         {
@@ -79,5 +84,25 @@ public partial class App : Application
             _services?.GetService<UpdateViewModel>()?.Start();
         }
         base.OnFrameworkInitializationCompleted();
+    }
+
+    /// <summary>
+    /// Desktops: the splash is drawn first, then the main window is built (a second or two: view models, the
+    /// theme's textures) and takes its place.
+    /// </summary>
+    private static void ShowSplashThenMainWindow(IClassicDesktopStyleApplicationLifetime desktop, IServiceProvider services)
+    {
+        var splash = new SplashWindow();
+        desktop.MainWindow = splash;
+        splash.Opened += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(
+            () =>
+            {
+                MainWindow main = services.GetRequiredService<MainWindow>();
+                desktop.MainWindow = main;
+                main.Show();
+                splash.Close();
+                services.GetService<UpdateViewModel>()?.Start();
+            },
+            Avalonia.Threading.DispatcherPriority.Background);
     }
 }

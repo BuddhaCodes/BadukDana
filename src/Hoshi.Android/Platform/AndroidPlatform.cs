@@ -58,7 +58,8 @@ internal static class AndroidPlatform
                 services.AddSingleton(_ => new AndroidSoundService(context));
                 services.AddSingleton<ISoundService>(sp => new MutableSoundService(
                     sp.GetRequiredService<AndroidSoundService>().WithFiles(sp.GetRequiredService<SystemSoundService>()),
-                    sp.GetRequiredService<ISettingsService>()));
+                    sp.GetRequiredService<ISettingsService>(),
+                    sp.GetRequiredService<ZenMode>()));
             });
             host.Start();
             return host.Services;
@@ -128,6 +129,22 @@ internal static class AndroidPlatform
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+
+            // Fast path on every start after the first: the .gz asset is stored uncompressed in the APK, so its
+            // length is known without reading it (the network is ~10 MB; reading it each time slowed the start).
+            try
+            {
+                using Android.Content.Res.AssetFileDescriptor fd = context.Assets!.OpenFd(asset);
+                if (File.Exists(target) && new FileInfo(target).Length == fd.Length)
+                {
+                    return;
+                }
+            }
+            catch (Java.IO.IOException)
+            {
+                // Compressed in the APK: compare after reading it below.
+            }
+
             using Stream source = context.Assets!.Open(asset);
             using var buffer = new MemoryStream();
             source.CopyTo(buffer);

@@ -389,6 +389,7 @@ public sealed class PhoneTests
         window.FindDeep<Border>("StudyPending")!.IsVisible.Should().BeFalse();
 
         GoBoardControl board = window.FindDeep<GoBoardControl>("Board")!;
+        window.UpdateLayout(); // the study sheet makes the board smaller
         Avalonia.Point At(int x, int y) => board.TranslatePoint(board.CurrentGeometry!.Value.Center(new Point(x, y)), window)!.Value;
         window.MouseDown(At(10, 10), MouseButton.Left);
         window.MouseUp(At(10, 10), MouseButton.Left);

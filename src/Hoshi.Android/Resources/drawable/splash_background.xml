@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The first frame (before Avalonia draws): Hoshi's night colour with the logo and name in the middle. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:drawable="@color/hoshi_background" />
+  <item>
+    <bitmap android:gravity="center" android:src="@drawable/splash_logo" />
+  </item>
+</layer-list>

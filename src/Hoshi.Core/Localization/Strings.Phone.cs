@@ -15,6 +15,15 @@ public static partial class Tr
         Add(d, "Phone.Resize", "Drag to resize", "Arrastra para cambiar el tamaño");
         Add(d, "Prefs.Haptics", "Vibrate when a stone is placed", "Vibrar al colocar una piedra");
 
+        // Zen mode.
+        Add(d, "Zen.Menu", "Zen mode", "Modo zen");
+        Add(d, "Zen.Exit", "Leave zen", "Salir del zen");
+        Add(d, "Zen.ExitHint", "Z also leaves zen mode", "Z también sale del modo zen");
+        Add(d, "Zen.On", "Zen mode: just the board. Z to leave.", "Modo zen: solo el tablero. Z para salir.");
+        Add(d, "Zen.Off", "Zen mode off.", "Modo zen desactivado.");
+        Add(d, "Prefs.ZenSilence", "Silent zen mode", "Modo zen silencioso");
+        Add(d, "Prefs.ZenSilenceHint", "Zen mode (Z) shows just the board with a still background and subtle effects; silent, it also turns off effects, music and every sound but the stones.", "El modo zen (Z) deja solo el tablero, con el fondo quieto y efectos sutiles; en silencioso también apaga efectos, música y todos los sonidos salvo las piedras.");
+
         // Board display (desktop and phones).
         Add(d, "Prefs.ShowCoordinates", "Coordinates around the board", "Coordenadas alrededor del tablero");
         Add(d, "Prefs.MoveNumbers", "Move numbers", "Números de jugada");

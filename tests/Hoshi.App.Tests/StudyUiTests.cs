@@ -138,6 +138,22 @@ public sealed class StudyUiTests
         window.MouseUp(At(12, 12), MouseButton.Left);
         vm.Game.MoveNumber.Should().Be(1);
         board.StudyDrawings.Should().ContainSingle().Which.Points.Should().Equal(new Point(10, 10), new Point(12, 12));
+
+        // A quick flick: no move events, and let go between two intersections (the dead zone of a click).
+        Avalonia.Point between = At(14, 14) + new Avalonia.Vector(board.CurrentGeometry!.Value.Cell * 0.45, board.CurrentGeometry!.Value.Cell * 0.45);
+        window.MouseDown(At(10, 14), MouseButton.Left);
+        window.MouseUp(between, MouseButton.Left);
+        board.StudyDrawings.Should().HaveCount(2);
+        board.StudyDrawings![1].Points.Should().Equal(new Point(10, 14), new Point(14, 14));
+
+        // Let go just past the edge of the board: the arrow ends on the edge.
+        vm.Study.SelectToolCommand.Execute(StudyTool.Area);
+        Avalonia.Point outside = At(18, 5) + new Avalonia.Vector(board.CurrentGeometry!.Value.Cell * 0.8, 0);
+        window.MouseDown(At(15, 5), MouseButton.Left);
+        window.MouseUp(outside, MouseButton.Left);
+        board.StudyDrawings.Should().HaveCount(3);
+        board.StudyDrawings![2].Points.Should().Equal(new Point(15, 5), new Point(18, 5));
+        vm.Game.MoveNumber.Should().Be(1);
         window.Close();
     }
 

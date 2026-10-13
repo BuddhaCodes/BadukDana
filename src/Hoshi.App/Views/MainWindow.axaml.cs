@@ -43,6 +43,37 @@ public partial class MainWindow : Window
         }
     }
 
+    private GridLength _sidebarWidth = new(280);
+
+    /// <summary>Zen mode hides the sidebar and its splitter (and gives the board their room); leaving restores them.</summary>
+    private void ApplyZen(bool zen)
+    {
+        if (Content is not Grid root || root.ColumnDefinitions.Count < 3)
+        {
+            return;
+        }
+
+        if (zen)
+        {
+            _sidebarWidth = root.ColumnDefinitions[2].Width;
+            root.ColumnDefinitions[2].Width = new GridLength(0);
+        }
+        else
+        {
+            root.ColumnDefinitions[2].Width = _sidebarWidth;
+        }
+
+        if (this.FindControl<Control>("Sidebar") is { } sidebar)
+        {
+            sidebar.IsVisible = !zen;
+        }
+
+        if (this.FindControl<Control>("SidebarSplitter") is { } splitter)
+        {
+            splitter.IsVisible = !zen;
+        }
+    }
+
     // View-only plumbing: keep the newest chat line in view.
     private System.Collections.Specialized.INotifyCollectionChanged? _chat;
 
@@ -53,6 +84,11 @@ public partial class MainWindow : Window
         {
             vm.PropertyChanged += (_, a) =>
             {
+                if (a.PropertyName == nameof(MainWindowViewModel.IsZen))
+                {
+                    ApplyZen(vm.IsZen);
+                }
+
                 if (a.PropertyName is nameof(MainWindowViewModel.Online) or "" or null)
                 {
                     WatchChat(vm.Online?.ChatLines);

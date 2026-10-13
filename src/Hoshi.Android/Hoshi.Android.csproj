@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!--
     Hoshi for Android: the phone layout of Hoshi.App with Hoshi's own KataGo (CPU) inside the APK.
-    Not part of Hoshi.sln (it needs the .NET Android workload and the Android SDK); built by .github/workflows/android.yml:
+    In Hoshi.sln but not in Hoshi.Desktop.slnf (it needs the .NET Android workload and the Android SDK); built by .github/workflows/android.yml:
       dotnet publish src/Hoshi.Android -c Release -f net10.0-android
     The KataGo executable (libkatago.so, built with the NDK by tools/android/build-katago.sh) goes in katago/arm64-v8a/.
   -->
@@ -21,6 +21,8 @@
     <!-- Android builds report toolchain warnings (XA*) we do not control. -->
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- The KataGo network (.gz) stays uncompressed in the APK: its size is read at start without unpacking it. -->
+    <AndroidStoreUncompressedFileExtensions>.gz</AndroidStoreUncompressedFileExtensions>
   </PropertyGroup>
 
   <ItemGroup>

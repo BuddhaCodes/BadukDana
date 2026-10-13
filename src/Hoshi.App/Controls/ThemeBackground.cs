@@ -25,6 +25,10 @@ public sealed class ThemeBackground : Control
     public static readonly StyledProperty<bool> AnimateProperty =
         AvaloniaProperty.Register<ThemeBackground, bool>(nameof(Animate), true);
 
+    /// <summary>Holds the background still on top of <see cref="Animate"/> (zen mode), without touching the theme's choice.</summary>
+    public static readonly StyledProperty<bool> PausedProperty =
+        AvaloniaProperty.Register<ThemeBackground, bool>(nameof(Paused));
+
     /// <summary>Seconds shown when not animating (a pleasant frame, and stable for screenshots).</summary>
     public const double StillTime = 12;
 
@@ -40,7 +44,7 @@ public sealed class ThemeBackground : Control
 
     static ThemeBackground()
     {
-        AffectsRender<ThemeBackground>(KindProperty, AnimateProperty);
+        AffectsRender<ThemeBackground>(KindProperty, AnimateProperty, PausedProperty);
         IsHitTestVisibleProperty.OverrideDefaultValue<ThemeBackground>(false);
     }
 
@@ -56,6 +60,12 @@ public sealed class ThemeBackground : Control
         set => SetValue(AnimateProperty, value);
     }
 
+    public bool Paused
+    {
+        get => GetValue(PausedProperty);
+        set => SetValue(PausedProperty, value);
+    }
+
     /// <summary>Whether the timer is running (for tests).</summary>
     public bool IsRunning => _timer?.IsEnabled == true;
 
@@ -67,7 +77,7 @@ public sealed class ThemeBackground : Control
             return;
         }
 
-        double t = Animate ? StillTime + _clock.Elapsed.TotalSeconds : StillTime;
+        double t = Animate && !Paused ? StillTime + _clock.Elapsed.TotalSeconds : StillTime;
         using (context.PushClip(size))
         {
             switch (Kind)
@@ -109,7 +119,7 @@ public sealed class ThemeBackground : Control
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == KindProperty || change.Property == AnimateProperty)
+        if (change.Property == KindProperty || change.Property == AnimateProperty || change.Property == PausedProperty)
         {
             UpdateTimer();
         }
@@ -117,7 +127,7 @@ public sealed class ThemeBackground : Control
 
     private void UpdateTimer()
     {
-        bool moving = Animate
+        bool moving = Animate && !Paused
             && (Kind is BackgroundKind.NightSky or BackgroundKind.InkMist or BackgroundKind.ZenSand)
             && VisualRoot is not null;
         if (moving)

@@ -72,7 +72,8 @@ public static class AppHost
         services.AddSingleton<ISettingsService, JsonSettingsService>();
         services.AddSingleton<Themes.ThemeService>();
         services.AddSingleton<SystemSoundService>();
-        services.AddSingleton<ISoundService>(sp => new MutableSoundService(sp.GetRequiredService<SystemSoundService>(), sp.GetRequiredService<ISettingsService>()));
+        services.AddSingleton<ZenMode>();
+        services.AddSingleton<ISoundService>(sp => new MutableSoundService(sp.GetRequiredService<SystemSoundService>(), sp.GetRequiredService<ISettingsService>(), sp.GetRequiredService<ZenMode>()));
         services.AddSingleton<AudioViewModel>();
         services.AddSingleton<EffectsViewModel>();
         services.AddSingleton<Services.Music.IMusicService, Services.Music.MusicService>();

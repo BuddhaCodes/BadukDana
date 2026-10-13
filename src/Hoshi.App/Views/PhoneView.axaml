@@ -89,7 +89,7 @@
 
       <!-- Bottom bar: navigation, the game's actions and the sheets. -->
       <Border DockPanel.Dock="Bottom" Background="{DynamicResource Bg.Sidebar}" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="0,1,0,0"
-              x:Name="PhoneBar">
+              x:Name="PhoneBar" IsVisible="{Binding !Main.IsZen}">
         <UniformGrid Rows="1">
           <Button Classes="phone-bar" Command="{Binding Main.Game.GoBackCommand}" ToolTip.Tip="{l:T Main.Previous}" x:Name="PhonePrevious">
             <c:HoshiIcon Icon="{DynamicResource Icon.Previous}" Size="22" />
@@ -188,6 +188,9 @@
               <Button Classes="menu-item" Command="{Binding Main.Analysis.ToggleTerritoryCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Territory}" Size="18" /><TextBlock Text="{l:T Main.Territory}" /></StackPanel>
               </Button>
+              <Button Classes="menu-item" Command="{Binding Main.ToggleZenCommand}" x:Name="MenuZen">
+                <TextBlock Text="{l:T Zen.Menu}" Margin="28,0,0,0" />
+              </Button>
               <Separator Margin="12,4" />
               <Button Classes="menu-item" Command="{Binding Main.OpenPreferencesCommand}" x:Name="MenuPreferences">
                 <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Settings}" Size="18" /><TextBlock Text="{l:T Main.Preferences}" /></StackPanel>
@@ -214,7 +217,7 @@
                           Territory="{Binding Main.Analysis.Territory}"
                           Suggestions="{Binding Main.Analysis.BoardSuggestions}"
                           Impact="{Binding Main.Analysis.Impact}"
-                          Effects="{Binding Main.Effects.Level}"
+                          Effects="{Binding Main.BoardEffects}"
                           GroupStatuses="{Binding Main.Analysis.GroupStatuses}"
                           Animate="{DynamicResource Theme.Animations}"
                           LastMove="{Binding Main.Game.LastMove}"
@@ -229,6 +232,10 @@
                           DragColor="{Binding Main.Study.Color}"
                           PointClickedCommand="{Binding Main.Study.BoardClickCommand}"
                           PointDraggedCommand="{Binding Main.Study.BoardDragCommand}" />
+        <Button x:Name="PhoneZenExit" IsVisible="{Binding Main.IsZen}" Command="{Binding Main.ToggleZenCommand}" Classes="zen-exit"
+                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,8,0" MinHeight="36">
+          <TextBlock Text="{l:T Zen.Exit}" FontSize="12" />
+        </Button>
         <Border Classes="warmup" IsHitTestVisible="False" IsVisible="{Binding Main.Study.IsQuizActive}"
                 HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0">
           <StackPanel Orientation="Horizontal" Spacing="8">
