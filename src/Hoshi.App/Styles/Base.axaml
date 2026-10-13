@@ -185,6 +185,20 @@
   <Style Selector="Button.bar.dim">
     <Setter Property="Opacity" Value="0.45" />
   </Style>
+  <!-- Local game clock next to a player's name; red with ten seconds left. -->
+  <Style Selector="Border.clock">
+    <Setter Property="Padding" Value="7,1" />
+    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
+  </Style>
+  <Style Selector="Border.clock > TextBlock">
+    <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+    <Setter Property="FontSize" Value="12.5" />
+  </Style>
+  <Style Selector="Border.clock.low"><Setter Property="Background" Value="#B83A2E" /></Style>
+  <Style Selector="Border.clock.low > TextBlock"><Setter Property="Foreground" Value="#FFF4EE" /></Style>
+
   <!-- Zen mode's way out: barely there until the pointer comes near. -->
   <Style Selector="Button.zen-exit">
     <Setter Property="Opacity" Value="0.35" />

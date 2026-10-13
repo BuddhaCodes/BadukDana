@@ -153,4 +153,37 @@ public sealed class ScoringTests
         FluentActions.Invoking(() => Scoring.Score(Parse(RuleSet.Japanese, Seki), [P(1, 0)], komi: 0))
             .Should().Throw<ArgumentException>();
     }
+
+    [Fact]
+    public void The_result_is_written_the_SGF_way()
+    {
+        BoardState board = Parse(RuleSet.Japanese, DeadStoneInside);
+        Scoring.Score(board, [DeadWhite], komi: 6.5).ToSgfResult().Should().Be("W+0.5");
+        Scoring.Score(board, [DeadWhite], komi: 0).ToSgfResult().Should().Be("B+6");
+        Scoring.Score(board, [DeadWhite], komi: 6).ToSgfResult().Should().Be("0", "a draw (jigo) is 0 in SGF");
+    }
+
+    [Fact]
+    public void Dead_stones_are_suggested_from_an_ownership_map_whole_groups_at_a_time()
+    {
+        BoardState board = Parse(RuleSet.Japanese, DeadStoneInside);
+        double[] ownership = new double[25];
+        for (int i = 0; i < 25; i++)
+        {
+            ownership[i] = i % 5 <= 2 ? 0.95 : -0.95; // black's side and white's side
+        }
+
+        Scoring.SuggestDead(board, ownership).Should().Equal(DeadWhite);
+        Scoring.SuggestDead(board, new double[25]).Should().BeEmpty("an undecided map marks nothing");
+    }
+
+    [Fact]
+    public void Toggling_a_dead_stone_takes_its_whole_group()
+    {
+        BoardState board = Parse(RuleSet.Japanese, DeadStoneInside);
+        IReadOnlySet<Point> dead = Scoring.ToggleDead(board, new HashSet<Point>(), new Point(3, 0));
+        dead.Should().HaveCount(5, "the whole white wall");
+        Scoring.ToggleDead(board, dead, new Point(3, 4)).Should().BeEmpty();
+        Scoring.ToggleDead(board, dead, new Point(0, 0)).Should().BeSameAs(dead, "an empty point changes nothing");
+    }
 }

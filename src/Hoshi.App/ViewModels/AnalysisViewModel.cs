@@ -575,10 +575,10 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         // Usually instant: the position before the move was being analysed while the user thought, so the move is
         // already among KataGo's candidates there.
         _awaitingJudgement = IsEngineActive ? node : null;
-        if (_awaitingJudgement is not null)
+        if (_awaitingJudgement is not null && PlatformInfo.IsPhone)
         {
-            // The verdict comes first: the score graph waits (with one analysis thread, as on phones, a graph turn
-            // in progress would hold the move's search back). It resumes once the move is analysed.
+            // Phones: the verdict comes first and the score graph waits (with one analysis thread a graph turn in
+            // progress would hold the move's search back). It resumes once the move is analysed.
             _graphCts?.Cancel();
             _graphCts = null;
         }
