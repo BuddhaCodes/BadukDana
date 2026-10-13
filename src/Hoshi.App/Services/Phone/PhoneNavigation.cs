@@ -33,11 +33,12 @@ public sealed class PhoneMessage(string title, string text, bool confirm)
 /// full-screen pages over the board, and dialogs as a card. Android's back button closes the top one.
 /// </summary>
 public sealed partial class PhoneNavigation : ObservableObject,
-    IPreferencesWindowService, ILobbyWindowService, IReplaysWindowService, IEngineWindows, IDialogService
+    IPreferencesWindowService, ILobbyWindowService, IReplaysWindowService, ITsumegoWindowService, IEngineWindows, IDialogService
 {
     private readonly PreferencesViewModel? _preferences;
     private readonly LobbyViewModel? _lobby;
     private readonly ReplaysViewModel? _replays;
+    private readonly TsumegoViewModel? _tsumego;
     private Action<bool>? _onClose;
 
     [ObservableProperty]
@@ -51,8 +52,9 @@ public sealed partial class PhoneNavigation : ObservableObject,
     [NotifyPropertyChangedFor(nameof(HasMessage))]
     private PhoneMessage? _message;
 
-    public PhoneNavigation(PreferencesViewModel? preferences = null, LobbyViewModel? lobby = null, ReplaysViewModel? replays = null)
+    public PhoneNavigation(PreferencesViewModel? preferences = null, LobbyViewModel? lobby = null, ReplaysViewModel? replays = null, TsumegoViewModel? tsumego = null)
     {
+        _tsumego = tsumego;
         _preferences = preferences;
         _lobby = lobby;
         _replays = replays;
@@ -153,6 +155,8 @@ public sealed partial class PhoneNavigation : ObservableObject,
     void ILobbyWindowService.Show() => Show(new LobbyView { DataContext = _lobby }, Tr.T("Lobby.Title"));
 
     void IReplaysWindowService.Show() => Show(new ReplaysView { DataContext = _replays }, Tr.T("Replays.Title"));
+
+    void ITsumegoWindowService.Show() => Show(new TsumegoView { DataContext = _tsumego }, Tr.T("Tsumego.Title"));
 
     public Task<bool> AskNewGameAsync(NewEngineGameViewModel options)
     {

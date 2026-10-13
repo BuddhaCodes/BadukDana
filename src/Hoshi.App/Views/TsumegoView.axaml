@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Hoshi.App.ViewModels"
+             xmlns:c="using:Hoshi.App.Controls"
+             xmlns:l="using:Hoshi.App.Localization"
+             x:Class="Hoshi.App.Views.TsumegoView"
+             x:DataType="vm:TsumegoViewModel"
+             x:Name="Root">
+  <!-- Problems (tsumego): the board, what to do, how it went, and the list. A window on the desktop, a page on phones. -->
+  <Grid x:Name="TsumegoGrid" ColumnDefinitions="*,300" RowDefinitions="*">
+    <Panel x:Name="TsumegoBoardArea" Background="{DynamicResource Bg.Surround}" MinHeight="260">
+      <c:ThemeBackground Kind="{DynamicResource Theme.Background}" Animate="False" />
+      <c:GoBoardControl x:Name="TsumegoBoard" Margin="14"
+                        Board="{Binding Board}"
+                        BoardStyle="{DynamicResource Theme.Board}"
+                        LastMove="{Binding LastMove}"
+                        Markers="{Binding Markers}"
+                        HoverPoint="{Binding HoverPoint}"
+                        GhostStone="{Binding GhostStone}"
+                        IsInteractive="{Binding !IsBlocked}"
+                        PointClickedCommand="{Binding PlayCommand}" />
+    </Panel>
+    <DockPanel Grid.Column="1" x:Name="TsumegoPanel" Background="{DynamicResource Bg.Sidebar}">
+      <StackPanel DockPanel.Dock="Top" Margin="14,12" Spacing="6">
+        <TextBlock Text="{Binding Name}" FontFamily="{DynamicResource Font.Title}" FontSize="20" TextWrapping="Wrap" x:Name="TsumegoName" />
+        <TextBlock Text="{Binding Instructions}" TextWrapping="Wrap" x:Name="TsumegoInstructions" />
+        <Border Padding="10,6" CornerRadius="8" Background="{DynamicResource Bg.Panel}"
+                BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="1"
+                Classes.good="{Binding IsSolved}" Classes.bad="{Binding IsWrong}" x:Name="TsumegoStatusBox">
+          <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" x:Name="TsumegoStatus" />
+        </Border>
+        <WrapPanel Orientation="Horizontal">
+          <WrapPanel.Styles><Style Selector="Button"><Setter Property="Margin" Value="0,0,6,6" /><Setter Property="MinHeight" Value="36" /></Style></WrapPanel.Styles>
+          <Button Content="{l:T Tsumego.Retry}" Command="{Binding RetryCommand}" x:Name="TsumegoRetry" />
+          <Button Content="{l:T Tsumego.Answer}" Command="{Binding ShowAnswerCommand}" x:Name="TsumegoAnswer" />
+          <Button Content="{l:T Tsumego.Previous}" Command="{Binding PreviousCommand}" />
+          <Button Classes="accent" Content="{l:T Tsumego.Next}" Command="{Binding NextCommand}" x:Name="TsumegoNext" />
+        </WrapPanel>
+        <TextBlock Classes="secondary" Text="{Binding ProgressText}" x:Name="TsumegoProgress" />
+      </StackPanel>
+      <StackPanel DockPanel.Dock="Bottom" Margin="14,8,14,12" Spacing="6">
+        <Button Content="{l:T Tsumego.Import}" Command="{Binding ImportCommand}" x:Name="TsumegoImport" />
+        <TextBlock Classes="secondary" FontSize="11.5" TextWrapping="Wrap" Text="{l:T Tsumego.ImportHint}" />
+      </StackPanel>
+      <ListBox ItemsSource="{Binding Rows}" Background="Transparent" x:Name="TsumegoList" Margin="6,0">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:TsumegoRow">
+            <Button Classes="menu-row" Background="Transparent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="6,4"
+                    Command="{Binding #Root.((vm:TsumegoViewModel)DataContext).SelectCommand}" CommandParameter="{Binding}">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel>
+                  <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                  <TextBlock Classes="secondary" FontSize="11" Text="{Binding Source}" />
+                </StackPanel>
+                <TextBlock Grid.Column="1" Classes="secondary" FontSize="11.5" Text="{Binding State}" VerticalAlignment="Center" Margin="8,0,0,0" />
+              </Grid>
+            </Button>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </DockPanel>
+  </Grid>
+</UserControl>

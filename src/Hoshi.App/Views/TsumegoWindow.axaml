@@ -1,0 +1,19 @@
+<Window Icon="/Assets/hoshi.ico"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="using:Hoshi.App.Views"
+        xmlns:l="using:Hoshi.App.Localization"
+        xmlns:vm="using:Hoshi.App.ViewModels"
+        x:Class="Hoshi.App.Views.TsumegoWindow"
+        x:DataType="vm:TsumegoViewModel"
+        Title="{l:T Tsumego.Title}"
+        Width="960" Height="680" MinWidth="620" MinHeight="420"
+        Background="{DynamicResource Bg.Window}"
+        WindowStartupLocation="CenterOwner">
+  <Window.KeyBindings>
+    <KeyBinding Gesture="N" Command="{Binding NextCommand}" />
+    <KeyBinding Gesture="R" Command="{Binding RetryCommand}" />
+    <KeyBinding Gesture="H" Command="{Binding ShowAnswerCommand}" />
+  </Window.KeyBindings>
+  <v:TsumegoView x:Name="View" />
+</Window>
