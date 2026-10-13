@@ -34,6 +34,12 @@ public static class OgsRank
 }
 
 /// <summary>One of the signed-in user's ongoing games (from <c>ui/overview</c>).</summary>
+/// <summary>A finished game of the player (newest first in the list), to open in the editor.</summary>
+public sealed record OgsFinishedGame(long Id, string Name, OgsUser Black, OgsUser White, int Width, int Height, DateTimeOffset? Ended, string Outcome, string? Winner)
+{
+    public OgsUser OpponentOf(long userId) => Black.Id == userId ? White : Black;
+}
+
 public sealed record OgsActiveGame(long Id, string Name, OgsUser Black, OgsUser White, int Width, int Height, long? PlayerToMove, string Phase)
 {
     public bool IsTurnOf(long userId) => Phase == "play" && PlayerToMove == userId;

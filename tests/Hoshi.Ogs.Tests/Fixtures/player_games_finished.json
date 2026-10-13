@@ -1,0 +1,6 @@
+{"count": 2, "next": null, "previous": null, "results": [
+ {"id": 61000001, "name": "Friendly Match", "width": 19, "height": 19, "ranked": false, "ended": "2026-10-10T18:30:11.123456Z", "outcome": "Resignation", "black_lost": false, "white_lost": true,
+  "players": {"black": {"id": 1001, "username": "kuro_test", "ranking": 25.3}, "white": {"id": 1002, "username": "shiro_test", "ranking": 30.1}}},
+ {"id": 61000002, "name": "", "width": 9, "height": 9, "ranked": true, "ended": "2026-10-09T09:00:00Z", "outcome": "3.5 points", "black_lost": true, "white_lost": false,
+  "players": {"black": {"id": 1001, "username": "kuro_test", "ranking": 25.3}, "white": {"id": 1003, "username": "third", "ranking": 26}}}
+]}

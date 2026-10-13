@@ -27,6 +27,11 @@ public static partial class Tr
         Add(d, "Count.Saved", "Result saved: {0}.", "Resultado guardado: {0}.");
         Add(d, "Count.Menu", "Count the game", "Contar la partida");
 
+        // Your turn in another OGS game.
+        Add(d, "Turn.Title", "Your move", "Te toca");
+        Add(d, "Turn.Notice", "Your move against {0}", "Te toca contra {0}");
+        Add(d, "Turn.Open", "Open", "Abrir");
+
         // Local clock.
         Add(d, "Clock.Menu", "Clock", "Reloj");
         Add(d, "Clock.Pause", "Pause / resume", "Pausar / seguir");

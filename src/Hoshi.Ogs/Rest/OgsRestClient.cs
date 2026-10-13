@@ -48,6 +48,57 @@ public sealed class OgsRestClient
         return games;
     }
 
+    /// <summary>
+    /// A player's finished games, newest first (<c>GET players/{id}/games/?ended__isnull=false&amp;ordering=-ended</c>,
+    /// as the web client's game history).
+    /// </summary>
+    public async Task<IReadOnlyList<OgsFinishedGame>> GetFinishedGamesAsync(long playerId, CancellationToken cancellationToken)
+    {
+        string path = string.Create(CultureInfo.InvariantCulture, $"players/{playerId}/games/?ended__isnull=false&ordering=-ended&page_size=30");
+        using JsonDocument doc = await SendAsync(HttpMethod.Get, path, null, cancellationToken);
+        var games = new List<OgsFinishedGame>();
+        if (doc.RootElement.TryGetProperty("results", out JsonElement list) && list.ValueKind == JsonValueKind.Array)
+        {
+            foreach (JsonElement g in list.EnumerateArray())
+            {
+                if (!g.TryGetProperty("players", out JsonElement players) || players.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                string? winner = OgsJson.Bool(g, "white_lost") == true ? "B" : OgsJson.Bool(g, "black_lost") == true ? "W" : null;
+                DateTimeOffset? ended = DateTimeOffset.TryParse(OgsJson.String(g, "ended"), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset e) ? e : null;
+                games.Add(new OgsFinishedGame(
+                    OgsJson.Long(g, "id") ?? 0,
+                    OgsJson.String(g, "name") ?? string.Empty,
+                    OgsJson.ReadUser(players.GetProperty("black")),
+                    OgsJson.ReadUser(players.GetProperty("white")),
+                    (int)(OgsJson.Long(g, "width") ?? 19),
+                    (int)(OgsJson.Long(g, "height") ?? 19),
+                    ended,
+                    OgsJson.String(g, "outcome") ?? string.Empty,
+                    winner));
+            }
+        }
+
+        return games;
+    }
+
+    /// <summary>A game as SGF (<c>GET games/{id}/sgf</c>), finished or not, with its moves and comments.</summary>
+    public async Task<string> GetGameSgfAsync(long gameId, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(_http.BaseAddress!, string.Create(CultureInfo.InvariantCulture, $"/api/v1/games/{gameId}/sgf")));
+        await _credentials.ApplyAsync(request, cancellationToken);
+        using HttpResponseMessage response = await _http.SendAsync(request, cancellationToken);
+        string text = await response.Content.ReadAsStringAsync(cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new OgsApiException(response.StatusCode, ErrorMessage(response.StatusCode, text));
+        }
+
+        return text;
+    }
+
     /// <summary>Creates an open challenge, or a direct one when <paramref name="opponentId"/> is given.</summary>
     public async Task<CreatedChallenge> CreateChallengeAsync(ChallengeRequest request, long? opponentId, CancellationToken cancellationToken)
     {

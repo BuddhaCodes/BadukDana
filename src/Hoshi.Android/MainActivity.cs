@@ -25,6 +25,12 @@ public class MainActivity : AvaloniaMainActivity<global::Hoshi.App.App>
         return base.CustomizeAppBuilder(builder).WithInterFont();
     }
 
+    protected override void OnNewIntent(Android.Content.Intent? intent)
+    {
+        base.OnNewIntent(intent);
+        AndroidPlatform.OnIntent(intent);
+    }
+
     protected override void OnPause()
     {
         base.OnPause();

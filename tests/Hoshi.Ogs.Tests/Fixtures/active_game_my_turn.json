@@ -1,0 +1,4 @@
+{"id": 70012345, "phase": "play", "name": "Friendly match", "player_to_move": 4001, "width": 19, "height": 19, "move_number": 42, "paused": 0, "private": false,
+ "black": {"username": "hoshi-dev", "id": 4001, "rank": 25}, "white": {"username": "rival", "id": 4002, "rank": 27.5},
+ "rengo": false, "rengo_teams": {"black": [], "white": []}, "dropped_player": 0, "rengo_casual_mode": false,
+ "time_per_move": 86400, "clock_expiration": 1791900000000}

@@ -268,6 +268,18 @@
             </StackPanel>
           </StackPanel>
         </Border>
+        <!-- Your move in another OGS game: open it or dismiss. -->
+        <Border x:Name="PhoneTurnCard" IsVisible="{Binding Main.TurnNotice, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="warmup"
+                HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,6,0,0" Padding="12,6">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Ellipse Width="8" Height="8" Fill="{DynamicResource Accent}" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding Main.TurnNotice.Text, FallbackValue={x:Null}}" VerticalAlignment="Center" />
+            <Button Classes="accent" Content="{l:T Turn.Open}" Command="{Binding Main.OpenTurnGameCommand}" MinHeight="32" VerticalContentAlignment="Center" x:Name="PhoneTurnCardOpen" />
+            <Button Classes="bar icon" Command="{Binding Main.DismissTurnNoticeCommand}" VerticalAlignment="Center">
+              <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="12" />
+            </Button>
+          </StackPanel>
+        </Border>
         <Button x:Name="PhoneZenExit" IsVisible="{Binding Main.IsZen}" Command="{Binding Main.ToggleZenCommand}" Classes="zen-exit"
                 HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,8,0" MinHeight="36">
           <TextBlock Text="{l:T Zen.Exit}" FontSize="12" />

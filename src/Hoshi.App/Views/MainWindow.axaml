@@ -320,6 +320,18 @@
             </StackPanel>
           </StackPanel>
         </Border>
+        <!-- Your move in another OGS game: open it or dismiss. -->
+        <Border x:Name="TurnCard" IsVisible="{Binding TurnNotice, Converter={x:Static ObjectConverters.IsNotNull}}" Classes="warmup"
+                HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,10,0,0" Padding="12,6">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Ellipse Width="8" Height="8" Fill="{DynamicResource Accent}" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding TurnNotice.Text, FallbackValue={x:Null}}" VerticalAlignment="Center" />
+            <Button Classes="accent" Content="{l:T Turn.Open}" Command="{Binding OpenTurnGameCommand}" MinHeight="32" VerticalContentAlignment="Center" x:Name="TurnCardOpen" />
+            <Button Classes="bar icon" Command="{Binding DismissTurnNoticeCommand}" VerticalAlignment="Center">
+              <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="12" />
+            </Button>
+          </StackPanel>
+        </Border>
         <!-- Zen mode keeps the players and the clock, small, top left. -->
         <Border x:Name="ZenPlayers" IsVisible="{Binding IsZen}" Classes="warmup" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="12,10,0,0" Opacity="0.75">
           <StackPanel Orientation="Horizontal" Spacing="10">

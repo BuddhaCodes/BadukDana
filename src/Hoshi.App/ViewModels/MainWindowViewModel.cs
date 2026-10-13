@@ -171,12 +171,17 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Game = game;
         _lobbyWindow = lobbyWindow;
         _ogs = ogs;
+        if (ogs is not null)
+        {
+            ogs.GameTurnChanged += (_, turn) => (ui ?? new AvaloniaUiDispatcher()).Post(() => OnGameTurn(turn));
+        }
         _ui = ui;
         _dialogs = dialogs;
         _logger = logger ?? NullLogger<MainWindowViewModel>.Instance;
         if (lobby is not null)
         {
             lobby.GameStarted += async (_, id) => await OpenOnlineGameAsync(id);
+            lobby.SgfOpened += async (_, e) => await game.OpenSgfTextAsync(e.Sgf, e.Description);
         }
     }
 
@@ -337,6 +342,48 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
     }
 
+    // ---------- Your turn in another OGS game ----------
+
+    private readonly Dictionary<long, long> _toMove = [];
+
+    /// <summary>"Your move against rival" for a game other than the one on the board; null when none.</summary>
+    [ObservableProperty]
+    private TurnNotice? _turnNotice;
+
+    private void OnGameTurn(Hoshi.Ogs.Realtime.OgsGameTurn turn)
+    {
+        bool was = _toMove.TryGetValue(turn.GameId, out long before);
+        _toMove[turn.GameId] = turn.PlayerToMove;
+        long? me = _ogs?.Session?.User.Id;
+        if (me is null || turn.Phase != "play" || turn.PlayerToMove != me || (was && before == me) || Online?.GameId == turn.GameId)
+        {
+            return; // not newly your turn, or the game is already on the board
+        }
+
+        string opponent = turn.Black == _ogs!.Session!.User.Username ? turn.White : turn.Black;
+        TurnNotice = new TurnNotice(turn.GameId, Tr.F("Turn.Notice", opponent));
+        AppSettings s = _settings?.Current ?? new AppSettings();
+        if (s.ChatSounds)
+        {
+            _sounds?.Play(SoundEffect.Chat, s.SoundVolume / 100.0);
+        }
+
+        PlatformInfo.Notify?.Invoke(Tr.T("Turn.Title"), TurnNotice.Text, turn.GameId);
+    }
+
+    [RelayCommand]
+    private async Task OpenTurnGame()
+    {
+        if (TurnNotice is { } notice)
+        {
+            TurnNotice = null;
+            await OpenOnlineGameAsync(notice.GameId);
+        }
+    }
+
+    [RelayCommand]
+    private void DismissTurnNotice() => TurnNotice = null;
+
     /// <summary>The clock of a local game (menu → Clock).</summary>
     public LocalClockViewModel Clock { get; }
 
@@ -460,3 +507,6 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(HasEngines))]
     private void OpenGtpConsole() => _engineWindows?.ShowConsole();
 }
+
+/// <summary>It is your move in another online game.</summary>
+public sealed record TurnNotice(long GameId, string Text);

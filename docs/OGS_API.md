@@ -208,6 +208,17 @@ Verificado contra online-go.com `src/views/Joseki/joseki-utils.ts` y `Joseki.tsx
 - Timestamps (`now`, `last_move`, `expiration`) son epoch en ms del servidor; corregir con `drift` y `latency` del ping. **Unidades de `thinking_time` a confirmar con un fixture real de beta.**
 - En correspondencia (días por jugada) no mostrar segundos.
 
+## 4b. Automatch, turnos y partidas terminadas (añadido 2026-10-13)
+
+Verificado contra goban `src/engine/protocol/ClientToServer.ts` y `ServerToClient.ts` (rama main, 2026-10-13):
+
+- `automatch/find_match` con `AutomatchPreferences`: `{ uuid, size_speed_options: [{ size: "19x19", speed: "blitz"|"rapid"|"live"|"correspondence", system: "byoyomi"|"fischer" }], lower_rank_diff, upper_rank_diff, rules: { condition: "required"|"preferred"|"no-preference", value }, handicap: { condition, value: "enabled"|"disabled" } }`.
+- `automatch/cancel { uuid }`; el servidor emite `automatch/entry` (búsqueda activa), `automatch/start { uuid, game_id }` y `automatch/cancel { uuid | null }` (null = todas).
+- **Las partidas de automatch son clasificatorias**: el protocolo no tiene opción no clasificatoria. Hoshi lo dice en el lobby (decisión del usuario 2026-10-13); las pruebas en producción siguen siendo solo con desafíos no clasificatorios.
+- `active_game` (`GameListEntry`): `id`, `phase`, `player_to_move`, `black`/`white` (`username`, `id`), `name`, `time_per_move` (≥ 3600 s ⇒ correspondencia). Hoshi avisa cuando pasa a ser tu turno en otra partida.
+- REST: `GET players/{id}/games/?ended__isnull=false&ordering=-ended&page_size=30` (historial; `players.black/white`, `ended`, `outcome`, `black_lost`/`white_lost`) y `GET games/{id}/sgf` (texto SGF).
+- Los fixtures `active_game_my_turn.json` y `player_games_finished.json` están **construidos a partir de los tipos de goban**, no grabados: sustituirlos por capturas reales de beta (tarea 10 de la Fase 9).
+
 ## 5. Reglas de uso responsable
 
 - Respetar límites de peticiones; no hacer polling REST si hay evento por WebSocket.

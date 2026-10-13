@@ -35,6 +35,7 @@ internal static class AndroidPlatform
 
         // A light tick with each stone (follows the system's touch feedback setting; needs no permission).
         PlatformInfo.Vibrate = () => _activity?.Window?.DecorView?.PerformHapticFeedback(Android.Views.FeedbackConstants.VirtualKey);
+        PlatformInfo.Notify = (title, text, gameId) => ShowNotification(context, title, text, gameId);
         PlatformInfo.KeepScreenOn = on =>
         {
             _keepScreenOn = on;
@@ -100,6 +101,68 @@ internal static class AndroidPlatform
         {
             _musicWasPlaying = false;
             music.Start();
+        }
+    }
+
+    /// <summary>Extra of the intent a notification opens: the OGS game to show.</summary>
+    public const string GameIdExtra = "hoshi.ogs.game";
+
+    private const string TurnChannel = "turns";
+    private static bool _askedNotifications;
+
+    private static void ShowNotification(Context context, string title, string text, long gameId)
+    {
+        try
+        {
+            var manager = (NotificationManager?)context.GetSystemService(Context.NotificationService);
+            if (manager is null)
+            {
+                return;
+            }
+
+            if (OperatingSystem.IsAndroidVersionAtLeast(33)
+                && context.CheckSelfPermission(Android.Manifest.Permission.PostNotifications) != Android.Content.PM.Permission.Granted)
+            {
+                if (!_askedNotifications && _activity is { } activity)
+                {
+                    _askedNotifications = true;
+                    activity.RunOnUiThread(() => activity.RequestPermissions([Android.Manifest.Permission.PostNotifications], 7));
+                }
+
+                return;
+            }
+
+            if (OperatingSystem.IsAndroidVersionAtLeast(26) && manager.GetNotificationChannel(TurnChannel) is null)
+            {
+                manager.CreateNotificationChannel(new NotificationChannel(TurnChannel, title, NotificationImportance.Default));
+            }
+
+            var open = new Intent(context, typeof(MainActivity));
+            open.SetFlags(ActivityFlags.SingleTop | ActivityFlags.ClearTop);
+            open.PutExtra(GameIdExtra, gameId);
+            PendingIntent? pending = PendingIntent.GetActivity(context, (int)(gameId % int.MaxValue), open, PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable);
+            Notification notification = new Notification.Builder(context, TurnChannel)
+                .SetSmallIcon(Resource.Drawable.icon)!
+                .SetContentTitle(title)!
+                .SetContentText(text)!
+                .SetContentIntent(pending)!
+                .SetAutoCancel(true)!
+                .Build()!;
+            manager.Notify((int)(gameId % int.MaxValue), notification);
+        }
+        catch (Java.Lang.Exception ex)
+        {
+            Android.Util.Log.Warn("Hoshi", "Could not notify: " + ex.Message);
+        }
+    }
+
+    /// <summary>A notification was tapped: open its game.</summary>
+    public static void OnIntent(Intent? intent)
+    {
+        long gameId = intent?.GetLongExtra(GameIdExtra, 0) ?? 0;
+        if (gameId > 0 && global::Hoshi.App.App.Services?.GetService<MainWindowViewModel>() is { } main)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(async () => await main.OpenOnlineGameAsync(gameId));
         }
     }
 

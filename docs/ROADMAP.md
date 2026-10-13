@@ -119,9 +119,9 @@ Para estudiantes y jugadores por igual. Numeradas para referirse a ellas; el ord
 ### Imprescindible para la 1.0
 - [x] 1. **Conteo en partidas locales y contra motores** (2026-10-13: tras dos pases; propuesta de KataGo si leyó la posición; tocar grupos; Aceptar escribe `RE`, Seguir jugando quita el último pase): marcar piedras muertas (sugeridas por KataGo o por el estimador propio), resultado con reglas japonesas o chinas y guardado en el SGF (`RE`).
 - [x] 2. **Reloj local** (2026-10-13: menú Reloj con preajustes Fischer/byo-yomi/absoluto; corre para quien juega al final de la partida; rojo con 10 s; pierde por tiempo `B+T`/`W+T`) (absoluto, byo-yomi, Fischer) para partidas entre dos personas y contra motores; pierde por tiempo, pausa.
-- [ ] 3. **Automatch de OGS** (hoy «llegará pronto» en el lobby).
-- [ ] 4. **Aviso de turno** en otras partidas de OGS: sonido y notificación del sistema (escritorio y Android), sobre todo para correspondencia.
-- [ ] 5. **Abrir partidas terminadas de OGS** en el editor (descargar el SGF) para revisarlas con el estudio y KataGo.
+- [x] 3. **Automatch de OGS** (2026-10-13: pestaña Automatch con tamaño, ritmo y reglas; aviso de que es clasificatoria; pendiente probarlo en real) (hoy «llegará pronto» en el lobby).
+- [x] 4. **Aviso de turno** (2026-10-13: tarjeta «Te toca contra…» con Abrir, sonido de chat y notificación de Android; sin notificación del sistema en escritorio) en otras partidas de OGS: sonido y notificación del sistema (escritorio y Android), sobre todo para correspondencia.
+- [x] 5. **Abrir partidas terminadas de OGS** (2026-10-13: pestaña Terminadas del lobby, y número o enlace de partida) en el editor (descargar el SGF) para revisarlas con el estudio y KataGo.
 - [ ] 6. **Problemas (tsumego)**: colecciones SGF con respuestas en variantes, acierto/fallo, siguiente problema, progreso y repetición espaciada (como el entrenador de josekis). Solo colecciones con licencia clara (ver §6 de CLAUDE.md).
 - [ ] 7. **Errores en el árbol de variantes** (marca de color por calidad) y **exportar la revisión de KataGo al SGF** como comentarios.
 - [ ] 8. **Primera vez y tutorial**: recorrido corto por la interfaz y, para principiantes, las reglas básicas con ejercicios en el tablero.
