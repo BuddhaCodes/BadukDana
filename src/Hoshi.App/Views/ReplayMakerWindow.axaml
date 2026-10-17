@@ -1,0 +1,62 @@
+<Window Icon="/Assets/hoshi.ico"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:Hoshi.App.Localization"
+        xmlns:vm="using:Hoshi.App.ViewModels"
+        x:Class="Hoshi.App.Views.ReplayMakerWindow"
+        x:DataType="vm:ReplayMakerViewModel"
+        Title="{l:T Replay.Title}"
+        Width="1100" Height="720" MinWidth="760" MinHeight="520"
+        Background="{DynamicResource Bg.Window}"
+        WindowStartupLocation="CenterOwner">
+  <!-- Preview on the left (step by step), options and the three outputs on the right. -->
+  <Grid ColumnDefinitions="*,340" Margin="16">
+    <DockPanel Margin="0,0,16,0">
+      <StackPanel DockPanel.Dock="Bottom" Spacing="4" Margin="0,10,0,0">
+        <Slider Minimum="0" Maximum="{Binding LastStep}" Value="{Binding PreviewIndex}" IsSnapToTickEnabled="True" TickFrequency="1" x:Name="PreviewSlider" />
+        <TextBlock Classes="secondary" Text="{Binding LengthText}" HorizontalAlignment="Center" x:Name="ReplayLength" />
+      </StackPanel>
+      <Border CornerRadius="10" Background="#101218" ClipToBounds="True">
+        <Image Source="{Binding Preview}" Stretch="Uniform" x:Name="ReplayPreview" />
+      </Border>
+    </DockPanel>
+    <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Spacing="10">
+        <TextBlock Text="{l:T Replay.Title}" FontSize="22" FontFamily="{DynamicResource Font.Title}" />
+        <TextBlock Classes="secondary" Text="{l:T Replay.Hint}" TextWrapping="Wrap" />
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="10" RowDefinitions="Auto,Auto">
+          <TextBlock Classes="label" Text="{l:T Replay.From}" />
+          <TextBlock Grid.Column="1" Classes="label" Text="{l:T Replay.To}" />
+          <NumericUpDown Grid.Row="1" Value="{Binding FromBox}" Minimum="1" Maximum="{Binding MaxMove}" FormatString="0" x:Name="ReplayFrom" />
+          <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding ToBox}" Minimum="1" Maximum="{Binding MaxMove}" FormatString="0" x:Name="ReplayTo" />
+        </Grid>
+        <StackPanel Spacing="2">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Classes="label" Text="{l:T Replay.Speed}" />
+            <TextBlock Grid.Column="1" Classes="secondary" Text="{Binding SecondsPerMove, StringFormat={}{0:0.0} s}" />
+          </Grid>
+          <Slider Minimum="0.2" Maximum="3" Value="{Binding SecondsPerMove}" SmallChange="0.1" TickFrequency="0.1" IsSnapToTickEnabled="True" x:Name="ReplaySpeed" />
+        </StackPanel>
+        <TextBlock Classes="label" Text="{l:T Replay.Format}" />
+        <ComboBox ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}" HorizontalAlignment="Stretch" x:Name="ReplayFormat">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:ReplayFormatOption"><TextBlock Text="{Binding Name}" /></DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+        <CheckBox IsChecked="{Binding Intro}" Content="{l:T Replay.Intro}" />
+        <CheckBox IsChecked="{Binding Notes}" Content="{l:T Replay.Notes}" />
+        <CheckBox IsChecked="{Binding Highlights}" Content="{l:T Replay.Highlights}" />
+        <CheckBox IsChecked="{Binding Sounds}" Content="{l:T Replay.Sounds}" />
+        <Separator Margin="0,4" />
+        <Button Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{l:T Replay.Mp4}" Command="{Binding ExportMp4Command}" x:Name="ReplayMp4" />
+        <TextBlock Classes="secondary" FontSize="12" TextWrapping="Wrap" Text="{Binding VideoHint}"
+                   IsVisible="{Binding VideoHint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" x:Name="ReplayVideoHint" />
+        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{l:T Replay.Gif}" Command="{Binding ExportGifCommand}" x:Name="ReplayGif" />
+        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{l:T Replay.Web}" Command="{Binding ExportWebCommand}" x:Name="ReplayWeb" />
+        <ProgressBar Minimum="0" Maximum="1" Value="{Binding Progress}" IsVisible="{Binding IsBusy}" />
+        <Button Content="{l:T Replay.Cancel}" Command="{Binding CancelCommand}" IsVisible="{Binding IsBusy}" HorizontalAlignment="Right" />
+        <TextBlock Text="{Binding Status}" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" x:Name="ReplayStatus" />
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</Window>

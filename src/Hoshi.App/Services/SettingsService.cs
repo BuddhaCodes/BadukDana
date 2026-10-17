@@ -27,6 +27,9 @@ public sealed record AppSettings
 
     public string? KataGoModel { get; init; }
 
+    /// <summary>FFmpeg for MP4 replays (optional; else <c>ffmpeg</c> on the PATH).</summary>
+    public string? FfmpegPath { get; init; }
+
     /// <summary>KataGo's human-style model (b18c384nbt-humanv0.bin.gz, optional): adds "KataGo (human style)".</summary>
     public string? KataGoHumanModel { get; init; }
 

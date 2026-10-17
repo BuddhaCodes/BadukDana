@@ -139,6 +139,22 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     [ObservableProperty]
     private string _kataGoConfig = string.Empty;
 
+    /// <summary>FFmpeg for MP4 replays (optional; empty = the one on the PATH).</summary>
+    [ObservableProperty]
+    private string _ffmpegPath = string.Empty;
+
+    partial void OnFfmpegPathChanged(string value)
+    {
+        string? path = value.Trim().Length == 0 ? null : value.Trim();
+        if (_settings is not null && _settings.Current.FfmpegPath != path)
+        {
+            _settings.Save(_settings.Current with { FfmpegPath = path });
+        }
+    }
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private async Task BrowseFfmpeg() => FfmpegPath = await Pick(Tr.T("Prefs.Ffmpeg")) ?? FfmpegPath;
+
     /// <summary>KataGo's human-style model (optional download), for "KataGo (human style)".</summary>
     [ObservableProperty]
     private string _kataGoHumanModel = string.Empty;
@@ -223,6 +239,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             _kataGoExecutable = s.KataGoExecutable ?? string.Empty;
             _kataGoModel = s.KataGoModel ?? string.Empty;
             _kataGoHumanModel = s.KataGoHumanModel ?? string.Empty;
+            _ffmpegPath = s.FfmpegPath ?? string.Empty;
             _kataGoConfig = s.KataGoConfig ?? string.Empty;
             _analysisVisits = PlatformInfo.AnalysisVisits(s);
             _moveEffects = s.MoveEffects;

@@ -64,8 +64,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         ZenMode? zen = null,
         IClipboardService? clipboard = null,
         Services.Summary.SummarySource? summaries = null,
-        Services.Presence.DiscordPresence? presence = null)
+        Services.Presence.DiscordPresence? presence = null,
+        IReplayMakerWindowService? replayMakerWindow = null)
     {
+        _replayMakerWindow = replayMakerWindow;
         _summaries = summaries;
         _presence = presence;
         _zen = zen;
@@ -142,6 +144,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 await lobby.OpenLinkCommand.ExecuteAsync(null);
             }
         }, settings, summaries is null ? null : summaries.Build);
+        ReplayMaker = new ReplayMakerViewModel(game, files, ReplayVerdicts, () => Share.Options, () => ShowCoordinates,
+            new Services.Export.FfmpegVideoEncoder(() => settings?.Current.FfmpegPath));
 
         // Discord status (off unless the player turned it on): follows the board, the study and online games.
         if (presence is not null)
@@ -601,6 +605,26 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     public CountingViewModel Counting { get; }
 
     private readonly Services.Presence.DiscordPresence? _presence;
+    private readonly IReplayMakerWindowService? _replayMakerWindow;
+
+    /// <summary>The replay maker (desktop): videos, GIFs and animated pages of a line.</summary>
+    public ReplayMakerViewModel ReplayMaker { get; }
+
+    public bool HasReplayMaker => _replayMakerWindow is not null && !PlatformInfo.IsPhone;
+
+    [RelayCommand(CanExecute = nameof(HasReplayMaker))]
+    private void OpenReplayMaker() => _replayMakerWindow?.Show(ReplayMaker);
+
+    // KataGo's written review when there is one for this game, else the tree's colours (quality only).
+    private IReadOnlyDictionary<Hoshi.Sgf.GameNode, Services.Study.StudyVerdict> ReplayVerdicts()
+    {
+        if (Analysis.LastReview.Keys.Any(n => ReferenceEquals(Hoshi.Sgf.GameCursor.Path(n)[0], Game.Tree.Root)))
+        {
+            return Analysis.LastReview;
+        }
+
+        return Analysis.NodeVerdicts.ToDictionary(kv => kv.Key, kv => new Services.Study.StudyVerdict(kv.Value, double.NaN, null));
+    }
 
     /// <summary>What the Discord status says now (nothing about the opponent or the position).</summary>
     public Services.Presence.PresenceActivity CurrentActivity() =>
