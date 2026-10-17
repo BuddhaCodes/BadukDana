@@ -38,7 +38,7 @@
 <meta name="twitter:image:alt" content="Hoshi: a wooden Go board with stones and the words “A Go board that feels every move.”">
 <link rel="sitemap" type="application/xml" href="https://buddhacodes.github.io/BadukDana/sitemap.xml">
 <link rel="apple-touch-icon" href="icon.png">
-<meta name="theme-color" content="#0a0d19">
+<meta name="theme-color" content="#0b1026">
 <style>
   /* Fonts are served with the page (SIL OFL 1.1, see THIRD_PARTY_NOTICES.md): no third-party requests. */
   @font-face { font-family: Figtree; font-weight: 400; font-display: swap; src: url(fonts/figtree-latin-400-normal.woff2) format("woff2"); }
@@ -50,25 +50,27 @@
   @font-face { font-family: Fraunces; font-weight: 700; font-display: swap; src: url(fonts/fraunces-latin-700-normal.woff2) format("woff2"); }
   @font-face { font-family: "Shippori Mincho B1"; font-weight: 600 800; font-display: swap; src: url(fonts/shippori-mincho-b1-105-700-normal.woff2) format("woff2"); unicode-range: U+661F; }
   @font-face { font-family: "Shippori Mincho B1"; font-weight: 600 800; font-display: swap; src: url(fonts/shippori-mincho-b1-117-700-normal.woff2) format("woff2"); unicode-range: U+6B63; }
+  @font-face { font-family: "Shippori Mincho B1"; font-weight: 600 800; font-display: swap; src: url(fonts/shippori-mincho-b1-latin-700-normal.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215; }
+  @font-face { font-family: "Shippori Mincho B1"; font-weight: 600 800; font-display: swap; src: url(fonts/shippori-mincho-700-jo-chu-shu.woff2) format("woff2"); unicode-range: U+5E8F, U+4E2D, U+7D42; }
   @font-face { font-family: "JetBrains Mono"; font-weight: 400; font-display: swap; src: url(fonts/jetbrains-mono-latin-400-normal.woff2) format("woff2"); }
 
   :root {
-    --ink: #0a0d19;
-    --ink-2: #0f1426;
-    --ink-3: #161c33;
-    --line: rgba(255, 255, 255, .09);
-    --text: #ece8de;
-    --muted: #a6a9b8;
-    --gold: #d9b45a;
-    --gold-2: #f0d594;
+    --ink: #0b1026;
+    --ink-2: #0f1530;
+    --ink-3: #141a3a;
+    --line: rgba(154, 160, 195, .18);
+    --text: #e9e6da;
+    --muted: #9aa0c3;
+    --gold: #e8c36a;
+    --gold-2: #f3d995;
     --kaya: #e8c483;
     --seal: #c8432f;
-    --paper: #f3ede1;
-    --paper-2: #e9e1d0;
-    --paper-ink: #1f1b16;
-    --paper-muted: #6b6152;
+    --paper: #f1e6cf;
+    --paper-2: #e6d6b6;
+    --paper-ink: #1e1a14;
+    --paper-muted: #6b5f48;
     --paper-line: rgba(31, 27, 22, .12);
-    --serif: Fraunces, "Shippori Mincho B1", Georgia, serif;
+    --serif: "Shippori Mincho B1", Fraunces, Georgia, serif;
     --radius: 16px;
     --max: 1160px;
   }
@@ -107,7 +109,7 @@
   .btn.donate:hover .heart { transform: scale(1.18); }
 
   /* Nav */
-  nav { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: rgba(10, 13, 25, .74); border-bottom: 1px solid var(--line); }
+  nav { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: rgba(11, 16, 38, .78); border-bottom: 1px solid var(--line); }
   nav .wrap { display: flex; align-items: center; gap: 22px; height: 64px; }
   .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-family: var(--serif); font-size: 24px; font-weight: 600; }
   .brand img { width: 30px; height: 30px; }
@@ -149,6 +151,17 @@
   .turn i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; background: radial-gradient(circle at 35% 30%, #555, #111); }
   .turn i.w { background: radial-gradient(circle at 35% 30%, #fff, #cfcac0); }
   @media (max-width: 920px) { .hero { grid-template-columns: 1fr; gap: 44px; } .goban, .goban-bar { margin-left: auto; margin-right: auto; } header { padding-top: 48px; } }
+
+  /* Three moments (redesign 2026-10): 序 opening · 中 middle game · 終 endgame, as chapters of a game. */
+  .moments { padding: 76px 0; border-top: 1px solid var(--line); background: var(--ink-2); }
+  .moments .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
+  .moment { display: flex; flex-direction: column; gap: 10px; padding: 26px; border-radius: var(--radius); background: var(--ink-3); border: 1px solid var(--line); text-decoration: none; color: var(--text); transition: border-color .2s, transform .2s; }
+  .moment:hover { border-color: rgba(232, 195, 106, .55); transform: translateY(-2px); }
+  .moment .k { font: 700 56px/1 "Shippori Mincho B1", serif; color: var(--gold); }
+  .moment h3 { font-size: 26px; }
+  .moment p { color: var(--muted); font-size: 15.5px; }
+  .moment .more { margin-top: auto; padding-top: 8px; color: var(--gold-2); font-weight: 600; font-size: 14.5px; }
+  @media (max-width: 900px) { .moments .grid { grid-template-columns: 1fr; } }
 
   /* Features: tabs on washi paper */
   .paper { background: var(--paper); color: var(--paper-ink);
@@ -300,14 +313,14 @@
     <div>
       <p class="eyebrow" data-i18n="hero.eyebrow">Go · Baduk · Weiqi</p>
       <h1 data-i18n-html="hero.title">A Go board that <em>feels</em> every move.</h1>
-      <p class="lead" data-i18n="hero.lead">Hoshi is a free desktop app for playing and studying Go. A beautiful board, KataGo judging every move live, joseki guidance in every corner, cinematic effects when you find the best move, and lo-fi music that heats up with your streaks.</p>
+      <p class="lead" data-i18n="hero.lead">Hoshi is a free app for playing and studying Go, on your computer and your Android phone. A beautiful board, KataGo judging every move live, joseki guidance in every corner, cinematic effects when you find the best move, and lo-fi music that heats up with your streaks.</p>
       <div class="cta">
         <a class="btn primary big" href="#download" id="hero-dl" data-i18n="hero.cta">Get Hoshi</a>
         <a class="btn ghost big" href="https://github.com/BuddhaCodes/BadukDana" data-i18n="hero.github">Source on GitHub</a>
         <a class="btn ghost big donate" href="https://paypal.me/CarlosFernandez934" rel="noopener" title="PayPal"><span class="heart" aria-hidden="true">♥</span><span data-i18n="hero.support">Support Hoshi</span></a>
       </div>
       <ul class="facts">
-        <li>Windows · macOS · Linux</li>
+        <li>Windows · macOS · Linux · Android</li>
         <li data-i18n="hero.badge2">KataGo included</li>
         <li data-i18n="hero.badge3">Play on OGS</li>
         <li data-i18n="hero.badge4">Joseki trainer</li>
@@ -324,6 +337,35 @@
     </div>
   </div>
 </header>
+
+<section class="moments" id="moments" aria-labelledby="mo-title">
+  <div class="wrap">
+    <div class="head reveal">
+      <p class="eyebrow" data-i18n="mo.eyebrow">One game, three chapters</p>
+      <h2 id="mo-title" data-i18n="mo.title">Play it, study it, read it again.</h2>
+    </div>
+    <div class="grid">
+      <a class="moment reveal" href="#features">
+        <span class="k" lang="ja" aria-hidden="true">序</span>
+        <h3 data-i18n="mo.play.t">Play</h3>
+        <p data-i18n="mo.play.d">On OGS with automatch, clock and chat; at home face to face, or against a KataGo that plays like a person of your level.</p>
+        <span class="more" data-i18n="mo.play.more">How you play →</span>
+      </a>
+      <a class="moment reveal" href="#joseki">
+        <span class="k" lang="ja" aria-hidden="true">中</span>
+        <h3 data-i18n="mo.study.t">Study</h3>
+        <p data-i18n="mo.study.d">Notes and drawings on the board, what-if lines, problems that come back when it is time to review, and a joseki trainer.</p>
+        <span class="more" data-i18n="mo.study.more">The joseki trainer →</span>
+      </a>
+      <a class="moment reveal" href="#review">
+        <span class="k" lang="ja" aria-hidden="true">終</span>
+        <h3 data-i18n="mo.review.t">Review</h3>
+        <p data-i18n="mo.review.d">KataGo marks your biggest mistakes and what it would have played; then share the game as a card, a video or a web page.</p>
+        <span class="more" data-i18n="mo.review.more">How a review works →</span>
+      </a>
+    </div>
+  </div>
+</section>
 
 <section id="features" class="paper">
   <div class="wrap">
@@ -649,8 +691,12 @@ dotnet run --project src/Hoshi.Desktop -c Release</pre></div>
     "nav.features": "Funciones", "nav.review": "Repaso", "nav.joseki": "Joseki", "nav.craft": "Tableros y piedras", "nav.effects": "Efectos", "nav.themes": "Temas", "nav.download": "Consíguelo",
     "hero.eyebrow": "Go · Baduk · Weiqi",
     "hero.title": "Un tablero de Go que <em>siente</em> cada jugada.",
-    "hero.lead": "Hoshi es una app de escritorio gratuita para jugar y estudiar Go. Un tablero precioso, KataGo valorando cada jugada en vivo, guía de josekis en cada esquina, efectos de cine cuando das con la mejor jugada y música lo-fi que se anima con tus rachas.",
+    "hero.lead": "Hoshi es una app gratuita para jugar y estudiar Go, en tu ordenador y en tu teléfono Android. Un tablero precioso, KataGo valorando cada jugada en vivo, guía de josekis en cada esquina, efectos de cine cuando das con la mejor jugada y música lo-fi que se anima con tus rachas.",
     "hero.cta": "Consigue Hoshi", "hero.github": "Código en GitHub", "hero.support": "Apoya Hoshi", "hero.badge2": "KataGo incluido", "hero.badge3": "Juega en OGS", "hero.badge4": "Entrenador de josekis", "hero.badge5": "Motores GTP",
+    "mo.eyebrow": "Una partida, tres capítulos", "mo.title": "Juégala, estúdiala, vuelve a leerla.",
+    "mo.play.t": "Jugar", "mo.play.d": "En OGS con automatch, reloj y chat; en casa, frente a frente o contra un KataGo que juega como una persona de tu nivel.", "mo.play.more": "Cómo se juega →",
+    "mo.study.t": "Estudiar", "mo.study.d": "Notas y dibujos en el tablero, líneas «¿y si…?», problemas que vuelven cuando toca repasarlos y un entrenador de josekis.", "mo.study.more": "El entrenador de josekis →",
+    "mo.review.t": "Revisar", "mo.review.d": "KataGo marca tus errores más grandes y lo que habría jugado; luego compártela como tarjeta, vídeo o página web.", "mo.review.more": "Cómo es una revisión →",
     "board.watch": "Se está jugando una apertura…", "board.reset": "Vaciar el tablero",
     "board.black": "Juegan negras: pon una piedra", "board.white": "Juegan blancas: pon una piedra",
     "feat.eyebrow": "Funciones", "feat.title": "Todo lo que necesitas frente al tablero.",

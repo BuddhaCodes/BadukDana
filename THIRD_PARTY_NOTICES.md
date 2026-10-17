@@ -24,14 +24,17 @@ load as one family. None of them declares a Reserved Font Name. Full license tex
 ### Fonts of the promotional page (SIL Open Font License 1.1)
 
 Served from `docs/site/fonts/`, copied unmodified from the `@fontsource/*` 5.3.0 npm packages (Latin subsets, plus the two
-Shippori Mincho B1 Japanese subsets that hold 星 and 正). No Reserved Font Name. Texts: `licenses/OFL-Fraunces.txt`,
-`licenses/OFL-Figtree.txt`, `licenses/OFL-ShipporiMinchoB1.txt`, `licenses/OFL-JetBrainsMono.txt`.
+Shippori Mincho B1 Japanese subsets that hold 星 and 正). `shippori-mincho-700-jo-chu-shu.woff2` is a subset of the app's
+Shippori Mincho Bold with only 序, 中 and 終 (made with fontTools; the OFL allows modified versions under the same
+licence). No Reserved Font Name. Texts: `licenses/OFL-Fraunces.txt`, `licenses/OFL-Figtree.txt`,
+`licenses/OFL-ShipporiMinchoB1.txt`, `licenses/OFL-ShipporiMincho.txt`, `licenses/OFL-JetBrainsMono.txt`.
 
 | Family | Copyright |
 |---|---|
 | Fraunces | © 2020 The Fraunces Project Authors |
 | Figtree | © 2022 The Figtree Project Authors |
 | Shippori Mincho B1 | © 2021 The Shippori Mincho Project Authors |
+| Shippori Mincho (subset: 序 中 終) | © 2021 The Shippori Mincho Project Authors |
 | JetBrains Mono | © 2020 The JetBrains Mono Project Authors |
 
 ### KataGo (bundled in the Windows and Linux downloads, or downloaded by "Install KataGo")
