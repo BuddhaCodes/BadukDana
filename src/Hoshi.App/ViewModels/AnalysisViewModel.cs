@@ -820,6 +820,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         }
 
         IReadOnlyDictionary<GameNode, Services.Study.StudyVerdict> verdicts = await VerdictsAsync(nodes, cancellationToken);
+        LastReview = verdicts;
         foreach ((GameNode node, Services.Study.StudyVerdict v) in verdicts)
         {
             node.RemoveProperty("BM");
@@ -847,6 +848,9 @@ public sealed partial class AnalysisViewModel : ViewModelBase
 
         return verdicts.Count;
     }
+
+    /// <summary>KataGo's verdicts of the last review written into a game (for the summaries).</summary>
+    public IReadOnlyDictionary<GameNode, Services.Study.StudyVerdict> LastReview { get; private set; } = new Dictionary<GameNode, Services.Study.StudyVerdict>();
 
     /// <summary>The start of the comment lines Hoshi writes (and replaces) with KataGo's review.</summary>
     public const string ReviewPrefix = "[KataGo] ";

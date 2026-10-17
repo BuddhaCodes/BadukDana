@@ -61,8 +61,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IBrowserLauncher? browser = null,
         PreferencesViewModel? preferences = null,
         ZenMode? zen = null,
-        IClipboardService? clipboard = null)
+        IClipboardService? clipboard = null,
+        Services.Summary.SummarySource? summaries = null)
     {
+        _summaries = summaries;
         _zen = zen;
         AppSettings initial = settings?.Current ?? new AppSettings();
         game.ConfirmMoves = PlatformInfo.ConfirmMoves(initial);
@@ -117,7 +119,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             {
                 await lobby.OpenLinkCommand.ExecuteAsync(null);
             }
-        }, settings);
+        }, settings, summaries is null ? null : summaries.Build);
         Clock = new LocalClockViewModel(game, ui, sounds: sounds);
         Counting.PropertyChanged += (_, e) =>
         {
@@ -318,9 +320,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         Game.ShowStatus(Tr.T("Review.Working"));
         int judged = await Analysis.AnnotateMainLineAsync(CancellationToken.None);
+        _summaries?.Reviews.Record(Game.Tree, Analysis.LastReview, DateTimeOffset.Now);
         Game.ShowStatus(judged > 0 ? Tr.F("Review.Done", judged) : Tr.T("Review.NoEngine"));
     }
     private readonly IReplayStore? _replayStore;
+    private readonly Services.Summary.SummarySource? _summaries;
     private readonly ReplayRecorder? _recorder;
 
     public bool HasReplays => _replaysWindow is not null;

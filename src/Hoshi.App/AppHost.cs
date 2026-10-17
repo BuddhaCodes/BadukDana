@@ -103,6 +103,10 @@ public static class AppHost
             sp.GetRequiredService<Services.Tsumego.TsumegoLibrary>(), sp.GetRequiredService<IFileDialogService>(), sp.GetRequiredService<GameViewModel>()));
         services.AddSingleton<ITsumegoWindowService, TsumegoWindowService>();
         services.AddSingleton<WelcomeViewModel>();
+        services.AddSingleton(_ => new Services.Summary.ReviewLog(AppPaths.DataDirectory));
+        services.AddSingleton(sp => new Services.Summary.SummarySource(
+            sp.GetService<IReplayStore>(), sp.GetRequiredService<Services.Summary.ReviewLog>(), sp.GetService<Services.Joseki.IJosekiLibrary>(),
+            sp.GetRequiredService<Services.Tsumego.TsumegoLibrary>(), sp.GetService<ISettingsService>()));
         services.AddSingleton<Services.Joseki.IJosekiLibrary, Services.Joseki.JosekiLibrary>();
         services.AddSingleton<Hoshi.Ogs.Joseki.IJosekiExplorerSource>(sp => new Hoshi.Ogs.Joseki.OgsJosekiClient(
             sp.GetRequiredService<IHttpClientFactory>().CreateClient(OgsServiceRegistration.HttpClientName),

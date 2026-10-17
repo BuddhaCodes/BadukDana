@@ -58,6 +58,20 @@ public static partial class Tr
         Add(d, "Share.ProblemNeedsMove", "Show the move that answers the problem first.", "Muestra primero la jugada que responde el problema.");
         Add(d, "Share.Spoiler", "{0} Answer: ||{1}|| (Reddit: >!{1}!<)", "{0} Respuesta: ||{1}|| (Reddit: >!{1}!<)");
         Add(d, "Share.SpoilerCopied", "Problem saved; the answer is on the clipboard as a spoiler.", "Problema guardado; la respuesta está en el portapapeles como spoiler.");
+        Add(d, "Share.Summary", "Summary", "Resumen");
+        Add(d, "Share.SummaryMonth", "This month…", "Este mes…");
+        Add(d, "Share.SummaryYear", "This year…", "Este año…");
+        Add(d, "Share.SummaryTip", "Games, results, KataGo's accuracy in the reviewed games, joseki and problems; worked out on this computer.", "Partidas, resultados, precisión según KataGo en las partidas revisadas, josekis y problemas; calculado en este equipo.");
+        Add(d, "Share.SummarySuffix", "summary", "resumen");
+        Add(d, "Summary.Games", "games ({0} on OGS)", "partidas ({0} en OGS)");
+        Add(d, "Summary.WinsLosses", "wins – losses", "victorias – derrotas");
+        Add(d, "Summary.Accuracy", "good moves per KataGo ({0} reviewed)", "jugadas buenas según KataGo ({0} revisadas)");
+        Add(d, "Summary.BestMoves", "moves that were KataGo's first choice", "jugadas que eran la primera de KataGo");
+        Add(d, "Summary.Joseki", "joseki learned ({0} reviewed)", "josekis aprendidos ({0} repasados)");
+        Add(d, "Summary.Problems", "problems solved", "problemas resueltos");
+        Add(d, "Summary.Of", "{0}'s Go", "El go de {0}");
+        Add(d, "Summary.MonthSubtitle", "My month of Go", "Mi mes de go");
+        Add(d, "Summary.YearSubtitle", "My year of Go", "Mi año de go");
         Add(d, "Share.SaveFailed", "Could not save: {0}", "No se pudo guardar: {0}");
     }
 }

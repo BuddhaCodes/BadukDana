@@ -36,6 +36,8 @@ public sealed partial class ShareViewModel : ViewModelBase
     private readonly IClipboardService? _clipboard;
     private readonly Func<string, Task>? _openLink;
     private readonly ISettingsService? _settings;
+    private readonly Func<DateTimeOffset, DateTimeOffset, Services.Summary.PlayerSummary>? _summary;
+    private readonly TimeProvider _time;
 
     /// <summary>Shared pictures and pages say "Black"/"White" instead of the names (and leave out the date).</summary>
     [ObservableProperty]
@@ -52,7 +54,7 @@ public sealed partial class ShareViewModel : ViewModelBase
     partial void OnShowBrandChanged(bool value) => _settings?.Save(_settings.Current with { ShareShowBrand = value });
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ExportImageCommand), nameof(ExportAnimationCommand), nameof(ShareImageCommand), nameof(ShareAnimationCommand), nameof(ExportCardCommand), nameof(ExportProblemCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ExportImageCommand), nameof(ExportAnimationCommand), nameof(ShareImageCommand), nameof(ShareAnimationCommand), nameof(ExportCardCommand), nameof(ExportProblemCommand), nameof(ExportSummaryCommand))]
     private bool _isBusy;
 
     public ShareViewModel(
@@ -62,9 +64,13 @@ public sealed partial class ShareViewModel : ViewModelBase
         Func<bool>? coordinates = null,
         IClipboardService? clipboard = null,
         Func<string, Task>? openLink = null,
-        ISettingsService? settings = null)
+        ISettingsService? settings = null,
+        Func<DateTimeOffset, DateTimeOffset, Services.Summary.PlayerSummary>? summary = null,
+        TimeProvider? time = null)
     {
         _settings = settings;
+        _summary = summary;
+        _time = time ?? TimeProvider.System;
         _hideNames = settings?.Current.ShareHideNames ?? false;
         _showBrand = settings?.Current.ShareShowBrand ?? true;
         _game = game ?? throw new ArgumentNullException(nameof(game));
@@ -273,6 +279,86 @@ public sealed partial class ShareViewModel : ViewModelBase
         {
             await _clipboard.SetTextAsync(problem.Spoiler);
             _game.ShowStatus(Tr.T("Share.SpoilerCopied"));
+        }
+    }
+
+    public bool HasSummary => _summary is not null;
+
+    private static System.Globalization.CultureInfo Culture => System.Globalization.CultureInfo.GetCultureInfo(Tr.Language);
+
+    /// <summary>This month (or year) so far, in local time: start and end.</summary>
+    public (DateTimeOffset From, DateTimeOffset To, string Title) Period(bool year)
+    {
+        DateTimeOffset now = _time.GetLocalNow();
+        var from = new DateTimeOffset(now.Year, year ? 1 : now.Month, 1, 0, 0, 0, now.Offset);
+        DateTimeOffset to = year ? from.AddYears(1) : from.AddMonths(1);
+        string title = year
+            ? now.Year.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            : System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(from.ToString("MMMM yyyy", Culture));
+        return (from, to, title);
+    }
+
+    /// <summary>The tiles of a summary: only what has something to show.</summary>
+    public static IReadOnlyList<(string Number, string Label)> SummaryTiles(Services.Summary.PlayerSummary s)
+    {
+        ArgumentNullException.ThrowIfNull(s);
+        var tiles = new List<(string, string)>
+        {
+            (s.Games.ToString(Culture), Tr.F("Summary.Games", s.OnlineGames)),
+        };
+        if (s.Wins + s.Losses > 0)
+        {
+            tiles.Add(($"{s.Wins}–{s.Losses}", Tr.T("Summary.WinsLosses")));
+        }
+
+        if (s.Accuracy is { } accuracy)
+        {
+            tiles.Add((accuracy.ToString("P0", Culture), Tr.F("Summary.Accuracy", s.ReviewedGames)));
+            tiles.Add((s.BestMoves.ToString(Culture), Tr.T("Summary.BestMoves")));
+        }
+
+        if (s.JosekiReviewed > 0)
+        {
+            tiles.Add((s.JosekiLearned.ToString(Culture), Tr.F("Summary.Joseki", s.JosekiReviewed)));
+        }
+
+        if (s.ProblemsSolved > 0)
+        {
+            tiles.Add((s.ProblemsSolved.ToString(Culture), Tr.T("Summary.Problems")));
+        }
+
+        return tiles;
+    }
+
+    public byte[]? SummaryPng(bool year, CardFormat format)
+    {
+        if (_summary is null)
+        {
+            return null;
+        }
+
+        (DateTimeOffset from, DateTimeOffset to, string title) = Period(year);
+        Services.Summary.PlayerSummary s = _summary(from, to);
+        string subtitle = HideNames || s.Player is null ? Tr.T(year ? "Summary.YearSubtitle" : "Summary.MonthSubtitle") : Tr.F("Summary.Of", s.Player);
+        return BoardPicture.Png(ShareCard.RenderStats(title, subtitle, SummaryTiles(s), format, ShowBrand));
+    }
+
+    [RelayCommand(CanExecute = nameof(CanExport))]
+    private async Task ExportSummary(string? period)
+    {
+        bool year = period == "Year";
+        if (SummaryPng(year, PlatformInfo.IsPhone ? CardFormat.Story : CardFormat.Square) is not { } png)
+        {
+            return;
+        }
+
+        if (PlatformInfo.ShareFile is not null)
+        {
+            await ShareFile(png, "Share.SummarySuffix", ExportFileType.Png);
+        }
+        else if (_files is not null && await _files.PickExportToSaveAsync(Period(year).Title + " — Hoshi.png", ExportFileType.Png) is { } path)
+        {
+            await Save(path, png);
         }
     }
 

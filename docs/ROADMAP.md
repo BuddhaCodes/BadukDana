@@ -145,7 +145,7 @@ Todo lo que sale del equipo es una acción explícita del usuario; los nombres d
 - [x] 21. *(2026-10-17: «Esta jugada como problema»: la posición anterior, «Juegan…», y la respuesta copiada como `||D16||` y `>!D16!<`)* **Problema para compartir**: imagen «negras juegan» con la respuesta oculta (spoiler de Discord/Reddit) sacada de tu estudio o de tus errores.
 - [x] 22. *(2026-10-17: posiciones calculadas por Hoshi y guardadas en la página; script propio, SVG, flechas, variantes y notas; sin archivos externos)* **Visor web independiente**: exportar la partida con su estudio a un único `.html` que se abre en cualquier navegador (para un blog, la web del club o un mensaje).
 - [x] 23. *(2026-10-17: Ctrl+Mayús+C / Ctrl+Mayús+V; pegar un enlace o número de OGS descarga la partida)* **Copiar/pegar SGF y enlaces de OGS**: pegar un SGF o un enlace de partida de OGS lo abre; copiar la partida actual como SGF.
-- [ ] 24. **Resumen del mes / del año**: tarjeta con partidas jugadas, mejores jugadas, precisión media según KataGo y josekis aprendidos (calculado en el equipo, nada se envía).
+- [x] 24. *(2026-10-17: Compartir → Resumen; jugador = autor del estudio o el nombre de la mayoría de partidas guardadas; precisión de las revisiones de KataGo guardadas en `reviews.json`, solo recuentos)* **Resumen del mes / del año**: tarjeta con partidas jugadas, mejores jugadas, precisión media según KataGo y josekis aprendidos (calculado en el equipo, nada se envía).
 - [ ] 25. **Estado en Discord** (opcional, apagado por defecto): «Estudiando una partida» / «Jugando en OGS», sin datos del rival.
 
 ### Después de la 1.0
