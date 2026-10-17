@@ -150,6 +150,12 @@ public sealed record HoshiTheme
 
     public Color Danger { get; init; } = Color.Parse("#D9534F");
 
+    /// <summary>Good news: a strong move, a right answer.</summary>
+    public Color Good { get; init; } = Color.Parse("#6CC47A");
+
+    /// <summary>A light theme: Fluent's own controls switch to their light look too.</summary>
+    public bool IsLight { get; init; }
+
     public required Color EditBar { get; init; }
 
     public required Color EditBarText { get; init; }
@@ -181,28 +187,31 @@ public static class HoshiThemes
 {
     private const string Fonts = "avares://Hoshi.App/Assets/Fonts/";
 
+    /// <summary>Estrella polar (the 2026-10 redesign): night blue, gold and a seal red, Shippori Mincho titles.</summary>
     public static HoshiTheme NightSky { get; } = new()
     {
         Id = "night",
         NameKey = "Theme.Night.Name",
         DescriptionKey = "Theme.Night.Description",
-        Window = Color.Parse("#0E1326"),
-        Bar = Color.Parse("#10152A"),
-        Sidebar = Color.Parse("#0B1020"),
-        Properties = Color.Parse("#10162B"),
-        PanelAlt = Color.Parse("#1B2342"),
-        Border = Color.Parse("#26304F"),
-        Text = Color.Parse("#E8E6F0"),
-        TextSecondary = Color.Parse("#8E93AD"),
-        Accent = Color.Parse("#D8B46A"),
+        Window = Color.Parse("#0B1026"),
+        Bar = Color.Parse("#0F1530"),
+        Sidebar = Color.Parse("#0F1530"),
+        Properties = Color.Parse("#141A3A"),
+        PanelAlt = Color.Parse("#1B2350"),
+        Border = Color.Parse("#2A315A"),
+        Text = Color.Parse("#E9E6DA"),
+        TextSecondary = Color.Parse("#9AA0C3"),
+        Accent = Color.Parse("#E8C36A"),
+        Danger = Color.Parse("#E0604A"),
+        Good = Color.Parse("#7FD1A5"),
         EditBar = Color.Parse("#2E3F73"),
         EditBarText = Color.Parse("#F1EEDF"),
         EditBarHover = Color.Parse("#3B4E8A"),
-        Surround = Color.Parse("#0B1020"),
+        Surround = Color.Parse("#0B1026"),
         UiFont = Fonts + "Manrope#Manrope",
-        TitleFont = Fonts + "CormorantGaramond#Cormorant Garamond",
+        TitleFont = Fonts + "ShipporiMincho#Shippori Mincho",
         MonoFont = Fonts + "JetBrainsMono#JetBrains Mono",
-        TitleSize = 18,
+        TitleSize = 16,
         IconSet = "PhosphorLight",
         Background = BackgroundKind.NightSky,
         Board = new BoardStyle
@@ -221,8 +230,8 @@ public static class HoshiThemes
             StoneShadow = Color.Parse("#70050814"),
             Stones = StoneStyle.Pearl,
             Effect = PlacementEffect.GoldHalo,
-            EffectColor = Color.Parse("#E8C77A"),
-            LastMove = Color.Parse("#D8B46A"),
+            EffectColor = Color.Parse("#E8C36A"),
+            LastMove = Color.Parse("#E8C36A"),
         },
     };
 
@@ -428,7 +437,59 @@ public static class HoshiThemes
         },
     };
 
-    public static IReadOnlyList<HoshiTheme> All { get; } = [NightSky, InkAndGold, ZenGarden, WarmMinimal, Classic, HighContrast];
+    /// <summary>
+    /// Kaya (light, from the 2026-10 redesign): cream paper, ink text, an indigo edit bar and a seal-red accent,
+    /// on washi with a pale shin-kaya board.
+    /// </summary>
+    public static HoshiTheme Kaya { get; } = new()
+    {
+        Id = "kaya",
+        NameKey = "Theme.Kaya.Name",
+        DescriptionKey = "Theme.Kaya.Description",
+        IsLight = true,
+        Window = Color.Parse("#F1E6CF"),
+        Bar = Color.Parse("#EADCBF"),
+        Sidebar = Color.Parse("#F6EEDC"),
+        Properties = Color.Parse("#FBF6EA"),
+        PanelAlt = Color.Parse("#E6D6B6"),
+        Border = Color.Parse("#CDBB97"),
+        Text = Color.Parse("#1E1A14"),
+        TextSecondary = Color.Parse("#6B5F48"),
+        Accent = Color.Parse("#B23A2A"),
+        Danger = Color.Parse("#B23A2A"),
+        Good = Color.Parse("#2F7A4E"),
+        EditBar = Color.Parse("#26357F"),
+        EditBarText = Color.Parse("#F6EEDC"),
+        EditBarHover = Color.Parse("#34449A"),
+        Surround = Color.Parse("#EFE6D2"),
+        UiFont = Fonts + "Manrope#Manrope",
+        TitleFont = Fonts + "ShipporiMincho#Shippori Mincho",
+        MonoFont = Fonts + "JetBrainsMono#JetBrains Mono",
+        TitleSize = 16,
+        IconSet = "PhosphorRegular",
+        Background = BackgroundKind.Washi,
+        Board = new BoardStyle
+        {
+            Texture = "avares://Hoshi.App/Assets/Art/Boards/shin-kaya.jpg",
+            StoneSet = "clam-slate",
+            WhiteVariants = 8,
+            BlackVariants = 4,
+            Wood = Color.Parse("#E9CF98"),
+            Border = Color.Parse("#B89A68"),
+            BorderWidth = 0.04,
+            Lines = Color.Parse("#3A2A14"),
+            Coordinates = Color.Parse("#B03A2A14"),
+            BoardShadow = Color.Parse("#663C2814"),
+            BoardShadowBlur = 22,
+            StoneShadow = Color.Parse("#552A1C10"),
+            Stones = StoneStyle.SlateShell,
+            Effect = PlacementEffect.InkRipple,
+            EffectColor = Color.Parse("#1E1A14"),
+            LastMove = Color.Parse("#B23A2A"),
+        },
+    };
+
+    public static IReadOnlyList<HoshiTheme> All { get; } = [NightSky, Kaya, InkAndGold, ZenGarden, WarmMinimal, Classic, HighContrast];
 
     public static HoshiTheme Default => NightSky;
 

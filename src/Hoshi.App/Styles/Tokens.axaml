@@ -9,6 +9,7 @@
   <Color x:Key="Text.Secondary.Color">#9A9A9A</Color>
   <Color x:Key="Accent.Color">#E0A94A</Color>
   <Color x:Key="Danger.Color">#D9534F</Color>
+  <Color x:Key="Good.Color">#6CC47A</Color>
   <Color x:Key="Board.Wood.Color">#DCB35C</Color>
   <Color x:Key="Board.Line.Color">#CC1A1A1A</Color>
 
@@ -20,6 +21,7 @@
   <SolidColorBrush x:Key="Text.Secondary" Color="{StaticResource Text.Secondary.Color}" />
   <SolidColorBrush x:Key="Accent" Color="{StaticResource Accent.Color}" />
   <SolidColorBrush x:Key="Danger" Color="{StaticResource Danger.Color}" />
+  <SolidColorBrush x:Key="Good" Color="{StaticResource Good.Color}" />
   <SolidColorBrush x:Key="Board.Wood" Color="{StaticResource Board.Wood.Color}" />
   <SolidColorBrush x:Key="Board.Line" Color="{StaticResource Board.Line.Color}" />
 

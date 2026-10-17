@@ -171,8 +171,10 @@ public static partial class Tr
         // Themes
         Add(d, "Theme.Contrast.Name", "High contrast", "Alto contraste");
         Add(d, "Theme.Contrast.Description", "For low vision: black and white with a yellow accent, a flat pale board, black lines and a red last move; nothing moves.", "Para baja visión: negro y blanco con acento amarillo, tablero claro y liso, líneas negras y la última jugada en rojo; nada se mueve.");
-        Add(d, "Theme.Night.Name", "Night sky", "Cielo nocturno");
-        Add(d, "Theme.Night.Description", "Hoshi means “star”: a midnight-blue sky with twinkling stars and pale gold.", "Hoshi significa «estrella»: cielo azul noche con estrellas que titilan y oro pálido.");
+        Add(d, "Theme.Night.Name", "Pole star", "Estrella polar");
+        Add(d, "Theme.Night.Description", "Hoshi means “star”: a night-blue sky with twinkling stars, gold and Mincho titles.", "Hoshi significa «estrella»: cielo azul noche con estrellas que titilan, oro y títulos en Mincho.");
+        Add(d, "Theme.Kaya.Name", "Kaya", "Kaya");
+        Add(d, "Theme.Kaya.Description", "Light: cream paper, ink, a pale kaya board and a seal-red accent.", "Claro: papel crema, tinta, un goban de kaya claro y rojo sello.");
         Add(d, "Theme.Sumi.Name", "Ink and gold", "Tinta y oro");
         Add(d, "Theme.Sumi.Description", "Sumi-e nocturne: slowly drifting ink mist, gold and seal red.", "Nocturno sumi-e: niebla de tinta que se mueve despacio, oro y rojo sello.");
         Add(d, "Theme.Zen.Name", "Zen garden", "Jardín zen");
