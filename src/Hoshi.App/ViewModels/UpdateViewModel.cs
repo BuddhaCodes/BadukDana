@@ -109,7 +109,7 @@ public sealed partial class UpdateViewModel : ViewModelBase
     public string? StatusText => _statusKey is null ? null : Tr.F(_statusKey, _statusArgs);
 
     /// <summary>Shown under the offer when this copy cannot update itself.</summary>
-    public string? InstallerHint => Available is not null && !_updates.CanInstall ? Tr.T("Update.InstallerHint") : null;
+    public string? InstallerHint => Available is not null && !_updates.CanInstall ? Tr.T(PlatformInfo.IsPhone ? "Update.PhoneHint" : "Update.InstallerHint") : null;
 
     public bool HasStatus => StatusText is not null;
 

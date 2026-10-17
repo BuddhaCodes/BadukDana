@@ -22,6 +22,7 @@ public static partial class Tr
         Add(d, "Update.Available", "Hoshi {0} is available (you have {1}).", "Hoshi {0} está disponible (tienes la {1}).");
         Add(d, "Update.Install", "Update and restart", "Actualizar y reiniciar");
         Add(d, "Update.Download", "Get the installer", "Descargar el instalador");
+        Add(d, "Update.PhoneHint", "Download the new APK from the website and install it over this one: your games and settings stay.", "Descarga el nuevo APK de la web e instálalo encima de este: tus partidas y ajustes se conservan.");
         Add(d, "Update.InstallerHint", "Install Hoshi with its installer once and it will keep itself up to date.", "Instala Hoshi con su instalador una vez y se mantendrá al día solo.");
         Add(d, "Audio.Tip", "Sound", "Sonido");
         Add(d, "Audio.TipMuted", "Sound off", "Sonido apagado");

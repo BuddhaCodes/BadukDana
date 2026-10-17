@@ -130,11 +130,14 @@
       </Border>
 
       <!-- The sheet under the board. -->
-      <Border DockPanel.Dock="Bottom" IsVisible="{Binding HasSheet}" Height="{Binding SheetHeight}" Background="{DynamicResource Bg.Properties}"
-              BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="0,1,0,0" Classes="appear" x:Name="PhoneSheet">
+      <!-- Portrait: the sheet is under the board (its handle sets the height). Landscape (tablets, phones turned): on the right. -->
+      <Border DockPanel.Dock="{Binding SheetDock}" IsVisible="{Binding HasSheet}" Height="{Binding SheetHeightValue}" Width="{Binding SheetWidthValue}"
+              Background="{DynamicResource Bg.Properties}"
+              BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="{Binding SheetBorder}" Classes="appear" x:Name="PhoneSheet">
         <DockPanel>
         <!-- The handle: drag it to make the sheet taller or shorter; dragged almost away, the sheet closes. -->
-        <Border DockPanel.Dock="Top" Height="22" Background="Transparent" Cursor="SizeNorthSouth" ToolTip.Tip="{l:T Phone.Resize}" x:Name="PhoneSheetHandle">
+        <Border DockPanel.Dock="Top" Height="22" Background="Transparent" Cursor="SizeNorthSouth" ToolTip.Tip="{l:T Phone.Resize}" x:Name="PhoneSheetHandle"
+                IsVisible="{Binding !IsLandscape}">
           <Border Width="40" Height="4" CornerRadius="2" Background="{DynamicResource Border.Subtle}" HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Border>
         <Panel>
@@ -334,6 +337,18 @@
             <Button Classes="bar icon" Command="{Binding Main.DismissTurnNoticeCommand}" VerticalAlignment="Center">
               <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="12" />
             </Button>
+          </StackPanel>
+        </Border>
+        <!-- A new version on the website: phones update by installing the new APK over this one. -->
+        <Border x:Name="PhoneUpdateCard" IsVisible="{Binding Main.Updates.IsVisible, FallbackValue=False}" Classes="warmup"
+                HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="8,0,8,10" Padding="12,8" MaxWidth="420">
+          <StackPanel Spacing="6">
+            <TextBlock Text="{Binding Main.Updates.Text, FallbackValue={x:Null}}" FontWeight="SemiBold" TextWrapping="Wrap" x:Name="PhoneUpdateText" />
+            <TextBlock Classes="secondary" Text="{Binding Main.Updates.InstallerHint, FallbackValue={x:Null}}" TextWrapping="Wrap" FontSize="12.5" />
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+              <Button Content="{l:T Update.Later}" Command="{Binding Main.Updates.LaterCommand, FallbackValue={x:Null}}" />
+              <Button Classes="accent" Content="{Binding Main.Updates.UpdateLabel, FallbackValue={x:Null}}" Command="{Binding Main.Updates.UpdateCommand, FallbackValue={x:Null}}" x:Name="PhoneUpdateButton" />
+            </StackPanel>
           </StackPanel>
         </Border>
         <Button x:Name="PhoneZenExit" IsVisible="{Binding Main.IsZen}" Command="{Binding Main.ToggleZenCommand}" Classes="zen-exit"

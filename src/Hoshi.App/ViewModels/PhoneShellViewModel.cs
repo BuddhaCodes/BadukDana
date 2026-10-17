@@ -47,7 +47,35 @@ public sealed partial class PhoneShellViewModel : ViewModelBase
 
     /// <summary>The sheet's height (dragged by its handle, kept between sessions).</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SheetHeightValue))]
     private double _sheetHeight = DefaultSheetHeight;
+
+    /// <summary>Wider than tall (a tablet, or a phone turned): the sheet goes to the right of the board.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SheetDock), nameof(SheetHeightValue), nameof(SheetWidthValue), nameof(SheetBorder))]
+    private bool _isLandscape;
+
+    private double _width;
+
+    /// <summary>Landscape needs at least this width (narrower screens keep the sheet under the board).</summary>
+    public const double LandscapeMinWidth = 600;
+
+    public Avalonia.Controls.Dock SheetDock => IsLandscape ? Avalonia.Controls.Dock.Right : Avalonia.Controls.Dock.Bottom;
+
+    public double SheetHeightValue => IsLandscape ? double.NaN : SheetHeight;
+
+    /// <summary>In landscape: 40 % of the width, between 300 and 520.</summary>
+    public double SheetWidthValue => IsLandscape ? Math.Clamp(_width * 0.4, 300, 520) : double.NaN;
+
+    public Avalonia.Thickness SheetBorder => IsLandscape ? new Avalonia.Thickness(1, 0, 0, 0) : new Avalonia.Thickness(0, 1, 0, 0);
+
+    /// <summary>The view's size changed (rotation, a tablet's split screen).</summary>
+    public void UpdateSize(double width, double height)
+    {
+        _width = width;
+        IsLandscape = width >= LandscapeMinWidth && width > height * 1.1;
+        OnPropertyChanged(nameof(SheetWidthValue));
+    }
 
     public PhoneShellViewModel(MainWindowViewModel main, PhoneNavigation navigation, ISettingsService? settings = null)
     {
