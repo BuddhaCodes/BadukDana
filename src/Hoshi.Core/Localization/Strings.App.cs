@@ -10,6 +10,10 @@ public static partial class Tr
         Add(d, "Game.PassNoun", "pass", "pase");
 
         // Analysis
+        Add(d, "Review.Candidates", "What KataGo would play", "Lo que KataGo jugaría");
+        Add(d, "Review.Mistakes", "Biggest mistakes", "Errores grandes");
+        Add(d, "Review.NextMistake", "Next mistake", "Siguiente error");
+        Add(d, "Review.NextMistakeTip", "Jump to the next mistake or blunder KataGo found (E)", "Ir al siguiente error que encontró KataGo (E)");
         Add(d, "Analysis.EnginePrefix", "KataGo is ", "KataGo está ");
         Add(d, "Analysis.WakingUp", "Waking up KataGo…", "Despertando a KataGo…");
         Add(d, "Analysis.BlockedOnline", "Analysis is off while you play on OGS (its rules forbid AI assistance).", "Análisis desactivado mientras juegas en OGS (sus normas no permiten ayuda de IA).");

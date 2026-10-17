@@ -20,6 +20,16 @@ public sealed record BoardSuggestion(Point Point, string Label, string Detail, b
 /// <summary>A strong move to celebrate on the board: strength 3 = the engine's best, 2 = excellent, 1 = good.</summary>
 public sealed record BoardImpact(Point Point, int Strength, int Id);
 
+/// <summary>One of KataGo's candidates for the shown position, for the review inspector.</summary>
+/// <param name="Fraction">Its winrate for the player to move relative to the best candidate's (0–1), for the bar.</param>
+public sealed record CandidateRow(string Move, string Winrate, string Lead, double Fraction, bool IsBest);
+
+/// <summary>A big mistake on the shown line: where it was, what it cost and what KataGo preferred.</summary>
+public sealed record KeyMistake(GameNode Node, int Number, bool IsBlack, string Move, string Better, string LossText, bool IsBlunder)
+{
+    public string Title => Number.ToString(CultureInfo.InvariantCulture) + " · " + Move;
+}
+
 /// <summary>
 /// The "AI in the background": while analysis is on, every change of the shown position asks the engine for the
 /// position and the one before it, to judge the last move (<see cref="MoveReview"/>), show the best continuations and
@@ -111,6 +121,24 @@ public sealed partial class AnalysisViewModel : ViewModelBase
 
     [ObservableProperty]
     private IReadOnlyList<double?> _graph = [];
+
+    /// <summary>KataGo's three candidates for the shown position (empty without analysis).</summary>
+    [ObservableProperty]
+    private IReadOnlyList<CandidateRow> _candidates = [];
+
+    /// <summary>The three costliest mistakes (and blunders) on the shown line, in move order.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasMistakes))]
+    [NotifyCanExecuteChangedFor(nameof(NextMistakeCommand))]
+    private IReadOnlyList<KeyMistake> _keyMistakes = [];
+
+    /// <summary>Move numbers of every mistake and blunder on the shown line (red dots on the graph).</summary>
+    [ObservableProperty]
+    private IReadOnlyList<int> _mistakeMarks = [];
+
+    public bool HasMistakes => KeyMistakes.Count > 0;
+
+    private IReadOnlyList<(int Number, GameNode Node)> _mistakeNodes = [];
 
     [ObservableProperty]
     private int _graphIndex;
@@ -271,6 +299,38 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     [RelayCommand]
     private void ToggleTerritory() => IsTerritoryOn = !IsTerritoryOn;
 
+    [RelayCommand]
+    private void GoToMistake(KeyMistake? mistake)
+    {
+        if (mistake is not null)
+        {
+            _game.GoToNodeCommand.Execute(mistake.Node);
+        }
+    }
+
+    /// <summary>Jumps to the next mistake or blunder after the shown move (back to the first after the last).</summary>
+    [RelayCommand(CanExecute = nameof(HasMistakes))]
+    private void NextMistake()
+    {
+        if (_mistakeNodes.Count == 0)
+        {
+            return;
+        }
+
+        int now = _game.MoveNumber;
+        GameNode node = _mistakeNodes[0].Node;
+        foreach ((int number, GameNode n) in _mistakeNodes)
+        {
+            if (number > now)
+            {
+                node = n;
+                break;
+            }
+        }
+
+        _game.GoToNodeCommand.Execute(node);
+    }
+
     partial void OnIsAnalysisOnChanged(bool value)
     {
         // Only what is shown changes: the engine keeps analysing in the background.
@@ -342,6 +402,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         {
             Cancel();
             Suggestions = [];
+            Candidates = [];
             return;
         }
 
@@ -509,6 +570,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
             ? MoveReview.Assess(before, now, pos.Moves[n - 1])
             : null;
         Suggestions = now is null ? [] : [.. now.Candidates.Where(c => c.Point is not null).Take(3).Select((c, i) => Suggest(c, i, now))];
+        Candidates = now is null ? [] : Rows(now, _game.Board.Height);
         UpdateGraph(pos);
         TryCelebrate(pos);
     }
@@ -767,6 +829,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
                 NodeVerdicts = new Dictionary<GameNode, MoveQuality>();
             }
 
+            SetMistakes([]);
             return;
         }
 
@@ -783,18 +846,26 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         nodes.AddRange(path.Skip(1).Where(x => x.GetMove(_game.Cursor.BoardSize) is not null));
         if (nodes.Count != track.Moves.Count)
         {
+            SetMistakes([]);
             return; // an edited position: no move history to judge
         }
 
         var verdicts = new Dictionary<GameNode, MoveQuality>();
+        var mistakes = new List<(int Number, GameNode Node, MoveAssessment Judged)>();
         for (int t = 1; t <= track.Moves.Count; t++)
         {
             if (_cache.TryGetValue(track.Key(t - 1), out TurnAnalysis? before)
                 && MoveReview.Assess(before, _cache.GetValueOrDefault(track.Key(t)), track.Moves[t - 1]) is { } judged)
             {
                 verdicts[nodes[t - 1]] = judged.Quality;
+                if (judged.Quality is MoveQuality.Mistake or MoveQuality.Blunder)
+                {
+                    mistakes.Add((t, nodes[t - 1], judged));
+                }
             }
         }
+
+        SetMistakes(mistakes);
 
         if (verdicts.Count != NodeVerdicts.Count || verdicts.Any(v => !NodeVerdicts.TryGetValue(v.Key, out MoveQuality q) || q != v.Value))
         {
@@ -854,6 +925,61 @@ public sealed partial class AnalysisViewModel : ViewModelBase
 
     /// <summary>The start of the comment lines Hoshi writes (and replaces) with KataGo's review.</summary>
     public const string ReviewPrefix = "[KataGo] ";
+
+    private void SetMistakes(IReadOnlyList<(int Number, GameNode Node, MoveAssessment Judged)> mistakes)
+    {
+        int height = _game.Board.Height;
+        KeyMistake[] key = [.. mistakes
+            .OrderByDescending(m => m.Judged.PointsLost)
+            .Take(3)
+            .OrderBy(m => m.Number)
+            .Select(m => new KeyMistake(
+                m.Node,
+                m.Number,
+                m.Judged.Played.Color == Stone.Black,
+                m.Judged.Played.Point is { } p ? p.ToHuman(height) : Tr.T("Game.PassNoun"),
+                m.Judged.Best.Point is { } b ? Tr.F("Analysis.Better", b.ToHuman(height)) : string.Empty,
+                string.Create(CultureInfo.InvariantCulture, $"−{m.Judged.PointsLost:0.0}"),
+                m.Judged.Quality == MoveQuality.Blunder))];
+        int[] marks = [.. mistakes.Select(m => m.Number)];
+        _mistakeNodes = [.. mistakes.Select(m => (m.Number, m.Node))];
+        if (!marks.SequenceEqual(MistakeMarks))
+        {
+            MistakeMarks = marks;
+        }
+
+        if (key.Length != KeyMistakes.Count || key.Where((k, i) => k != KeyMistakes[i]).Any())
+        {
+            KeyMistakes = key;
+        }
+        else
+        {
+            NextMistakeCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    /// <summary>The engine's first three candidates, with winrates for the player to move.</summary>
+    internal static IReadOnlyList<CandidateRow> Rows(TurnAnalysis at, int boardHeight)
+    {
+        MoveCandidate[] top = [.. at.Candidates.Where(c => c.Point is not null).Take(3)];
+        if (top.Length == 0)
+        {
+            return [];
+        }
+
+        double For(MoveCandidate c) => at.ToMove == Stone.Black ? c.Winrate : 1 - c.Winrate;
+        double best = Math.Max(For(top[0]), 0.0001);
+        return [.. top.Select((c, i) =>
+        {
+            double lead = at.ToMove == Stone.Black ? c.ScoreLead : -c.ScoreLead;
+            return new CandidateRow(
+                c.Point!.Value.ToHuman(boardHeight),
+                string.Create(CultureInfo.InvariantCulture, $"{For(c) * 100:0} %"),
+                string.Create(CultureInfo.InvariantCulture, $"{(lead >= 0 ? "+" : "−")}{Math.Abs(lead):0.0}"),
+                Math.Clamp(For(c) / best, 0.05, 1),
+                i == 0);
+        })];
+    }
 
     private static BoardSuggestion Suggest(MoveCandidate c, int i, TurnAnalysis at)
     {

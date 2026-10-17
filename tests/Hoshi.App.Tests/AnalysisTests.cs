@@ -29,6 +29,9 @@ internal sealed class FakeAnalysisEngine : IAnalysisEngine
     /// <summary>Points the second candidate loses against the best: small = a routine position, large = critical.</summary>
     public double SecondGap { get; set; } = 0.4;
 
+    /// <summary>Multiplies what a move off the best point costs (bigger = clear mistakes).</summary>
+    public double MissFactor { get; set; } = 1;
+
     public event EventHandler? Changed;
 
     public void RaiseChanged() => Changed?.Invoke(this, EventArgs.Empty);
@@ -50,7 +53,7 @@ internal sealed class FakeAnalysisEngine : IAnalysisEngine
             {
                 if (m.Point != BestMove)
                 {
-                    lead += m.Color == Stone.Black ? -2 : 3;
+                    lead += (m.Color == Stone.Black ? -2 : 3) * MissFactor;
                 }
             }
 
@@ -110,6 +113,38 @@ public sealed class AnalysisViewModelTests
         await _vm.AnnotateMainLineAsync(CancellationToken.None);
         third.Comment!.Split('\n').Count(l => l.StartsWith(AnalysisViewModel.ReviewPrefix, StringComparison.Ordinal)).Should().Be(1);
         third.Comment.Should().StartWith("My note");
+    }
+
+    [AvaloniaFact]
+    public async Task The_review_inspector_lists_candidates_and_the_biggest_mistakes_and_jumps_between_them()
+    {
+        _engine.SecondGap = 9;
+        _engine.MissFactor = 4;
+        _vm.IsAnalysisOn = true;
+        _game.PlayCommand.Execute(new Point(15, 3)); // 1: best
+        _game.PlayCommand.Execute(new Point(3, 3));  // 2: White mistake
+        _game.PlayCommand.Execute(new Point(9, 9));  // 3: Black mistake
+        _game.PlayCommand.Execute(new Point(15, 15)); // 4: White mistake
+        await SettleAsync();
+
+        _vm.Candidates.Should().HaveCount(2);
+        _vm.Candidates[0].Should().Match<CandidateRow>(c => c.IsBest && c.Move == "Q16" && c.Fraction == 1);
+        _vm.Candidates[1].Fraction.Should().BeLessThan(1);
+
+        _vm.MistakeMarks.Should().Equal(2, 3, 4);
+        _vm.KeyMistakes.Select(m => m.Number).Should().Equal(2, 3, 4);
+        _vm.KeyMistakes[1].Should().Match<KeyMistake>(m => m.IsBlack && m.Move == "K10" && m.Better.Contains("Q16"));
+        _vm.HasMistakes.Should().BeTrue();
+
+        _game.GoFirstCommand.Execute(null);
+        _vm.NextMistakeCommand.Execute(null);
+        _game.MoveNumber.Should().Be(2);
+        _vm.NextMistakeCommand.Execute(null);
+        _game.MoveNumber.Should().Be(3);
+        _vm.GoToMistakeCommand.Execute(_vm.KeyMistakes[2]);
+        _game.MoveNumber.Should().Be(4);
+        _vm.NextMistakeCommand.Execute(null);
+        _game.MoveNumber.Should().Be(2, "after the last one it starts again");
     }
 
     [AvaloniaFact]

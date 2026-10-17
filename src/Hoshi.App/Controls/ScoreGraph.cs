@@ -29,9 +29,28 @@ public sealed class ScoreGraph : Control
     public static readonly StyledProperty<ICommand?> MoveClickedCommandProperty =
         AvaloniaProperty.Register<ScoreGraph, ICommand?>(nameof(MoveClickedCommand));
 
+    /// <summary>Indices (move numbers) to mark with a dot: the review's mistakes and blunders.</summary>
+    public static readonly StyledProperty<IReadOnlyList<int>?> MarksProperty =
+        AvaloniaProperty.Register<ScoreGraph, IReadOnlyList<int>?>(nameof(Marks));
+
+    public static readonly StyledProperty<IBrush?> MarkBrushProperty =
+        AvaloniaProperty.Register<ScoreGraph, IBrush?>(nameof(MarkBrush), Brushes.IndianRed);
+
     static ScoreGraph()
     {
-        AffectsRender<ScoreGraph>(ValuesProperty, CurrentIndexProperty, LineBrushProperty, AccentProperty);
+        AffectsRender<ScoreGraph>(ValuesProperty, CurrentIndexProperty, LineBrushProperty, AccentProperty, MarksProperty, MarkBrushProperty);
+    }
+
+    public IReadOnlyList<int>? Marks
+    {
+        get => GetValue(MarksProperty);
+        set => SetValue(MarksProperty, value);
+    }
+
+    public IBrush? MarkBrush
+    {
+        get => GetValue(MarkBrushProperty);
+        set => SetValue(MarkBrushProperty, value);
     }
 
     public IReadOnlyList<double?>? Values
@@ -113,6 +132,18 @@ public sealed class ScoreGraph : Control
             }
 
             prev = i;
+        }
+
+        if (Marks is { Count: > 0 } marks)
+        {
+            IBrush dot = MarkBrush ?? Brushes.IndianRed;
+            foreach (int m in marks)
+            {
+                if (m >= 0 && m < values.Count && values[m] is { } mv)
+                {
+                    context.DrawEllipse(dot, null, new AvPoint(X(m), Y(mv)), 3.2, 3.2);
+                }
+            }
         }
 
         if (CurrentIndex >= 0 && CurrentIndex < values.Count)
