@@ -477,4 +477,35 @@
   </Style>
   <Style Selector="RadioButton.tool.palette"><Setter Property="Width" Value="38" /><Setter Property="Height" Value="38" /></Style>
   <Style Selector="Button.palette"><Setter Property="Width" Value="38" /><Setter Property="Height" Value="34" /><Setter Property="HorizontalContentAlignment" Value="Center" /></Style>
+  <!-- The review's move list. -->
+  <Style Selector="ListBox.move-list ListBoxItem">
+    <Setter Property="Padding" Value="6,1" />
+    <Setter Property="MinHeight" Value="26" />
+    <Setter Property="CornerRadius" Value="6" />
+  </Style>
+  <Style Selector="ListBox.move-list ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
+  </Style>
+  <Style Selector="Button.move-cell">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="4,2" />
+    <Setter Property="MinHeight" Value="24" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+  </Style>
+  <Style Selector="TextBlock.move">
+    <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+    <Setter Property="FontSize" Value="12.5" />
+  </Style>
+  <Style Selector="TextBlock.move.inaccuracy"><Setter Property="Foreground" Value="{DynamicResource Accent}" /></Style>
+  <Style Selector="TextBlock.move.mistake, TextBlock.move.blunder"><Setter Property="Foreground" Value="{DynamicResource Danger}" /></Style>
+  <Style Selector="TextBlock.move.blunder"><Setter Property="FontWeight" Value="Bold" /></Style>
+  <Style Selector="TextBlock.move.current"><Setter Property="TextDecorations" Value="Underline" /></Style>
+  <Style Selector="TextBlock.move-loss">
+    <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
 </Styles>

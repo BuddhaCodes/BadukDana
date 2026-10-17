@@ -54,6 +54,54 @@ public sealed class RedesignTests
     }
 
     [AvaloniaFact]
+    public async Task The_tabs_switch_between_play_study_and_review_and_review_shows_the_move_column()
+    {
+        var engine = new FakeAnalysisEngine { BestMove = new Point(16, 3), SecondGap = 9, MissFactor = 4 };
+        var vm = new MainWindowViewModel(new GameViewModel(), engine: engine, ui: new ImmediateDispatcher());
+        foreach ((int x, int y) in Moves)
+        {
+            vm.Game.PlayCommand.Execute(new Point(x, y));
+        }
+
+        var window = new MainWindow(vm) { Width = 1440, Height = 900 };
+        window.Show();
+        vm.Mode.Should().Be(WorkMode.Play);
+        window.FindDeep<Border>("MoveColumn")!.IsEffectivelyVisible.Should().BeFalse();
+
+        vm.SetModeCommand.Execute(WorkMode.Study);
+        vm.Study.IsActive.Should().BeTrue();
+        vm.IsStudyMode.Should().BeTrue();
+        window.FindDeep<RadioButton>("ModeStudy")!.IsChecked.Should().BeTrue();
+
+        vm.SetModeCommand.Execute(WorkMode.Review);
+        vm.Study.IsActive.Should().BeFalse("the study closes when reviewing");
+        vm.Analysis.IsAnalysisOn.Should().BeTrue();
+        await SettleAsync();
+        window.FindDeep<Border>("MoveColumn")!.IsEffectivelyVisible.Should().BeTrue();
+        vm.Moves.Rows.Should().HaveCount(6, "twelve moves, two per row");
+        vm.Moves.Rows[0].First.Text.Should().Be("D16");
+        vm.Moves.Rows.SelectMany(r => new[] { r.First, r.Second }).Count(c => c is { IsMistake: true } or { IsBlunder: true }).Should().BeGreaterThan(0);
+        vm.Moves.CurrentRow.Should().BeSameAs(vm.Moves.Rows[^1]);
+        Save(window, "review-mode.png");
+
+        vm.Moves.GoToCommand.Execute(vm.Moves.Rows[1].Second);
+        vm.Game.MoveNumber.Should().Be(4);
+        vm.Moves.CurrentRow.Should().BeSameAs(vm.Moves.Rows[1]);
+
+        vm.Study.ToggleCommand.Execute(null); // S on the keyboard
+        vm.Mode.Should().Be(WorkMode.Study, "the tabs follow the study and the analysis however they change");
+        vm.SetModeCommand.Execute(WorkMode.Play);
+        (vm.Study.IsActive, vm.Analysis.IsAnalysisOn).Should().Be((false, false));
+
+        window.Close();
+        vm.SetModeCommand.Execute(WorkMode.Review);
+        var narrow = new MainWindow(vm) { Width = 1000, Height = 800 };
+        narrow.Show();
+        narrow.FindDeep<Panel>("MoveColumnHost")!.IsVisible.Should().BeFalse("a narrow window keeps the room for the board");
+        narrow.Close();
+    }
+
+    [AvaloniaFact]
     public void The_desktop_study_tools_float_over_the_board()
     {
         var vm = new MainWindowViewModel(new GameViewModel(), ui: new ImmediateDispatcher());

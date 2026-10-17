@@ -8,6 +8,14 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Hoshi.App.ViewModels;
 
+/// <summary>The desktop's three tabs.</summary>
+public enum WorkMode
+{
+    Play,
+    Study,
+    Review,
+}
+
 public sealed partial class MainWindowViewModel : ViewModelBase
 {
     private readonly ILobbyWindowService? _lobbyWindow;
@@ -135,6 +143,28 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         Analysis = new AnalysisViewModel(game, engine, ui, sounds, settings);
         Study = new StudyViewModel(game, Analysis, settings, files, dialogs, browser);
+        Moves = new MoveListViewModel(game, Analysis);
+        PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(IsOnline) or nameof(Online))
+            {
+                ModeChanged();
+            }
+        };
+        Study.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(StudyViewModel.IsActive))
+            {
+                ModeChanged();
+            }
+        };
+        Analysis.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(AnalysisViewModel.IsAnalysisOn) or nameof(AnalysisViewModel.IsAnalysisActive))
+            {
+                ModeChanged();
+            }
+        };
         Counting = new CountingViewModel(game, Analysis);
         Share = new ShareViewModel(game, files, () => Analysis.NodeVerdicts, () => ShowCoordinates, clipboard, lobby is null ? null : async link =>
         {
@@ -269,6 +299,52 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>The study panel: pins, drawings, the timeline, sharing, the quiz and the report (S).</summary>
     public StudyViewModel Study { get; }
+
+    /// <summary>The review's move list (left of the board in Review mode).</summary>
+    public MoveListViewModel Moves { get; }
+
+    /// <summary>
+    /// What the desktop is doing (the Play / Study / Review tabs, redesign 2026-10), read from the study and the
+    /// analysis: studying when the study is open, reviewing when KataGo's analysis is shown, else playing.
+    /// </summary>
+    public WorkMode Mode => Study.IsActive ? WorkMode.Study : Analysis.IsAnalysisActive ? WorkMode.Review : WorkMode.Play;
+
+    public bool IsPlayMode => Mode == WorkMode.Play;
+
+    public bool IsStudyMode => Mode == WorkMode.Study;
+
+    public bool IsReviewMode => Mode == WorkMode.Review;
+
+    /// <summary>Review needs the analysis, which is off during your live OGS games.</summary>
+    public bool CanReview => !Analysis.IsBlocked;
+
+    /// <summary>A tab: opens the study, shows the analysis, or closes both to play.</summary>
+    [RelayCommand]
+    private void SetMode(WorkMode mode)
+    {
+        if (mode == WorkMode.Review && !CanReview)
+        {
+            ModeChanged();
+            return;
+        }
+
+        if ((mode == WorkMode.Study) != Study.IsActive)
+        {
+            Study.ToggleCommand.Execute(null);
+        }
+
+        Analysis.IsAnalysisOn = mode == WorkMode.Review;
+        ModeChanged();
+    }
+
+    private void ModeChanged()
+    {
+        OnPropertyChanged(nameof(Mode));
+        OnPropertyChanged(nameof(IsPlayMode));
+        OnPropertyChanged(nameof(IsStudyMode));
+        OnPropertyChanged(nameof(IsReviewMode));
+        OnPropertyChanged(nameof(CanReview));
+    }
 
     /// <summary>False in design/test contexts without OGS services.</summary>
     public bool IsOnlineAvailable => _lobbyWindow is not null;

@@ -313,6 +313,55 @@
         </Grid>
       </Border>
 
+      <!-- Review mode on a wide window: the game at a glance and its moves, left of the board (redesign 2026-10). -->
+      <Panel DockPanel.Dock="Left" x:Name="MoveColumnHost">
+        <Border x:Name="MoveColumn" Width="250" IsVisible="{Binding IsReviewMode}" Background="{DynamicResource Bg.Sidebar}"
+                BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="0,0,1,0">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="14,14,14,8">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="secondary" FontSize="12" Text="{l:T Mode.Lead}" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{Binding Analysis.LeadText}" FontFamily="{DynamicResource Font.Mono}" FontSize="12.5" />
+              </Grid>
+              <c:ScoreGraph Height="96" Values="{Binding Analysis.Graph}" CurrentIndex="{Binding Analysis.GraphIndex}"
+                            Marks="{Binding Analysis.MistakeMarks}" MarkBrush="{DynamicResource Danger}"
+                            LineBrush="{DynamicResource Accent}" Accent="{DynamicResource Text.Primary}"
+                            MoveClickedCommand="{Binding Analysis.GoToMoveCommand}" x:Name="ColumnGraph" ToolTip.Tip="{l:T Main.GraphTip}" />
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <StackPanel Orientation="Horizontal" Spacing="5"><Ellipse Width="8" Height="8" Fill="{DynamicResource Danger}" VerticalAlignment="Center" /><TextBlock Classes="secondary" FontSize="11.5" Text="{l:T Mode.LegendBad}" /></StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="5"><Ellipse Width="8" Height="8" Fill="{DynamicResource Accent}" VerticalAlignment="Center" /><TextBlock Classes="secondary" FontSize="11.5" Text="{l:T Mode.LegendDoubtful}" /></StackPanel>
+              </StackPanel>
+            </StackPanel>
+            <ListBox ItemsSource="{Binding Moves.Rows}" SelectedItem="{Binding Moves.CurrentRow, Mode=OneWay}" Classes="move-list"
+                     Background="Transparent" x:Name="MoveList" Margin="6,0,6,10">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:MovePairRow">
+                  <Grid ColumnDefinitions="34,*,*">
+                    <TextBlock Classes="secondary" Text="{Binding Number}" FontFamily="{DynamicResource Font.Mono}" FontSize="12" VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Classes="move-cell" DataContext="{Binding First}"
+                            Command="{Binding $parent[ListBox].((vm:MainWindowViewModel)DataContext).Moves.GoToCommand}" CommandParameter="{Binding}">
+                      <StackPanel Orientation="Horizontal" Spacing="5">
+                        <TextBlock Text="{Binding Text}" Classes="move" Classes.blunder="{Binding IsBlunder}" Classes.mistake="{Binding IsMistake}"
+                                   Classes.inaccuracy="{Binding IsInaccuracy}" Classes.current="{Binding IsCurrent}" />
+                        <TextBlock Text="{Binding Loss}" Classes="move-loss" />
+                      </StackPanel>
+                    </Button>
+                    <Button Grid.Column="2" Classes="move-cell" DataContext="{Binding Second}" IsVisible="{Binding $self.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            Command="{Binding $parent[ListBox].((vm:MainWindowViewModel)DataContext).Moves.GoToCommand}" CommandParameter="{Binding}">
+                      <StackPanel Orientation="Horizontal" Spacing="5">
+                        <TextBlock Text="{Binding Text, FallbackValue={x:Null}}" Classes="move" Classes.blunder="{Binding IsBlunder, FallbackValue=False}" Classes.mistake="{Binding IsMistake, FallbackValue=False}"
+                                   Classes.inaccuracy="{Binding IsInaccuracy, FallbackValue=False}" Classes.current="{Binding IsCurrent, FallbackValue=False}" />
+                        <TextBlock Text="{Binding Loss, FallbackValue={x:Null}}" Classes="move-loss" />
+                      </StackPanel>
+                    </Button>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </DockPanel>
+        </Border>
+      </Panel>
+
       <!-- Board area; single-letter shortcuts live here so they do not fire while typing a comment. -->
       <Panel x:Name="BoardArea" Background="{DynamicResource Bg.Surround}">
         <c:ThemeBackground x:Name="Backdrop" Kind="{DynamicResource Theme.Background}" Animate="{DynamicResource Theme.Animations}" Paused="{Binding IsBackgroundStill}" />
@@ -586,8 +635,26 @@
     <GridSplitter Grid.Column="1" Width="1" Background="{DynamicResource Border.Subtle}" ResizeDirection="Columns" x:Name="SidebarSplitter" />
 
     <!-- Sidebar: players, variation tree, comment. Width 220–420 (DESIGN.md). -->
-      <Grid Grid.Column="2" x:Name="Sidebar" MinWidth="220" MaxWidth="420"
-            Background="{DynamicResource Bg.Sidebar}" RowDefinitions="Auto,Auto,*,Auto,Auto,Auto">
+      <DockPanel Grid.Column="2" x:Name="SidebarHost" MinWidth="220" MaxWidth="420" Background="{DynamicResource Bg.Sidebar}">
+      <!-- The three tabs (redesign 2026-10): play, study (the study's tools and notes), review (KataGo and the move list). -->
+      <Border DockPanel.Dock="Top" x:Name="ModeTabs" Margin="10,10,10,2" Padding="3" CornerRadius="10" Background="{DynamicResource Bg.PanelAlt}"
+              IsVisible="{Binding !Joseki.IsActive}">
+        <UniformGrid Columns="3">
+          <RadioButton Classes="segment" GroupName="work-mode" IsChecked="{Binding IsPlayMode, Mode=OneWay}"
+                       Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:WorkMode.Play}" x:Name="ModePlay" ToolTip.Tip="{l:T Mode.PlayTip}">
+            <TextBlock Text="{l:T Mode.Play}" HorizontalAlignment="Center" />
+          </RadioButton>
+          <RadioButton Classes="segment" GroupName="work-mode" IsChecked="{Binding IsStudyMode, Mode=OneWay}"
+                       Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:WorkMode.Study}" x:Name="ModeStudy" ToolTip.Tip="{l:T Mode.StudyTip}">
+            <TextBlock Text="{l:T Mode.Study}" HorizontalAlignment="Center" />
+          </RadioButton>
+          <RadioButton Classes="segment" GroupName="work-mode" IsChecked="{Binding IsReviewMode, Mode=OneWay}" IsEnabled="{Binding CanReview}"
+                       Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:WorkMode.Review}" x:Name="ModeReview" ToolTip.Tip="{l:T Mode.ReviewTip}">
+            <TextBlock Text="{l:T Mode.Review}" HorizontalAlignment="Center" />
+          </RadioButton>
+        </UniformGrid>
+      </Border>
+      <Grid x:Name="Sidebar" RowDefinitions="Auto,Auto,*,Auto,Auto,Auto">
         <Border Grid.Row="0" Classes="game-header" IsVisible="{Binding IsLocal}" x:Name="GameHeader">
           <StackPanel Spacing="3">
             <TextBlock Text="{Binding Game.HeaderTitle}" FontFamily="{DynamicResource Font.Title}" FontSize="{DynamicResource Font.Size.Title}"
@@ -786,6 +853,7 @@
           </DockPanel>
         </Border>
       </Grid>
+      </DockPanel>
   </Grid>
   </LayoutTransformControl>
 </Window>

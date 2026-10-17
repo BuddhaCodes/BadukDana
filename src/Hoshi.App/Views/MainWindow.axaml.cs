@@ -17,7 +17,19 @@ public partial class MainWindow : Window
         {
             bar.SizeChanged += (_, e) => ApplyBarWidth(bar, e.NewSize.Width);
         }
+
+        // Layout only: the review's move column needs a wide window.
+        SizeChanged += (_, e) =>
+        {
+            if (this.FindControl<Control>("MoveColumnHost") is { } column)
+            {
+                column.IsVisible = e.NewSize.Width >= MoveColumnWidth && DataContext is not MainWindowViewModel { IsZen: true };
+            }
+        };
     }
+
+    /// <summary>The review's move column shows from this window width (narrower: the board keeps the room).</summary>
+    public const double MoveColumnWidth = 1180;
 
     /// <summary>Below this width the bar keeps icons only; below <see cref="NarrowBarWidth"/> some move to "⋯".</summary>
     public const double CompactBarWidth = 1000;
@@ -100,6 +112,16 @@ public partial class MainWindow : Window
         if (this.FindControl<Control>("Sidebar") is { } sidebar)
         {
             sidebar.IsVisible = !zen;
+        }
+
+        if (this.FindControl<Control>("SidebarHost") is { } host)
+        {
+            host.IsVisible = !zen;
+        }
+
+        if (this.FindControl<Control>("MoveColumnHost") is { } column)
+        {
+            column.IsVisible = !zen && Bounds.Width >= MoveColumnWidth;
         }
 
         if (this.FindControl<Control>("SidebarSplitter") is { } splitter)
