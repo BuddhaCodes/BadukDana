@@ -61,6 +61,7 @@ public static partial class Tr
         AddStudy(d);
         AddPhone(d);
         AddTsumego(d);
+        AddShare(d);
         return d;
     }
 
@@ -81,6 +82,8 @@ public static partial class Tr
     static partial void AddPhone(Dictionary<string, (string En, string Es)> d);
 
     static partial void AddTsumego(Dictionary<string, (string En, string Es)> d);
+
+    static partial void AddShare(Dictionary<string, (string En, string Es)> d);
 
     /// <summary>Adds one entry; a duplicate key throws, so mistakes surface in the first test.</summary>
     private static void Add(Dictionary<string, (string En, string Es)> d, string key, string en, string es) => d.Add(key, (en, es));

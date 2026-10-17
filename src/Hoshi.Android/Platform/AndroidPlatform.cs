@@ -36,6 +36,9 @@ internal static class AndroidPlatform
         // A light tick with each stone (follows the system's touch feedback setting; needs no permission).
         PlatformInfo.Vibrate = () => _activity?.Window?.DecorView?.PerformHapticFeedback(Android.Views.FeedbackConstants.VirtualKey);
         PlatformInfo.Notify = (title, text, gameId) => ShowNotification(context, title, text, gameId);
+        PlatformInfo.ShareDirectory = Path.Combine(context.CacheDir?.AbsolutePath ?? Path.GetTempPath(), "share");
+        PlatformInfo.ShareFile = (path, mime, title) => Share(context, path, mime, null, title);
+        PlatformInfo.ShareText = (text, title) => Share(context, null, "text/plain", text, title);
         PlatformInfo.KeepScreenOn = on =>
         {
             _keepScreenOn = on;
@@ -109,6 +112,45 @@ internal static class AndroidPlatform
 
     private const string TurnChannel = "turns";
     private static bool _askedNotifications;
+
+    /// <summary>Android's share sheet for a file of the share folder (through the FileProvider) or for text.</summary>
+    private static Task Share(Context context, string? path, string mime, string? text, string title)
+    {
+        try
+        {
+            var send = new Intent(Intent.ActionSend);
+            send.SetType(mime);
+            if (path is not null)
+            {
+                Android.Net.Uri uri = AndroidX.Core.Content.FileProvider.GetUriForFile(context, ShareAuthority, new Java.IO.File(path))!;
+                send.PutExtra(Intent.ExtraStream, uri);
+                send.AddFlags(ActivityFlags.GrantReadUriPermission);
+            }
+            else
+            {
+                send.PutExtra(Intent.ExtraText, text ?? string.Empty);
+            }
+
+            Intent chooser = Intent.CreateChooser(send, title)!;
+            if (_activity is { } activity)
+            {
+                activity.StartActivity(chooser);
+            }
+            else
+            {
+                chooser.AddFlags(ActivityFlags.NewTask);
+                context.StartActivity(chooser);
+            }
+        }
+        catch (Exception ex) when (ex is Java.Lang.Exception or ArgumentException or InvalidOperationException)
+        {
+            Android.Util.Log.Warn("Hoshi", "Share failed: " + ex.Message);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private const string ShareAuthority = "io.github.buddhacodes.hoshi.share";
 
     private static void ShowNotification(Context context, string title, string text, long gameId)
     {

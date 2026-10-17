@@ -26,4 +26,16 @@ public static class PlatformInfo
 
     /// <summary>Keeps the screen from dimming while true (set by Android); null where it does not apply.</summary>
     public static Action<bool>? KeepScreenOn { get; set; }
+
+    /// <summary>
+    /// The system share sheet for a file (path, MIME type, sheet title); set by Android, null on the desktop (where
+    /// files are saved and text goes to the clipboard).
+    /// </summary>
+    public static Func<string, string, string, Task>? ShareFile { get; set; }
+
+    /// <summary>The system share sheet for text (text, sheet title); set by Android.</summary>
+    public static Func<string, string, Task>? ShareText { get; set; }
+
+    /// <summary>Where files are written before they are shared (Android: the app's cache, readable by its FileProvider).</summary>
+    public static string ShareDirectory { get; set; } = Path.Combine(Path.GetTempPath(), "hoshi-share");
 }

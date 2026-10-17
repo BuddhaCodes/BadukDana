@@ -889,7 +889,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
     private string Name(EngineMove m) =>
         (m.Color == Stone.Black ? Tr.T("Game.BlackShort") : Tr.T("Game.WhiteShort")) + " " + (m.Point is { } p ? p.ToHuman(_game.Board.Height) : Tr.T("Game.PassNoun"));
 
-    private static string QualityName(MoveQuality q) => q switch
+    internal static string QualityName(MoveQuality q) => q switch
     {
         MoveQuality.Best => Tr.T("Analysis.BestMove"),
         MoveQuality.Excellent => Tr.T("Analysis.Excellent"),

@@ -60,7 +60,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IFileDialogService? files = null,
         IBrowserLauncher? browser = null,
         PreferencesViewModel? preferences = null,
-        ZenMode? zen = null)
+        ZenMode? zen = null,
+        IClipboardService? clipboard = null)
     {
         _zen = zen;
         AppSettings initial = settings?.Current ?? new AppSettings();
@@ -109,6 +110,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Analysis = new AnalysisViewModel(game, engine, ui, sounds, settings);
         Study = new StudyViewModel(game, Analysis, settings, files, dialogs, browser);
         Counting = new CountingViewModel(game, Analysis);
+        Share = new ShareViewModel(game, files, () => Analysis.NodeVerdicts, () => ShowCoordinates, clipboard, lobby is null ? null : async link =>
+        {
+            lobby.GameLink = link;
+            if (lobby.OpenLinkCommand.CanExecute(null))
+            {
+                await lobby.OpenLinkCommand.ExecuteAsync(null);
+            }
+        }, settings);
         Clock = new LocalClockViewModel(game, ui, sounds: sounds);
         Counting.PropertyChanged += (_, e) =>
         {
@@ -423,6 +432,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>Counting at the end of a local game.</summary>
     public CountingViewModel Counting { get; }
+
+    /// <summary>Images, animations and the other ways to share (File → Share).</summary>
+    public ShareViewModel Share { get; }
 
     /// <summary>The territory the board shows: the count while counting, otherwise the estimate (T).</summary>
     public Hoshi.Core.TerritoryEstimate? BoardTerritory => Counting.IsActive ? Counting.Territory : Analysis.Territory;

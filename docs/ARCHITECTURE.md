@@ -187,3 +187,12 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 ## Hilos
 - Todo evento de red se traslada al hilo de UI con `Dispatcher.UIThread.Post` (en el coordinador, no en Ogs).
 - `Hoshi.Core` es thread-safe por ser inmutable.
+
+## Compartir y exportar (2026-10-17)
+
+- `ShareViewModel` (`Main.Share`) reúne todo lo que sale del equipo, siempre por un clic del usuario: PNG, GIF, tarjetas, problema con spoiler, visor HTML, diagramas de texto, SGF al portapapeles y pegar SGF o enlaces de OGS.
+- `Services/Export`: `BoardPicture` dibuja un `GoBoardControl` fuera de pantalla (hilo de UI); `GifEncoder` es propio (GIF89a, paleta de corte de mediana, LZW, rectángulos cambiados); `ShareCard` compone la tarjeta con controles de Avalonia; `WebViewer` escribe todas las posiciones (calculadas con `Hoshi.Core`) en una página con un script propio.
+- `Hoshi.Sgf.Export.TextDiagram`: diagramas de Sensei's Library y bloque de código. `Hoshi.Core.StarPoints` es la única fuente de los puntos estrella.
+- Plataforma: `IClipboardService` (texto) y, en Android, `PlatformInfo.ShareFile/ShareText/ShareDirectory` (hoja de compartir con `FileProvider`, autoridad `io.github.buddhacodes.hoshi.share`, solo la carpeta `cache/share`).
+- Privacidad: `ShareOptions` (ocultar nombres, autores y fecha; marca opcional), guardado en `AppSettings.ShareHideNames/ShareShowBrand`.
+

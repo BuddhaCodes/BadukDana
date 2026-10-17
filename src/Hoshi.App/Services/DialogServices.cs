@@ -18,6 +18,9 @@ public interface IFileDialogService
     /// <summary>Where to save a web page (the study report); null when cancelled or not available.</summary>
     Task<string?> PickHtmlToSaveAsync(string suggestedName) => Task.FromResult<string?>(null);
 
+    /// <summary>Where to save an exported file (PNG, GIF, web viewer…); null when cancelled or not available.</summary>
+    Task<string?> PickExportToSaveAsync(string suggestedName, ExportFileType type) => Task.FromResult<string?>(null);
+
     /// <summary>
     /// Call after writing to a path a save picker returned. On Android the picked file is a document of the
     /// storage framework, not a path: Hoshi writes a private copy and this sends it there.
@@ -138,6 +141,26 @@ public sealed class AvaloniaFileDialogService : IFileDialogService
         return file is null ? null : SavePath(file);
     }
 
+    public async Task<string?> PickExportToSaveAsync(string suggestedName, ExportFileType type)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        if (MainWindowLocator.Top?.StorageProvider is not { } storage)
+        {
+            return null;
+        }
+
+        var choice = new FilePickerFileType(Tr.T(type.NameKey)) { Patterns = ["*." + type.Extension], MimeTypes = [type.Mime] };
+        IStorageFile? file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = Tr.T("Share.SaveTitle"),
+            SuggestedFileName = suggestedName,
+            DefaultExtension = type.Extension,
+            FileTypeChoices = [choice],
+            ShowOverwritePrompt = true,
+        });
+        return file is null ? null : SavePath(file);
+    }
+
     // Android: picked files are content:// documents. Opening reads a private copy; saving writes one that
     // FinishSaveAsync sends to the document (every time the same path is saved again).
     private readonly Dictionary<string, IStorageFile> _documents = new(StringComparer.Ordinal);
@@ -226,4 +249,13 @@ public sealed class AvaloniaDialogService : IDialogService
             await new MessageWindow(title, message, confirm: false).ShowDialog<bool>(owner);
         }
     }
+}
+
+/// <summary>A kind of exported file: its extension, MIME type and the name shown in the save dialog.</summary>
+public sealed record ExportFileType(string Extension, string Mime, string NameKey)
+{
+    public static readonly ExportFileType Png = new("png", "image/png", "Share.TypePng");
+    public static readonly ExportFileType Gif = new("gif", "image/gif", "Share.TypeGif");
+    public static readonly ExportFileType Html = new("html", "text/html", "Dialog.WebPage");
+    public static readonly ExportFileType Text = new("txt", "text/plain", "Share.TypeText");
 }
