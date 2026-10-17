@@ -43,6 +43,28 @@ public sealed class PhoneTests
         }
     }
 
+    [AvaloniaFact]
+    public void Turned_sideways_the_sheet_goes_to_the_right_of_the_board()
+    {
+        (Window window, PhoneShellViewModel shell) = Phone(width: 1280, height: 800);
+        window.UpdateLayout();
+        shell.IsLandscape.Should().BeTrue();
+        shell.ToggleSheetCommand.Execute(PhoneSheet.Moves);
+        window.UpdateLayout();
+        Border sheet = window.FindDeep<Border>("PhoneSheet")!;
+        sheet.Bounds.Width.Should().BeApproximately(512, 1);
+        sheet.Bounds.Height.Should().BeGreaterThan(500, "the sheet takes the full height beside the board");
+        GoBoardControl board = window.FindDeep<GoBoardControl>("Board")!;
+        board.Bounds.Right.Should().BeLessThanOrEqualTo(sheet.Bounds.Left + 1);
+        window.FindDeep<Border>("PhoneSheetHandle")!.IsVisible.Should().BeFalse();
+
+        shell.UpdateSize(400, 860); // turned back (what the view reports when it is resized)
+        window.UpdateLayout();
+        shell.IsLandscape.Should().BeFalse();
+        sheet.Bounds.Height.Should().BeApproximately(shell.SheetHeight, 1);
+        window.Close();
+    }
+
     [Fact]
     public void Tap_and_confirm_plays_on_the_second_tap_of_the_same_point()
     {

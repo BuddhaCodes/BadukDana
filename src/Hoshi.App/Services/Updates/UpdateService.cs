@@ -72,6 +72,12 @@ public sealed class VelopackUpdater : IAppUpdater
 
     private static UpdateManager? Create()
     {
+        // Phones install new APKs from the website: Velopack is for desktops.
+        if (PlatformInfo.IsPhone || OperatingSystem.IsAndroid())
+        {
+            return null;
+        }
+
         try
         {
             return Environment.GetEnvironmentVariable("HOSHI_UPDATE_FEED") is { Length: > 0 } feed

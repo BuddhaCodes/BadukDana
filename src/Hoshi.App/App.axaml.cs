@@ -78,8 +78,8 @@ public partial class App : Application
             };
         }
 
-        // Phones update by installing a new APK (from the website); the in-place updater is for desktops.
-        if (!Hoshi.App.Services.PlatformInfo.IsPhone)
+        // Phones are told about a new version and update by installing the new APK (from the website) over this one.
+        if (Hoshi.App.Services.PlatformInfo.IsPhone)
         {
             _services?.GetService<UpdateViewModel>()?.Start();
         }

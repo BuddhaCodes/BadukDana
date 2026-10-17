@@ -19,6 +19,8 @@ public partial class PhoneView : UserControl
         PhoneMenuSheet.AddHandler(Button.ClickEvent, (_, _) => (DataContext as PhoneShellViewModel)?.CloseMenu(), RoutingStrategies.Bubble);
 
         // View-only gestures; what they do is up to the view model.
+        SizeChanged += (_, e) => ShellModel?.UpdateSize(e.NewSize.Width, e.NewSize.Height);
+        DataContextChanged += (_, _) => ShellModel?.UpdateSize(Bounds.Width, Bounds.Height);
         PhoneSheetHandle.PointerPressed += OnHandlePressed;
         PhoneSheetHandle.PointerMoved += OnHandleMoved;
         PhoneSheetHandle.PointerReleased += OnHandleReleased;
