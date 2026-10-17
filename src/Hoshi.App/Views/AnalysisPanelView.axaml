@@ -21,10 +21,56 @@
                        IsVisible="{Binding Analysis.AssessmentText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
             <TextBlock Classes="secondary" Text="{Binding Analysis.BestText}" TextWrapping="Wrap"
                        IsVisible="{Binding Analysis.BestText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <!-- Review inspector (redesign 2026-10): KataGo's three candidates. -->
+            <StackPanel Spacing="4" IsVisible="{Binding Analysis.Candidates.Count}" x:Name="ReviewCandidates">
+              <TextBlock Classes="secondary" FontSize="11.5" Text="{l:T Review.Candidates}" />
+              <ItemsControl ItemsSource="{Binding Analysis.Candidates}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:CandidateRow">
+                    <Grid ColumnDefinitions="44,*,Auto,Auto" ColumnSpacing="8" Margin="0,1">
+                      <TextBlock Text="{Binding Move}" FontFamily="{DynamicResource Font.Mono}" FontSize="12.5"
+                                 Classes.best="{Binding IsBest}" Classes="candidate-move" VerticalAlignment="Center" />
+                      <ProgressBar Grid.Column="1" Classes="candidate" Classes.best="{Binding IsBest}" Minimum="0" Maximum="1" Value="{Binding Fraction}" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="2" Text="{Binding Winrate}" FontFamily="{DynamicResource Font.Mono}" FontSize="12.5" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="3" Classes="secondary" Text="{Binding Lead}" FontFamily="{DynamicResource Font.Mono}" FontSize="11.5" VerticalAlignment="Center" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
             <c:ScoreGraph Height="64" Values="{Binding Analysis.Graph}" CurrentIndex="{Binding Analysis.GraphIndex}"
+                          Marks="{Binding Analysis.MistakeMarks}" MarkBrush="{DynamicResource Danger}"
                           LineBrush="{DynamicResource Text.Primary}" Accent="{DynamicResource Accent}"
                           MoveClickedCommand="{Binding Analysis.GoToMoveCommand}" x:Name="ScoreGraph"
                           ToolTip.Tip="{l:T Main.GraphTip}" />
+            <!-- The game's three costliest mistakes, and a jump to the next one. -->
+            <Border Classes="review-card" IsVisible="{Binding Analysis.HasMistakes}" x:Name="ReviewMistakes">
+              <StackPanel Spacing="2">
+                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,4">
+                  <TextBlock Text="{l:T Review.Mistakes}" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
+                  <Button Grid.Column="1" Classes="bar danger-outline" Command="{Binding Analysis.NextMistakeCommand}" Content="{l:T Review.NextMistake}"
+                          ToolTip.Tip="{l:T Review.NextMistakeTip}" x:Name="NextMistakeButton" />
+                </Grid>
+                <ItemsControl ItemsSource="{Binding Analysis.KeyMistakes}" x:Name="ReviewMistakeList">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:KeyMistake">
+                      <Button Classes="bar mistake" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                              Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).Analysis.GoToMistakeCommand}" CommandParameter="{Binding}">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                          <Ellipse Width="9" Height="9" Classes="mistake-stone" Classes.white="{Binding !IsBlack}" VerticalAlignment="Center" />
+                          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="{Binding Title}" FontFamily="{DynamicResource Font.Mono}" FontSize="12.5" VerticalAlignment="Center" />
+                            <TextBlock Classes="secondary" Text="{Binding Better}" FontSize="11.5" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                          </StackPanel>
+                          <TextBlock Grid.Column="2" Text="{Binding LossText}" FontFamily="{DynamicResource Font.Mono}" FontSize="12.5"
+                                     Classes="loss" Classes.blunder="{Binding IsBlunder}" VerticalAlignment="Center" />
+                        </Grid>
+                      </Button>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
             <TextBlock Classes="secondary" Text="{Binding Analysis.StatusText}" TextWrapping="Wrap" Foreground="{DynamicResource Accent}"
                        IsVisible="{Binding Analysis.StatusText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" x:Name="AnalysisStatus" />
             <TextBlock Classes="secondary" Text="{Binding Analysis.TerritoryText}" TextWrapping="Wrap" x:Name="TerritoryText"

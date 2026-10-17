@@ -82,7 +82,8 @@
 
                   <!-- Tools and colours. -->
                   <StackPanel Spacing="8" IsVisible="{Binding Study.ShowDrawSection}" x:Name="StudyDrawSection">
-                  <WrapPanel Orientation="Horizontal" x:Name="StudyTools">
+                  <!-- On the desktop the tools float over the board (StudyPalette); phones keep them here. -->
+                  <WrapPanel Orientation="Horizontal" x:Name="StudyTools" IsVisible="{Binding Study.IsSectioned}">
                     <RadioButton Classes="tool" GroupName="study-tool" ToolTip.Tip="{l:T Study.Tool.Note}"
                                  IsChecked="{Binding Study.Tool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:StudyTool.Note}}"
                                  Command="{Binding Study.SelectToolCommand}" CommandParameter="{x:Static vm:StudyTool.Note}"><Ellipse Width="13" Height="13" Fill="#141414" Stroke="#9A9A9A" StrokeThickness="1" /></RadioButton>

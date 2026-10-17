@@ -194,10 +194,10 @@
   <Style Selector="TextBlock.assessment">
     <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
-  <Style Selector="TextBlock.assessment.good"><Setter Property="Foreground" Value="#6CC47A" /></Style>
+  <Style Selector="TextBlock.assessment.good"><Setter Property="Foreground" Value="{DynamicResource Good}" /></Style>
   <Style Selector="TextBlock.assessment.ok"><Setter Property="Foreground" Value="#A8C86A" /></Style>
   <Style Selector="TextBlock.assessment.warn"><Setter Property="Foreground" Value="#E6B450" /></Style>
-  <Style Selector="TextBlock.assessment.bad"><Setter Property="Foreground" Value="#E0664F" /></Style>
+  <Style Selector="TextBlock.assessment.bad"><Setter Property="Foreground" Value="{DynamicResource Danger}" /></Style>
 
   <!-- Toggle buttons in the bar (territory, analysis): accent underline when on. -->
   <Style Selector="Button.bar.toggle.on /template/ ContentPresenter#PART_ContentPresenter">
@@ -435,4 +435,46 @@
       <Setter Property="CornerRadius" Value="999" />
       <Setter Property="MinHeight" Value="0" />
     </Style>
+
+  <!-- Review inspector (redesign 2026-10). -->
+  <Style Selector="ProgressBar.candidate">
+    <Setter Property="Height" Value="6" />
+    <Setter Property="MinHeight" Value="6" />
+    <Setter Property="MinWidth" Value="40" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
+    <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+  </Style>
+  <Style Selector="ProgressBar.candidate.best"><Setter Property="Foreground" Value="{DynamicResource Good}" /></Style>
+  <Style Selector="TextBlock.candidate-move.best"><Setter Property="Foreground" Value="{DynamicResource Good}" /></Style>
+  <Style Selector="Border.review-card">
+    <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="Padding" Value="10,8" />
+    <Setter Property="Margin" Value="0,4,0,0" />
+  </Style>
+  <Style Selector="Button.mistake"><Setter Property="Padding" Value="4,4" /><Setter Property="MinHeight" Value="28" /></Style>
+  <Style Selector="Ellipse.mistake-stone"><Setter Property="Fill" Value="#141414" /><Setter Property="Stroke" Value="#9A9A9A" /><Setter Property="StrokeThickness" Value="1" /></Style>
+  <Style Selector="Ellipse.mistake-stone.white"><Setter Property="Fill" Value="#F4F4F4" /></Style>
+  <Style Selector="TextBlock.loss"><Setter Property="Foreground" Value="{DynamicResource Accent}" /></Style>
+  <Style Selector="TextBlock.loss.blunder"><Setter Property="Foreground" Value="{DynamicResource Danger}" /></Style>
+  <Style Selector="Button.danger-outline">
+    <Setter Property="BorderBrush" Value="{DynamicResource Danger}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="{DynamicResource Danger}" />
+    <Setter Property="Padding" Value="8,2" />
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+  <Style Selector="Border.study-palette">
+    <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="14" />
+    <Setter Property="Padding" Value="6" />
+    <Setter Property="BoxShadow" Value="0 14 36 -10 #B0000000" />
+  </Style>
+  <Style Selector="RadioButton.tool.palette"><Setter Property="Width" Value="38" /><Setter Property="Height" Value="38" /></Style>
+  <Style Selector="Button.palette"><Setter Property="Width" Value="38" /><Setter Property="Height" Value="34" /><Setter Property="HorizontalContentAlignment" Value="Center" /></Style>
 </Styles>

@@ -323,6 +323,7 @@
           <KeyBinding Gesture="M" Command="{Binding ToggleMusicCommand}" />
           <KeyBinding Gesture="F" Command="{Binding Effects.CycleCommand}" />
           <KeyBinding Gesture="J" Command="{Binding JosekiHints.ToggleCommand}" />
+          <KeyBinding Gesture="E" Command="{Binding Analysis.NextMistakeCommand}" />
           <KeyBinding Gesture="S" Command="{Binding Study.ToggleCommand}" />
           <KeyBinding Gesture="Z" Command="{Binding ToggleZenCommand}" />
           <KeyBinding Gesture="N" Command="{Binding Joseki.NextCommand}" />
@@ -428,6 +429,44 @@
             </Border>
           </StackPanel>
         </Button>
+        <!-- Desktop study (redesign 2026-10): the drawing tools float at the board's left edge, like a notebook's pens. -->
+        <Border x:Name="StudyPalette" Classes="study-palette" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="14,0,0,0">
+          <Border.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.And}">
+              <Binding Path="Study.IsActive" />
+              <Binding Path="!Study.IsSectioned" />
+              <Binding Path="!Study.IsQuizActive" />
+              <Binding Path="!IsZen" />
+            </MultiBinding>
+          </Border.IsVisible>
+          <StackPanel Spacing="4">
+            <RadioButton Classes="tool palette" GroupName="study-palette" ToolTip.Tip="{l:T Study.Tool.Note}" ToolTip.Placement="Right"
+                         IsChecked="{Binding Study.Tool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:StudyTool.Note}}"
+                         Command="{Binding Study.SelectToolCommand}" CommandParameter="{x:Static vm:StudyTool.Note}" x:Name="PaletteNote"><Ellipse Width="13" Height="13" Fill="#141414" Stroke="#9A9A9A" StrokeThickness="1" /></RadioButton>
+            <RadioButton Classes="tool palette" GroupName="study-palette" ToolTip.Tip="{l:T Study.Tool.Arrow}" ToolTip.Placement="Right"
+                         IsChecked="{Binding Study.Tool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:StudyTool.Arrow}}"
+                         Command="{Binding Study.SelectToolCommand}" CommandParameter="{x:Static vm:StudyTool.Arrow}" x:Name="PaletteArrow"><c:HoshiIcon Icon="{DynamicResource Icon.Arrow}" Size="17" /></RadioButton>
+            <RadioButton Classes="tool palette" GroupName="study-palette" ToolTip.Tip="{l:T Study.Tool.Area}" ToolTip.Placement="Right"
+                         IsChecked="{Binding Study.Tool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:StudyTool.Area}}"
+                         Command="{Binding Study.SelectToolCommand}" CommandParameter="{x:Static vm:StudyTool.Area}" x:Name="PaletteArea"><c:HoshiIcon Icon="{DynamicResource Icon.Area}" Size="17" /></RadioButton>
+            <RadioButton Classes="tool palette" GroupName="study-palette" ToolTip.Tip="{l:T Study.Tool.Mark}" ToolTip.Placement="Right"
+                         IsChecked="{Binding Study.Tool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:StudyTool.Mark}}"
+                         Command="{Binding Study.SelectToolCommand}" CommandParameter="{x:Static vm:StudyTool.Mark}" x:Name="PaletteMark"><c:HoshiIcon Icon="{DynamicResource Icon.Mark}" Size="17" /></RadioButton>
+            <RadioButton Classes="tool palette" GroupName="study-palette" ToolTip.Tip="{l:T Study.Tool.Label}" ToolTip.Placement="Right"
+                         IsChecked="{Binding Study.Tool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:StudyTool.Label}}"
+                         Command="{Binding Study.SelectToolCommand}" CommandParameter="{x:Static vm:StudyTool.Label}" x:Name="PaletteLabel"><c:HoshiIcon Icon="{DynamicResource Icon.Label}" Size="17" /></RadioButton>
+            <RadioButton Classes="tool palette" GroupName="study-palette" ToolTip.Tip="{l:T Study.Tool.Sequence}" ToolTip.Placement="Right"
+                         IsChecked="{Binding Study.Tool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:StudyTool.Sequence}}"
+                         Command="{Binding Study.SelectToolCommand}" CommandParameter="{x:Static vm:StudyTool.Sequence}" x:Name="PaletteSequence"><c:HoshiIcon Icon="{DynamicResource Icon.Sequence}" Size="17" /></RadioButton>
+            <RadioButton Classes="tool palette" GroupName="study-palette" ToolTip.Tip="{l:T Study.Tool.Erase}" ToolTip.Placement="Right"
+                         IsChecked="{Binding Study.Tool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:StudyTool.Erase}}"
+                         Command="{Binding Study.SelectToolCommand}" CommandParameter="{x:Static vm:StudyTool.Erase}" x:Name="PaletteErase"><c:HoshiIcon Icon="{DynamicResource Icon.Erase}" Size="17" /></RadioButton>
+            <Border Height="1" Margin="4,2" Background="{DynamicResource Border.Subtle}" />
+            <Button Classes="bar icon palette" ToolTip.Tip="{l:T Study.ClearDrawingsTip}" ToolTip.Placement="Right" Command="{Binding Study.ClearDrawingsCommand}" x:Name="PaletteClear">
+              <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="15" />
+            </Button>
+          </StackPanel>
+        </Border>
         <Button x:Name="JosekiExitPill" IsVisible="{Binding Joseki.IsActive}" Command="{Binding Joseki.CloseCommand}" Classes="zen-exit"
                 HorizontalAlignment="Left" VerticalAlignment="Top" Margin="14,12,0,0" ToolTip.Tip="{l:T Joseki.BackToGame}">
           <StackPanel Orientation="Horizontal" Spacing="8">
