@@ -6,9 +6,17 @@
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
+  // Visitors can ask not to be counted (the notice at the bottom, or the footer): then Google Analytics stays off.
+  try { if (localStorage.getItem('hoshi-ga-off') === '1') window['ga-disable-G-B8J7100VDV'] = true; } catch (e) { /* storage blocked */ }
   gtag('js', new Date());
 
   gtag('config', 'G-B8J7100VDV');
+</script>
+<script>
+  // Night or Kaya (light): the visitor's choice, else the system's.
+  (function () { var t = null; try { t = localStorage.getItem('hoshi-theme'); } catch (e) { /* storage blocked */ }
+    if (!t) t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'kaya' : 'night';
+    document.documentElement.setAttribute('data-theme', t); })();
 </script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -283,6 +291,43 @@
   footer .wrap { display: grid; gap: 10px; }
   footer .row { display: flex; gap: 12px; align-items: center; }
   footer img { width: 26px; height: 26px; }
+
+  /* Kaya, the light look (redesign 2026-10): cream paper, ink, seal red and indigo links. */
+  html[data-theme="kaya"] {
+    --ink: #f1e6cf; --ink-2: #ebdec2; --ink-3: #fbf6ea; --line: rgba(30, 26, 20, .14);
+    --text: #1e1a14; --muted: #6b5f48; --gold: #b23a2a; --gold-2: #26357f; --kaya: #e9cf98;
+  }
+  html[data-theme="kaya"] nav { background: rgba(241, 230, 207, .86); }
+  html[data-theme="kaya"] header { background: radial-gradient(900px 520px at 78% 10%, rgba(178, 58, 42, .08), transparent 65%), var(--ink); }
+  html[data-theme="kaya"] .sky { display: none; }
+  html[data-theme="kaya"] .kanji { color: rgba(178, 58, 42, .06); }
+  html[data-theme="kaya"] .btn.primary { background: var(--text); color: var(--ink); box-shadow: 0 10px 26px rgba(30, 26, 20, .18); }
+  html[data-theme="kaya"] .lang button[aria-pressed="true"] { background: var(--text); color: var(--ink); }
+  html[data-theme="kaya"] .shot { box-shadow: 0 24px 50px rgba(60, 40, 10, .22); }
+  html[data-theme="kaya"] .player { background: linear-gradient(160deg, #fbf6ea, #ebdec2); }
+  html[data-theme="kaya"] .meter i { background: linear-gradient(to top, var(--gold), #e58b74); }
+  html[data-theme="kaya"] pre { background: #fbf6ea; color: #3a2f20; }
+  html[data-theme="kaya"] .goban { box-shadow: 0 2px 0 #b98f50, 0 30px 60px rgba(60, 40, 10, .3), 0 0 0 1px rgba(0, 0, 0, .2); }
+  html[data-theme="kaya"] .moment:hover { border-color: rgba(178, 58, 42, .5); }
+  html[data-theme="kaya"] .fair { border-color: rgba(178, 58, 42, .3); background: linear-gradient(135deg, rgba(178, 58, 42, .07), rgba(178, 58, 42, .01)); }
+  html[data-theme="kaya"] .dl { background: radial-gradient(800px 400px at 50% 0%, rgba(178, 58, 42, .06), transparent 70%), var(--ink-2); }
+  html[data-theme="kaya"] .platforms .card.current { border-color: rgba(178, 58, 42, .55); box-shadow: 0 0 0 1px rgba(178, 58, 42, .2) inset; }
+  .theme { background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 999px; width: 34px; height: 30px; cursor: pointer; font: 15px/1 Figtree, sans-serif; }
+  .theme:hover { color: var(--text); }
+
+  /* The visitor's system comes first, across the whole row. */
+  .platforms .card.current { order: -1; grid-column: 1 / -1; }
+  .platforms .you { display: none; margin-left: 10px; font: 700 11px Figtree, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); background: var(--gold); border-radius: 4px; padding: 3px 8px; vertical-align: 4px; }
+  .platforms .card.current .you { display: inline-block; }
+
+  /* The analytics notice. */
+  .notice { position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 40; max-width: 640px; margin: 0 auto; display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+    background: var(--ink-3); color: var(--text); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; box-shadow: 0 18px 44px rgba(0, 0, 0, .35); font-size: 14px; }
+  .notice[hidden] { display: none; }
+  .notice p { flex: 1 1 280px; color: var(--muted); }
+  .notice .row { display: flex; gap: 8px; }
+  .notice button { font: 600 13.5px Figtree, sans-serif; border-radius: 999px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--line); background: none; color: var(--text); }
+  .notice button.ok { background: var(--gold); color: var(--ink); border-color: transparent; }
 </style>
 </head>
 <body>
@@ -302,6 +347,7 @@
       <button type="button" data-lang="en" aria-pressed="true">EN</button>
       <button type="button" data-lang="es" aria-pressed="false">ES</button>
     </div>
+    <button type="button" class="theme" id="theme-toggle" aria-label="Light or dark page" data-i18n-aria="th.toggle">☾</button>
     <a class="btn primary" href="#download" data-i18n="nav.download">Get Hoshi</a>
   </div>
 </nav>
@@ -629,19 +675,19 @@
     </div>
     <div class="platforms">
       <div class="card" data-os="windows">
-        <h3>Windows</h3>
+        <h3>Windows<span class="you" data-i18n="dl.yours">Your system</span></h3>
         <p class="muted" data-i18n="pw.d">Windows 10 or 11. Run the installer: Hoshi appears in the Start menu and on the desktop, and updates itself.</p>
         <div class="arch"><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-win-x64-Setup.exe">x64</a><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-win-arm64-Setup.exe">ARM64</a></div>
         <p class="note"><span data-i18n="pw.n">First launch: if SmartScreen warns about an unknown publisher, choose “More info” → “Run anyway”.</span> <span data-i18n="portable">Portable:</span> <a href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-win-x64-Portable.zip">x64</a> · <a href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-win-arm64-Portable.zip">ARM64</a></p>
       </div>
       <div class="card" data-os="macos">
-        <h3>macOS</h3>
+        <h3>macOS<span class="you" data-i18n="dl.yours">Your system</span></h3>
         <p class="muted" data-i18n="pm.d">macOS 12 or later. Open the .pkg and follow the steps: Hoshi goes to Applications and updates itself.</p>
         <div class="arch"><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-osx-arm64-Setup.pkg" data-i18n="pm.arm">Apple Silicon</a><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-osx-x64-Setup.pkg">Intel</a></div>
         <p class="note"><span data-i18n="pm.n">Hoshi is not notarized by Apple yet: if macOS refuses the .pkg, right-click it → Open, or allow it in System Settings → Privacy &amp; Security.</span> <span data-i18n="portable">Portable:</span> <a href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-osx-arm64-Portable.zip">Apple Silicon</a> · <a href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-osx-x64-Portable.zip">Intel</a></p>
       </div>
       <div class="card" data-os="linux">
-        <h3>Linux</h3>
+        <h3>Linux<span class="you" data-i18n="dl.yours">Your system</span></h3>
         <p class="muted" data-i18n="pl.d">Any recent x64 or ARM64 distribution. One file: make it executable and run it — it updates itself.</p>
         <div class="arch"><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-linux-x64.AppImage">x64</a><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-linux-arm64.AppImage">ARM64</a></div>
         <pre style="margin-top:2px">chmod +x HoshiGo-linux-x64.AppImage
@@ -649,7 +695,7 @@
         <p class="note"><span data-i18n="pl.n">If it does not start, install FUSE 2 (sudo apt install libfuse2). Music needs PulseAudio/PipeWire (pacat) or ALSA (aplay).</span> <span data-i18n="portable2">Classic archive:</span> <a href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-linux-x64.tar.gz">x64</a> · <a href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-linux-arm64.tar.gz">ARM64</a></p>
       </div>
       <div class="card" data-os="android">
-        <h3>Android</h3>
+        <h3>Android<span class="you" data-i18n="dl.yours">Your system</span></h3>
         <img class="phone-shot" src="img/phone.jpg" alt="Hoshi on an Android phone: the board with KataGo's analysis below" loading="lazy" data-i18n-alt="pa.alt">
         <p class="muted" data-i18n="pa.d">Android 8.0 or later, 64-bit phones. KataGo is inside. Tap a point, then tap it again to play; menus open from the bar at the bottom.</p>
         <div class="arch"><a class="btn ghost" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-android.apk">APK · ARM64</a></div>
@@ -683,12 +729,26 @@ dotnet run --project src/Hoshi.Desktop -c Release</pre></div>
     <p data-i18n="ft.credits">Analysis by KataGo (MIT). Classic theme textures from Sabaki and Shudan (MIT). Fonts under the SIL Open Font License; icons from Phosphor, Lucide and Tabler. Joseki ratings and comments come live from the OGS Joseki Explorer, a community project. Boards, stones, backgrounds, effects, sounds and music are Hoshi's own.</p>
     <p><a href="https://github.com/BuddhaCodes/BadukDana" style="color:var(--gold-2)">github.com/BuddhaCodes/BadukDana</a> · <a href="https://paypal.me/CarlosFernandez934" rel="noopener" style="color:var(--gold-2)" data-i18n="sp.footer">Donate to Hoshi on PayPal</a></p>
     <p data-i18n="ft.ogs">Not affiliated with OGS (online-go.com) or KataGo.</p>
+    <p><span data-i18n="ga.footer">Privacy: this page counts visits with Google Analytics (a cookie; pages viewed, country, device). The app itself sends nothing.</span> <a href="#" id="ga-toggle" style="color:var(--gold-2)" data-i18n="ga.stop">Don't count my visits</a></p>
   </div>
 </footer>
+
+<div class="notice" id="ga-notice" role="region" aria-label="Analytics" hidden>
+  <p data-i18n="ga.notice">This page counts visits with Google Analytics, which sets a cookie (pages viewed, country, device). Hoshi only sees the totals, and the app itself sends nothing.</p>
+  <div class="row">
+    <button type="button" id="ga-off" data-i18n="ga.no">Don't count me</button>
+    <button type="button" class="ok" id="ga-ok" data-i18n="ga.ok">Understood</button>
+  </div>
+</div>
 
 <script>
   const ES = {
     "nav.features": "Funciones", "nav.review": "Repaso", "nav.joseki": "Joseki", "nav.craft": "Tableros y piedras", "nav.effects": "Efectos", "nav.themes": "Temas", "nav.download": "Consíguelo",
+    "dl.yours": "Tu sistema", "th.toggle": "Página clara u oscura",
+    "ga.footer": "Privacidad: esta página cuenta las visitas con Google Analytics (una cookie; páginas vistas, país, dispositivo). La app no envía nada.",
+    "ga.stop": "No contar mis visitas", "ga.counting": "Volver a contar mis visitas",
+    "ga.notice": "Esta página cuenta las visitas con Google Analytics, que guarda una cookie (páginas vistas, país, dispositivo). Hoshi solo ve los totales, y la app no envía nada.",
+    "ga.no": "No me cuentes", "ga.ok": "Entendido",
     "hero.eyebrow": "Go · Baduk · Weiqi",
     "hero.title": "Un tablero de Go que <em>siente</em> cada jugada.",
     "hero.lead": "Hoshi es una app gratuita para jugar y estudiar Go, en tu ordenador y en tu teléfono Android. Un tablero precioso, KataGo valorando cada jugada en vivo, guía de josekis en cada esquina, efectos de cine cuando das con la mejor jugada y música lo-fi que se anima con tus rachas.",
@@ -795,6 +855,8 @@ dotnet run --project src/Hoshi.Desktop -c Release</pre></div>
   document.querySelectorAll("[data-i18n]").forEach(el => EN[el.dataset.i18n] = el.textContent);
   document.querySelectorAll("[data-i18n-html]").forEach(el => EN[el.dataset.i18nHtml] = el.innerHTML);
   document.querySelectorAll("[data-i18n-alt]").forEach(el => EN[el.dataset.i18nAlt] = el.alt);
+  document.querySelectorAll("[data-i18n-aria]").forEach(el => EN[el.dataset.i18nAria] = el.getAttribute("aria-label"));
+  EN["ga.counting"] = "Count my visits again";
   const T = key => (document.documentElement.lang === "es" ? ES : EN)[key] || EN[key] || key;
 
   // ---------------- Download button for the visitor's system (latest release; asset names carry no version) ----------------
@@ -841,6 +903,8 @@ dotnet run --project src/Hoshi.Desktop -c Release</pre></div>
     document.querySelectorAll("[data-i18n]").forEach(el => { const v = t[el.dataset.i18n] || EN[el.dataset.i18n]; if (v) el.textContent = v; });
     document.querySelectorAll("[data-i18n-html]").forEach(el => { const v = t[el.dataset.i18nHtml]; if (v) el.innerHTML = v; });
     document.querySelectorAll("[data-i18n-alt]").forEach(el => { const v = t[el.dataset.i18nAlt] || EN[el.dataset.i18nAlt]; if (v) el.alt = v; });
+    document.querySelectorAll("[data-i18n-aria]").forEach(el => { const v = t[el.dataset.i18nAria] || EN[el.dataset.i18nAria]; if (v) el.setAttribute("aria-label", v); });
+    if (window.hoshiGaLabel) window.hoshiGaLabel();
     document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
     try { localStorage.setItem("hoshi-lang", lang); } catch (e) { /* storage unavailable */ }
     renderDownload();
@@ -1009,6 +1073,47 @@ dotnet run --project src/Hoshi.Desktop -c Release</pre></div>
   let initial = "en";
   try { initial = localStorage.getItem("hoshi-lang") || (navigator.language || "en").slice(0, 2); } catch (e) { /* ignore */ }
   setLang(initial === "es" ? "es" : "en");
+</script>
+<script>
+  // Night or Kaya: the button in the bar switches and remembers.
+  (function () {
+    const root = document.documentElement, button = document.getElementById("theme-toggle"), meta = document.querySelector('meta[name="theme-color"]');
+    function show() { const kaya = root.getAttribute("data-theme") === "kaya"; button.textContent = kaya ? "☾" : "☀"; button.setAttribute("aria-pressed", String(kaya)); if (meta) meta.content = kaya ? "#f1e6cf" : "#0b1026"; }
+    button.addEventListener("click", () => {
+      const next = root.getAttribute("data-theme") === "kaya" ? "night" : "kaya";
+      root.setAttribute("data-theme", next);
+      try { localStorage.setItem("hoshi-theme", next); } catch (e) { /* storage blocked */ }
+      show();
+    });
+    show();
+  })();
+
+  // Google Analytics: say so once, and let the visitor stop being counted (and start again from the footer).
+  (function () {
+    const ID = "G-B8J7100VDV", notice = document.getElementById("ga-notice"), toggle = document.getElementById("ga-toggle");
+    function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+    function set(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* storage blocked */ } }
+    function off() { return get("hoshi-ga-off") === "1"; }
+    window.hoshiGaLabel = function () {
+      const es = document.documentElement.lang === "es";
+      toggle.textContent = off() ? (es ? ES["ga.counting"] : EN["ga.counting"]) : (es ? ES["ga.stop"] : EN["ga.stop"]);
+    };
+    function stop() {
+      set("hoshi-ga-off", "1"); window["ga-disable-" + ID] = true;
+      // Google's own cookies for this site go too.
+      document.cookie.split(";").map(c => c.trim().split("=")[0]).filter(n => n === "_ga" || n.indexOf("_ga_") === 0)
+        .forEach(n => { document.cookie = n + "=; Max-Age=0; path=/"; document.cookie = n + "=; Max-Age=0; path=/; domain=." + location.hostname; });
+    }
+    if (!get("hoshi-ga-notice")) notice.hidden = false;
+    document.getElementById("ga-ok").addEventListener("click", () => { set("hoshi-ga-notice", "1"); notice.hidden = true; });
+    document.getElementById("ga-off").addEventListener("click", () => { stop(); set("hoshi-ga-notice", "1"); notice.hidden = true; window.hoshiGaLabel(); });
+    toggle.addEventListener("click", e => {
+      e.preventDefault();
+      if (off()) { set("hoshi-ga-off", null); window["ga-disable-" + ID] = false; } else { stop(); }
+      window.hoshiGaLabel();
+    });
+    window.hoshiGaLabel();
+  })();
 </script>
 </body>
 </html>
