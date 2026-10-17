@@ -50,8 +50,29 @@ public sealed partial class NewEngineGameViewModel : ViewModelBase
     [ObservableProperty]
     private RulesOption _rules;
 
-    public NewEngineGameViewModel(IReadOnlyList<EngineChoice> engines, RuleSet? rules = null)
+    /// <summary>The rank of the human-style KataGo, when it plays ("10k").</summary>
+    [ObservableProperty]
+    private string _humanLevel = Services.Engines.GtpEngineHost.DefaultHumanLevel;
+
+    public IReadOnlyList<string> HumanLevels => Services.Engines.GtpEngineHost.HumanLevels;
+
+    /// <summary>The human-style KataGo is one of the players: its rank can be chosen.</summary>
+    public bool HasHumanEngine => Black.Engine?.IsHumanStyle == true || White.Engine?.IsHumanStyle == true;
+
+    /// <summary>The engine for a player, at the chosen rank for the human-style KataGo.</summary>
+    public EngineChoice? EngineFor(PlayerOption player) => player?.Engine is { IsHumanStyle: true } human ? human.WithHumanLevel(HumanLevel) : player?.Engine;
+
+    partial void OnBlackChanged(PlayerOption value) => OnPropertyChanged(nameof(HasHumanEngine));
+
+    partial void OnWhiteChanged(PlayerOption value) => OnPropertyChanged(nameof(HasHumanEngine));
+
+    public NewEngineGameViewModel(IReadOnlyList<EngineChoice> engines, RuleSet? rules = null, string? humanLevel = null)
     {
+        if (humanLevel is not null && Services.Engines.GtpEngineHost.HumanLevels.Contains(humanLevel))
+        {
+            _humanLevel = humanLevel;
+        }
+
         ArgumentNullException.ThrowIfNull(engines);
         PlayerOption you = new(Tr.T("Engines.You"), null);
         Players = [you, .. engines.Select(e => new PlayerOption(e.Name, e))];
@@ -109,8 +130,8 @@ public sealed partial class NewEngineGameViewModel : ViewModelBase
     public GameTree CreateTree(string? humanName = null)
     {
         GameTree tree = GameTree.Create(Size, Rules.Rules, Komi);
-        tree.Info.BlackPlayer = Black.Engine?.Name ?? humanName ?? Tr.T("Engines.You");
-        tree.Info.WhitePlayer = White.Engine?.Name ?? humanName ?? Tr.T("Engines.You");
+        tree.Info.BlackPlayer = EngineFor(Black)?.Name ?? humanName ?? Tr.T("Engines.You");
+        tree.Info.WhitePlayer = EngineFor(White)?.Name ?? humanName ?? Tr.T("Engines.You");
         tree.Info.Date = DateTime.Now.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
         if (Handicap >= 2)
         {

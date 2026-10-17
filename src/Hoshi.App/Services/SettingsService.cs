@@ -27,6 +27,12 @@ public sealed record AppSettings
 
     public string? KataGoModel { get; init; }
 
+    /// <summary>KataGo's human-style model (b18c384nbt-humanv0.bin.gz, optional): adds "KataGo (human style)".</summary>
+    public string? KataGoHumanModel { get; init; }
+
+    /// <summary>The last rank chosen for the human-style KataGo ("10k").</summary>
+    public string? HumanLevel { get; init; }
+
     public string? KataGoConfig { get; init; }
 
     /// <summary>GTP engines added in Preferences → Engines (to play against, engine vs engine, analysis).</summary>

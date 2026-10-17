@@ -10,7 +10,26 @@ namespace Hoshi.App.Services.Engines;
 public sealed record EngineChoice(string Name, GtpEngineConfig Config, bool IsBuiltIn)
 {
     /// <summary>The id saved in the settings: the user's name, or a fixed id for Hoshi's KataGo (its name is translated).</summary>
-    public string Id => IsBuiltIn ? GtpEngineHost.BuiltInId : Name;
+    public string Id => FixedId ?? (IsBuiltIn ? GtpEngineHost.BuiltInId : Name);
+
+    /// <summary>A fixed id for Hoshi's other built-in engines (KataGo with the human-style model).</summary>
+    public string? FixedId { get; init; }
+
+    /// <summary>KataGo playing like a human of a given rank (needs KataGo's human model).</summary>
+    public bool IsHumanStyle => FixedId == GtpEngineHost.HumanId;
+
+    /// <summary>The human-style KataGo at another rank ("15k", "1d"…): the same engine, restarted with that profile.</summary>
+    public EngineChoice WithHumanLevel(string level)
+    {
+        if (!IsHumanStyle || !GtpEngineHost.HumanLevels.Contains(level))
+        {
+            return this;
+        }
+
+        string arguments = System.Text.RegularExpressions.Regex.Replace(Config.Arguments, "humanSLProfile=[a-z0-9_]+", "humanSLProfile=rank_" + level);
+        string name = Tr.F("Engines.HumanKataGoLevel", level);
+        return this with { Name = name, Config = Config with { Name = name, Arguments = arguments } };
+    }
 
     public override string ToString() => Name;
 }
@@ -54,6 +73,14 @@ public sealed class GtpEngineHost : IGtpEngineHost, IAsyncDisposable
     public const int MaxConsoleLines = 4000;
     public const string BuiltInId = "hoshi:katago";
 
+    /// <summary>The id of KataGo with its human-style model (shown when Preferences has the model).</summary>
+    public const string HumanId = "hoshi:katago-human";
+
+    /// <summary>The ranks offered for the human-style KataGo (its model knows 20k to 9d).</summary>
+    public static readonly IReadOnlyList<string> HumanLevels = ["20k", "15k", "10k", "7k", "5k", "3k", "1k", "1d", "3d", "5d"];
+
+    public const string DefaultHumanLevel = "10k";
+
     private readonly ISettingsService _settings;
     private readonly ILogger _logger;
     private readonly string _baseDirectory;
@@ -71,6 +98,9 @@ public sealed class GtpEngineHost : IGtpEngineHost, IAsyncDisposable
         _dataDirectory = dataDirectory ?? AppPaths.DataDirectory;
         Refresh(settings.Current);
     }
+
+    /// <summary>The name of the human-style KataGo in the engine lists.</summary>
+    public static string HumanName => Tr.T("Engines.HumanKataGo");
 
     /// <summary>The name of Hoshi's own KataGo in the engine lists.</summary>
     public static string BuiltInName => Tr.T("Engines.HoshiKataGo");
@@ -102,6 +132,12 @@ public sealed class GtpEngineHost : IGtpEngineHost, IAsyncDisposable
         if (KataGo.KataGoLocator.Resolve(settings, _baseDirectory, _dataDirectory) is { } kataGo && kataGo.Options.Validate() is null)
         {
             list.Add(new EngineChoice(BuiltInName, KataGo.KataGoLocator.GtpEngine(kataGo, _dataDirectory, BuiltInName), IsBuiltIn: true));
+            if (settings.KataGoHumanModel is { Length: > 0 } human && File.Exists(human))
+            {
+                string level = HumanLevels.Contains(settings.HumanLevel ?? string.Empty) ? settings.HumanLevel! : DefaultHumanLevel;
+                list.Add(new EngineChoice(HumanName, KataGo.KataGoLocator.HumanGtpEngine(kataGo, human, _dataDirectory, HumanName), IsBuiltIn: true) { FixedId = HumanId }
+                    .WithHumanLevel(level));
+            }
         }
 
         foreach (EngineEntry e in settings.Engines)

@@ -148,6 +148,48 @@ public sealed class EngineUiTests
         ThemeService.Apply(HoshiThemes.Default, animations: false, Application.Current!.Resources);
     }
 
+    [AvaloniaFact]
+    public async Task The_human_style_KataGo_appears_with_the_model_and_plays_at_the_chosen_rank()
+    {
+        string data = Directory.CreateTempSubdirectory("hoshi-human").FullName;
+        try
+        {
+            string exe = Path.Combine(data, "katago-bin"), model = Path.Combine(data, "net.bin.gz"), human = Path.Combine(data, "b18c384nbt-humanv0.bin.gz");
+            foreach (string f in new[] { exe, model, human })
+            {
+                File.WriteAllText(f, "x");
+            }
+
+            var settings = new TestSettings();
+            settings.Save(settings.Current with { KataGoExecutable = exe, KataGoModel = model });
+            await using var host = new GtpEngineHost(settings, baseDirectory: data, dataDirectory: data);
+            host.Engines.Should().ContainSingle("no human model yet");
+
+            settings.Save(settings.Current with { KataGoHumanModel = human, HumanLevel = "5k" });
+            host.Refresh(settings.Current);
+            EngineChoice humanStyle = host.Engines.Should().HaveCount(2).And.Subject.Last();
+            humanStyle.IsHumanStyle.Should().BeTrue();
+            humanStyle.Id.Should().Be(GtpEngineHost.HumanId);
+            humanStyle.Config.Arguments.Should().Contain("-human-model").And.Contain("hoshi_gtp_human.cfg").And.Contain("humanSLProfile=rank_5k");
+            File.ReadAllText(Path.Combine(Hoshi.App.Services.KataGo.KataGoLocator.DataFolder(data), Hoshi.App.Services.KataGo.KataGoLocator.HumanGtpConfigName)).Should().Contain("humanSLChosenMoveProp = 1.0");
+
+            var options = new NewEngineGameViewModel(host.Engines, humanLevel: "5k");
+            options.HasHumanEngine.Should().BeFalse("KataGo plays white by default");
+            options.White = options.Players.Single(p => p.Engine?.IsHumanStyle == true);
+            options.HasHumanEngine.Should().BeTrue();
+            options.HumanLevel = "1d";
+            EngineChoice playing = options.EngineFor(options.White)!;
+            playing.Config.Arguments.Should().Contain("humanSLProfile=rank_1d").And.NotContain("rank_5k");
+            playing.Id.Should().Be(GtpEngineHost.HumanId);
+            options.CreateTree().Info.WhitePlayer.Should().Be(Hoshi.Core.Localization.Tr.F("Engines.HumanKataGoLevel", "1d"));
+            options.EngineFor(options.Black).Should().BeNull("you play black");
+        }
+        finally
+        {
+            Directory.Delete(data, recursive: true);
+        }
+    }
+
     /// <summary>
     /// Hoshi's own KataGo over GTP, end to end (only with HOSHI_KATAGO_EXE and HOSHI_KATAGO_MODEL set; never in CI):
     /// KataGo plays both colours of a 9×9 game, then analyses through the GTP adapter.

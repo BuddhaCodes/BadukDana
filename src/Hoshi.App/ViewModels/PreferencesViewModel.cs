@@ -136,6 +136,18 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     [ObservableProperty]
     private string _kataGoConfig = string.Empty;
 
+    /// <summary>KataGo's human-style model (optional download), for "KataGo (human style)".</summary>
+    [ObservableProperty]
+    private string _kataGoHumanModel = string.Empty;
+
+    private readonly Services.IBrowserLauncher? _browser;
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private Task OpenHumanModelPage() => _browser?.OpenAsync(HumanModelPage, CancellationToken.None) ?? Task.CompletedTask;
+
+    /// <summary>Where KataGo's human model is published (its v1.15.0 release).</summary>
+    public static readonly Uri HumanModelPage = new("https://github.com/lightvector/KataGo/releases/tag/v1.15.0");
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AnalysisVisitsBox))]
     private int _analysisVisits = 200;
@@ -189,8 +201,10 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         KataGoSetupViewModel? kataGoSetup = null,
         Services.Engines.IGtpEngineHost? engines = null,
         Services.Engines.AnalysisEngineSwitch? analysisSwitch = null,
-        EffectsViewModel? effects = null)
+        EffectsViewModel? effects = null,
+        Services.IBrowserLauncher? browser = null)
     {
+        _browser = browser;
         Effects = effects ?? new EffectsViewModel(settings);
         _engines = engines;
         _analysisSwitch = analysisSwitch;
@@ -205,6 +219,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         {
             _kataGoExecutable = s.KataGoExecutable ?? string.Empty;
             _kataGoModel = s.KataGoModel ?? string.Empty;
+            _kataGoHumanModel = s.KataGoHumanModel ?? string.Empty;
             _kataGoConfig = s.KataGoConfig ?? string.Empty;
             _analysisVisits = PlatformInfo.AnalysisVisits(s);
             _moveEffects = s.MoveEffects;
@@ -698,6 +713,9 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     private async Task BrowseModel() => KataGoModel = await Pick(Tr.T("Prefs.PickModel")) ?? KataGoModel;
 
     [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private async Task BrowseHumanModel() => KataGoHumanModel = await Pick(Tr.T("Prefs.PickHumanModel")) ?? KataGoHumanModel;
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
     private async Task BrowseConfig() => KataGoConfig = await Pick(Tr.T("Prefs.PickConfig")) ?? KataGoConfig;
 
     /// <summary>
@@ -712,7 +730,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         }
 
         Services.AppSettings current = _settings.Current;
-        if (Clean(KataGoExecutable) != current.KataGoExecutable || Clean(KataGoModel) != current.KataGoModel
+        if (Clean(KataGoExecutable) != current.KataGoExecutable || Clean(KataGoModel) != current.KataGoModel || Clean(KataGoHumanModel) != current.KataGoHumanModel
             || Clean(KataGoConfig) != current.KataGoConfig || Math.Clamp(AnalysisVisits, 10, 100_000) != PlatformInfo.AnalysisVisits(current))
         {
             ApplyEngine();
@@ -735,10 +753,12 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         {
             KataGoExecutable = Clean(KataGoExecutable),
             KataGoModel = Clean(KataGoModel),
+            KataGoHumanModel = Clean(KataGoHumanModel),
             KataGoConfig = Clean(KataGoConfig),
             AnalysisVisits = Math.Clamp(AnalysisVisits, 10, 100_000),
         };
         _settings.Save(updated);
+        _engines?.Refresh(updated);
         _engine?.Reconfigure(updated);
         EngineStatus = _engine?.Problem ?? Tr.T("Prefs.EngineSaved");
     }
