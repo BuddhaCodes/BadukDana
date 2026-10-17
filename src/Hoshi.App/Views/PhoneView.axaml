@@ -43,6 +43,56 @@
       <Setter Property="Padding" Value="14,12" />
       <Setter Property="MinHeight" Value="48" />
     </Style>
+    <Style Selector="Button.home-card, Button.home-tile">
+      <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="16" />
+      <Setter Property="Padding" Value="14" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="Button.home-tile"><Setter Property="Margin" Value="4,0,4,8" /><Setter Property="MinHeight" Value="104" /></Style>
+    <Style Selector="TextBlock.home-glyph">
+      <Setter Property="FontFamily" Value="{DynamicResource Font.Brand}" />
+      <Setter Property="FontSize" Value="24" />
+      <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+    </Style>
+    <Style Selector="TextBlock.home-kicker">
+      <Setter Property="FontFamily" Value="{DynamicResource Font.Mono}" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+    </Style>
+    <Style Selector="TextBlock.home-section">
+      <Setter Property="FontFamily" Value="{DynamicResource Font.Title}" />
+      <Setter Property="FontSize" Value="18" />
+    </Style>
+    <Style Selector="Button.home-size">
+      <Setter Property="MinHeight" Value="46" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.home-round">
+      <Setter Property="Width" Value="42" />
+      <Setter Property="Height" Value="42" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <!-- Players as two cards; the one to move is lit. -->
+    <Style Selector="Border.player-card">
+      <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Padding" Value="10,7" />
+    </Style>
+    <Style Selector="Border.player-card.turn"><Setter Property="BorderBrush" Value="{DynamicResource Accent}" /><Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" /></Style>
   </UserControl.Styles>
 
   <LayoutTransformControl LayoutTransform="{Binding Main.UiScaleTransform}" x:Name="UiScaleRoot">
@@ -55,33 +105,36 @@
               Padding="14,10,14,8" x:Name="PhoneTop">
         <Panel>
           <StackPanel Spacing="4" IsVisible="{Binding Main.IsLocal}">
-            <Grid ColumnDefinitions="*,Auto,*">
-              <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Left">
-                <Ellipse Width="11" Height="11" Fill="#141414" Stroke="#9A9A9A" StrokeThickness="1" VerticalAlignment="Center" />
-                <Border Classes="clock" Classes.low="{Binding Main.Clock.IsBlackLow}" IsVisible="{Binding Main.Clock.HasClock}" x:Name="PhoneBlackClock">
-                  <TextBlock Text="{Binding Main.Clock.BlackText}" />
-                </Border>
-                <TextBlock Text="{Binding Main.Game.BlackName}" TextTrimming="CharacterEllipsis" MaxWidth="110" VerticalAlignment="Center"
-                           FontWeight="{Binding Main.Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" x:Name="PhoneBlackName" />
-                <TextBlock Classes="secondary" Text="{Binding Main.Game.Board.WhiteCaptures, StringFormat='+{0}'}" VerticalAlignment="Center"
-                           IsVisible="{Binding Main.Game.Board.WhiteCaptures}" />
-              </StackPanel>
-              <Border Grid.Column="1" Classes="turn-toggle" Margin="8,0">
-                <Panel>
-                  <Ellipse Classes="turn-knob black" IsVisible="{Binding Main.Game.IsBlackToMove}" HorizontalAlignment="Left" />
-                  <Ellipse Classes="turn-knob white" IsVisible="{Binding !Main.Game.IsBlackToMove}" HorizontalAlignment="Right" />
-                </Panel>
+            <!-- Two player cards (redesign 2026-10): stone, name, captures and clock; the one to move is lit. -->
+            <Grid ColumnDefinitions="*,8,*">
+              <Border Classes="player-card" Classes.turn="{Binding Main.Game.IsBlackToMove}" x:Name="PhoneBlackCard">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                  <Ellipse Width="16" Height="16" Fill="#141414" Stroke="#9A9A9A" StrokeThickness="1" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Main.Game.BlackName}" TextTrimming="CharacterEllipsis" FontSize="13.5"
+                               FontWeight="{Binding Main.Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" x:Name="PhoneBlackName" />
+                    <TextBlock Classes="secondary" FontSize="11.5" Text="{Binding Main.Game.Board.WhiteCaptures, StringFormat='+{0}'}"
+                               IsVisible="{Binding Main.Game.Board.WhiteCaptures}" />
+                  </StackPanel>
+                  <Border Grid.Column="2" Classes="clock" Classes.low="{Binding Main.Clock.IsBlackLow}" IsVisible="{Binding Main.Clock.HasClock}" x:Name="PhoneBlackClock" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Main.Clock.BlackText}" />
+                  </Border>
+                </Grid>
               </Border>
-              <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
-                <TextBlock Classes="secondary" Text="{Binding Main.Game.Board.BlackCaptures, StringFormat='+{0}'}" VerticalAlignment="Center"
-                           IsVisible="{Binding Main.Game.Board.BlackCaptures}" />
-                <TextBlock Text="{Binding Main.Game.WhiteName}" TextTrimming="CharacterEllipsis" MaxWidth="110" VerticalAlignment="Center"
-                           FontWeight="{Binding !Main.Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
-                <Border Classes="clock" Classes.low="{Binding Main.Clock.IsWhiteLow}" IsVisible="{Binding Main.Clock.HasClock}" x:Name="PhoneWhiteClock">
-                  <TextBlock Text="{Binding Main.Clock.WhiteText}" />
-                </Border>
-                <Ellipse Width="11" Height="11" Fill="#EEE" Stroke="#888" StrokeThickness="1" VerticalAlignment="Center" />
-              </StackPanel>
+              <Border Grid.Column="2" Classes="player-card" Classes.turn="{Binding !Main.Game.IsBlackToMove}" x:Name="PhoneWhiteCard">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                  <Ellipse Width="16" Height="16" Fill="#F2F2EE" Stroke="#888" StrokeThickness="1" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Main.Game.WhiteName}" TextTrimming="CharacterEllipsis" FontSize="13.5"
+                               FontWeight="{Binding !Main.Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
+                    <TextBlock Classes="secondary" FontSize="11.5" Text="{Binding Main.Game.Board.BlackCaptures, StringFormat='+{0}'}"
+                               IsVisible="{Binding Main.Game.Board.BlackCaptures}" />
+                  </StackPanel>
+                  <Border Grid.Column="2" Classes="clock" Classes.low="{Binding Main.Clock.IsWhiteLow}" IsVisible="{Binding Main.Clock.HasClock}" x:Name="PhoneWhiteClock" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Main.Clock.WhiteText}" />
+                  </Border>
+                </Grid>
+              </Border>
             </Grid>
             <Grid ColumnDefinitions="*,Auto">
               <TextBlock Classes="secondary" FontSize="12" Text="{Binding Main.Game.StatusText}" TextTrimming="CharacterEllipsis" x:Name="PhoneStatus" />
@@ -165,6 +218,9 @@
           <!-- The phone menu, in groups: new game, play, study, this game, share (folded), settings. -->
           <ScrollViewer IsVisible="{Binding IsMenu}" x:Name="PhoneMenuSheet">
             <StackPanel Margin="0,4,0,8">
+              <Button Classes="menu-item" Command="{Binding ShowHomeCommand}" x:Name="MenuHome">
+                <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Back}" Size="18" /><TextBlock Text="{l:T Home.Menu}" /></StackPanel>
+              </Button>
               <TextBlock Classes="menu-section" Text="{l:T Menu.NewGame}" />
               <UniformGrid Columns="3" Margin="12,0,12,6">
                 <UniformGrid.Styles><Style Selector="Button"><Setter Property="Margin" Value="3" /><Setter Property="MinHeight" Value="44" /><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="HorizontalContentAlignment" Value="Center" /></Style></UniformGrid.Styles>
@@ -383,6 +439,99 @@
           </StackPanel>
         </Border>
       </Panel>
+    </DockPanel>
+
+    <!-- Home (redesign 2026-10): continue the game, a new one, or a mode. The board waits underneath. -->
+    <DockPanel IsVisible="{Binding IsHome}" Background="{DynamicResource Bg.Window}" x:Name="PhoneHome">
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="18" Margin="18,14,18,22">
+          <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+            <Border Width="36" Height="36" CornerRadius="9" Background="{DynamicResource Accent}">
+              <TextBlock Text="星" FontFamily="{DynamicResource Font.Brand}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Bg.Window}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+              <TextBlock Text="Hoshi" FontFamily="{DynamicResource Font.Title}" FontSize="19" FontWeight="SemiBold" />
+              <TextBlock Classes="secondary" Text="{l:T Home.Greeting}" FontSize="12.5" />
+            </StackPanel>
+            <Button Grid.Column="2" Classes="home-round" Command="{Binding Main.OpenPreferencesCommand}" ToolTip.Tip="{l:T Main.Preferences}" x:Name="HomePreferences">
+              <c:HoshiIcon Icon="{DynamicResource Icon.Settings}" Size="20" />
+            </Button>
+          </Grid>
+
+          <!-- The game on the board: a small picture of it, and back to it. -->
+          <Button Classes="home-card" Command="{Binding ContinueGameCommand}" IsVisible="{Binding HasGameToContinue}" x:Name="HomeContinue">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+              <c:GoBoardControl Width="96" Height="96" IsHitTestVisible="False" Board="{Binding Main.Game.Board}" BoardStyle="{DynamicResource Theme.Board}"
+                                LastMove="{Binding Main.Game.LastMove}" ShowCoordinates="False" x:Name="HomeBoard" />
+              <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                <TextBlock Classes="home-kicker" Text="{l:T Home.YourGame}" />
+                <TextBlock Text="{Binding ContinueTitle}" FontWeight="SemiBold" FontSize="15.5" TextTrimming="CharacterEllipsis" />
+                <TextBlock Classes="secondary" Text="{Binding ContinueDetail}" FontSize="12.5" TextTrimming="CharacterEllipsis" />
+                <TextBlock Text="{l:T Home.Continue}" FontWeight="SemiBold" Foreground="{DynamicResource Accent}" Margin="0,4,0,0" />
+              </StackPanel>
+            </Grid>
+          </Button>
+
+          <StackPanel Spacing="8">
+            <TextBlock Classes="home-section" Text="{l:T Home.NewGame}" />
+            <UniformGrid Columns="3" Margin="-4,0">
+              <UniformGrid.Styles><Style Selector="Button"><Setter Property="Margin" Value="4,0" /></Style></UniformGrid.Styles>
+              <Button Classes="home-size accent" Content="19×19" Command="{Binding HomeCommand}" CommandParameter="{x:Static vm:PhoneHomeAction.New19}" x:Name="HomeNew19" />
+              <Button Classes="home-size" Content="13×13" Command="{Binding HomeCommand}" CommandParameter="{x:Static vm:PhoneHomeAction.New13}" />
+              <Button Classes="home-size" Content="9×9" Command="{Binding HomeCommand}" CommandParameter="{x:Static vm:PhoneHomeAction.New9}" />
+            </UniformGrid>
+          </StackPanel>
+
+          <StackPanel Spacing="8">
+          <TextBlock Classes="home-section" Text="{l:T Home.Modes}" />
+          <UniformGrid Columns="2" Margin="-4,0" x:Name="HomeTiles">
+            <Button Classes="home-tile" Command="{Binding HomeCommand}" CommandParameter="{x:Static vm:PhoneHomeAction.Online}" x:Name="HomeTileOnline">
+              <StackPanel Spacing="3">
+                <TextBlock Classes="home-glyph" Text="序" />
+                <TextBlock Text="{l:T Home.Online}" FontWeight="SemiBold" FontSize="15" TextTrimming="CharacterEllipsis" />
+                <TextBlock Classes="secondary" Text="{l:T Home.OnlineDetail}" FontSize="12" TextTrimming="CharacterEllipsis" />
+              </StackPanel>
+            </Button>
+            <Button Classes="home-tile" Command="{Binding HomeCommand}" CommandParameter="{x:Static vm:PhoneHomeAction.KataGo}" x:Name="HomeTileKataGo">
+              <StackPanel Spacing="3">
+                <TextBlock Classes="home-glyph" Text="対" />
+                <TextBlock Text="{l:T Home.KataGo}" FontWeight="SemiBold" FontSize="15" TextTrimming="CharacterEllipsis" />
+                <TextBlock Classes="secondary" Text="{l:T Home.KataGoDetail}" FontSize="12" TextTrimming="CharacterEllipsis" />
+              </StackPanel>
+            </Button>
+            <Button Classes="home-tile" Command="{Binding HomeCommand}" CommandParameter="{x:Static vm:PhoneHomeAction.Problems}" x:Name="HomeTileProblems">
+              <StackPanel Spacing="3">
+                <TextBlock Classes="home-glyph" Text="詰" />
+                <TextBlock Text="{l:T Home.Problems}" FontWeight="SemiBold" FontSize="15" TextTrimming="CharacterEllipsis" />
+                <TextBlock Classes="secondary" Text="{l:T Home.ProblemsDetail}" FontSize="12" TextTrimming="CharacterEllipsis" />
+              </StackPanel>
+            </Button>
+            <Button Classes="home-tile" Command="{Binding HomeCommand}" CommandParameter="{x:Static vm:PhoneHomeAction.Study}" x:Name="HomeTileStudy">
+              <StackPanel Spacing="3">
+                <TextBlock Classes="home-glyph" Text="中" />
+                <TextBlock Text="{l:T Home.Study}" FontWeight="SemiBold" FontSize="15" TextTrimming="CharacterEllipsis" />
+                <TextBlock Classes="secondary" Text="{l:T Home.StudyDetail}" FontSize="12" TextTrimming="CharacterEllipsis" />
+              </StackPanel>
+            </Button>
+            <Button Classes="home-tile" Command="{Binding HomeCommand}" CommandParameter="{x:Static vm:PhoneHomeAction.Replays}" x:Name="HomeTileReplays">
+              <StackPanel Spacing="3">
+                <TextBlock Classes="home-glyph" Text="終" />
+                <TextBlock Text="{l:T Home.Replays}" FontWeight="SemiBold" FontSize="15" TextTrimming="CharacterEllipsis" />
+                <TextBlock Classes="secondary" Text="{l:T Home.ReplaysDetail}" FontSize="12" TextTrimming="CharacterEllipsis" />
+              </StackPanel>
+            </Button>
+            <Button Classes="home-tile" Command="{Binding HomeCommand}" CommandParameter="{x:Static vm:PhoneHomeAction.Open}" x:Name="HomeTileOpen">
+              <StackPanel Spacing="3">
+                <TextBlock Classes="home-glyph" Text="譜" />
+                <TextBlock Text="{l:T Home.Open}" FontWeight="SemiBold" FontSize="15" TextTrimming="CharacterEllipsis" />
+                <TextBlock Classes="secondary" Text="{l:T Home.OpenDetail}" FontSize="12" TextTrimming="CharacterEllipsis" />
+              </StackPanel>
+            </Button>
+          </UniformGrid>
+          </StackPanel>
+        </StackPanel>
+      </ScrollViewer>
     </DockPanel>
 
     <!-- A page: Preferences, the lobby, the library, game info, play against KataGo. -->

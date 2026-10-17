@@ -10,6 +10,24 @@ public static partial class Tr
             "The first tap shows the stone with guide lines; tapping the same point again plays it. Avoids slips of the finger on small boards.",
             "El primer toque muestra la piedra con líneas guía; tocar otra vez el mismo punto la juega. Evita jugadas por error en tableros pequeños.");
         Add(d, "Phone.Moves", "Moves", "Jugadas");
+        Add(d, "Home.Menu", "Home", "Inicio");
+        Add(d, "Home.Greeting", "What shall we do?", "¿Qué hacemos?");
+        Add(d, "Home.Continue", "Continue the game", "Continuar la partida");
+        Add(d, "Home.YourGame", "On the board", "En el tablero");
+        Add(d, "Home.NewGame", "New game on this device", "Partida nueva en este equipo");
+        Add(d, "Home.Modes", "Modes", "Modos");
+        Add(d, "Home.Online", "Play on OGS", "Jugar en OGS");
+        Add(d, "Home.OnlineDetail", "Automatch, challenges", "Automatch y desafíos");
+        Add(d, "Home.KataGo", "Against KataGo", "Contra KataGo");
+        Add(d, "Home.KataGoDetail", "A human-like level", "Con nivel humano");
+        Add(d, "Home.Problems", "Problems", "Problemas");
+        Add(d, "Home.ProblemsDetail", "Life and death, review", "Vida y muerte, repaso");
+        Add(d, "Home.Open", "Open SGF", "Abrir SGF");
+        Add(d, "Home.OpenDetail", "A game or a lesson", "Una partida o una lección");
+        Add(d, "Home.Study", "Study", "Estudiar");
+        Add(d, "Home.StudyDetail", "Notes and drawings", "Notas y dibujos");
+        Add(d, "Home.Replays", "Review", "Revisar");
+        Add(d, "Home.ReplaysDetail", "Your saved games", "Tus partidas guardadas");
         Add(d, "Phone.Back", "Back", "Atrás");
         Add(d, "Phone.PlayKataGo", "Play against KataGo…", "Jugar contra KataGo…");
         Add(d, "Phone.Resize", "Drag to resize", "Arrastra para cambiar el tamaño");

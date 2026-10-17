@@ -71,11 +71,10 @@ public partial class App : Application
         else if (ApplicationLifetime is ISingleViewApplicationLifetime single)
         {
             // Phones: one view, the board on top and pages instead of windows.
-            single.MainView = new PhoneView
-            {
-                DataContext = _services?.GetService<PhoneShellViewModel>()
-                    ?? new PhoneShellViewModel(new MainWindowViewModel(), new Services.Phone.PhoneNavigation()),
-            };
+            PhoneShellViewModel shell = _services?.GetService<PhoneShellViewModel>()
+                ?? new PhoneShellViewModel(new MainWindowViewModel(), new Services.Phone.PhoneNavigation());
+            shell.IsHome = true; // the app opens on its home screen
+            single.MainView = new PhoneView { DataContext = shell };
         }
 
         // Phones are told about a new version and update by installing the new APK (from the website) over this one.
