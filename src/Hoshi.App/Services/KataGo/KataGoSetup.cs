@@ -203,6 +203,62 @@ public static class KataGoLocator
         return new Hoshi.Engines.Gtp.GtpEngineConfig(name, kataGo.Options.Executable, arguments);
     }
 
+    /// <summary>Hoshi's GTP config for KataGo's human-style model (after KataGo's gtp_human5k_example.cfg).</summary>
+    public const string HumanGtpConfigName = "hoshi_gtp_human.cfg";
+
+    public const string HumanGtpConfig = """
+        # Written by Hoshi, after KataGo's gtp_human5k_example.cfg: KataGo playing like a human of a given rank with
+        # its human model (-human-model). The rank (humanSLProfile) is set by Hoshi when a game starts.
+        logAllGTPCommunication = false
+        logSearchInfo = false
+        logToStderr = false
+        rules = japanese
+        allowResignation = true
+        resignThreshold = -0.99
+        resignConsecTurns = 20
+        resignMinScoreDifference = 40
+        resignMinMovesPerBoardArea = 0.4
+        maxVisits = 40
+        numSearchThreads = 1
+        humanSLProfile = rank_10k
+        humanSLChosenMoveProp = 1.0
+        humanSLChosenMoveIgnorePass = true
+        humanSLChosenMovePiklLambda = 100000000
+        humanSLRootExploreProbWeightless = 0.0
+        humanSLRootExploreProbWeightful = 0.0
+        humanSLPlaExploreProbWeightless = 0.0
+        humanSLPlaExploreProbWeightful = 0.0
+        humanSLOppExploreProbWeightless = 0.0
+        humanSLOppExploreProbWeightful = 0.0
+        humanSLCpuctExploration = 0.50
+        humanSLCpuctPermanent = 0.2
+        chosenMoveTemperatureEarly = 0.85
+        chosenMoveTemperature = 0.70
+        chosenMoveTemperatureHalflife = 80
+        chosenMoveTemperatureOnlyBelowProb = 0.01
+        ignorePreRootHistory = false
+        rootNumSymmetriesToSample = 2
+        useLcbForSelection = false
+        staticScoreUtilityFactor = 0.30
+        dynamicScoreUtilityFactor = 0.00
+        useUncertainty = false
+        subtreeValueBiasFactor = 0.0
+        useNoisePruning = false
+        """;
+
+    /// <summary>
+    /// KataGo with the human model: <c>katago gtp -model … -human-model … -config hoshi_gtp_human.cfg</c>; the rank
+    /// goes in <c>-override-config humanSLProfile=rank_10k</c>.
+    /// </summary>
+    public static Hoshi.Engines.Gtp.GtpEngineConfig HumanGtpEngine(ResolvedKataGo kataGo, string humanModel, string dataDirectory, string name)
+    {
+        ArgumentNullException.ThrowIfNull(kataGo);
+        string logs = Path.Combine(DataFolder(dataDirectory), "logs");
+        string config = EnsureFile(dataDirectory, HumanGtpConfigName, HumanGtpConfig);
+        string arguments = $"gtp -model {Quote(kataGo.Options.Model)} -human-model {Quote(humanModel)} -config {Quote(config)} -override-config {Quote("logDir=" + logs + ",humanSLProfile=rank_" + Hoshi.App.Services.Engines.GtpEngineHost.DefaultHumanLevel)}";
+        return new Hoshi.Engines.Gtp.GtpEngineConfig(name, kataGo.Options.Executable, arguments);
+    }
+
     private static string Quote(string value) => "\"" + value.Replace("\"", "\\\"", StringComparison.Ordinal) + "\"";
 
     private static string EnsureFile(string dataDirectory, string name, string content)

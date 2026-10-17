@@ -574,7 +574,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        var options = new NewEngineGameViewModel(_engines.Engines, Game.Board.Rules);
+        var options = new NewEngineGameViewModel(_engines.Engines, Game.Board.Rules, _settings?.Current.HumanLevel);
         if (!await _engineWindows.AskNewGameAsync(options))
         {
             return;
@@ -600,7 +600,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         LeaveOnline();
         Game.Load(options.CreateTree(), path: null);
-        EngineMatch.Start(options.Black.Engine, options.White.Engine);
+        if (options.HasHumanEngine && _settings is not null && _settings.Current.HumanLevel != options.HumanLevel)
+        {
+            _settings.Save(_settings.Current with { HumanLevel = options.HumanLevel });
+        }
+
+        EngineMatch.Start(options.EngineFor(options.Black), options.EngineFor(options.White));
     }
 
     [RelayCommand(CanExecute = nameof(HasEngines))]

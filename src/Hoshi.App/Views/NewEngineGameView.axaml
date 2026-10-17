@@ -29,7 +29,7 @@
               IsEnabled="{Binding CanStart}" />
     </StackPanel>
     <StackPanel>
-      <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto">
+      <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
         <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center" Margin="0,0,14,0">
           <Ellipse Width="12" Height="12" Fill="#15151A" Stroke="#777" StrokeThickness="1" />
           <TextBlock Classes="label" Text="{l:T Common.Black}" Margin="0" />
@@ -55,6 +55,11 @@
         </ComboBox>
         <TextBlock Grid.Row="3" Grid.Column="2" Classes="label" Text="Komi" Margin="16,0,14,0" />
         <NumericUpDown Grid.Row="3" Grid.Column="3" Value="{Binding KomiBox}" Increment="0.5" Minimum="-50" Maximum="50" FormatString="0.0" x:Name="KomiBox" />
+
+        <!-- The human-style KataGo plays like a person of this rank. -->
+        <TextBlock Grid.Row="4" Classes="label" Text="{l:T Engines.HumanLevel}" IsVisible="{Binding HasHumanEngine}" />
+        <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding HumanLevels}" SelectedItem="{Binding HumanLevel}" x:Name="HumanLevelBox"
+                  IsVisible="{Binding HasHumanEngine}" ToolTip.Tip="{l:T Engines.HumanLevelTip}" />
       </Grid>
       <TextBlock Classes="secondary" Text="{Binding Hint}" TextWrapping="Wrap" Margin="0,12,0,0" x:Name="HintText" />
     </StackPanel>
