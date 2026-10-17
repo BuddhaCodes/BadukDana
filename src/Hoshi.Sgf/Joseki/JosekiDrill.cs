@@ -106,6 +106,27 @@ public sealed class JosekiDrill
         return DrillAnswer.Correct;
     }
 
+    /// <summary>Takes back the last move placed (the run keeps its mistakes); false at the start.</summary>
+    public bool StepBack()
+    {
+        if (_played.Count == 0)
+        {
+            return false;
+        }
+
+        _played.RemoveAt(_played.Count - 1);
+        BoardState board = BoardState.Create(Line.Size);
+        for (int i = 0; i < _played.Count; i++)
+        {
+            board = board.Play(Line.Moves[i].Color, _played[i]);
+        }
+
+        Board = board.WithToMove(ToMove);
+        _missesHere = 0;
+        Hint = null;
+        return true;
+    }
+
     private bool IsOtherJoseki(Point point) =>
         _library.Any(l => l.Id != Line.Id
             && l.Size == Line.Size

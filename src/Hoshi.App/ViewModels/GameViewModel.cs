@@ -732,11 +732,20 @@ public sealed partial class GameViewModel : ViewModelBase
         IsEditMode = true;
     }
 
+    /// <summary>Deletes the shown move with everything after it (asks first when that is more than this move).</summary>
     [RelayCommand(CanExecute = nameof(CanUndo))]
-    private void DeleteNode()
+    private async Task DeleteNode()
     {
+        int moves = 1 + CurrentNode.Descendants().Count(n => n.HasMove);
+        if (moves > 1 && _dialogs is not null
+            && !await _dialogs.ConfirmAsync(Tr.T("Main.DeleteNode"), Tr.F("Game.DeleteConfirm", moves)))
+        {
+            return;
+        }
+
         _cursor.DeleteCurrent();
         IsDirty = true;
+        SetStatus(Tr.F("Game.Deleted", moves));
     }
 
     [RelayCommand(CanExecute = nameof(CanUndo))]

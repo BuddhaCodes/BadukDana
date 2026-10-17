@@ -92,6 +92,16 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         Effects = effects ?? new EffectsViewModel(settings);
         EngineMatch = engineMatch;
+        if (engineMatch is not null)
+        {
+            engineMatch.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName is nameof(EngineMatchViewModel.IsActive))
+                {
+                    PauseStateChanged();
+                }
+            };
+        }
         _engines = engines;
         _engineWindows = engineWindows;
         Updates = updates;
@@ -156,6 +166,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             }
         }
         Clock = new LocalClockViewModel(game, ui, sounds: sounds);
+        Clock.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(LocalClockViewModel.HasClock) or nameof(LocalClockViewModel.Version))
+            {
+                PauseStateChanged();
+            }
+        };
         Counting.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName is nameof(CountingViewModel.IsActive) or nameof(CountingViewModel.Territory))
@@ -325,6 +342,20 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>The joseki trainer, shown on the main board (Ctrl+J).</summary>
     public JosekiTrainerViewModel Joseki { get; }
+
+    /// <summary>←: a move back in the game, or in the joseki trainer while it is on the board.</summary>
+    [RelayCommand]
+    private void StepBack()
+    {
+        if (Joseki.IsActive)
+        {
+            Joseki.BackCommand.Execute(null);
+        }
+        else if (Game.GoBackCommand.CanExecute(null))
+        {
+            Game.GoBackCommand.Execute(null);
+        }
+    }
 
     /// <summary>Known joseki continuations on the main board while you play (J).</summary>
     public JosekiAssistantViewModel JosekiHints { get; }
@@ -514,6 +545,57 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>The clock of a local game (menu → Clock).</summary>
     public LocalClockViewModel Clock { get; }
+
+    /// <summary>A local game (the clock, an engine) is paused: the board waits under a "Paused" card.</summary>
+    [ObservableProperty]
+    private bool _isGamePaused;
+
+    /// <summary>Only local games pause (with a clock or an engine playing); online games run on the server's clock.</summary>
+    public bool CanPauseGame => IsLocal && (Clock.HasClock || EngineMatch?.IsActive == true);
+
+    public string PauseGameLabel => Tr.T(IsGamePaused ? "Pause.Resume" : "Pause.Pause");
+
+    [RelayCommand(CanExecute = nameof(CanPauseGame))]
+    private void TogglePauseGame()
+    {
+        if (!CanPauseGame)
+        {
+            return;
+        }
+
+        SetGamePaused(!IsGamePaused);
+    }
+
+    private void SetGamePaused(bool pause)
+    {
+        if (Clock.HasClock && Clock.IsPaused != pause)
+        {
+            Clock.TogglePauseCommand.Execute(null);
+        }
+
+        if (EngineMatch is { IsActive: true } match && match.IsPaused != pause)
+        {
+            match.TogglePauseCommand.Execute(null);
+        }
+
+        IsGamePaused = pause;
+        OnPropertyChanged(nameof(PauseGameLabel));
+        Game.ShowStatus(Tr.T(pause ? "Pause.On" : "Pause.Off"));
+    }
+
+    partial void OnOnlineChanged(OnlineGameViewModel? value) => PauseStateChanged();
+
+    private void PauseStateChanged()
+    {
+        if (IsGamePaused && !CanPauseGame)
+        {
+            IsGamePaused = false; // the clock went away, the engine game ended, or an online game opened
+            OnPropertyChanged(nameof(PauseGameLabel));
+        }
+
+        OnPropertyChanged(nameof(CanPauseGame));
+        TogglePauseGameCommand.NotifyCanExecuteChanged();
+    }
 
     /// <summary>Counting at the end of a local game.</summary>
     public CountingViewModel Counting { get; }

@@ -239,6 +239,8 @@ public sealed class PhoneTests
     {
         string dir = Path.Combine(AppContext.BaseDirectory, "screenshots", "site");
         Directory.CreateDirectory(dir);
+        bool wasPhone = PlatformInfo.IsPhone;
+        PlatformInfo.IsPhone = true;
         Tr.SetLanguage(Tr.English);
         try
         {
@@ -276,11 +278,26 @@ public sealed class PhoneTests
                 frame.Save(Path.Combine(dir, "phone-menu.png"));
             }
 
+            shell.ToggleSheetCommand.Execute(PhoneSheet.Study);
+            await Task.Delay(60);
+            using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
+            {
+                frame.Save(Path.Combine(dir, "phone-study.png"));
+            }
+
+            shell.ToggleSheetCommand.Execute(PhoneSheet.Moves);
+            await Task.Delay(60);
+            using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
+            {
+                frame.Save(Path.Combine(dir, "phone-moves.png"));
+            }
+
             window.Close();
         }
         finally
         {
             ThemeService.Apply(HoshiThemes.Default, animations: false, Application.Current!.Resources);
+            PlatformInfo.IsPhone = wasPhone;
             Tr.SetLanguage(Tr.Spanish);
         }
     }

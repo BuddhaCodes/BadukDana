@@ -25,7 +25,7 @@ public static partial class Tr
         Add(d, "Count.Accept", "Accept result", "Aceptar resultado");
         Add(d, "Count.KeepPlaying", "Keep playing", "Seguir jugando");
         Add(d, "Count.Saved", "Result saved: {0}.", "Resultado guardado: {0}.");
-        Add(d, "Count.Menu", "Count the game", "Contar la partida");
+        Add(d, "Count.Menu", "Count the score (end of a local game)", "Contar los puntos (final de partida local)");
 
         // KataGo's review in the game.
         Add(d, "Analysis.Better", "better {0}", "mejor {0}");

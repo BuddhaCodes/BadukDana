@@ -270,6 +270,24 @@ public sealed partial class JosekiTrainerViewModel : ViewModelBase
         Refresh();
     }
 
+    /// <summary>Takes back the last move of the line (← or Backspace in the trainer); the run keeps its mistakes.</summary>
+    [RelayCommand]
+    private void Back()
+    {
+        if (_drill is null || !IsActive || IsBlocked)
+        {
+            return;
+        }
+
+        if (_drill.StepBack())
+        {
+            _wrong = null;
+            _shownAnswer = null;
+            SetStatus("Joseki.SteppedBack");
+            Refresh();
+        }
+    }
+
     /// <summary>The next line due in the chosen family (or, when everything is learned for now, a random one).</summary>
     [RelayCommand]
     private void Next()

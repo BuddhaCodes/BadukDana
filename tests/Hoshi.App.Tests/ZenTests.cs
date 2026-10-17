@@ -83,4 +83,57 @@ public sealed class ZenTests
         window.FindDeep<Border>("PhoneBar")!.IsVisible.Should().BeTrue();
         window.Close();
     }
+
+    [AvaloniaFact]
+    public void The_bottom_bar_folds_into_icons_and_a_more_menu_on_small_windows()
+    {
+        foreach ((double width, bool compact, bool narrow) in new[] { (1600.0, false, false), (1150.0, true, false), (850.0, true, true) })
+        {
+            var vm = new MainWindowViewModel(new GameViewModel(), settings: new TestSettings());
+            var window = new MainWindow(vm) { Width = width, Height = 820 };
+            window.Show();
+            window.UpdateLayout();
+            Border bar = window.FindDeep<Border>("BottomBar")!;
+            bar.Classes.Contains("compact").Should().Be(compact, $"at {width} px the bar is {bar.Bounds.Width} wide");
+            bar.Classes.Contains("narrow").Should().Be(narrow);
+            window.FindDeep<Button>("MoreButton")!.IsVisible.Should().Be(narrow);
+            window.FindDeep<Control>("OptionalBarButtons")!.IsVisible.Should().Be(!narrow);
+            window.Close();
+        }
+    }
+
+    [AvaloniaFact]
+    public void Local_games_pause_and_online_games_cannot()
+    {
+        var vm = new MainWindowViewModel(new GameViewModel(), settings: new TestSettings());
+        vm.CanPauseGame.Should().BeFalse("nothing runs yet");
+        vm.Clock.StartCommand.Execute(vm.Clock.Presets[0]);
+        vm.CanPauseGame.Should().BeTrue();
+
+        vm.TogglePauseGameCommand.Execute(null);
+        vm.IsGamePaused.Should().BeTrue();
+        vm.Clock.IsPaused.Should().BeTrue();
+        vm.TogglePauseGameCommand.Execute(null);
+        vm.IsGamePaused.Should().BeFalse();
+        vm.Clock.IsPaused.Should().BeFalse();
+
+        vm.TogglePauseGameCommand.Execute(null);
+        vm.Clock.RemoveCommand.Execute(null);
+        vm.IsGamePaused.Should().BeFalse("no clock and no engine: nothing to pause");
+        vm.CanPauseGame.Should().BeFalse();
+    }
+
+    [AvaloniaFact]
+    public void Zen_exit_is_visible_and_says_how_to_leave()
+    {
+        var vm = new MainWindowViewModel(new GameViewModel(), settings: new TestSettings());
+        var window = new MainWindow(vm) { Width = 1200, Height = 820 };
+        window.Show();
+        vm.ToggleZenCommand.Execute(null);
+        window.UpdateLayout();
+        Button exit = window.FindDeep<Button>("ZenExit")!;
+        exit.Opacity.Should().BeGreaterThan(0.7);
+        exit.Bounds.Height.Should().BeGreaterThanOrEqualTo(34);
+        window.Close();
+    }
 }

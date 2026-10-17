@@ -81,6 +81,42 @@
     <Setter Property="Height" Value="{DynamicResource BottomBar.Height}" />
     <Setter Property="Padding" Value="8,0" />
   </Style>
+  <!-- Group titles in the phone menu. -->
+  <Style Selector="TextBlock.menu-section">
+    <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+    <Setter Property="FontSize" Value="11.5" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Margin" Value="18,12,18,4" />
+  </Style>
+
+  <!-- Segmented tabs (the study panel's parts on phones): one big target each, the chosen one filled. -->
+  <Style Selector="RadioButton.segment">
+    <Setter Property="MinHeight" Value="38" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="bg" CornerRadius="8" Background="Transparent" Padding="6,4">
+          <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Foreground="{TemplateBinding Foreground}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="RadioButton.segment:checked">
+    <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="RadioButton.segment:checked /template/ Border#bg"><Setter Property="Background" Value="{DynamicResource Bg.Bar}" /></Style>
+  <Style Selector="RadioButton.segment:pointerover /template/ Border#bg"><Setter Property="Background" Value="{DynamicResource Bg.Panel}" /></Style>
+  <Style Selector="RadioButton.segment:checked:pointerover /template/ Border#bg"><Setter Property="Background" Value="{DynamicResource Bg.Bar}" /></Style>
+
+  <!-- Responsive bottom bar: "compact" keeps the icons only, "narrow" also hides the names (the turn toggle stays). -->
+  <Style Selector="Border.bottom-bar.compact TextBlock.label"><Setter Property="IsVisible" Value="False" /></Style>
+  <Style Selector="Border.bottom-bar.compact Button.bar"><Setter Property="Padding" Value="7,3" /></Style>
+  <Style Selector="Border.bottom-bar.compact TextBlock.player"><Setter Property="MaxWidth" Value="90" /></Style>
+  <Style Selector="Border.bottom-bar.narrow TextBlock.player"><Setter Property="IsVisible" Value="False" /></Style>
+
   <Style Selector="Border.bottom-bar.edit">
     <Setter Property="Background" Value="{DynamicResource Bg.EditBar}" />
   </Style>
@@ -200,16 +236,34 @@
   <Style Selector="Border.clock.low > TextBlock"><Setter Property="Foreground" Value="#FFF4EE" /></Style>
 
   <!-- Zen mode's way out: barely there until the pointer comes near. -->
+  <!-- Leaving zen: a clear pill with an icon and the key, calm but always visible over any board. -->
   <Style Selector="Button.zen-exit">
-    <Setter Property="Opacity" Value="0.35" />
+    <Setter Property="Opacity" Value="0.82" />
     <Setter Property="Background" Value="{DynamicResource Bg.Bar}" />
-    <Setter Property="CornerRadius" Value="14" />
-    <Setter Property="Padding" Value="12,5" />
+    <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+    <Setter Property="BorderThickness" Value="1.5" />
+    <Setter Property="CornerRadius" Value="20" />
+    <Setter Property="Padding" Value="14,7" />
+    <Setter Property="MinHeight" Value="34" />
     <Setter Property="Transitions">
       <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.25" /></Transitions>
     </Setter>
   </Style>
+  <Style Selector="Button.zen-exit /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="BoxShadow" Value="0 4 16 0 #66000000" />
+  </Style>
   <Style Selector="Button.zen-exit:pointerover"><Setter Property="Opacity" Value="1" /></Style>
+  <Style Selector="Button.zen-exit:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+  </Style>
+  <Style Selector="Button.zen-exit.phone">
+    <Setter Property="Opacity" Value="0.9" />
+    <Setter Property="MinHeight" Value="44" />
+    <Setter Property="Padding" Value="16,9" />
+    <Setter Property="CornerRadius" Value="22" />
+  </Style>
 
   <Style Selector="Button.bar">
     <Setter Property="Background" Value="Transparent" />

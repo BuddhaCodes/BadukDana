@@ -71,8 +71,14 @@ public sealed partial class CountingViewModel : ViewModelBase
     [RelayCommand]
     public void Start()
     {
-        if (_game.Online is not null || !_game.IsGameOver)
+        if (_game.Online is not null)
         {
+            return;
+        }
+
+        if (!_game.IsGameOver)
+        {
+            _game.ShowStatus(Tr.T("Count.NeedPasses"));
             return;
         }
 

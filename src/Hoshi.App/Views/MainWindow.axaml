@@ -23,7 +23,7 @@
 
   <!-- Shortcuts that are safe while typing in the comment box (modifier keys, or keys a TextBox consumes). -->
   <Window.KeyBindings>
-    <KeyBinding Gesture="Left" Command="{Binding Game.GoBackCommand}" />
+    <KeyBinding Gesture="Left" Command="{Binding StepBackCommand}" />
     <KeyBinding Gesture="Right" Command="{Binding Game.GoForwardCommand}" />
     <KeyBinding Gesture="Home" Command="{Binding Game.GoFirstCommand}" />
     <KeyBinding Gesture="End" Command="{Binding Game.GoLastCommand}" />
@@ -37,6 +37,7 @@
     <KeyBinding Gesture="Ctrl+S" Command="{Binding Game.SaveCommand}" />
     <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding Game.SaveAsCommand}" />
     <KeyBinding Gesture="Ctrl+Shift+C" Command="{Binding Share.CopySgfCommand}" />
+    <KeyBinding Gesture="Ctrl+Space" Command="{Binding TogglePauseGameCommand}" />
     <KeyBinding Gesture="Ctrl+Shift+V" Command="{Binding Share.PasteSgfCommand}" />
     <KeyBinding Gesture="Ctrl+E" Command="{Binding Game.ToggleEditModeCommand}" />
     <KeyBinding Gesture="Ctrl+I" Command="{Binding Game.EditGameInfoCommand}" />
@@ -126,9 +127,11 @@
 
           <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
             <Button Classes="bar" Command="{Binding Game.PassCommand}" ToolTip.Tip="{l:T Main.PassTip}" x:Name="PassButton"
-                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Pass}" Size="17" /><TextBlock Text="{l:T Main.Pass}" VerticalAlignment="Center" x:Name="PassLabel" /></StackPanel></Button>
+                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Pass}" Size="17" /><TextBlock Classes="label" Text="{l:T Main.Pass}" VerticalAlignment="Center" x:Name="PassLabel" /></StackPanel></Button>
             <Button Classes="bar" Command="{Binding Game.UndoCommand}" ToolTip.Tip="{l:T Main.UndoTip}" x:Name="UndoButton"
-                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Undo}" Size="17" /><TextBlock Text="{l:T Main.Undo}" VerticalAlignment="Center" /></StackPanel></Button>
+                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Undo}" Size="17" /><TextBlock Classes="label" Text="{l:T Main.Undo}" VerticalAlignment="Center" /></StackPanel></Button>
+            <!-- Narrow windows: these go into the "more" menu (code-behind sets the size classes). -->
+            <StackPanel Orientation="Horizontal" Spacing="2" x:Name="OptionalBarButtons">
             <Button Classes="bar toggle" Classes.on="{Binding Analysis.IsTerritoryOn}" Command="{Binding Analysis.ToggleTerritoryCommand}"
                     ToolTip.Tip="{l:T Main.TerritoryTip}" x:Name="TerritoryButton"
                     >
@@ -137,7 +140,7 @@
                   <Binding Path="!Game.IsEditMode" />
                   
                 </MultiBinding>
-              </Button.IsVisible><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Territory}" Size="17" /><TextBlock Text="{l:T Main.Territory}" VerticalAlignment="Center" /></StackPanel></Button>
+              </Button.IsVisible><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Territory}" Size="17" /><TextBlock Classes="label" Text="{l:T Main.Territory}" VerticalAlignment="Center" /></StackPanel></Button>
             <Button Classes="bar toggle" Classes.on="{Binding JosekiHints.IsOn}" Command="{Binding JosekiHints.ToggleCommand}"
                     ToolTip.Tip="{l:T Main.JosekiTip}" x:Name="JosekiButton">
               <Button.IsVisible>
@@ -145,7 +148,8 @@
                   <Binding Path="!Game.IsEditMode" />
                   <Binding Path="!JosekiHints.IsBlocked" />
                 </MultiBinding>
-              </Button.IsVisible><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Star}" Size="17" /><TextBlock Text="{l:T Main.JosekiHints}" VerticalAlignment="Center" /></StackPanel></Button>
+              </Button.IsVisible><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Star}" Size="17" /><TextBlock Classes="label" Text="{l:T Main.JosekiHints}" VerticalAlignment="Center" /></StackPanel></Button>
+            </StackPanel>
             <Button Classes="bar toggle" Classes.on="{Binding Analysis.IsAnalysisOn}" Command="{Binding Analysis.ToggleAnalysisCommand}"
                     ToolTip.Tip="{l:T Main.AnalysisTip}" x:Name="AnalysisButton"
                     >
@@ -154,11 +158,23 @@
                   <Binding Path="!Game.IsEditMode" />
                   <Binding Path="!Analysis.IsBlocked" />
                 </MultiBinding>
-              </Button.IsVisible><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Analysis}" Size="17" /><TextBlock Text="{l:T Main.Analysis}" VerticalAlignment="Center" /></StackPanel></Button>
+              </Button.IsVisible><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Analysis}" Size="17" /><TextBlock Classes="label" Text="{l:T Main.Analysis}" VerticalAlignment="Center" /></StackPanel></Button>
             <Button Classes="bar toggle" Classes.on="{Binding Study.IsActive}" Command="{Binding Study.ToggleCommand}"
-                    ToolTip.Tip="{l:T Main.StudyTip}" x:Name="StudyButton" IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Study}" Size="17" /><TextBlock Text="{l:T Main.Study}" VerticalAlignment="Center" /></StackPanel></Button>
+                    ToolTip.Tip="{l:T Main.StudyTip}" x:Name="StudyButton" IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Study}" Size="17" /><TextBlock Classes="label" Text="{l:T Main.Study}" VerticalAlignment="Center" /></StackPanel></Button>
+<Panel x:Name="OnlineButtonHost">
             <Button Classes="bar" Command="{Binding OpenLobbyCommand}" ToolTip.Tip="{l:T Main.OnlineTip}" x:Name="OnlineButton"
-                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Online}" Size="17" /><TextBlock Text="{l:T Main.Online}" VerticalAlignment="Center" /></StackPanel></Button>
+                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Online}" Size="17" /><TextBlock Classes="label" Text="{l:T Main.Online}" VerticalAlignment="Center" /></StackPanel></Button>
+            </Panel>
+            <Button Classes="bar icon" ToolTip.Tip="{l:T Main.MoreTip}" x:Name="MoreButton" IsVisible="False">
+              <TextBlock Text="⋯" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
+              <Button.Flyout>
+                <MenuFlyout>
+                  <MenuItem Header="{l:T Main.Territory}" Command="{Binding Analysis.ToggleTerritoryCommand}" ToggleType="CheckBox" IsChecked="{Binding Analysis.IsTerritoryOn, Mode=OneWay}" />
+                  <MenuItem Header="{l:T Main.JosekiHints}" Command="{Binding JosekiHints.ToggleCommand}" ToggleType="CheckBox" IsChecked="{Binding JosekiHints.IsOn, Mode=OneWay}" IsVisible="{Binding !JosekiHints.IsBlocked}" />
+                  <MenuItem Header="{l:T Main.Online}" Command="{Binding OpenLobbyCommand}" />
+                </MenuFlyout>
+              </Button.Flyout>
+            </Button>
             <Button Classes="bar" Command="{Binding Game.ToggleEditModeCommand}" IsVisible="{Binding Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Check}" Size="17" /><TextBlock Text="{l:T Main.FinishEditing}" VerticalAlignment="Center" /></StackPanel></Button>
             <!-- Board effects: explosions, shattering captures, atari alert — Off / Subtle / Full, also with F. -->
             <Button Classes="bar icon" ToolTip.Tip="{Binding Effects.Tooltip}" x:Name="EffectsButton" Classes.dim="{Binding Effects.IsOff}">
@@ -255,8 +271,8 @@
                 </MenuItem>
                 <Separator />
                 <MenuItem Header="{l:T Main.GameInfo}" Command="{Binding Game.EditGameInfoCommand}" InputGesture="Ctrl+I" />
-                <MenuItem Header="{l:T Main.PromoteVariation}" Command="{Binding Game.PromoteVariationCommand}" />
-                <MenuItem Header="{l:T Main.DeleteNode}" Command="{Binding Game.DeleteNodeCommand}" />
+                <MenuItem Header="{l:T Main.PromoteVariation}" Command="{Binding Game.PromoteVariationCommand}" ToolTip.Tip="{l:T Main.PromoteVariationTip}" />
+                <MenuItem Header="{l:T Main.DeleteNode}" Command="{Binding Game.DeleteNodeCommand}" ToolTip.Tip="{l:T Main.DeleteNodeTip}" />
                 <Separator />
                 <MenuItem Header="{l:T Main.EditMode}" Command="{Binding Game.ToggleEditModeCommand}" InputGesture="Ctrl+E" />
                 <MenuItem Header="{l:T Main.PlayOnline}" Command="{Binding OpenLobbyCommand}" InputGesture="Ctrl+L" />
@@ -266,10 +282,10 @@
                 <MenuItem Header="{l:T Main.Joseki}" Command="{Binding OpenJosekiCommand}" InputGesture="Ctrl+J" />
                 <MenuItem Header="{l:T Tsumego.Menu}" Command="{Binding OpenTsumegoCommand}" InputGesture="Ctrl+P" x:Name="TsumegoItem" />
                 <MenuItem Header="{l:T Main.StudyMenu}" Command="{Binding Study.ToggleCommand}" InputGesture="S" />
-                <MenuItem Header="{l:T Study.Quiz}" Command="{Binding Study.StartQuizCommand}" />
-                <MenuItem Header="{l:T Count.Menu}" Command="{Binding Counting.StartCommand}" x:Name="CountItem" />
+                <MenuItem Header="{l:T Study.Quiz}" Command="{Binding Study.StartQuizCommand}" ToolTip.Tip="{l:T Study.QuizTip}" />
+                <MenuItem Header="{l:T Count.Menu}" Command="{Binding Counting.StartCommand}" x:Name="CountItem" ToolTip.Tip="{l:T Count.MenuTip}" />
                 <MenuItem Header="{l:T Review.Menu}" Command="{Binding AnnotateReviewCommand}" x:Name="ReviewItem" />
-                <MenuItem Header="{l:T Clock.Menu}" x:Name="ClockMenu">
+                <MenuItem Header="{l:T Clock.Menu}" x:Name="ClockMenu" IsVisible="{Binding IsLocal}" ToolTip.Tip="{l:T Clock.LocalOnly}">
                   <MenuItem Header="{Binding Clock.Presets[0].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[0]}" />
                   <MenuItem Header="{Binding Clock.Presets[1].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[1]}" />
                   <MenuItem Header="{Binding Clock.Presets[2].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[2]}" />
@@ -277,9 +293,10 @@
                   <MenuItem Header="{Binding Clock.Presets[4].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[4]}" />
                   <MenuItem Header="{Binding Clock.Presets[5].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[5]}" />
                   <Separator />
-                  <MenuItem Header="{l:T Clock.Pause}" Command="{Binding Clock.TogglePauseCommand}" IsEnabled="{Binding Clock.HasClock}" />
+                  <MenuItem Header="{Binding PauseGameLabel}" Command="{Binding TogglePauseGameCommand}" />
                   <MenuItem Header="{l:T Clock.Remove}" Command="{Binding Clock.RemoveCommand}" IsEnabled="{Binding Clock.HasClock}" />
                 </MenuItem>
+                <MenuItem Header="{Binding PauseGameLabel}" Command="{Binding TogglePauseGameCommand}" IsVisible="{Binding CanPauseGame}" ToolTip.Tip="{l:T Pause.Tip}" InputGesture="Ctrl+Space" x:Name="PauseItem" />
                 <MenuItem Header="{l:T Zen.Menu}" Command="{Binding ToggleZenCommand}" InputGesture="Z" x:Name="ZenItem" />
                 <Separator />
                 <MenuItem Header="{l:T Welcome.Menu}" Command="{Binding Welcome.OpenCommand}" x:Name="WelcomeItem" />
@@ -309,6 +326,7 @@
           <KeyBinding Gesture="H" Command="{Binding Joseki.ShowAnswerCommand}" />
           <KeyBinding Gesture="R" Command="{Binding Joseki.RestartCommand}" />
           <KeyBinding Gesture="Escape" Command="{Binding Joseki.CloseCommand}" />
+          <KeyBinding Gesture="Back" Command="{Binding Joseki.BackCommand}" />
         </Panel.KeyBindings>
         <c:GoBoardControl x:Name="Board" AutomationProperties.Name="{Binding Game.BoardDescription}" AutomationProperties.LiveSetting="Polite"
                           Margin="24"
@@ -398,9 +416,31 @@
         </Border>
         <!-- Zen mode: only a quiet way out, top right (or Z). -->
         <Button x:Name="ZenExit" IsVisible="{Binding IsZen}" Command="{Binding ToggleZenCommand}" Classes="zen-exit"
-                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,12,0" ToolTip.Tip="{l:T Zen.ExitHint}">
-          <TextBlock Text="{l:T Zen.Exit}" FontSize="12" />
+                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,12,14,0" ToolTip.Tip="{l:T Zen.ExitHint}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="14" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
+            <TextBlock Text="{l:T Zen.Exit}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" />
+            <Border Background="{DynamicResource Bg.PanelAlt}" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
+              <TextBlock Text="Z" FontSize="11" FontFamily="{DynamicResource Font.Mono}" Foreground="{DynamicResource Text.Secondary}" />
+            </Border>
+          </StackPanel>
         </Button>
+        <Button x:Name="JosekiExitPill" IsVisible="{Binding Joseki.IsActive}" Command="{Binding Joseki.CloseCommand}" Classes="zen-exit"
+                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="14,12,0,0" ToolTip.Tip="{l:T Joseki.BackToGame}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <c:HoshiIcon Icon="{DynamicResource Icon.Back}" Size="14" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
+            <TextBlock Text="{l:T Joseki.BackToGameShort}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <!-- Paused local game: the board waits under a card (clicks do not reach it). -->
+        <Border x:Name="PausedOverlay" IsVisible="{Binding IsGamePaused}" Background="#99000000">
+          <Border Classes="warmup" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="22,16">
+            <StackPanel Spacing="10" HorizontalAlignment="Center">
+              <TextBlock Text="{l:T Pause.Title}" FontSize="22" FontFamily="{DynamicResource Font.Title}" HorizontalAlignment="Center" />
+              <Button Classes="accent" Content="{l:T Pause.Resume}" Command="{Binding TogglePauseGameCommand}" HorizontalAlignment="Center" x:Name="ResumeButton" />
+            </StackPanel>
+          </Border>
+        </Border>
         <!-- The joseki trainer uses the same place on screen; the game stays as it was underneath. -->
         <c:GoBoardControl x:Name="JosekiBoard"
                           Margin="24"
@@ -646,12 +686,16 @@
                 Background="{DynamicResource Bg.Sidebar}" Padding="16,14">
           <DockPanel>
             <StackPanel DockPanel.Dock="Top" Spacing="8">
-              <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="{l:T Joseki.Title}" FontSize="12" Classes="secondary" VerticalAlignment="Center" />
-                <Button Grid.Column="1" Classes="bar icon" Command="{Binding Joseki.CloseCommand}" ToolTip.Tip="{l:T Joseki.BackToGame}" x:Name="JosekiClose">
-                  <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="16" />
-                </Button>
-              </Grid>
+              <!-- Leaving the trainer is the first thing in the panel: a clear "back to the game" button. -->
+              <Button Classes="bar" Command="{Binding Joseki.CloseCommand}" ToolTip.Tip="{l:T Joseki.BackToGame}" x:Name="JosekiClose"
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="8,6" Margin="-8,0,0,0">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <c:HoshiIcon Icon="{DynamicResource Icon.Back}" Size="16" Foreground="{DynamicResource Accent}" />
+                  <TextBlock Text="{l:T Joseki.BackToGameShort}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                  <TextBlock Text="Esc" Classes="secondary" FontSize="11" FontFamily="{DynamicResource Font.Mono}" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <TextBlock Text="{l:T Joseki.Title}" FontSize="12" Classes="secondary" />
               <TextBlock Text="{Binding Joseki.LineName}" FontSize="20" FontFamily="{DynamicResource Font.Title}" TextWrapping="Wrap" x:Name="JosekiLineName" />
               <TextBlock Classes="secondary" Text="{Binding Joseki.BoxText}" FontSize="12" />
               <TextBlock Text="{Binding Joseki.ProgressText}" x:Name="JosekiProgress" />
@@ -663,6 +707,7 @@
               <WrapPanel Orientation="Horizontal">
                 <Button Classes="accent" Content="{l:T Joseki.Next}" Command="{Binding Joseki.NextCommand}" ToolTip.Tip="N" Margin="0,0,6,6" x:Name="JosekiNext" />
                 <Button Content="{l:T Joseki.ShowAnswer}" Command="{Binding Joseki.ShowAnswerCommand}" ToolTip.Tip="H" Margin="0,0,6,6" />
+                <Button Content="{l:T Joseki.StepBack}" Command="{Binding Joseki.BackCommand}" ToolTip.Tip="{l:T Joseki.StepBackTip}" Margin="0,0,6,6" x:Name="JosekiBack" />
                 <Button Content="{l:T Joseki.Restart}" Command="{Binding Joseki.RestartCommand}" ToolTip.Tip="R" Margin="0,0,6,6" />
               </WrapPanel>
               <ComboBox ItemsSource="{Binding Joseki.Families}" SelectedItem="{Binding Joseki.SelectedFamily}" HorizontalAlignment="Stretch" x:Name="JosekiFamily">

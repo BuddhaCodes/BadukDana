@@ -101,6 +101,28 @@ public sealed class JosekiTests
     }
 
     [Fact]
+    public void A_drill_steps_back_a_move_and_can_be_finished_again()
+    {
+        JosekiLine line = Single(Invasion);
+        var drill = new JosekiDrill(line, Symmetry.All[0], [line]);
+        drill.StepBack().Should().BeFalse("nothing played yet");
+
+        foreach (JosekiMove move in line.Moves)
+        {
+            drill.Attempt(move.Point);
+        }
+
+        drill.IsComplete.Should().BeTrue();
+        drill.StepBack().Should().BeTrue();
+        drill.IsComplete.Should().BeFalse();
+        drill.Position.Should().Be(line.Moves.Count - 1);
+        drill.Board[line.Moves[^1].Point].Should().Be(Stone.Empty);
+        drill.ToMove.Should().Be(line.Moves[^1].Color);
+        drill.Attempt(line.Moves[^1].Point).Should().Be(DrillAnswer.Completed);
+        drill.Mistakes.Should().Be(0);
+    }
+
+    [Fact]
     public void A_wrong_move_counts_as_a_mistake_and_shows_the_answer_after_two_misses()
     {
         JosekiLine line = Single(Invasion);

@@ -115,7 +115,7 @@ public static partial class Tr
         Add(d, "Study.ReportDrawingsOnly", "Drawings only.", "Solo dibujos.");
         Add(d, "Study.ReportFooter", "Made with Hoshi · {0}", "Hecho con Hoshi · {0}");
 
-        Add(d, "Study.Quiz", "What would you play?", "¿Qué jugarías?");
+        Add(d, "Study.Quiz", "Quiz: what would you play? (from your pins)", "Test: ¿qué jugarías? (con tus marcas)");
         Add(d, "Study.QuizTip", "A quiz from your pins: the position before each pinned move, find the right one", "Un test con tus pins: la posición antes de cada jugada marcada, encuentra la buena");
         Add(d, "Study.QuizEmpty", "Pin some mistakes, good moves or key moments first.", "Primero marca algunos errores, buenas jugadas o momentos clave.");
         Add(d, "Study.QuizProgress", "Question {0} of {1}", "Pregunta {0} de {1}");
