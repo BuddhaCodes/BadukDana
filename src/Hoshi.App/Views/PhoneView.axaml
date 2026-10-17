@@ -197,6 +197,9 @@
               <Button Classes="menu-item" Command="{Binding Main.Share.ExportProblemCommand}" x:Name="MenuShareProblem">
                 <TextBlock Text="{l:T Share.Problem}" Margin="28,0,0,0" />
               </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Share.ExportSummaryCommand}" CommandParameter="Month" IsVisible="{Binding Main.Share.HasSummary}" x:Name="MenuShareSummary">
+                <TextBlock Text="{l:T Share.Summary}" Margin="28,0,0,0" />
+              </Button>
               <Button Classes="menu-item" Command="{Binding Main.Share.ShareWebViewerCommand}" x:Name="MenuShareViewer">
                 <TextBlock Text="{l:T Share.WebViewer}" Margin="28,0,0,0" />
               </Button>

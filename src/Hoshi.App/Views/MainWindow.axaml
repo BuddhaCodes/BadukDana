@@ -237,6 +237,10 @@
                     <MenuItem Header="{l:T Share.CardStory}" Command="{Binding Share.ExportCardCommand}" CommandParameter="Story" />
                   </MenuItem>
                   <MenuItem Header="{l:T Share.Problem}" Command="{Binding Share.ExportProblemCommand}" ToolTip.Tip="{l:T Share.ProblemTip}" />
+                  <MenuItem Header="{l:T Share.Summary}" ToolTip.Tip="{l:T Share.SummaryTip}" IsVisible="{Binding Share.HasSummary}">
+                    <MenuItem Header="{l:T Share.SummaryMonth}" Command="{Binding Share.ExportSummaryCommand}" CommandParameter="Month" />
+                    <MenuItem Header="{l:T Share.SummaryYear}" Command="{Binding Share.ExportSummaryCommand}" CommandParameter="Year" />
+                  </MenuItem>
                   <MenuItem Header="{l:T Share.WebViewer}" Command="{Binding Share.ExportWebViewerCommand}" ToolTip.Tip="{l:T Share.WebViewerTip}" />
                   <Separator />
                   <MenuItem Header="{l:T Share.CopyDiagram}" Command="{Binding Share.CopyDiagramCommand}" />

@@ -9,7 +9,8 @@ namespace Hoshi.App.Services.Tsumego;
 public sealed record TsumegoSource(string Name, IReadOnlyList<TsumegoProblem> Problems);
 
 /// <summary>How a problem is going for the player (Leitner box 0–5, next review, counts).</summary>
-public sealed record TsumegoCard(int Box, DateTimeOffset Due, int Solved, int Failed);
+/// <summary>A problem's progress; <paramref name="LastSolved"/> feeds the month/year summary.</summary>
+public sealed record TsumegoCard(int Box, DateTimeOffset Due, int Solved, int Failed, DateTimeOffset? LastSolved = null);
 
 /// <summary>
 /// The problems and the player's progress. Hoshi ships a small set it wrote itself (no third-party collections:
@@ -69,7 +70,7 @@ public sealed class TsumegoLibrary
         ArgumentNullException.ThrowIfNull(problem);
         TsumegoCard old = _cards.GetValueOrDefault(problem.Id) ?? new TsumegoCard(0, now, 0, 0);
         int box = solved ? Math.Min(old.Box + 1, Intervals.Length - 1) : 0;
-        var card = new TsumegoCard(box, now.AddDays(Intervals[box]), old.Solved + (solved ? 1 : 0), old.Failed + (solved ? 0 : 1));
+        var card = new TsumegoCard(box, now.AddDays(Intervals[box]), old.Solved + (solved ? 1 : 0), old.Failed + (solved ? 0 : 1), solved ? now : old.LastSolved);
         _cards[problem.Id] = card;
         Save();
         return card;
