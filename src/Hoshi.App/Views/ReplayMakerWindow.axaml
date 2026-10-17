@@ -46,6 +46,10 @@
         <CheckBox IsChecked="{Binding Intro}" Content="{l:T Replay.Intro}" />
         <CheckBox IsChecked="{Binding Notes}" Content="{l:T Replay.Notes}" />
         <CheckBox IsChecked="{Binding Highlights}" Content="{l:T Replay.Highlights}" />
+        <CheckBox IsChecked="{Binding Effects}" IsEnabled="{Binding Highlights}" x:Name="ReplayEffects">
+          <TextBlock Text="{l:T Replay.Effects}" TextWrapping="Wrap" />
+        </CheckBox>
+        <TextBlock Classes="secondary" FontSize="12" TextWrapping="Wrap" Margin="28,-6,0,0" Text="{Binding MomentsText}" x:Name="ReplayMoments" />
         <CheckBox IsChecked="{Binding Sounds}" Content="{l:T Replay.Sounds}" />
         <Separator Margin="0,4" />
         <Button Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Content="{l:T Replay.Mp4}" Command="{Binding ExportMp4Command}" x:Name="ReplayMp4" />

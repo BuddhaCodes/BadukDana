@@ -1,3 +1,4 @@
+using Avalonia.Media.Imaging;
 using Avalonia.Headless.XUnit;
 using Hoshi.App.Services;
 using Hoshi.App.Services.Export;
@@ -72,6 +73,109 @@ public sealed class ReplayMakerTests
 
         IReadOnlyList<ReplayStep> hidden = ReplayPlan.Build(tree, last, new ReplayOptions { Share = new ShareOptions(HideNames: true) });
         hidden[0].Title.Should().NotContain("Ana");
+    }
+
+    /// <summary>A 9×9 game of ten moves (past the opening from move 7) with a key move, a brilliant one, a quiet best move and a mistake.</summary>
+    private static (GameTree Tree, Dictionary<GameNode, StudyVerdict> Verdicts, GameNode[] Moves) Critical()
+    {
+        GameTree tree = GameTree.Create(9, RuleSet.Japanese);
+        var cursor = new GameCursor(tree);
+        var moves = new List<GameNode>();
+        foreach ((int x, int y) in new[] { (2, 2), (6, 6), (6, 2), (2, 6), (4, 4), (4, 6), (5, 5), (3, 5), (5, 3), (3, 3) })
+        {
+            cursor.Play(new Point(x, y));
+            moves.Add(cursor.Current);
+        }
+
+        var verdicts = new Dictionary<GameNode, StudyVerdict>
+        {
+            [moves[2]] = new(MoveQuality.Best, 0, new Point(6, 2), Criticality: 12), // in the opening: no moment
+            [moves[6]] = new(MoveQuality.Excellent, 0.3, new Point(5, 5), Criticality: 4),
+            [moves[7]] = new(MoveQuality.Best, 0, new Point(3, 5), Criticality: 9.5),
+            [moves[8]] = new(MoveQuality.Best, 0, new Point(5, 3), Criticality: 1), // routine: no moment
+            [moves[9]] = new(MoveQuality.Mistake, 4.2, new Point(2, 4), Criticality: 2),
+        };
+        return (tree, verdicts, [.. moves]);
+    }
+
+    [Fact]
+    public void Critical_good_moves_and_mistakes_become_moments_with_their_sound()
+    {
+        (GameTree tree, Dictionary<GameNode, StudyVerdict> verdicts, GameNode[] moves) = Critical();
+        IReadOnlyList<ReplayStep> steps = ReplayPlan.Build(tree, tree.Root, new ReplayOptions { SecondsPerMove = 0.5 }, verdicts);
+        ReplayStep At(int move) => steps.Single(s => s.Kind == ReplayStepKind.Move && s.MoveNumber == move);
+
+        At(3).Moment.Should().Be(ReplayMoment.None, "the opening is not a moment, however sharp");
+        At(7).Should().Match<ReplayStep>(s => s.Moment == ReplayMoment.Strong && s.IsGood && s.Accent == ReplaySound.Strong);
+        At(7).Highlight.Should().Contain("Jugada clave").And.Contain("4.0");
+        At(8).Should().Match<ReplayStep>(s => s.Moment == ReplayMoment.Brilliant && s.Accent == ReplaySound.Brilliant);
+        At(8).Highlight.Should().StartWith("Jugada brillante");
+        At(8).Duration.TotalSeconds.Should().BeApproximately(ReplayPlan.EffectLength(ReplayMoment.Brilliant) + ReplayPlan.AfterEffect, 0.001);
+        At(8).EffectSeconds.Should().Be(ReplayPlan.EffectLength(ReplayMoment.Brilliant), "the whole impact plays, then it rests");
+        At(9).Moment.Should().Be(ReplayMoment.None, "a quiet best move is just a move");
+        At(10).Should().Match<ReplayStep>(s => s.Moment == ReplayMoment.Mistake && !s.IsGood && s.Accent == ReplaySound.Mistake);
+
+        IReadOnlyList<ReplayStep> calm = ReplayPlan.Build(tree, tree.Root, new ReplayOptions { SecondsPerMove = 0.5, Effects = false }, verdicts);
+        calm.Single(s => s.MoveNumber == 8 && s.Kind == ReplayStepKind.Move).Should().Match<ReplayStep>(
+            s => s.Moment == ReplayMoment.Brilliant && s.Accent == ReplaySound.None && s.Duration == TimeSpan.FromSeconds(0.5 * ReplayPlan.MistakeFactor),
+            "without effects the label stays, the sound and the extra time go");
+    }
+
+    [Fact]
+    public void A_moments_impact_sounds_just_after_its_stone()
+    {
+        BoardState board = BoardState.Create(9);
+        var steps = new[] { new ReplayStep(ReplayStepKind.Move, board, new Point(4, 4), 1, "t", "", "x", TimeSpan.FromSeconds(1), ReplaySound.Stone, Moment: ReplayMoment.Blunder, Accent: ReplaySound.Blunder) };
+        var clips = new Dictionary<ReplaySound, PcmClip> { [ReplaySound.Stone] = new([100, 100]), [ReplaySound.Blunder] = new([300, 300]) };
+        PcmClip read = PcmClip.FromWav(ReplayAudio.Track(steps, clips, volume: 1))!;
+        read.Samples[0].Should().Be(100);
+        int at = (int)(ReplayAudio.AccentDelay.TotalSeconds * PcmClip.Rate) * 2;
+        read.Samples[at].Should().Be(300);
+    }
+
+    [AvaloniaFact]
+    public async Task Moments_are_animated_frame_by_frame_and_keep_the_steps_length()
+    {
+        (GameTree tree, Dictionary<GameNode, StudyVerdict> verdicts, _) = Critical();
+        var game = new GameViewModel();
+        game.Load(tree, path: null);
+        var maker = new ReplayMakerViewModel(game, verdicts: () => verdicts);
+        maker.Reset();
+        maker.Intro = false;
+        ReplayStep brilliant = maker.Steps.Single(s => s.Moment == ReplayMoment.Brilliant);
+        ReplayStep mistake = maker.Steps.Single(s => s.Moment == ReplayMoment.Mistake);
+        maker.MomentsText.Should().Contain("2 jugadas clave").And.Contain("1 errores");
+
+        var frames = new List<(byte[] Bgra, TimeSpan Duration)>();
+        await foreach ((byte[] Bgra, TimeSpan Duration) f in maker.Frames(small: true))
+        {
+            frames.Add(f);
+        }
+
+        TimeSpan total = TimeSpan.FromTicks(frames.Sum(f => f.Duration.Ticks));
+        total.TotalSeconds.Should().BeApproximately(ReplayPlan.Length(maker.Steps).TotalSeconds, 0.01, "the sound stays in step");
+        int animated = (int)Math.Floor(brilliant.EffectSeconds * ReplayMakerViewModel.GifEffectFps)
+            + (int)Math.Floor(mistake.EffectSeconds * ReplayMakerViewModel.GifEffectFps)
+            + (int)Math.Floor(maker.Steps.Single(s => s.Moment == ReplayMoment.Strong).EffectSeconds * ReplayMakerViewModel.GifEffectFps);
+        frames.Count.Should().Be(maker.Steps.Count + animated);
+
+        // The effect changes the picture, and is gone in the still that follows.
+        RenderTargetBitmap still = ReplayScene.Render(brilliant, new ReplayPlayers("Ana", "Luis", true), ReplayFormat.Wide, true);
+        RenderTargetBitmap boom = ReplayScene.Render(brilliant, new ReplayPlayers("Ana", "Luis", true), ReplayFormat.Wide, true, effectSeconds: 0.3);
+        RenderTargetBitmap shock = ReplayScene.Render(mistake, new ReplayPlayers("Ana", "Luis", true), ReplayFormat.Wide, true, effectSeconds: 0.12);
+        BoardPicture.Bgra(boom).Should().NotEqual(BoardPicture.Bgra(still));
+        Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
+        boom.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "replay-brilliant.png"));
+        shock.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "replay-mistake.png"));
+
+        maker.Effects = false;
+        int plain = 0;
+        await foreach (var _ in maker.Frames(small: true))
+        {
+            plain++;
+        }
+
+        plain.Should().Be(maker.Steps.Count, "without effects every step is one picture");
     }
 
     [Fact]

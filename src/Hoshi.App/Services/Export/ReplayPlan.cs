@@ -35,6 +35,32 @@ public enum ReplaySound
     None,
     Stone,
     Capture,
+
+    /// <summary>The impact of a strong move at a critical moment (explosion_medium).</summary>
+    Strong,
+
+    /// <summary>The impact of a brilliant move (explosion_big).</summary>
+    Brilliant,
+
+    /// <summary>A dull thud under a mistake (impact_small).</summary>
+    Mistake,
+
+    /// <summary>A heavier thud under a blunder (capture_big).</summary>
+    Blunder,
+}
+
+/// <summary>What kind of big moment a move of the replay is: they get a label, stay longer and, with effects, move.</summary>
+public enum ReplayMoment
+{
+    None,
+
+    /// <summary>KataGo's best or an excellent move where the position demanded it.</summary>
+    Strong,
+
+    /// <summary>The best move where a lot was at stake.</summary>
+    Brilliant,
+    Mistake,
+    Blunder,
 }
 
 /// <summary>How the replay is made. Move numbers count moves on the line (1 = the first move).</summary>
@@ -59,6 +85,10 @@ public sealed record ReplayOptions
 
     public bool Sounds { get; init; } = true;
 
+    /// <summary>The big moments move: an impact with embers and a shaking board for the critical good moves, a red
+    /// shock and a jolt for the mistakes (as on the board in the app), with their sound.</summary>
+    public bool Effects { get; init; } = true;
+
     public bool Coordinates { get; init; } = true;
 
     public ShareOptions Share { get; init; } = new();
@@ -76,7 +106,16 @@ public sealed record ReplayStep(
     TimeSpan Duration,
     ReplaySound Sound,
     IReadOnlyList<Markup>? Marks = null,
-    GameNode? Node = null);
+    GameNode? Node = null,
+    ReplayMoment Moment = ReplayMoment.None,
+    ReplaySound Accent = ReplaySound.None)
+{
+    /// <summary>A good moment (gold), as opposed to a mistake (red).</summary>
+    public bool IsGood => Moment is ReplayMoment.Strong or ReplayMoment.Brilliant;
+
+    /// <summary>How long the moment's effect plays (seconds), at most the step's length; 0 = no effect.</summary>
+    public double EffectSeconds => Math.Min(Duration.TotalSeconds, ReplayPlan.EffectLength(Moment));
+}
 
 /// <summary>
 /// The replay of a line of the game (the line through the shown move, to its end), cut to a range of moves: a title
@@ -92,6 +131,25 @@ public static class ReplayPlan
 
     /// <summary>Mistakes and blunders stay this many times longer.</summary>
     public const double MistakeFactor = 3;
+
+    /// <summary>A best or excellent move counts as a big moment when the position demanded at least this many points.</summary>
+    public const double CriticalPoints = 3;
+
+    /// <summary>The best move with at least this many points at stake is brilliant.</summary>
+    public const double BrilliantPoints = 8;
+
+    /// <summary>How long a moment stays still after its effect (seconds), so the effect is seen whole and settles.</summary>
+    public const double AfterEffect = 0.8;
+
+    /// <summary>How long a moment's effect plays (seconds): the app's impact for good moves, the shock for mistakes.</summary>
+    public static double EffectLength(ReplayMoment moment) => moment switch
+    {
+        ReplayMoment.Brilliant => 3.2,
+        ReplayMoment.Strong => 2.0,
+        ReplayMoment.Blunder => 1.6,
+        ReplayMoment.Mistake => 1.2,
+        _ => 0,
+    };
 
     public static IReadOnlyList<ReplayStep> Build(GameTree tree, GameNode through, ReplayOptions options, IReadOnlyDictionary<GameNode, StudyVerdict>? verdicts = null)
     {
@@ -173,8 +231,11 @@ public static class ReplayPlan
             string? highlight = null;
             IReadOnlyList<Markup>? marks = null;
 
-            if (options.Highlights && verdicts is not null && verdicts.TryGetValue(node, out StudyVerdict? v) && v.Quality is MoveQuality.Mistake or MoveQuality.Blunder)
+            ReplayMoment moment = ReplayMoment.None;
+            StudyVerdict? v = null;
+            if (options.Highlights && verdicts is not null && verdicts.TryGetValue(node, out v) && v.Quality is MoveQuality.Mistake or MoveQuality.Blunder)
             {
+                moment = v.Quality == MoveQuality.Blunder ? ReplayMoment.Blunder : ReplayMoment.Mistake;
                 highlight = Tr.T(v.Quality == MoveQuality.Blunder ? "Replay.Blunder" : "Replay.Mistake")
                     + (double.IsFinite(v.PointsLost) && v.PointsLost > 0 ? string.Create(CultureInfo.CurrentCulture, $" · −{v.PointsLost:0.0}") : string.Empty)
                     + (v.Best is { } best ? " · " + Tr.F("Analysis.Better", best.ToHuman(board.Height)) : string.Empty);
@@ -192,11 +253,25 @@ public static class ReplayPlan
 
                 marks = ring;
             }
+            else if (options.Highlights && v is { Quality: MoveQuality.Best or MoveQuality.Excellent } good && move.Point is not null
+                && double.IsFinite(good.Criticality) && good.Criticality >= CriticalPoints
+                && !MoveImportance.IsOpening(number, board.Width, board.Height))
+            {
+                moment = good.Quality == MoveQuality.Best && good.Criticality >= BrilliantPoints ? ReplayMoment.Brilliant : ReplayMoment.Strong;
+                highlight = Tr.T(moment == ReplayMoment.Brilliant ? "Replay.Brilliant" : "Replay.Strong")
+                    + " · " + Tr.F("Replay.AtStake", good.Criticality);
+                seconds = perMove * MistakeFactor;
+            }
             else if (options.Highlights && captured)
             {
                 int stones = board.BlackCaptures + board.WhiteCaptures - (previous!.BlackCaptures + previous.WhiteCaptures);
                 highlight = Tr.F("Replay.Captures", stones);
                 seconds = perMove * CaptureFactor;
+            }
+
+            if (moment != ReplayMoment.None && options.Effects)
+            {
+                seconds = Math.Max(seconds, EffectLength(moment) + AfterEffect);
             }
 
             string caption = string.Empty;
@@ -217,7 +292,16 @@ public static class ReplayPlan
                 TimeSpan.FromSeconds(seconds),
                 !options.Sounds ? ReplaySound.None : captured ? ReplaySound.Capture : move.Point is null ? ReplaySound.None : ReplaySound.Stone,
                 marks,
-                node));
+                node,
+                moment,
+                !options.Sounds || !options.Effects ? ReplaySound.None : moment switch
+                {
+                    ReplayMoment.Brilliant => ReplaySound.Brilliant,
+                    ReplayMoment.Strong => ReplaySound.Strong,
+                    ReplayMoment.Blunder => ReplaySound.Blunder,
+                    ReplayMoment.Mistake => ReplaySound.Mistake,
+                    _ => ReplaySound.None,
+                }));
             previous = board;
         }
 
@@ -235,6 +319,8 @@ public static class ReplayPlan
                 Marks = null,
                 Duration = OutroLength,
                 Sound = ReplaySound.None,
+                Moment = ReplayMoment.None,
+                Accent = ReplaySound.None,
             });
         }
 

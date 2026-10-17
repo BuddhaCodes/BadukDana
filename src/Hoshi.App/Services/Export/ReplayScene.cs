@@ -28,7 +28,9 @@ public static class ReplayScene
         return small ? new PixelSize(full.Width / 2, full.Height / 2) : full;
     }
 
-    public static RenderTargetBitmap Render(ReplayStep step, ReplayPlayers players, ReplayFormat format, bool coordinates, bool small = false, BoardStyle? style = null)
+    /// <param name="effectSeconds">Where the moment's effect is (seconds after the move), or null for the still
+    /// picture: a good move's impact (the app's own, with embers and a shaking board), a mistake's red shock and jolt.</param>
+    public static RenderTargetBitmap Render(ReplayStep step, ReplayPlayers players, ReplayFormat format, bool coordinates, bool small = false, BoardStyle? style = null, double? effectSeconds = null)
     {
         ArgumentNullException.ThrowIfNull(step);
         ArgumentNullException.ThrowIfNull(players);
@@ -40,14 +42,34 @@ public static class ReplayScene
             _ => 660,
         };
 
-        RenderTargetBitmap board = BoardPicture.Render(new BoardShot(step.Board, step.LastMove, step.Marks), boardPixels, coordinates, style);
-        var image = new Image
+        double? t = effectSeconds is { } e && step.Moment != ReplayMoment.None && step.LastMove is not null ? Math.Max(0, e) : null;
+        ViewModels.BoardImpact? impact = t is not null && step.IsGood && step.LastMove is { } played
+            ? new ViewModels.BoardImpact(played, step.Moment == ReplayMoment.Brilliant ? 3 : 2, step.MoveNumber)
+            : null;
+        RenderTargetBitmap board = BoardPicture.Render(new BoardShot(step.Board, step.LastMove, step.Marks, Impact: impact, ImpactSeconds: t ?? 0), boardPixels, coordinates, style);
+        Control image = new Image
         {
             Source = board,
             Width = boardPixels,
             Height = boardPixels,
             Opacity = step.Kind == ReplayStepKind.Intro ? 0.55 : 1,
         };
+
+        // A mistake: a red shock spreads from the stone and the board jolts (harder for a blunder).
+        if (t is { } bad && !step.IsGood && step.LastMove is { } wrong)
+        {
+            bool blunder = step.Moment == ReplayMoment.Blunder;
+            var geometry = Controls.BoardGeometry.Create(boardPixels, boardPixels, step.Board.Width, step.Board.Height, coordinates);
+            var shock = new MistakeShock(geometry.Center(wrong), geometry.Cell, bad, blunder) { Width = boardPixels, Height = boardPixels };
+            double amp = geometry.Cell * (blunder ? 0.28 : 0.16) * Math.Exp(-bad / 0.18);
+            image = new Panel
+            {
+                Width = boardPixels,
+                Height = boardPixels,
+                Children = { image, shock },
+                RenderTransform = new TranslateTransform(amp * Math.Sin(bad * 2 * Math.PI * 17), amp * 0.35 * Math.Cos(bad * 2 * Math.PI * 23)),
+            };
+        }
 
         IBrush gold = Brush("#F5B041"), soft = Brush("#C9CCD3"), white = Brushes.White;
         bool titleCard = step.Kind is ReplayStepKind.Intro or ReplayStepKind.Outro;
@@ -56,13 +78,17 @@ public static class ReplayScene
         info.Children.Add(Text(step.Title, titleCard ? 44 : 34, FontWeight.Bold, white, 2));
         if (step.Highlight is { Length: > 0 } highlight)
         {
+            // Gold for a strong move, red for a mistake (and captures); it pops in with the effect.
+            double pop = t is { } p ? 1 + (0.12 * Math.Exp(-p / 0.12) * Math.Cos(p * 14)) : 1;
             info.Children.Add(new Border
             {
-                Background = Brush("#C8432F"),
+                Background = step.IsGood ? Brush("#E8C36A") : Brush("#C8432F"),
                 CornerRadius = new CornerRadius(8),
                 Padding = new Thickness(14, 6),
                 HorizontalAlignment = HorizontalAlignment.Left,
-                Child = Text(highlight, 26, FontWeight.SemiBold, white, 2),
+                RenderTransformOrigin = new RelativePoint(0, 0.5, RelativeUnit.Relative),
+                RenderTransform = new ScaleTransform(pop, pop),
+                Child = Text(highlight, 26, FontWeight.SemiBold, step.IsGood ? Brush("#1E1A14") : white, 2),
             });
         }
 
@@ -99,10 +125,37 @@ public static class ReplayScene
         if (format == ReplayFormat.Square)
         {
             info.Spacing = 6;
-            foreach (TextBlock t in info.Children.OfType<TextBlock>())
+            foreach (TextBlock line in info.Children.OfType<TextBlock>())
             {
-                t.FontSize *= 0.75;
+                line.FontSize *= 0.75;
             }
+        }
+
+        // The whole frame glows with the moment: gold light for a strong move, a red edge for a mistake.
+        Control content = layout;
+        if (t is { } glow)
+        {
+            double strength = step.Moment switch { ReplayMoment.Brilliant => 0.55, ReplayMoment.Blunder => 0.6, _ => 0.4 } * Math.Exp(-glow / 0.45);
+            Color tint = step.IsGood ? Color.Parse("#E8C36A") : Color.Parse("#C8432F");
+            content = new Panel
+            {
+                Children =
+                {
+                    layout,
+                    new Border
+                    {
+                        IsHitTestVisible = false,
+                        Background = new RadialGradientBrush
+                        {
+                            GradientStops =
+                            {
+                                new GradientStop(Color.FromArgb(0, tint.R, tint.G, tint.B), 0.55),
+                                new GradientStop(Color.FromArgb((byte)(255 * Math.Clamp(strength, 0, 1)), tint.R, tint.G, tint.B), 1),
+                            },
+                        },
+                    },
+                },
+            };
         }
 
         var frame = new Border
@@ -115,7 +168,7 @@ public static class ReplayScene
                 EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
                 GradientStops = { new GradientStop(Color.Parse("#151823"), 0), new GradientStop(Color.Parse("#2A2D36"), 1) },
             },
-            Child = layout,
+            Child = content,
         };
         frame.Measure(new Avalonia.Size(size.Width, size.Height));
         frame.Arrange(new Rect(0, 0, size.Width, size.Height));
@@ -173,5 +226,51 @@ public static class ReplayScene
     {
         control.Margin = margin;
         return control;
+    }
+
+    /// <summary>A mistake's shock: a red flash on the stone and rings that spread and fade (three for a blunder).</summary>
+    private sealed class MistakeShock(Avalonia.Point centre, double cell, double seconds, bool blunder) : Control
+    {
+        public override void Render(DrawingContext context)
+        {
+            double flash = Math.Exp(-seconds / 0.12);
+            if (flash > 0.02)
+            {
+                context.DrawEllipse(
+                    new RadialGradientBrush
+                    {
+                        GradientStops =
+                        {
+                            new GradientStop(Color.FromArgb((byte)(220 * flash), 0xFF, 0x6A, 0x50), 0),
+                            new GradientStop(Color.FromArgb(0, 0xC8, 0x43, 0x2F), 1),
+                        },
+                    },
+                    null,
+                    centre,
+                    cell * 1.6,
+                    cell * 1.6);
+            }
+
+            int rings = blunder ? 3 : 2;
+            for (int i = 0; i < rings; i++)
+            {
+                double local = seconds - (i * 0.16);
+                if (local <= 0)
+                {
+                    continue;
+                }
+
+                double life = blunder ? 1.4 : 1.0;
+                double k = Math.Clamp(local / life, 0, 1);
+                if (k >= 1)
+                {
+                    continue;
+                }
+
+                double radius = cell * (0.6 + ((blunder ? 7 : 5) * (1 - Math.Pow(1 - k, 3))));
+                byte alpha = (byte)(230 * (1 - k));
+                context.DrawEllipse(null, new Pen(new SolidColorBrush(Color.FromArgb(alpha, 0xE0, 0x50, 0x3A)), cell * (blunder ? 0.22 : 0.15) * (1 - (0.6 * k))), centre, radius, radius);
+            }
+        }
     }
 }

@@ -156,6 +156,7 @@ Todo lo que sale del equipo es una acción explícita del usuario; los nombres d
 - [x] Textos claros para el test, el conteo, «hacer línea principal» y «borrar» (que ahora pregunta).
 - [x] Android: estudio en tres partes (esta jugada, dibujar, partida) y menú agrupado.
 - [x] Creador de replays (escritorio): MP4 con FFmpeg, GIF y página web animada.
+  - [x] Efectos en las jugadas críticas (2026-10-17): la mejor o excelente donde había ≥ 3 puntos en juego es «Jugada clave» (≥ 8 y la mejor: «Jugada brillante») con el impacto del tablero (destello, ondas, chispas, grietas, temblor), luz dorada y su explosión; los errores y errores graves, onda roja, sacudida y un golpe sordo. Nada en la apertura. Vídeo a 30 fps, GIF a 12,5; la web, con onda y sacudida en CSS.
 - [ ] Conectar KGS e IGS: investigación en `docs/SERVERS.md`; esperan permiso de los servidores y la decisión sobre las contraseñas. Fox, descartado para jugar.
 - [x] Rediseño (lienzo «Hoshi: rediseño en lienzo», 2026-10-17): «Estrella polar» como base y «Kaya» (claro) como tema.
   - [x] Tema por defecto con la paleta noche/oro/rojo sello y títulos en Shippori Mincho; tema Kaya claro (Fluent pasa a claro).

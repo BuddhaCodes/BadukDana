@@ -81,6 +81,12 @@ public static partial class Tr
         Add(d, "Replay.MoveLine", "Move {0} · {1} {2}", "Jugada {0} · {1} {2}");
         Add(d, "Replay.Blunder", "Big mistake", "Error grave");
         Add(d, "Replay.Mistake", "Mistake", "Error");
+        Add(d, "Replay.Brilliant", "Brilliant move", "Jugada brillante");
+        Add(d, "Replay.Strong", "Key move", "Jugada clave");
+        Add(d, "Replay.AtStake", "{0:0.0} points at stake", "{0:0.0} puntos en juego");
+        Add(d, "Replay.Effects", "Effects on the critical moves, good and bad", "Efectos en las jugadas críticas, buenas y malas");
+        Add(d, "Replay.Moments", "{0} key moves and {1} mistakes found", "{0} jugadas clave y {1} errores encontrados");
+        Add(d, "Replay.EffectsHint", "Needs KataGo's reading of the game (Analysis on, or Review → KataGo).", "Necesita que KataGo haya leído la partida (Análisis activado, o Revisar con KataGo).");
         Add(d, "Replay.Captures", "{0} stones captured", "{0} piedras capturadas");
         Add(d, "Replay.Result", "Result: {0}", "Resultado: {0}");
         Add(d, "Replay.MovesShown", "{0} moves", "{0} jugadas");
@@ -93,7 +99,7 @@ public static partial class Tr
         Add(d, "Replay.Vertical", "Vertical (stories, shorts)", "Vertical (historias, shorts)");
         Add(d, "Replay.Intro", "Title card", "Portada con los jugadores");
         Add(d, "Replay.Notes", "Study notes and comments", "Notas del estudio y comentarios");
-        Add(d, "Replay.Highlights", "Highlight KataGo's mistakes and captures", "Destacar errores de KataGo y capturas");
+        Add(d, "Replay.Highlights", "Highlight KataGo's big moments and captures", "Destacar los momentos clave de KataGo y las capturas");
         Add(d, "Replay.Sounds", "Stone sounds (video)", "Sonido de piedras (vídeo)");
         Add(d, "Replay.Mp4", "Save video (MP4)…", "Guardar vídeo (MP4)…");
         Add(d, "Replay.Gif", "Save GIF…", "Guardar GIF…");

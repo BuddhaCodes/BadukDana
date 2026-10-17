@@ -9,7 +9,9 @@ using Hoshi.Sgf.Study;
 namespace Hoshi.App.Services.Study;
 
 /// <summary>KataGo's view of a pinned move, for the report.</summary>
-public sealed record StudyVerdict(MoveQuality Quality, double PointsLost, Point? Best);
+/// <param name="Criticality">Points the position demanded (<see cref="MoveImportance.Criticality"/>): how much the
+/// best move was worth over the usual alternatives; NaN when not known.</param>
+public sealed record StudyVerdict(MoveQuality Quality, double PointsLost, Point? Best, double Criticality = double.NaN);
 
 /// <summary>
 /// The game report: a self-contained HTML page (no scripts, no external files) with the game's details, the pins

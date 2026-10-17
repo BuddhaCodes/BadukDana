@@ -764,7 +764,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
             if (found.TryGetValue(n - 1, out TurnAnalysis? before)
                 && MoveReview.Assess(before, found.GetValueOrDefault(n), new EngineMove(move.Color, move.Point)) is { } judged)
             {
-                verdicts[node] = new Services.Study.StudyVerdict(judged.Quality, judged.PointsLost, judged.Best.Point);
+                verdicts[node] = new Services.Study.StudyVerdict(judged.Quality, judged.PointsLost, judged.Best.Point, MoveImportance.Criticality(before, move.Color));
             }
         }
 
@@ -830,6 +830,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
             }
 
             SetMistakes([]);
+            LineVerdicts = new Dictionary<GameNode, Services.Study.StudyVerdict>();
             return;
         }
 
@@ -847,10 +848,12 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         if (nodes.Count != track.Moves.Count)
         {
             SetMistakes([]);
+            LineVerdicts = new Dictionary<GameNode, Services.Study.StudyVerdict>();
             return; // an edited position: no move history to judge
         }
 
         var verdicts = new Dictionary<GameNode, MoveQuality>();
+        var line = new Dictionary<GameNode, Services.Study.StudyVerdict>();
         var mistakes = new List<(int Number, GameNode Node, MoveAssessment Judged)>();
         for (int t = 1; t <= track.Moves.Count; t++)
         {
@@ -858,6 +861,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
                 && MoveReview.Assess(before, _cache.GetValueOrDefault(track.Key(t)), track.Moves[t - 1]) is { } judged)
             {
                 verdicts[nodes[t - 1]] = judged.Quality;
+                line[nodes[t - 1]] = new Services.Study.StudyVerdict(judged.Quality, judged.PointsLost, judged.Best.Point, MoveImportance.Criticality(before, track.Moves[t - 1].Color));
                 if (judged.Quality is MoveQuality.Mistake or MoveQuality.Blunder)
                 {
                     mistakes.Add((t, nodes[t - 1], judged));
@@ -866,6 +870,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         }
 
         SetMistakes(mistakes);
+        LineVerdicts = line;
 
         if (verdicts.Count != NodeVerdicts.Count || verdicts.Any(v => !NodeVerdicts.TryGetValue(v.Key, out MoveQuality q) || q != v.Value))
         {
@@ -919,6 +924,9 @@ public sealed partial class AnalysisViewModel : ViewModelBase
 
         return verdicts.Count;
     }
+
+    /// <summary>KataGo's full verdicts (points lost, criticality) on the moves of the shown line it has read.</summary>
+    public IReadOnlyDictionary<GameNode, Services.Study.StudyVerdict> LineVerdicts { get; private set; } = new Dictionary<GameNode, Services.Study.StudyVerdict>();
 
     /// <summary>KataGo's verdicts of the last review written into a game (for the summaries).</summary>
     public IReadOnlyDictionary<GameNode, Services.Study.StudyVerdict> LastReview { get; private set; } = new Dictionary<GameNode, Services.Study.StudyVerdict>();

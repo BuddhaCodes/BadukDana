@@ -623,6 +623,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return Analysis.LastReview;
         }
 
+        if (Analysis.LineVerdicts.Count > 0)
+        {
+            return Analysis.LineVerdicts; // with points lost and how critical each moment was
+        }
+
         return Analysis.NodeVerdicts.ToDictionary(kv => kv.Key, kv => new Services.Study.StudyVerdict(kv.Value, double.NaN, null));
     }
 
