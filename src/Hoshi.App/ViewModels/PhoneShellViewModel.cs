@@ -21,6 +21,12 @@ public enum PhoneSheet
     Menu,
 }
 
+/// <summary>A player's card in an online game on the phone (the opponent's above the board, yours below).</summary>
+public sealed record PlayerCard(string Name, string Clock, bool IsClockLow, int Captures, bool IsBlack, bool IsToMove, bool IsYou)
+{
+    public string CapturesText => Captures > 0 ? "+" + Captures.ToString(System.Globalization.CultureInfo.InvariantCulture) : string.Empty;
+}
+
 /// <summary>What a tile of the phone's home screen does.</summary>
 public enum PhoneHomeAction
 {
@@ -115,6 +121,11 @@ public sealed partial class PhoneShellViewModel : ViewModelBase
         // The screen stays on while a game is going (an online game, or moves on the board and not over yet).
         main.Game.PropertyChanged += (_, e) =>
         {
+            if (e.PropertyName is nameof(GameViewModel.Board))
+            {
+                CardsChanged();
+            }
+
             if (e.PropertyName is nameof(GameViewModel.MoveNumber) or nameof(GameViewModel.IsGameOver))
             {
                 UpdateKeepAwake();
@@ -137,6 +148,11 @@ public sealed partial class PhoneShellViewModel : ViewModelBase
             if (e.PropertyName is nameof(MainWindowViewModel.IsOnline))
             {
                 UpdateKeepAwake();
+            }
+
+            if (e.PropertyName is nameof(MainWindowViewModel.Online) or nameof(MainWindowViewModel.IsOnline))
+            {
+                WatchOnline();
             }
 
             if (e.PropertyName is nameof(MainWindowViewModel.IsZen) && main.IsZen)
@@ -164,6 +180,57 @@ public sealed partial class PhoneShellViewModel : ViewModelBase
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasGameToContinue), nameof(ContinueTitle), nameof(ContinueDetail))]
     private bool _isHome;
+
+    /// <summary>The opponent's card, above the board in an online game (white when you only watch).</summary>
+    public PlayerCard? TopCard => Card(top: true);
+
+    /// <summary>Your card, under the board (black when you only watch).</summary>
+    public PlayerCard? BottomCard => Card(top: false);
+
+    private PlayerCard? Card(bool top)
+    {
+        if (Main.Online is not { } online)
+        {
+            return null;
+        }
+
+        Core.Stone mine = online.IsPlayer ? online.MyColor : Core.Stone.Black;
+        bool black = top ? mine != Core.Stone.Black : mine == Core.Stone.Black;
+        return new PlayerCard(
+            black ? online.BlackName : online.WhiteName,
+            black ? online.BlackClock : online.WhiteClock,
+            black ? online.IsBlackClockLow : online.IsWhiteClockLow,
+            black ? Main.Game.Board.BlackCaptures : Main.Game.Board.WhiteCaptures,
+            black,
+            online.IsPlayPhase && online.ToMove == (black ? Core.Stone.Black : Core.Stone.White),
+            online.IsPlayer && !top);
+    }
+
+    private OnlineGameViewModel? _watched;
+
+    private void WatchOnline()
+    {
+        if (_watched is not null)
+        {
+            _watched.PropertyChanged -= OnOnlineChanged;
+        }
+
+        _watched = Main.Online;
+        if (_watched is not null)
+        {
+            _watched.PropertyChanged += OnOnlineChanged;
+        }
+
+        CardsChanged();
+    }
+
+    private void OnOnlineChanged(object? sender, PropertyChangedEventArgs e) => CardsChanged();
+
+    private void CardsChanged()
+    {
+        OnPropertyChanged(nameof(TopCard));
+        OnPropertyChanged(nameof(BottomCard));
+    }
 
     /// <summary>There is something on the board to go back to (moves played, or an online game).</summary>
     public bool HasGameToContinue => Main.IsOnline || Main.Game.MoveNumber > 0;

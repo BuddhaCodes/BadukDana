@@ -158,6 +158,21 @@
 
                   <!-- This move: its pins, replies and a new pin. -->
                   <StackPanel Spacing="8" IsVisible="{Binding Study.ShowMoveSection}" x:Name="StudyMoveSection">
+                  <!-- Quick read of the position (redesign 2026-10): only when KataGo may be used (never during your live OGS games). -->
+                  <UniformGrid Columns="2" IsVisible="{Binding Analysis.HasQuickRead}" x:Name="StudyQuickRead">
+                    <Border Classes="quick-tile" Margin="0,0,4,0">
+                      <StackPanel Spacing="1">
+                        <TextBlock Classes="secondary" FontSize="11.5" Text="{l:T Phone.Winrate}" />
+                        <TextBlock Text="{Binding Analysis.WinrateText}" FontFamily="{DynamicResource Font.Mono}" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                      </StackPanel>
+                    </Border>
+                    <Border Classes="quick-tile" Margin="4,0,0,0">
+                      <StackPanel Spacing="1">
+                        <TextBlock Classes="secondary" FontSize="11.5" Text="{l:T Phone.BestMove}" />
+                        <TextBlock Text="{Binding Analysis.BestMoveText}" FontFamily="{DynamicResource Font.Mono}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Good}" x:Name="StudyQuickBest" />
+                      </StackPanel>
+                    </Border>
+                  </UniformGrid>
                   <Border Height="1" Background="{DynamicResource Border.Subtle}" Margin="0,2" IsVisible="{Binding !Study.IsSectioned}" />
                   <TextBlock Text="{Binding Study.MoveTitle}" FontWeight="SemiBold" x:Name="StudyMoveTitle" />
                   <TextBlock Classes="secondary" FontSize="12" Text="{l:T Study.NoPins}" IsVisible="{Binding !Study.HasPins}" />

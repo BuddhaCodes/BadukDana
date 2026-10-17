@@ -93,6 +93,8 @@
       <Setter Property="Padding" Value="10,7" />
     </Style>
     <Style Selector="Border.player-card.turn"><Setter Property="BorderBrush" Value="{DynamicResource Accent}" /><Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" /></Style>
+    <Style Selector="v|OnlinePanelView.actions-only Grid#OnlineNames"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="v|OnlinePanelView.actions-only TextBlock#OnlineStatus"><Setter Property="IsVisible" Value="False" /></Style>
   </UserControl.Styles>
 
   <LayoutTransformControl LayoutTransform="{Binding Main.UiScaleTransform}" x:Name="UiScaleRoot">
@@ -141,14 +143,32 @@
               <TextBlock Grid.Column="1" Classes="secondary" FontSize="12" Text="{Binding Main.Game.MoveNumberText}" Margin="8,0,0,0" />
             </Grid>
           </StackPanel>
-          <Border IsVisible="{Binding Main.IsOnline}" x:Name="PhoneOnline">
-            <v:OnlinePanelView DataContext="{Binding Main}" />
-          </Border>
+          <!-- Online (redesign 2026-10): the opponent's card here, yours under the board; the actions stay below it. -->
+          <StackPanel IsVisible="{Binding Main.IsOnline}" Spacing="6" x:Name="PhoneOnline">
+            <Border Classes="player-card" Classes.turn="{Binding TopCard.IsToMove, FallbackValue=False}" IsVisible="{Binding TopCard, Converter={x:Static ObjectConverters.IsNotNull}}" x:Name="PhoneTopCard">
+              <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                <Panel VerticalAlignment="Center">
+                  <Ellipse Width="20" Height="20" Fill="#141414" Stroke="#9A9A9A" StrokeThickness="1" IsVisible="{Binding TopCard.IsBlack, FallbackValue=False}" />
+                  <Ellipse Width="20" Height="20" Fill="#F2F2EE" Stroke="#888" StrokeThickness="1" IsVisible="{Binding !TopCard.IsBlack, FallbackValue=False}" />
+                </Panel>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding TopCard.Name, FallbackValue={x:Null}}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                  <TextBlock Classes="secondary" FontSize="11.5" Text="{Binding TopCard.CapturesText, FallbackValue={x:Null}}" />
+                </StackPanel>
+                <Border Grid.Column="2" Classes="clock" Classes.low="{Binding TopCard.IsClockLow, FallbackValue=False}" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding TopCard.Clock, FallbackValue={x:Null}}" FontSize="17" />
+                </Border>
+              </Grid>
+            </Border>
+            <TextBlock Classes="secondary" FontSize="12" Text="{Binding Main.Online.StatusText, FallbackValue={x:Null}}" TextTrimming="CharacterEllipsis" x:Name="PhoneOnlineStatus" />
+          </StackPanel>
         </Panel>
       </Border>
 
-      <!-- Bottom bar: navigation, the game's actions and the sheets. -->
-      <Border DockPanel.Dock="Bottom" Background="{DynamicResource Bg.Sidebar}" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="0,1,0,0"
+      <!-- Bottom bar: navigation, the game's actions and the sheets; the confirm bar takes its place while a stone
+           waits, at the same height, so the board does not move between the two taps. -->
+      <Panel DockPanel.Dock="Bottom" IsVisible="{Binding !Main.IsZen}" x:Name="PhoneBarHost">
+      <Border Background="{DynamicResource Bg.Sidebar}" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="0,1,0,0"
               x:Name="PhoneBar" IsVisible="{Binding !Main.IsZen}">
         <UniformGrid Rows="1">
           <Button Classes="phone-bar" Command="{Binding Main.Game.GoBackCommand}" ToolTip.Tip="{l:T Main.Previous}" x:Name="PhonePrevious">
@@ -182,6 +202,39 @@
           </Button>
         </UniformGrid>
       </Border>
+      <!-- Tap and confirm: the waiting stone's coordinate, and play it or not. -->
+      <Border IsVisible="{Binding Main.Game.HasPendingMove}" x:Name="PhoneConfirmBar"
+              Background="{DynamicResource Bg.Panel}" BorderBrush="{DynamicResource Accent}" BorderThickness="0,1,0,0" Padding="14,4">
+        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+          <TextBlock Classes="secondary" FontSize="12.5" Text="{l:T Phone.ConfirmHint}" TextWrapping="Wrap" VerticalAlignment="Center" />
+          <Button Grid.Column="1" Content="{l:T Study.CancelEdit}" Command="{Binding Main.Game.CancelPendingCommand}" MinHeight="40" VerticalContentAlignment="Center" />
+          <Button Grid.Column="2" Classes="accent" Command="{Binding Main.Game.ConfirmPendingCommand}" MinHeight="40" VerticalContentAlignment="Center" x:Name="PhoneConfirm">
+            <TextBlock Text="{Binding Main.Game.ConfirmPendingLabel}" FontWeight="SemiBold" />
+          </Button>
+        </Grid>
+      </Border>
+      </Panel>
+
+
+      <!-- Online: your card and the game's actions, under the board. -->
+      <StackPanel DockPanel.Dock="Bottom" IsVisible="{Binding Main.IsOnline}" Spacing="6" Margin="14,6,14,6" x:Name="PhoneOnlineBottom">
+        <Border Classes="player-card" Classes.turn="{Binding BottomCard.IsToMove, FallbackValue=False}" IsVisible="{Binding BottomCard, Converter={x:Static ObjectConverters.IsNotNull}}" x:Name="PhoneBottomCard">
+              <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                <Panel VerticalAlignment="Center">
+                  <Ellipse Width="20" Height="20" Fill="#141414" Stroke="#9A9A9A" StrokeThickness="1" IsVisible="{Binding BottomCard.IsBlack, FallbackValue=False}" />
+                  <Ellipse Width="20" Height="20" Fill="#F2F2EE" Stroke="#888" StrokeThickness="1" IsVisible="{Binding !BottomCard.IsBlack, FallbackValue=False}" />
+                </Panel>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding BottomCard.Name, FallbackValue={x:Null}}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                  <TextBlock Classes="secondary" FontSize="11.5" Text="{Binding BottomCard.CapturesText, FallbackValue={x:Null}}" />
+                </StackPanel>
+                <Border Grid.Column="2" Classes="clock" Classes.low="{Binding BottomCard.IsClockLow, FallbackValue=False}" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding BottomCard.Clock, FallbackValue={x:Null}}" FontSize="17" />
+                </Border>
+              </Grid>
+            </Border>
+        <v:OnlinePanelView DataContext="{Binding Main}" Classes="actions-only" x:Name="PhoneOnlineActions" />
+      </StackPanel>
 
       <!-- The sheet under the board. -->
       <!-- Portrait: the sheet is under the board (its handle sets the height). Landscape (tablets, phones turned): on the right. -->

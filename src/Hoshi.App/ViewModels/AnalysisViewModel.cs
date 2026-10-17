@@ -138,6 +138,18 @@ public sealed partial class AnalysisViewModel : ViewModelBase
 
     public bool HasMistakes => KeyMistakes.Count > 0;
 
+    /// <summary>KataGo's first choice in the shown position ("R16"), or empty.</summary>
+    public string BestMoveText => Candidates.Count > 0 ? Candidates[0].Move : string.Empty;
+
+    /// <summary>The engine's reading of the shown position may be shown (it has one, and you are not playing live on OGS).</summary>
+    public bool HasQuickRead => IsEngineActive && Analysis is not null && Candidates.Count > 0;
+
+    partial void OnCandidatesChanged(IReadOnlyList<CandidateRow> value)
+    {
+        OnPropertyChanged(nameof(BestMoveText));
+        OnPropertyChanged(nameof(HasQuickRead));
+    }
+
     private IReadOnlyList<(int Number, GameNode Node)> _mistakeNodes = [];
 
     [ObservableProperty]
@@ -361,6 +373,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         OnPropertyChanged(nameof(BlackWinrate));
         OnPropertyChanged(nameof(LeadText));
         OnPropertyChanged(nameof(BestText));
+        OnPropertyChanged(nameof(HasQuickRead));
         UpdateTerritory();
         UpdateGroups();
     }
@@ -393,6 +406,7 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsBlocked));
         OnPropertyChanged(nameof(IsAnalysisActive));
         OnPropertyChanged(nameof(IsEngineActive));
+        OnPropertyChanged(nameof(HasQuickRead));
         OnPropertyChanged(nameof(IsWarmingUp));
         OnPropertyChanged(nameof(BoardSuggestions));
         OnPropertyChanged(nameof(IsTerritoryActive));

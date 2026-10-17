@@ -13,6 +13,8 @@ using Hoshi.App.ViewModels;
 using Hoshi.App.Views;
 using Hoshi.Core;
 using Hoshi.Core.Localization;
+using Hoshi.Ogs;
+using Hoshi.Ogs.Games;
 using Microsoft.Extensions.DependencyInjection;
 using Point = Hoshi.Core.Point;
 
@@ -398,6 +400,69 @@ public sealed class PhoneTests
         shell.Sheet.Should().Be(PhoneSheet.Study);
         shell.Main.Study.IsActive.Should().BeTrue();
         Save(window, "phone-study.png");
+        window.Close();
+    }
+
+    [AvaloniaFact]
+    public void Online_the_opponent_is_above_the_board_you_below_and_a_tap_waits_for_Confirmar()
+    {
+        var game = new GameViewModel { ConfirmMoves = true };
+        (Window window, PhoneShellViewModel shell) = Phone(game);
+        var fake = new FakeOnlineGame(70000001, 1001);
+        var online = new OnlineGameViewModel(fake, game, new ImmediateDispatcher());
+        online.Connect();
+        fake.Gamedata(new OgsGameSnapshot
+        {
+            GameId = 70000001,
+            Width = 9,
+            Height = 9,
+            Komi = 6.5,
+            Black = new OgsUser(1001, "kuro_test", 25.4, false),
+            White = new OgsUser(2002, "shiro_test", 27.2, false),
+            TimeControl = new OgsTimeControl { System = "byoyomi", MainTime = 600, PeriodTime = 30, Periods = 5 },
+        });
+        shell.Main.Online = online;
+        game.ConfirmMoves = true; // the phone's default (the tests run on the desktop)
+
+        shell.TopCard.Should().NotBeNull();
+        shell.TopCard!.Name.Should().Contain("shiro_test", "the opponent is on top");
+        shell.TopCard.IsBlack.Should().BeFalse();
+        shell.BottomCard!.Should().Match<PlayerCard>(c => c.Name.Contains("kuro_test") && c.IsYou && c.IsBlack && c.IsToMove);
+        window.FindDeep<Border>("PhoneBottomCard")!.Classes.Should().Contain("turn");
+        window.FindDeep<Border>("PhoneTopCard")!.Classes.Should().NotContain("turn");
+        window.FindDeep<StackPanel>("PhoneOnlineBottom")!.IsVisible.Should().BeTrue();
+
+        online.IsMyTurn.Should().BeTrue();
+        online.CanPlayAt(new Point(6, 2)).Should().BeTrue();
+        game.Online.Should().BeSameAs(online);
+        game.PlayCommand.Execute(new Point(6, 2));
+        game.PendingMove.Should().Be(new Point(6, 2));
+        window.FindDeep<Border>("PhoneConfirmBar")!.IsVisible.Should().BeTrue();
+        game.ConfirmPendingLabel.Should().Be("Confirmar G7");
+        Save(window, "phone-ogs.png");
+
+        game.CancelPendingCommand.Execute(null);
+        game.HasPendingMove.Should().BeFalse();
+        window.FindDeep<Border>("PhoneConfirmBar")!.IsVisible.Should().BeFalse();
+        window.Close();
+    }
+
+    [AvaloniaFact]
+    public async Task The_study_sheet_shows_a_quick_read_when_KataGo_may_be_used()
+    {
+        var engine = new FakeAnalysisEngine { BestMove = new Point(4, 4) };
+        var game = new GameViewModel();
+        (Window window, PhoneShellViewModel shell) = Phone(game, engine: engine);
+        game.PlayCommand.Execute(new Point(2, 2));
+        shell.ToggleSheetCommand.Execute(PhoneSheet.Study);
+        for (int i = 0; i < 40; i++)
+        {
+            await Task.Delay(20);
+        }
+
+        shell.Main.Analysis.HasQuickRead.Should().BeTrue();
+        shell.Main.Analysis.BestMoveText.Should().Be("E15");
+        window.FindDeep<Avalonia.Controls.Primitives.UniformGrid>("StudyQuickRead")!.IsVisible.Should().BeTrue();
         window.Close();
     }
 

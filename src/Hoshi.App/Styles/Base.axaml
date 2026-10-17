@@ -508,4 +508,11 @@
     <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
     <Setter Property="VerticalAlignment" Value="Center" />
   </Style>
+  <Style Selector="Border.quick-tile">
+    <Setter Property="Background" Value="{DynamicResource Bg.Window}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="Padding" Value="10,7" />
+  </Style>
 </Styles>

@@ -7,7 +7,7 @@
              x:DataType="vm:MainWindowViewModel">
   <!-- Part of the main window, shared with the phone layout. -->
   <StackPanel Spacing="8">
-              <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+              <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" x:Name="OnlineNames">
                 <Ellipse Grid.Row="0" Width="10" Height="10" Fill="#1A1A1A" Stroke="#9A9A9A" StrokeThickness="1" Margin="0,0,8,0" />
                 <TextBlock Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Online.BlackName}" TextTrimming="CharacterEllipsis"
                            FontWeight="{Binding Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
