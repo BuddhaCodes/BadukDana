@@ -196,3 +196,8 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 - Plataforma: `IClipboardService` (texto) y, en Android, `PlatformInfo.ShareFile/ShareText/ShareDirectory` (hoja de compartir con `FileProvider`, autoridad `io.github.buddhacodes.hoshi.share`, solo la carpeta `cache/share`).
 - Privacidad: `ShareOptions` (ocultar nombres, autores y fecha; marca opcional), guardado en `AppSettings.ShareHideNames/ShareShowBrand`.
 
+## Biblioteca y problemas propios (2026-10-17)
+
+- `Hoshi.Core.BoardPattern`: patrón rectangular (piedras y vacíos), variantes por simetría y colores, anclado a los bordes que toca. `GameSearch` (App) filtra el índice de `ReplayStore` y busca el patrón en la línea principal de cada SGF.
+- `Hoshi.Sgf.Problems.TsumegoWriter.BestMove` escribe problemas con la convención RIGHT/WRONG; `MistakeProblems` los saca de `AnalysisViewModel.LastReview` y `TsumegoLibrary.AddFromGames` los guarda sin duplicados.
+

@@ -137,6 +137,44 @@ public sealed class TsumegoTests : IDisposable
 
         window.Close();
     }
+
+    [AvaloniaFact]
+    public void Kata_gos_mistakes_in_a_reviewed_game_become_problems_from_my_games()
+    {
+        Hoshi.Sgf.GameTree game = Hoshi.Sgf.GameTree.Create(9, RuleSet.Japanese);
+        game.Info.BlackPlayer = "Ana";
+        game.Info.WhitePlayer = "Luis";
+        var cursor = new Hoshi.Sgf.GameCursor(game);
+        cursor.Play(new Point(2, 2));
+        cursor.Play(new Point(6, 6));
+        Hoshi.Sgf.GameNode blunder = cursor.Current;
+        cursor.Play(new Point(6, 2));
+        Hoshi.Sgf.GameNode small = cursor.Current;
+        var verdicts = new Dictionary<Hoshi.Sgf.GameNode, Hoshi.App.Services.Study.StudyVerdict>
+        {
+            [blunder] = new(Hoshi.Engines.KataGo.MoveQuality.Blunder, 8.5, new Point(2, 6)),
+            [small] = new(Hoshi.Engines.KataGo.MoveQuality.Mistake, 1.5, new Point(4, 4)), // too small to tell apart
+        };
+
+        MistakeProblems.Build(game, verdicts).Should().ContainSingle();
+        var vm = new TsumegoViewModel(new TsumegoLibrary(_dir), time: new ManualTime());
+        vm.AddFromGame(game, verdicts).Should().Be(1);
+        vm.AddFromGame(game, verdicts).Should().Be(0, "the same position is not added twice");
+        TsumegoRow row = vm.Rows.Single(r => r.Source == Tr.T("Tsumego.FromGames"));
+        row.Name.Should().Contain("Ana–Luis");
+
+        vm.SelectCommand.Execute(row);
+        vm.Current!.ToPlay.Should().Be(Stone.White);
+        vm.Instructions.Should().Be(Tr.T("Tsumego.FindBest"));
+        vm.PlayCommand.Execute(new Point(6, 6));
+        vm.IsWrong.Should().BeTrue();
+        vm.Status.Should().Contain("G3").And.Contain("C3").And.NotContain("WRONG");
+        vm.RetryCommand.Execute(null);
+        vm.PlayCommand.Execute(new Point(2, 6));
+        vm.IsSolved.Should().BeTrue();
+
+        new TsumegoViewModel(new TsumegoLibrary(_dir), time: new ManualTime()).Rows.Should().Contain(r => r.Source == Tr.T("Tsumego.FromGames"), "kept in the data folder");
+    }
 }
 
 [Collection("Language")]

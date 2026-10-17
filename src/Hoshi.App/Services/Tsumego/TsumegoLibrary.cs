@@ -9,7 +9,7 @@ namespace Hoshi.App.Services.Tsumego;
 public sealed record TsumegoSource(string Name, IReadOnlyList<TsumegoProblem> Problems);
 
 /// <summary>How a problem is going for the player (Leitner box 0–5, next review, counts).</summary>
-/// <summary>A problem's progress; <paramref name="LastSolved"/> feeds the month/year summary.</summary>
+/// <param name="LastSolved">When it was last solved (for the month/year summary).</param>
 public sealed record TsumegoCard(int Box, DateTimeOffset Due, int Solved, int Failed, DateTimeOffset? LastSolved = null);
 
 /// <summary>
@@ -32,7 +32,72 @@ public sealed class TsumegoLibrary
     public TsumegoLibrary(string? dataDirectory = null)
     {
         _progressFile = dataDirectory is null ? null : Path.Combine(dataDirectory, "tsumego-progress.json");
+        _gamesFile = dataDirectory is null ? null : Path.Combine(dataDirectory, "tsumego", "from-my-games.sgf");
         _cards = Load(_progressFile);
+    }
+
+    private readonly string? _gamesFile;
+    private readonly List<GameTree> _fromGames = [];
+    private bool _fromGamesLoaded;
+
+    /// <summary>Problems made from KataGo's reviews of the player's games (kept in <c>tsumego/from-my-games.sgf</c>).</summary>
+    public TsumegoSource FromMyGames()
+    {
+        LoadFromGames();
+        return new TsumegoSource(Hoshi.Core.Localization.Tr.T("Tsumego.FromGames"), [.. _fromGames.Select(TsumegoProblem.FromTree)]);
+    }
+
+    /// <summary>Adds problems made from a game (new positions only); returns how many were new.</summary>
+    public int AddFromGames(IEnumerable<GameTree> problems)
+    {
+        ArgumentNullException.ThrowIfNull(problems);
+        LoadFromGames();
+        var known = new HashSet<string>(_fromGames.Select(t => TsumegoProblem.FromTree(t).Id), StringComparer.Ordinal);
+        int added = 0;
+        foreach (GameTree tree in problems)
+        {
+            if (known.Add(TsumegoProblem.FromTree(tree).Id))
+            {
+                _fromGames.Add(tree);
+                added++;
+            }
+        }
+
+        if (added > 0 && _gamesFile is not null)
+        {
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(_gamesFile)!);
+                File.WriteAllText(_gamesFile, SgfWriter.Write(_fromGames));
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Kept for this session only.
+            }
+        }
+
+        return added;
+    }
+
+    private void LoadFromGames()
+    {
+        if (_fromGamesLoaded)
+        {
+            return;
+        }
+
+        _fromGamesLoaded = true;
+        try
+        {
+            if (_gamesFile is not null && File.Exists(_gamesFile))
+            {
+                _fromGames.AddRange(SgfParser.ParseCollection(File.ReadAllText(_gamesFile)).Games.Where(g => g.Root.Children.Count > 0));
+            }
+        }
+        catch (Exception ex) when (ex is IOException or FormatException or UnauthorizedAccessException)
+        {
+            // A damaged file starts over.
+        }
     }
 
     public IReadOnlyDictionary<string, TsumegoCard> Cards => _cards;

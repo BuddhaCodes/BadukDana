@@ -6,6 +6,11 @@ public static partial class Tr
     static partial void AddTsumego(Dictionary<string, (string En, string Es)> d)
     {
         Add(d, "Tsumego.Title", "Problems", "Problemas");
+        Add(d, "Tsumego.FromGames", "From my games", "De mis partidas");
+        Add(d, "Tsumego.FromGameMove", "move {0}", "jugada {0}");
+        Add(d, "Tsumego.FindBest", "Find the best move (KataGo's choice in your game).", "Encuentra la mejor jugada (la elección de KataGo en tu partida).");
+        Add(d, "Tsumego.FromGameWrong", "In the game: {0}, losing {1} points. KataGo preferred {2}.", "En la partida: {0}, perdiendo {1} puntos. KataGo prefería {2}.");
+        Add(d, "Tsumego.FromGamesAdded", "{0} problems from this game added to Problems → From my games.", "{0} problemas de esta partida añadidos a Problemas → De mis partidas.");
         Add(d, "Tsumego.Menu", "Problems (tsumego)…", "Problemas (tsumego)…");
         Add(d, "Tsumego.ToPlay", "{0} to play.", "Juegan {0}.");
         Add(d, "Tsumego.Blocked", "Problems are closed during your live OGS games.", "Los problemas se cierran durante tus partidas de OGS en curso.");
