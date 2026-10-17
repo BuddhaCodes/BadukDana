@@ -10,6 +10,15 @@ public static partial class Tr
         Add(d, "Game.PassNoun", "pass", "pase");
 
         // Analysis
+        Add(d, "Mode.Play", "Play", "Jugar");
+        Add(d, "Mode.Study", "Study", "Estudiar");
+        Add(d, "Mode.Review", "Review", "Revisar");
+        Add(d, "Mode.PlayTip", "Just the board: no analysis, no study tools", "Solo el tablero: sin análisis ni herramientas de estudio");
+        Add(d, "Mode.StudyTip", "Notes, drawings and what-if lines (S)", "Notas, dibujos y líneas «¿y si…?» (S)");
+        Add(d, "Mode.ReviewTip", "KataGo's reading of the game, its mistakes and the move list (A); off during your live OGS games", "La lectura de KataGo, los errores y la lista de jugadas (A); apagado en tus partidas de OGS en curso");
+        Add(d, "Mode.Lead", "Score lead", "Ventaja");
+        Add(d, "Mode.LegendBad", "mistake", "error");
+        Add(d, "Mode.LegendDoubtful", "doubtful", "dudosa");
         Add(d, "Review.Candidates", "What KataGo would play", "Lo que KataGo jugaría");
         Add(d, "Review.Mistakes", "Biggest mistakes", "Errores grandes");
         Add(d, "Review.NextMistake", "Next mistake", "Siguiente error");
