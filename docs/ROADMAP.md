@@ -146,9 +146,10 @@ Todo lo que sale del equipo es una acción explícita del usuario; los nombres d
 - [x] 22. *(2026-10-17: posiciones calculadas por Hoshi y guardadas en la página; script propio, SVG, flechas, variantes y notas; sin archivos externos)* **Visor web independiente**: exportar la partida con su estudio a un único `.html` que se abre en cualquier navegador (para un blog, la web del club o un mensaje).
 - [x] 23. *(2026-10-17: Ctrl+Mayús+C / Ctrl+Mayús+V; pegar un enlace o número de OGS descarga la partida)* **Copiar/pegar SGF y enlaces de OGS**: pegar un SGF o un enlace de partida de OGS lo abre; copiar la partida actual como SGF.
 - [x] 24. *(2026-10-17: Compartir → Resumen; jugador = autor del estudio o el nombre de la mayoría de partidas guardadas; precisión de las revisiones de KataGo guardadas en `reviews.json`, solo recuentos)* **Resumen del mes / del año**: tarjeta con partidas jugadas, mejores jugadas, precisión media según KataGo y josekis aprendidos (calculado en el equipo, nada se envía).
-- [ ] 25. **Estado en Discord** (opcional, apagado por defecto): «Estudiando una partida» / «Jugando en OGS», sin datos del rival.
+- [x] 25. *(2026-10-17: código listo, apagado por defecto; necesita que el usuario cree una aplicación en discord.com/developers y pegue su id en Preferencias; IPC local `discord-ipc-N`, solo el tipo de actividad; sin probar con Discord real)* **Estado en Discord** (opcional, apagado por defecto): «Estudiando una partida» / «Jugando en OGS», sin datos del rival.
 
 ### Después de la 1.0
+Diseños y recomendaciones en `docs/AFTER_1_0.md` (2026-10-17); cada una espera una decisión del usuario.
 - [ ] 26. Sincronizar estudios y progreso entre escritorio y teléfono.
 - [ ] 27. Más servidores (KGS, Fox) si sus términos lo permiten.
 - [ ] 28. iOS.
