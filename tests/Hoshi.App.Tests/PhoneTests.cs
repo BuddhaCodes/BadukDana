@@ -147,6 +147,8 @@ public sealed class PhoneTests
         shell.Back().Should().BeTrue();
         shell.Sheet.Should().Be(PhoneSheet.None);
         shell.Main.Study.IsActive.Should().BeFalse();
+        shell.Back().Should().BeTrue("the board goes back to the home screen");
+        shell.IsHome.Should().BeTrue();
         shell.Back().Should().BeFalse("nothing left to close: Android leaves the app");
         window.Close();
     }
@@ -357,6 +359,53 @@ public sealed class PhoneTests
         shell.SheetHeight.Should().Be(480);
         new PhoneShellViewModel(main, navigation, settings).SheetHeight.Should().Be(480);
         window.Close();
+    }
+
+    [AvaloniaFact]
+    public void The_home_screen_continues_the_game_starts_new_ones_and_opens_the_modes()
+    {
+        var game = new GameViewModel();
+        var navigation = new PhoneNavigation();
+        (Window window, PhoneShellViewModel shell) = Phone(game, navigation);
+        shell.ShowHomeCommand.Execute(null);
+        window.FindDeep<DockPanel>("PhoneHome")!.IsVisible.Should().BeTrue();
+        window.FindDeep<Button>("HomeContinue")!.IsVisible.Should().BeFalse("nothing on the board yet");
+
+        Press(window.FindDeep<Button>("HomeNew19")!);
+        shell.IsHome.Should().BeFalse();
+        game.PlayCommand.Execute(new Point(3, 3));
+        game.PlayCommand.Execute(new Point(15, 15));
+
+        shell.ToggleSheetCommand.Execute(PhoneSheet.Menu);
+        Press(window.FindDeep<Button>("MenuHome")!);
+        shell.IsHome.Should().BeTrue();
+        shell.Sheet.Should().Be(PhoneSheet.None);
+        shell.HasGameToContinue.Should().BeTrue();
+        window.FindDeep<Button>("HomeContinue")!.IsVisible.Should().BeTrue();
+        shell.ContinueDetail.Should().Contain("2");
+        Save(window, "phone-home.png");
+
+        Press(window.FindDeep<Button>("HomeContinue")!);
+        shell.IsHome.Should().BeFalse();
+        game.MoveNumber.Should().Be(2, "continuing keeps the game");
+        window.FindDeep<Border>("PhoneBlackCard")!.Classes.Should().Contain("turn");
+        window.FindDeep<Border>("PhoneWhiteCard")!.Classes.Should().NotContain("turn");
+        Save(window, "phone-play.png");
+
+        shell.ShowHomeCommand.Execute(null);
+        Press(window.FindDeep<Button>("HomeTileStudy")!);
+        shell.IsHome.Should().BeFalse();
+        shell.Sheet.Should().Be(PhoneSheet.Study);
+        shell.Main.Study.IsActive.Should().BeTrue();
+        Save(window, "phone-study.png");
+        window.Close();
+    }
+
+    private static void Save(Window window, string name)
+    {
+        using Avalonia.Media.Imaging.WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
+        Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
+        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", name));
     }
 
     [AvaloniaFact]

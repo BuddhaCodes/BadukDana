@@ -21,6 +21,22 @@ public enum PhoneSheet
     Menu,
 }
 
+/// <summary>What a tile of the phone's home screen does.</summary>
+public enum PhoneHomeAction
+{
+    New19,
+    New13,
+    New9,
+    Online,
+    KataGo,
+    Problems,
+
+    /// <summary>Open an SGF file.</summary>
+    Open,
+    Study,
+    Replays,
+}
+
 /// <summary>
 /// The phone layout: the board fills the screen, a bar of buttons below, and one sheet at a time for the
 /// moves, the analysis, the study, the chat or the menu. Windows open as pages (<see cref="PhoneNavigation"/>).
@@ -102,6 +118,8 @@ public sealed partial class PhoneShellViewModel : ViewModelBase
             if (e.PropertyName is nameof(GameViewModel.MoveNumber) or nameof(GameViewModel.IsGameOver))
             {
                 UpdateKeepAwake();
+                OnPropertyChanged(nameof(HasGameToContinue));
+                OnPropertyChanged(nameof(ContinueDetail));
             }
         };
         UpdateKeepAwake();
@@ -138,6 +156,79 @@ public sealed partial class PhoneShellViewModel : ViewModelBase
     public MainWindowViewModel Main { get; }
 
     public PhoneNavigation Navigation { get; }
+
+    /// <summary>
+    /// The home screen (redesign 2026-10): continue the game, start a new one, or pick a mode. Shown when the app
+    /// starts and by the back button once nothing else is left to close; the board is under it.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasGameToContinue), nameof(ContinueTitle), nameof(ContinueDetail))]
+    private bool _isHome;
+
+    /// <summary>There is something on the board to go back to (moves played, or an online game).</summary>
+    public bool HasGameToContinue => Main.IsOnline || Main.Game.MoveNumber > 0;
+
+    public string ContinueTitle => Main.IsOnline
+        ? Main.Game.BlackName + " · " + Main.Game.WhiteName
+        : Main.Game.HeaderTitle;
+
+    public string ContinueDetail => Main.Game.MoveNumberText + (Main.Game.IsGameOver ? string.Empty : " · " + Main.Game.StatusText);
+
+    /// <summary>Opens the home screen (the sheets close).</summary>
+    [RelayCommand]
+    private void ShowHome()
+    {
+        Sheet = PhoneSheet.None;
+        IsHome = true;
+    }
+
+    /// <summary>Back to the board as it is.</summary>
+    [RelayCommand]
+    private void ContinueGame() => IsHome = false;
+
+    /// <summary>A home tile: leaves the home screen and does what the tile says.</summary>
+    [RelayCommand]
+    private void Home(PhoneHomeAction action)
+    {
+        IsHome = false;
+        switch (action)
+        {
+            case PhoneHomeAction.New19 or PhoneHomeAction.New13 or PhoneHomeAction.New9:
+                int size = action switch { PhoneHomeAction.New13 => 13, PhoneHomeAction.New9 => 9, _ => 19 };
+                if (Main.Game.NewGameCommand.CanExecute(size))
+                {
+                    Main.Game.NewGameCommand.Execute(size);
+                }
+
+                break;
+            case PhoneHomeAction.Online:
+                Execute(Main.OpenLobbyCommand);
+                break;
+            case PhoneHomeAction.KataGo:
+                Execute(Main.PlayEngineCommand);
+                break;
+            case PhoneHomeAction.Problems:
+                Execute(Main.OpenTsumegoCommand);
+                break;
+            case PhoneHomeAction.Open:
+                Execute(Main.Game.OpenCommand);
+                break;
+            case PhoneHomeAction.Study:
+                Sheet = PhoneSheet.Study;
+                break;
+            case PhoneHomeAction.Replays:
+                Execute(Main.OpenReplaysCommand);
+                break;
+        }
+
+        static void Execute(System.Windows.Input.ICommand command)
+        {
+            if (command.CanExecute(null))
+            {
+                command.Execute(null);
+            }
+        }
+    }
 
     public bool IsMoves => Sheet == PhoneSheet.Moves;
 
@@ -243,6 +334,12 @@ public sealed partial class PhoneShellViewModel : ViewModelBase
         if (Main.Study.IsQuizActive)
         {
             Main.Study.EndQuizCommand.Execute(null);
+            return true;
+        }
+
+        if (!IsHome)
+        {
+            IsHome = true; // the board → home; back again leaves the app
             return true;
         }
 
