@@ -63,9 +63,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         PreferencesViewModel? preferences = null,
         ZenMode? zen = null,
         IClipboardService? clipboard = null,
-        Services.Summary.SummarySource? summaries = null)
+        Services.Summary.SummarySource? summaries = null,
+        Services.Presence.DiscordPresence? presence = null)
     {
         _summaries = summaries;
+        _presence = presence;
         _zen = zen;
         AppSettings initial = settings?.Current ?? new AppSettings();
         game.ConfirmMoves = PlatformInfo.ConfirmMoves(initial);
@@ -130,6 +132,29 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 await lobby.OpenLinkCommand.ExecuteAsync(null);
             }
         }, settings, summaries is null ? null : summaries.Build);
+
+        // Discord status (off unless the player turned it on): follows the board, the study and online games.
+        if (presence is not null)
+        {
+            void Changed(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+            {
+                if (e.PropertyName is nameof(GameViewModel.MoveNumber) or nameof(StudyViewModel.IsActive) or nameof(AnalysisViewModel.IsAnalysisOn)
+                    or nameof(IsOnline) or nameof(GameViewModel.Opponent) or nameof(GameViewModel.TreeVersion)
+                    or nameof(PreferencesViewModel.DiscordPresence) or nameof(PreferencesViewModel.DiscordAppId))
+                {
+                    _ = UpdatePresenceAsync();
+                }
+            }
+
+            game.PropertyChanged += Changed;
+            Study.PropertyChanged += Changed;
+            Analysis.PropertyChanged += Changed;
+            PropertyChanged += Changed;
+            if (preferences is not null)
+            {
+                preferences.PropertyChanged += Changed;
+            }
+        }
         Clock = new LocalClockViewModel(game, ui, sounds: sounds);
         Counting.PropertyChanged += (_, e) =>
         {
@@ -492,6 +517,19 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>Counting at the end of a local game.</summary>
     public CountingViewModel Counting { get; }
+
+    private readonly Services.Presence.DiscordPresence? _presence;
+
+    /// <summary>What the Discord status says now (nothing about the opponent or the position).</summary>
+    public Services.Presence.PresenceActivity CurrentActivity() =>
+        Online is { IsPlayer: true, IsFinished: false } ? Services.Presence.PresenceActivity.PlayingOgs
+        : Game.Opponent is not null ? Services.Presence.PresenceActivity.PlayingEngine
+        : Game.IsReview || Study.IsActive || Analysis.IsAnalysisOn || Online is not null ? Services.Presence.PresenceActivity.Studying
+        : Game.MoveNumber > 0 ? Services.Presence.PresenceActivity.PlayingLocal
+        : Services.Presence.PresenceActivity.None;
+
+    /// <summary>Tells Discord the current activity (when the status is on; called on changes and every few seconds).</summary>
+    public Task UpdatePresenceAsync() => _presence?.UpdateAsync(CurrentActivity()) ?? Task.CompletedTask;
 
     /// <summary>The size of the whole interface (Preferences → Appearance).</summary>
     [ObservableProperty]

@@ -76,6 +76,10 @@
             </StackPanel>
             <ToggleSwitch IsChecked="{Binding ShowMoveEntry}" OnContent="{l:T Prefs.MoveEntry}" OffContent="{l:T Prefs.MoveEntry}" x:Name="MoveEntrySwitch" Margin="0,6,0,0" />
             <TextBlock Classes="secondary" Text="{l:T Prefs.MoveEntryHint}" TextWrapping="Wrap" />
+            <!-- Discord status: off by default, only the kind of activity, through the Discord app on this computer. -->
+            <ToggleSwitch IsChecked="{Binding DiscordPresence}" OnContent="{l:T Prefs.Discord}" OffContent="{l:T Prefs.Discord}" x:Name="DiscordSwitch" Margin="0,6,0,0" IsVisible="{Binding IsDesktop}" />
+            <TextBox Text="{Binding DiscordAppId}" Watermark="{l:T Prefs.DiscordAppId}" Width="260" HorizontalAlignment="Left" IsEnabled="{Binding DiscordPresence}" x:Name="DiscordAppIdBox" IsVisible="{Binding IsDesktop}" />
+            <TextBlock Classes="secondary" Text="{Binding DiscordHint}" TextWrapping="Wrap" IsVisible="{Binding IsDesktop}" />
             <CheckBox IsChecked="{Binding CheckForUpdates}" Content="{l:T Prefs.CheckForUpdates}" Margin="0,8,0,0" x:Name="UpdatesBox" IsVisible="{Binding IsDesktop}" />
             <TextBlock Classes="secondary" Text="{Binding UpdatesHint}" TextWrapping="Wrap" IsVisible="{Binding IsDesktop}" />
           </StackPanel>

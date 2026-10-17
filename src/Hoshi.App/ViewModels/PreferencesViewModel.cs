@@ -236,6 +236,8 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             _zenSilence = s.ZenSilence;
             _uiScale = UiScaleOptions.Select(o => o.Scale).OrderBy(v => Math.Abs(v - s.UiScale)).First();
             _showMoveEntry = s.ShowMoveEntry;
+            _discordPresence = s.DiscordPresence;
+            _discordAppId = s.DiscordAppId ?? string.Empty;
             _moveNumbers = s.MoveNumbers;
             _atariAlerts = s.AtariAlerts;
             _musicVolume = s.MusicVolume;
@@ -675,6 +677,33 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         }
 
         AccessibilityChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>Discord status (off by default).</summary>
+    [ObservableProperty]
+    private bool _discordPresence;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DiscordHint))]
+    private string _discordAppId = string.Empty;
+
+    public string DiscordHint => DiscordAppId.Length > 0 && !DiscordAppId.Trim().All(char.IsAsciiDigit) ? Tr.T("Prefs.DiscordBadId") : Tr.T("Prefs.DiscordHint");
+
+    partial void OnDiscordPresenceChanged(bool value)
+    {
+        if (_settings is not null && _settings.Current.DiscordPresence != value)
+        {
+            _settings.Save(_settings.Current with { DiscordPresence = value });
+        }
+    }
+
+    partial void OnDiscordAppIdChanged(string value)
+    {
+        string id = value.Trim();
+        if (_settings is not null && (_settings.Current.DiscordAppId ?? string.Empty) != id)
+        {
+            _settings.Save(_settings.Current with { DiscordAppId = id.Length == 0 ? null : id });
+        }
     }
 
     /// <summary>Zen mode also silences effects, music and sounds.</summary>

@@ -91,3 +91,4 @@ Regla de dependencias: `Desktop → App` · `Android → App` · `App → Ogs, S
 - `docs/DESIGN.md` — guía visual estilo Sabaki (colores, tablero, piedras, layout).
 - `docs/OGS_API.md` — autenticación, REST y WebSocket de OGS.
 - `docs/ROADMAP.md` — fases, tareas y criterios de aceptación.
+- `docs/AFTER_1_0.md` — diseños de lo que viene después de la 1.0 (sincronizar, más servidores, iOS, modo profesor).

@@ -113,6 +113,12 @@ public sealed record AppSettings
     /// <summary>The first-start tour was seen (or closed).</summary>
     public bool WelcomeSeen { get; init; }
 
+    /// <summary>Discord status ("Studying a game", "Playing on OGS"), off by default; needs <see cref="DiscordAppId"/>.</summary>
+    public bool DiscordPresence { get; init; }
+
+    /// <summary>The id of the Discord application the player created for the status (digits).</summary>
+    public string? DiscordAppId { get; init; }
+
     /// <summary>Size of the whole interface (1 = 100 %; 1.15, 1.3, 1.5): for reading comfort.</summary>
     public double UiScale { get; init; } = 1;
 

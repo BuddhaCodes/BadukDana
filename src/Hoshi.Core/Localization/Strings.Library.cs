@@ -15,6 +15,16 @@ public static partial class Tr
         Add(d, "Prefs.UiScale", "Interface size", "Tamaño de la interfaz");
         Add(d, "Prefs.MoveEntry", "Play by typing a coordinate", "Jugar escribiendo la coordenada");
         Add(d, "Prefs.MoveEntryHint", "A box under the board: type D4 (or pass) and Enter. With a screen reader the board also reads the last move, who plays and the captures.", "Una casilla bajo el tablero: escribe D4 (o pasa) y Enter. Con un lector de pantalla el tablero también lee la última jugada, a quién le toca y las capturas.");
+        Add(d, "Presence.Studying", "Studying a game", "Estudiando una partida");
+        Add(d, "Presence.StudyingState", "with Hoshi", "con Hoshi");
+        Add(d, "Presence.PlayingLocal", "Playing Go", "Jugando al go");
+        Add(d, "Presence.PlayingEngine", "Playing against an engine", "Jugando contra un motor");
+        Add(d, "Presence.PlayingOgs", "Playing on OGS", "Jugando en OGS");
+        Add(d, "Presence.Problems", "Solving problems", "Resolviendo problemas");
+        Add(d, "Prefs.Discord", "Show what I do in Discord", "Mostrar en Discord lo que hago");
+        Add(d, "Prefs.DiscordAppId", "Discord application id", "Id de la aplicación de Discord");
+        Add(d, "Prefs.DiscordHint", "Only \"Studying a game\" or \"Playing on OGS\" (never the opponent or the game), through the Discord app on this computer. Create an application at discord.com/developers and paste its id here.", "Solo «Estudiando una partida» o «Jugando en OGS» (nunca el rival ni la partida), a través de la app de Discord de este equipo. Crea una aplicación en discord.com/developers y pega aquí su id.");
+        Add(d, "Prefs.DiscordBadId", "The application id is a number (copy it from discord.com/developers).", "El id de la aplicación es un número (cópialo de discord.com/developers).");
         Add(d, "Replays.Player", "Player", "Jugador");
         Add(d, "Replays.From", "From", "Desde");
         Add(d, "Replays.To", "To", "Hasta");
