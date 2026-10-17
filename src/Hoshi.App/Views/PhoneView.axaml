@@ -45,6 +45,7 @@
     </Style>
   </UserControl.Styles>
 
+  <LayoutTransformControl LayoutTransform="{Binding Main.UiScaleTransform}" x:Name="UiScaleRoot">
   <Panel>
     <c:ThemeBackground Kind="{DynamicResource Theme.Background}" Animate="False" />
     <DockPanel x:Name="Shell">
@@ -265,7 +266,7 @@
 
       <!-- The board. -->
       <Panel x:Name="PhoneBoardArea">
-        <c:GoBoardControl x:Name="Board"
+        <c:GoBoardControl x:Name="Board" AutomationProperties.Name="{Binding Main.Game.BoardDescription}" AutomationProperties.LiveSetting="Polite"
                           Margin="6"
                           ShowCoordinates="{Binding Main.ShowCoordinates}"
                           MoveNumbers="{Binding Main.Game.MoveNumberLabels}"
@@ -403,4 +404,5 @@
       </Border>
     </Border>
   </Panel>
+  </LayoutTransformControl>
 </UserControl>

@@ -71,8 +71,15 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         game.ConfirmMoves = PlatformInfo.ConfirmMoves(initial);
         game.MoveNumberMode = initial.MoveNumbers;
         _showCoordinates = PlatformInfo.ShowCoordinates(initial);
+        _uiScale = Math.Clamp(initial.UiScale, 1, 2);
+        _showMoveEntry = initial.ShowMoveEntry;
         if (preferences is not null)
         {
+            preferences.AccessibilityChanged += (_, _) =>
+            {
+                UiScale = preferences.UiScale;
+                ShowMoveEntry = preferences.ShowMoveEntry;
+            };
             preferences.ConfirmMovesChanged += (_, on) => game.ConfirmMoves = on;
             preferences.BoardDisplayChanged += (_, _) =>
             {
@@ -485,6 +492,31 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>Counting at the end of a local game.</summary>
     public CountingViewModel Counting { get; }
+
+    /// <summary>The size of the whole interface (Preferences → Appearance).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(UiScaleTransform))]
+    private double _uiScale = 1;
+
+    public Avalonia.Media.ITransform UiScaleTransform => new Avalonia.Media.ScaleTransform(UiScale, UiScale);
+
+    /// <summary>The box to play by typing a coordinate (Preferences → Appearance).</summary>
+    [ObservableProperty]
+    private bool _showMoveEntry;
+
+    /// <summary>What is typed in the move box.</summary>
+    [ObservableProperty]
+    private string _moveEntryText = string.Empty;
+
+    /// <summary>Plays the typed coordinate ("D4", "pass") and clears the box when it worked.</summary>
+    [RelayCommand]
+    private void PlayEntry()
+    {
+        if (Game.PlayTyped(MoveEntryText))
+        {
+            MoveEntryText = string.Empty;
+        }
+    }
 
     /// <summary>Images, animations and the other ways to share (File → Share).</summary>
     public ShareViewModel Share { get; }

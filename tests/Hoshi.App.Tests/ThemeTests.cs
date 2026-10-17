@@ -35,7 +35,7 @@ public sealed class ThemeTests
     public void Themes_are_distinct_and_reference_existing_icon_sets()
     {
         HoshiThemes.All.Select(t => t.Id).Should().OnlyHaveUniqueItems();
-        HoshiThemes.All.Should().HaveCount(5);
+        HoshiThemes.All.Should().HaveCount(6);
         HoshiThemes.All.Should().OnlyContain(t => IconSets.All.ContainsKey(t.IconSet));
         HoshiThemes.ById("nope").Should().BeSameAs(HoshiThemes.Default);
         HoshiThemes.Default.Id.Should().Be("night");
@@ -92,7 +92,7 @@ public sealed class ThemeTests
         var vm = new PreferencesViewModel(themes);
         try
         {
-            vm.Cards.Select(c => c.Name).Should().Equal("Cielo nocturno", "Tinta y oro", "Jardín zen", "Minimal cálido", "Clásico");
+            vm.Cards.Select(c => c.Name).Should().Equal("Cielo nocturno", "Tinta y oro", "Jardín zen", "Minimal cálido", "Clásico", "Alto contraste");
             vm.Selected.Theme.Should().BeSameAs(HoshiThemes.NightSky);
 
             vm.Selected = vm.Cards[1];
@@ -121,7 +121,7 @@ public sealed class ThemeTests
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
         frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "preferences.png"));
-        window.FindDeep<Avalonia.Controls.ListBox>("ThemeList")!.ItemCount.Should().Be(5);
+        window.FindDeep<Avalonia.Controls.ListBox>("ThemeList")!.ItemCount.Should().Be(HoshiThemes.All.Count);
         ThemeService.Apply(HoshiThemes.Default, animations: false, Application.Current!.Resources);
     }
 

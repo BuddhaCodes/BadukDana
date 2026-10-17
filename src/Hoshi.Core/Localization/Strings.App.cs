@@ -169,6 +169,8 @@ public static partial class Tr
         Add(d, "Music.Stopped", "The music stopped: {0}", "La música se detuvo: {0}");
 
         // Themes
+        Add(d, "Theme.Contrast.Name", "High contrast", "Alto contraste");
+        Add(d, "Theme.Contrast.Description", "For low vision: black and white with a yellow accent, a flat pale board, black lines and a red last move; nothing moves.", "Para baja visión: negro y blanco con acento amarillo, tablero claro y liso, líneas negras y la última jugada en rojo; nada se mueve.");
         Add(d, "Theme.Night.Name", "Night sky", "Cielo nocturno");
         Add(d, "Theme.Night.Description", "Hoshi means “star”: a midnight-blue sky with twinkling stars and pale gold.", "Hoshi significa «estrella»: cielo azul noche con estrellas que titilan y oro pálido.");
         Add(d, "Theme.Sumi.Name", "Ink and gold", "Tinta y oro");

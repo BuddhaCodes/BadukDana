@@ -65,6 +65,17 @@
                 </ComboBox.ItemTemplate>
               </ComboBox>
             </StackPanel>
+            <!-- Accessibility: the size of everything, and playing by typing a coordinate. -->
+            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,6,0,0">
+              <TextBlock Text="{l:T Prefs.UiScale}" VerticalAlignment="Center" />
+              <ComboBox ItemsSource="{Binding UiScaleOptions}" SelectedItem="{Binding SelectedUiScale}" MinWidth="120" x:Name="UiScaleBox">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:UiScaleOption"><TextBlock Text="{Binding Name}" /></DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+            <ToggleSwitch IsChecked="{Binding ShowMoveEntry}" OnContent="{l:T Prefs.MoveEntry}" OffContent="{l:T Prefs.MoveEntry}" x:Name="MoveEntrySwitch" Margin="0,6,0,0" />
+            <TextBlock Classes="secondary" Text="{l:T Prefs.MoveEntryHint}" TextWrapping="Wrap" />
             <CheckBox IsChecked="{Binding CheckForUpdates}" Content="{l:T Prefs.CheckForUpdates}" Margin="0,8,0,0" x:Name="UpdatesBox" IsVisible="{Binding IsDesktop}" />
             <TextBlock Classes="secondary" Text="{Binding UpdatesHint}" TextWrapping="Wrap" IsVisible="{Binding IsDesktop}" />
           </StackPanel>

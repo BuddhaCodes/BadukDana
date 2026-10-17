@@ -50,6 +50,8 @@
     </KeyBinding>
   </Window.KeyBindings>
 
+  <!-- Interface size (Preferences → Appearance): everything scales together. -->
+  <LayoutTransformControl LayoutTransform="{Binding UiScaleTransform}" x:Name="UiScaleRoot">
   <Grid ColumnDefinitions="*,Auto,280">
     <DockPanel Grid.Column="0">
       <!-- Bottom bar under the board only (Sabaki): navigation · players · actions. In edit mode it shows the tools. -->
@@ -308,7 +310,7 @@
           <KeyBinding Gesture="R" Command="{Binding Joseki.RestartCommand}" />
           <KeyBinding Gesture="Escape" Command="{Binding Joseki.CloseCommand}" />
         </Panel.KeyBindings>
-        <c:GoBoardControl x:Name="Board"
+        <c:GoBoardControl x:Name="Board" AutomationProperties.Name="{Binding Game.BoardDescription}" AutomationProperties.LiveSetting="Polite"
                           Margin="24"
                           IsVisible="{Binding !Joseki.IsActive}"
                           JosekiHints="{Binding JosekiHints.Hints}"
@@ -575,9 +577,17 @@
         <GridSplitter Grid.Row="3" Height="3" Background="{DynamicResource Border.Subtle}" ResizeDirection="Rows" />
 
         <Border Grid.Row="4" Classes="properties-header">
-          <Grid ColumnDefinitions="*,Auto">
-            <TextBlock Classes="secondary" Text="{Binding Game.StatusText}" TextTrimming="CharacterEllipsis" x:Name="StatusText" />
+          <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+            <TextBlock Classes="secondary" Text="{Binding Game.StatusText}" TextTrimming="CharacterEllipsis" x:Name="StatusText"
+                       AutomationProperties.LiveSetting="Polite" />
             <TextBlock Grid.Column="1" Classes="secondary" Text="{Binding Game.MoveNumberText}" Margin="8,0,0,0" x:Name="MoveNumber" />
+            <!-- Accessibility: play by typing a coordinate (Preferences → Appearance). -->
+            <TextBox Grid.Row="1" Grid.ColumnSpan="2" Margin="0,6,0,0" Text="{Binding MoveEntryText}" Watermark="{l:T Access.MoveEntry}"
+                     IsVisible="{Binding ShowMoveEntry}" x:Name="MoveEntryBox" AutomationProperties.Name="{l:T Access.MoveEntry}">
+              <TextBox.KeyBindings>
+                <KeyBinding Gesture="Enter" Command="{Binding PlayEntryCommand}" />
+              </TextBox.KeyBindings>
+            </TextBox>
           </Grid>
         </Border>
 
@@ -690,4 +700,5 @@
         </Border>
       </Grid>
   </Grid>
+  </LayoutTransformControl>
 </Window>
