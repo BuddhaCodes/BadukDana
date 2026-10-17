@@ -36,6 +36,8 @@
     <KeyBinding Gesture="Ctrl+P" Command="{Binding OpenTsumegoCommand}" />
     <KeyBinding Gesture="Ctrl+S" Command="{Binding Game.SaveCommand}" />
     <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding Game.SaveAsCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+C" Command="{Binding Share.CopySgfCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+V" Command="{Binding Share.PasteSgfCommand}" />
     <KeyBinding Gesture="Ctrl+E" Command="{Binding Game.ToggleEditModeCommand}" />
     <KeyBinding Gesture="Ctrl+I" Command="{Binding Game.EditGameInfoCommand}" />
     <KeyBinding Gesture="Ctrl+L" Command="{Binding OpenLobbyCommand}" />
@@ -226,6 +228,25 @@
                 <MenuItem Header="{l:T Main.Open}" Command="{Binding Game.OpenCommand}" InputGesture="Ctrl+O" />
                 <MenuItem Header="{l:T Main.Save}" Command="{Binding Game.SaveCommand}" InputGesture="Ctrl+S" />
                 <MenuItem Header="{l:T Main.SaveAs}" Command="{Binding Game.SaveAsCommand}" InputGesture="Ctrl+Shift+S" />
+                <MenuItem Header="{l:T Share.Menu}" x:Name="ShareMenu">
+                  <MenuItem Header="{l:T Share.Image}" Command="{Binding Share.ExportImageCommand}" />
+                  <MenuItem Header="{l:T Share.Animation}" Command="{Binding Share.ExportAnimationCommand}" ToolTip.Tip="{l:T Share.AnimationTip}" />
+                  <MenuItem Header="{l:T Share.Card}" ToolTip.Tip="{l:T Share.CardTip}">
+                    <MenuItem Header="{l:T Share.CardSquare}" Command="{Binding Share.ExportCardCommand}" CommandParameter="Square" />
+                    <MenuItem Header="{l:T Share.CardWide}" Command="{Binding Share.ExportCardCommand}" CommandParameter="Wide" />
+                    <MenuItem Header="{l:T Share.CardStory}" Command="{Binding Share.ExportCardCommand}" CommandParameter="Story" />
+                  </MenuItem>
+                  <MenuItem Header="{l:T Share.Problem}" Command="{Binding Share.ExportProblemCommand}" ToolTip.Tip="{l:T Share.ProblemTip}" />
+                  <MenuItem Header="{l:T Share.WebViewer}" Command="{Binding Share.ExportWebViewerCommand}" ToolTip.Tip="{l:T Share.WebViewerTip}" />
+                  <Separator />
+                  <MenuItem Header="{l:T Share.CopyDiagram}" Command="{Binding Share.CopyDiagramCommand}" />
+                  <MenuItem Header="{l:T Share.CopyCodeBlock}" Command="{Binding Share.CopyCodeBlockCommand}" />
+                  <MenuItem Header="{l:T Share.CopySgf}" Command="{Binding Share.CopySgfCommand}" InputGesture="Ctrl+Shift+C" />
+                  <MenuItem Header="{l:T Share.PasteSgf}" Command="{Binding Share.PasteSgfCommand}" InputGesture="Ctrl+Shift+V" />
+                  <Separator />
+                  <MenuItem Header="{l:T Share.HideNames}" ToggleType="CheckBox" IsChecked="{Binding Share.HideNames}" />
+                  <MenuItem Header="{l:T Share.ShowBrand}" ToggleType="CheckBox" IsChecked="{Binding Share.ShowBrand}" />
+                </MenuItem>
                 <Separator />
                 <MenuItem Header="{l:T Main.GameInfo}" Command="{Binding Game.EditGameInfoCommand}" InputGesture="Ctrl+I" />
                 <MenuItem Header="{l:T Main.PromoteVariation}" Command="{Binding Game.PromoteVariationCommand}" />

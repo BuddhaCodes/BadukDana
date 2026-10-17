@@ -5,5 +5,11 @@
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
   <!-- extractNativeLibs: KataGo (libkatago.so) must exist as a file to be started as a process. -->
   <application android:label="Hoshi" android:icon="@drawable/icon" android:extractNativeLibs="true"
-               android:allowBackup="true" android:supportsRtl="true" />
+               android:allowBackup="true" android:supportsRtl="true">
+    <!-- Share sheet: images and animations are offered to the picked app from the cache's "share" folder only. -->
+    <provider android:name="androidx.core.content.FileProvider" android:authorities="io.github.buddhacodes.hoshi.share"
+              android:exported="false" android:grantUriPermissions="true">
+      <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/share_paths" />
+    </provider>
+  </application>
 </manifest>

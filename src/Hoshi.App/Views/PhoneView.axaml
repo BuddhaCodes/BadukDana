@@ -185,6 +185,27 @@
               <Button Classes="menu-item" Command="{Binding Main.Game.SaveAsCommand}">
                 <TextBlock Text="{l:T Main.SaveAs}" Margin="28,0,0,0" />
               </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Share.ShareImageCommand}" x:Name="MenuShareImage">
+                <TextBlock Text="{l:T Share.ShareImage}" Margin="28,0,0,0" />
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Share.ShareAnimationCommand}" x:Name="MenuShareAnimation">
+                <TextBlock Text="{l:T Share.ShareAnimation}" Margin="28,0,0,0" />
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Share.ExportCardCommand}" CommandParameter="Story" x:Name="MenuShareCard">
+                <TextBlock Text="{l:T Share.Card}" Margin="28,0,0,0" />
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Share.ExportProblemCommand}" x:Name="MenuShareProblem">
+                <TextBlock Text="{l:T Share.Problem}" Margin="28,0,0,0" />
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Share.ShareWebViewerCommand}" x:Name="MenuShareViewer">
+                <TextBlock Text="{l:T Share.WebViewer}" Margin="28,0,0,0" />
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Share.CopySgfCommand}" x:Name="MenuShareSgf">
+                <TextBlock Text="{l:T Share.ShareSgf}" Margin="28,0,0,0" />
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Share.PasteSgfCommand}" x:Name="MenuPasteSgf">
+                <TextBlock Text="{l:T Share.PasteSgf}" Margin="28,0,0,0" />
+              </Button>
               <Button Classes="menu-item" Command="{Binding Main.OpenTsumegoCommand}" x:Name="MenuTsumego">
                 <TextBlock Text="{l:T Tsumego.Menu}" Margin="28,0,0,0" />
               </Button>

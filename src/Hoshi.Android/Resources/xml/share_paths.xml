@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Files Hoshi hands to the share sheet (images, animations): only the "share" folder of the app's cache. -->
+<paths>
+  <cache-path name="share" path="share/" />
+</paths>

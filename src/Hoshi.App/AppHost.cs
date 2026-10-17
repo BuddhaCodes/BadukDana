@@ -72,6 +72,7 @@ public static class AppHost
     {
         services.AddSingleton<IHostLifetime, DesktopLifetime>();
         services.AddSingleton<IFileDialogService, AvaloniaFileDialogService>();
+        services.AddSingleton<IClipboardService, AvaloniaClipboardService>();
         services.AddSingleton<IDialogService, AvaloniaDialogService>();
         services.AddSingleton<ISettingsService, JsonSettingsService>();
         services.AddSingleton<Themes.ThemeService>();

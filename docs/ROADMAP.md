@@ -129,7 +129,7 @@ Para estudiantes y jugadores por igual. Numeradas para referirse a ellas; el ord
 - [ ] 10. *(pendiente del usuario: necesita grabar tráfico real con su cuenta de beta)* **Fixtures reales de beta.online-go.com** para cerrar las diferencias del protocolo (Fase 5).
 
 ### Muy deseables
-- [ ] 11. **Exportar el tablero** como imagen (PNG) y una secuencia como GIF animado.
+- [x] 11. *(2026-10-17: Archivo → Compartir: PNG de 800 px con el tema actual; GIF con codificador propio, paleta por corte de mediana y solo el rectángulo que cambia)* **Exportar el tablero** como imagen (PNG) y una secuencia como GIF animado.
 - [ ] 12. **Biblioteca de partidas con búsqueda**: por jugador, fecha y resultado, y por patrón en una zona del tablero (al estilo Kombilo).
 - [ ] 13. **Problemas desde tus partidas**: los momentos donde KataGo vio un error grande se convierten en «encuentra la mejor jugada».
 - [ ] 14. **KataGo con nivel humano** (p. ej. 15k–1d, modelo «human-like») para practicar contra un rival a tu medida.
@@ -138,13 +138,13 @@ Para estudiantes y jugadores por igual. Numeradas para referirse a ellas; el ord
 
 ### Compartir y redes sociales
 Todo lo que sale del equipo es una acción explícita del usuario; los nombres de los jugadores se pueden ocultar al compartir y la marca de Hoshi es opcional.
-- [ ] 17. **Tarjeta para compartir un momento**: imagen del tablero con los jugadores, la jugada, la nota del estudio y el veredicto de KataGo, en formatos cuadrado (Instagram), 16:9 (X/Twitter, Discord) y vertical (historias).
-- [ ] 18. **Vídeo o GIF de la partida completa** («timelapse», con los efectos de las jugadas importantes) o de una línea «¿y si…?», listo para redes.
-- [ ] 19. **Menú «Compartir» del sistema** en Android (y portapapeles en escritorio) para imágenes, SGF y estudios.
-- [ ] 20. **Copiar como diagrama de texto**: formato de Sensei's Library (`$$`) para foros y Reddit, y bloque de código para Discord.
-- [ ] 21. **Problema para compartir**: imagen «negras juegan» con la respuesta oculta (spoiler de Discord/Reddit) sacada de tu estudio o de tus errores.
-- [ ] 22. **Visor web independiente**: exportar la partida con su estudio a un único `.html` que se abre en cualquier navegador (para un blog, la web del club o un mensaje).
-- [ ] 23. **Copiar/pegar SGF y enlaces de OGS**: pegar un SGF o un enlace de partida de OGS lo abre; copiar la partida actual como SGF.
+- [x] 17. *(2026-10-17: tarjeta cuadrada 1080², 16:9 1600×900 y vertical 1080×1920; opciones «Ocultar los nombres» y «Mostrar Hecho con Hoshi», recordadas)* **Tarjeta para compartir un momento**: imagen del tablero con los jugadores, la jugada, la nota del estudio y el veredicto de KataGo, en formatos cuadrado (Instagram), 16:9 (X/Twitter, Discord) y vertical (historias).
+- [x] 18. *(2026-10-17: GIF de la línea de la jugada mostrada hasta su final; las capturas y los errores graves de KataGo se quedan más tiempo, con círculo; vídeo MP4 no)* **Vídeo o GIF de la partida completa** («timelapse», con los efectos de las jugadas importantes) o de una línea «¿y si…?», listo para redes.
+- [x] 19. *(2026-10-17: Android con `FileProvider` sobre la caché `share/` e `ACTION_SEND`; escritorio con portapapeles de texto y guardar archivo; pendiente probarlo en un teléfono real)* **Menú «Compartir» del sistema** en Android (y portapapeles en escritorio) para imágenes, SGF y estudios.
+- [x] 20. *(2026-10-17: `TextDiagram` en Hoshi.Sgf: `$$` con marcas y coordenadas, y bloque ``` con la última jugada entre corchetes)* **Copiar como diagrama de texto**: formato de Sensei's Library (`$$`) para foros y Reddit, y bloque de código para Discord.
+- [x] 21. *(2026-10-17: «Esta jugada como problema»: la posición anterior, «Juegan…», y la respuesta copiada como `||D16||` y `>!D16!<`)* **Problema para compartir**: imagen «negras juegan» con la respuesta oculta (spoiler de Discord/Reddit) sacada de tu estudio o de tus errores.
+- [x] 22. *(2026-10-17: posiciones calculadas por Hoshi y guardadas en la página; script propio, SVG, flechas, variantes y notas; sin archivos externos)* **Visor web independiente**: exportar la partida con su estudio a un único `.html` que se abre en cualquier navegador (para un blog, la web del club o un mensaje).
+- [x] 23. *(2026-10-17: Ctrl+Mayús+C / Ctrl+Mayús+V; pegar un enlace o número de OGS descarga la partida)* **Copiar/pegar SGF y enlaces de OGS**: pegar un SGF o un enlace de partida de OGS lo abre; copiar la partida actual como SGF.
 - [ ] 24. **Resumen del mes / del año**: tarjeta con partidas jugadas, mejores jugadas, precisión media según KataGo y josekis aprendidos (calculado en el equipo, nada se envía).
 - [ ] 25. **Estado en Discord** (opcional, apagado por defecto): «Estudiando una partida» / «Jugando en OGS», sin datos del rival.
 

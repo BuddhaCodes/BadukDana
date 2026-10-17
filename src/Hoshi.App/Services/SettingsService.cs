@@ -107,6 +107,12 @@ public sealed record AppSettings
     /// <summary>The first-start tour was seen (or closed).</summary>
     public bool WelcomeSeen { get; init; }
 
+    /// <summary>Shared pictures and pages say "Black"/"White" instead of the players' names.</summary>
+    public bool ShareHideNames { get; init; }
+
+    /// <summary>"Made with Hoshi" on shared pictures and pages.</summary>
+    public bool ShareShowBrand { get; init; } = true;
+
     /// <summary>Phones: a short vibration when a stone is placed.</summary>
     public bool Haptics { get; init; } = true;
 }
