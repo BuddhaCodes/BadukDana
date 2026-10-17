@@ -22,6 +22,9 @@ public sealed class TsumegoLibrary
 
     public const string BuiltInUri = "avares://Hoshi.App/Assets/Tsumego/hoshi-basics.sgf";
 
+    /// <summary>The beginners' lessons (the rules, as small problems with explanations).</summary>
+    public const string RulesUri = "avares://Hoshi.App/Assets/Tsumego/rules-basics.sgf";
+
     private readonly string? _progressFile;
     private readonly Dictionary<string, TsumegoCard> _cards;
 
@@ -34,17 +37,22 @@ public sealed class TsumegoLibrary
     public IReadOnlyDictionary<string, TsumegoCard> Cards => _cards;
 
     /// <summary>Hoshi's own problems (an empty list when the asset cannot be read, e.g. without Avalonia).</summary>
-    public static TsumegoSource BuiltIn()
+    public static TsumegoSource BuiltIn() => Asset(BuiltInUri, "Hoshi");
+
+    /// <summary>The rules lessons (named "Rules" in the user's language).</summary>
+    public static TsumegoSource Rules() => Asset(RulesUri, Hoshi.Core.Localization.Tr.T("Rules.Source"));
+
+    private static TsumegoSource Asset(string uri, string name)
     {
         try
         {
-            using Stream stream = AssetLoader.Open(new Uri(BuiltInUri));
+            using Stream stream = AssetLoader.Open(new Uri(uri));
             using var reader = new StreamReader(stream);
-            return Parse("Hoshi", reader.ReadToEnd());
+            return Parse(name, reader.ReadToEnd());
         }
         catch (Exception ex) when (ex is InvalidOperationException or IOException or FileNotFoundException)
         {
-            return new TsumegoSource("Hoshi", []);
+            return new TsumegoSource(name, []);
         }
     }
 

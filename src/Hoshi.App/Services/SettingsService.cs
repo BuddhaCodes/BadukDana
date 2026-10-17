@@ -104,6 +104,9 @@ public sealed record AppSettings
     /// <summary>Zen mode also turns off the effects, the music and every sound but the stones' click.</summary>
     public bool ZenSilence { get; init; }
 
+    /// <summary>The first-start tour was seen (or closed).</summary>
+    public bool WelcomeSeen { get; init; }
+
     /// <summary>Phones: a short vibration when a stone is placed.</summary>
     public bool Haptics { get; init; } = true;
 }

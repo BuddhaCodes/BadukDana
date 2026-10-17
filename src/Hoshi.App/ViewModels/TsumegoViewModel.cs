@@ -46,7 +46,27 @@ public sealed partial class TsumegoViewModel : ViewModelBase
         _game = game;
         _time = time ?? TimeProvider.System;
         AddSource(builtIn ?? TsumegoLibrary.BuiltIn());
+        _rules = TsumegoLibrary.Rules();
         Current = _library.Next(AllProblems, null, _time.GetUtcNow());
+    }
+
+    private readonly TsumegoSource _rules;
+
+    /// <summary>The rules lessons for beginners (opened from the welcome tour); added to the list the first time.</summary>
+    public void ShowRules()
+    {
+        if (_rules.Problems.Count == 0)
+        {
+            return;
+        }
+
+        if (!_sources.Contains(_rules))
+        {
+            _sources.Insert(0, _rules);
+            RefreshRows();
+        }
+
+        Current = _rules.Problems[0];
     }
 
     public ObservableCollection<TsumegoRow> Rows { get; } = [];
@@ -234,7 +254,7 @@ public sealed partial class TsumegoViewModel : ViewModelBase
 
     private string Explain(string key) =>
         _attempt?.Comment is { Length: > 0 } c && !c.Equals("RIGHT", StringComparison.OrdinalIgnoreCase) && !c.Equals("WRONG", StringComparison.OrdinalIgnoreCase)
-            ? $"{Tr.T(key)} {c}"
+            ? $"{Tr.T(key)} {Tr.T(c)}"
             : Tr.T(key);
 
     private void Changed()

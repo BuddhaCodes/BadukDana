@@ -751,7 +751,105 @@ public sealed partial class AnalysisViewModel : ViewModelBase
         Position track = Position.Of(_game, followMainLine: true);
         Graph = [.. Enumerable.Range(0, track.Moves.Count + 1).Select(t => _cache.TryGetValue(track.Key(t), out TurnAnalysis? a) ? (double?)a.ScoreLead : null)];
         GraphIndex = pos.Moves.Count;
+        UpdateVerdicts(track);
     }
+
+    /// <summary>KataGo's verdict on each move of the shown line that it has read (for the colours in the tree).</summary>
+    [ObservableProperty]
+    private IReadOnlyDictionary<GameNode, MoveQuality> _nodeVerdicts = new Dictionary<GameNode, MoveQuality>();
+
+    private void UpdateVerdicts(Position track)
+    {
+        if (!IsEngineActive || track.Moves.Count == 0)
+        {
+            if (NodeVerdicts.Count > 0)
+            {
+                NodeVerdicts = new Dictionary<GameNode, MoveQuality>();
+            }
+
+            return;
+        }
+
+        // The move nodes of the line, in the same order as the track's moves.
+        var nodes = new List<GameNode>();
+        GameNode? n = _game.CurrentNode;
+        var path = GameCursor.Path(n).ToList();
+        while (n.Children.Count > 0)
+        {
+            n = n.Children[0];
+            path.Add(n);
+        }
+
+        nodes.AddRange(path.Skip(1).Where(x => x.GetMove(_game.Cursor.BoardSize) is not null));
+        if (nodes.Count != track.Moves.Count)
+        {
+            return; // an edited position: no move history to judge
+        }
+
+        var verdicts = new Dictionary<GameNode, MoveQuality>();
+        for (int t = 1; t <= track.Moves.Count; t++)
+        {
+            if (_cache.TryGetValue(track.Key(t - 1), out TurnAnalysis? before)
+                && MoveReview.Assess(before, _cache.GetValueOrDefault(track.Key(t)), track.Moves[t - 1]) is { } judged)
+            {
+                verdicts[nodes[t - 1]] = judged.Quality;
+            }
+        }
+
+        if (verdicts.Count != NodeVerdicts.Count || verdicts.Any(v => !NodeVerdicts.TryGetValue(v.Key, out MoveQuality q) || q != v.Value))
+        {
+            NodeVerdicts = verdicts;
+        }
+    }
+
+    /// <summary>
+    /// Writes KataGo's review into the game: <c>BM</c> on mistakes and blunders, <c>DO</c> on inaccuracies, and a
+    /// line in the comment ("[KataGo] Mistake (−3.2) · better Q16"). Running it again replaces the old lines.
+    /// Returns how many moves were judged; 0 when the engine is not available.
+    /// </summary>
+    public async Task<int> AnnotateMainLineAsync(CancellationToken cancellationToken)
+    {
+        var nodes = new List<GameNode>();
+        for (GameNode n = _game.Tree.Root; n.Children.Count > 0;)
+        {
+            n = n.Children[0];
+            if (n.GetMove(_game.Cursor.BoardSize) is { IsPass: false })
+            {
+                nodes.Add(n);
+            }
+        }
+
+        IReadOnlyDictionary<GameNode, Services.Study.StudyVerdict> verdicts = await VerdictsAsync(nodes, cancellationToken);
+        foreach ((GameNode node, Services.Study.StudyVerdict v) in verdicts)
+        {
+            node.RemoveProperty("BM");
+            node.RemoveProperty("DO");
+            if (v.Quality is MoveQuality.Mistake or MoveQuality.Blunder)
+            {
+                node.SetValue("BM", v.Quality == MoveQuality.Blunder ? "2" : "1");
+            }
+            else if (v.Quality == MoveQuality.Inaccuracy)
+            {
+                node.SetValue("DO", string.Empty);
+            }
+
+            string line = ReviewPrefix + QualityName(v.Quality)
+                + (v.PointsLost >= 0.05 && v.Quality != MoveQuality.Best ? string.Create(CultureInfo.InvariantCulture, $" (−{v.PointsLost:0.0})") : string.Empty)
+                + (v.Best is { } best && v.Quality is not (MoveQuality.Best or MoveQuality.Excellent) ? " · " + Tr.F("Analysis.Better", best.ToHuman(_game.Board.Height)) : string.Empty);
+            string kept = string.Join("\n", (node.Comment ?? string.Empty).Split('\n').Where(l => !l.StartsWith(ReviewPrefix, StringComparison.Ordinal))).Trim();
+            node.Comment = kept.Length == 0 ? line : kept + "\n" + line;
+        }
+
+        if (verdicts.Count > 0)
+        {
+            _game.ReviewAnnotated();
+        }
+
+        return verdicts.Count;
+    }
+
+    /// <summary>The start of the comment lines Hoshi writes (and replaces) with KataGo's review.</summary>
+    public const string ReviewPrefix = "[KataGo] ";
 
     private static BoardSuggestion Suggest(MoveCandidate c, int i, TurnAnalysis at)
     {

@@ -34,6 +34,19 @@ public sealed class GameTreeControl : Control
     public static readonly StyledProperty<ICommand?> NodeClickedCommandProperty =
         AvaloniaProperty.Register<GameTreeControl, ICommand?>(nameof(NodeClickedCommand));
 
+    /// <summary>KataGo's verdicts: mistakes get a red ring, inaccuracies an amber one.</summary>
+    public static readonly StyledProperty<IReadOnlyDictionary<GameNode, Hoshi.Engines.KataGo.MoveQuality>?> VerdictsProperty =
+        AvaloniaProperty.Register<GameTreeControl, IReadOnlyDictionary<GameNode, Hoshi.Engines.KataGo.MoveQuality>?>(nameof(Verdicts));
+
+    public IReadOnlyDictionary<GameNode, Hoshi.Engines.KataGo.MoveQuality>? Verdicts
+    {
+        get => GetValue(VerdictsProperty);
+        set => SetValue(VerdictsProperty, value);
+    }
+
+    private static readonly IPen MistakeRing = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromRgb(240, 64, 52)), 2);
+    private static readonly IPen InaccuracyRing = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromRgb(232, 168, 48)), 2);
+
     public const double Spacing = 22;
     public const double Padding = 14;
     private const double NodeRadius = 5;
@@ -54,7 +67,7 @@ public sealed class GameTreeControl : Control
     static GameTreeControl()
     {
         AffectsMeasure<GameTreeControl>(RootProperty, VersionProperty);
-        AffectsRender<GameTreeControl>(RootProperty, CurrentProperty, VersionProperty);
+        AffectsRender<GameTreeControl>(RootProperty, CurrentProperty, VersionProperty, VerdictsProperty);
     }
 
     public GameNode? Root
@@ -168,6 +181,13 @@ public sealed class GameTreeControl : Control
             else
             {
                 context.DrawEllipse(fill, outline, c, r, r);
+            }
+
+            // KataGo's verdict: a ring around mistakes (red) and inaccuracies (amber).
+            if (Verdicts is { } verdicts && verdicts.TryGetValue(node, out Hoshi.Engines.KataGo.MoveQuality q)
+                && q is Hoshi.Engines.KataGo.MoveQuality.Mistake or Hoshi.Engines.KataGo.MoveQuality.Blunder or Hoshi.Engines.KataGo.MoveQuality.Inaccuracy)
+            {
+                context.DrawEllipse(null, q == Hoshi.Engines.KataGo.MoveQuality.Inaccuracy ? InaccuracyRing : MistakeRing, c, r + 3, r + 3);
             }
 
             // Study notes or drawings on this move: a small violet badge.

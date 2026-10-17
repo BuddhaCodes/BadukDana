@@ -122,11 +122,11 @@ Para estudiantes y jugadores por igual. Numeradas para referirse a ellas; el ord
 - [x] 3. **Automatch de OGS** (2026-10-13: pestaña Automatch con tamaño, ritmo y reglas; aviso de que es clasificatoria; pendiente probarlo en real) (hoy «llegará pronto» en el lobby).
 - [x] 4. **Aviso de turno** (2026-10-13: tarjeta «Te toca contra…» con Abrir, sonido de chat y notificación de Android; sin notificación del sistema en escritorio) en otras partidas de OGS: sonido y notificación del sistema (escritorio y Android), sobre todo para correspondencia.
 - [x] 5. **Abrir partidas terminadas de OGS** (2026-10-13: pestaña Terminadas del lobby, y número o enlace de partida) en el editor (descargar el SGF) para revisarlas con el estudio y KataGo.
-- [ ] 6. **Problemas (tsumego)**: colecciones SGF con respuestas en variantes, acierto/fallo, siguiente problema, progreso y repetición espaciada (como el entrenador de josekis). Solo colecciones con licencia clara (ver §6 de CLAUDE.md).
-- [ ] 7. **Errores en el árbol de variantes** (marca de color por calidad) y **exportar la revisión de KataGo al SGF** como comentarios.
-- [ ] 8. **Primera vez y tutorial**: recorrido corto por la interfaz y, para principiantes, las reglas básicas con ejercicios en el tablero.
-- [ ] 9. **Prueba real en Android** (KataGo, sonido, OAuth de OGS volviendo a la app) y firma del APK configurada para que las actualizaciones se instalen encima.
-- [ ] 10. **Fixtures reales de beta.online-go.com** para cerrar las diferencias del protocolo (Fase 5).
+- [x] 6. **Problemas (tsumego)** (2026-10-14: ventana/página Problemas, Ctrl+P; 8 problemas propios de Hoshi; importar colecciones SGF con RIGHT/WRONG; cajas de Leitner; cerrados durante tus partidas de OGS en curso): colecciones SGF con respuestas en variantes, acierto/fallo, siguiente problema, progreso y repetición espaciada (como el entrenador de josekis). Solo colecciones con licencia clara (ver §6 de CLAUDE.md).
+- [x] 7. **Errores en el árbol de variantes** (2026-10-17: anillo rojo/ámbar en el árbol según la pérdida de KataGo; «Escribir la revisión en la partida» añade `BM`/`DO` y un comentario `[KataGo]` que se reemplaza al repetirla) (marca de color por calidad) y **exportar la revisión de KataGo al SGF** como comentarios.
+- [x] 8. **Primera vez y tutorial** (2026-10-17: recorrido de 5 tarjetas al primer inicio, de nuevo desde el menú Ayuda; 4 lecciones de reglas en el tablero dentro de Problemas): recorrido corto por la interfaz y, para principiantes, las reglas básicas con ejercicios en el tablero.
+- [ ] 9. *(pendiente del usuario: necesita un teléfono real y la clave de firma)* **Prueba real en Android** (KataGo, sonido, OAuth de OGS volviendo a la app) y firma del APK configurada para que las actualizaciones se instalen encima.
+- [ ] 10. *(pendiente del usuario: necesita grabar tráfico real con su cuenta de beta)* **Fixtures reales de beta.online-go.com** para cerrar las diferencias del protocolo (Fase 5).
 
 ### Muy deseables
 - [ ] 11. **Exportar el tablero** como imagen (PNG) y una secuencia como GIF animado.

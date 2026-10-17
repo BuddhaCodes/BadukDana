@@ -27,6 +27,13 @@ public static partial class Tr
         Add(d, "Count.Saved", "Result saved: {0}.", "Resultado guardado: {0}.");
         Add(d, "Count.Menu", "Count the game", "Contar la partida");
 
+        // KataGo's review in the game.
+        Add(d, "Analysis.Better", "better {0}", "mejor {0}");
+        Add(d, "Review.Menu", "Write KataGo's review into the game", "Escribir la revisión de KataGo en la partida");
+        Add(d, "Review.Working", "KataGo is reviewing the game…", "KataGo está revisando la partida…");
+        Add(d, "Review.Done", "Review written: {0} moves judged; mistakes are red in the tree.", "Revisión escrita: {0} jugadas valoradas; los errores salen en rojo en el árbol.");
+        Add(d, "Review.NoEngine", "KataGo is needed for the review (and is off during your live OGS games).", "La revisión necesita KataGo (y está apagado en tus partidas de OGS en curso).");
+
         // Your turn in another OGS game.
         Add(d, "Turn.Title", "Your move", "Te toca");
         Add(d, "Turn.Notice", "Your move against {0}", "Te toca contra {0}");

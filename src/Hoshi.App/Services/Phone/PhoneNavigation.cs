@@ -38,7 +38,7 @@ public sealed partial class PhoneNavigation : ObservableObject,
     private readonly PreferencesViewModel? _preferences;
     private readonly LobbyViewModel? _lobby;
     private readonly ReplaysViewModel? _replays;
-    private readonly TsumegoViewModel? _tsumego;
+    private readonly Func<TsumegoViewModel?>? _tsumego;
     private Action<bool>? _onClose;
 
     [ObservableProperty]
@@ -52,7 +52,7 @@ public sealed partial class PhoneNavigation : ObservableObject,
     [NotifyPropertyChangedFor(nameof(HasMessage))]
     private PhoneMessage? _message;
 
-    public PhoneNavigation(PreferencesViewModel? preferences = null, LobbyViewModel? lobby = null, ReplaysViewModel? replays = null, TsumegoViewModel? tsumego = null)
+    public PhoneNavigation(PreferencesViewModel? preferences = null, LobbyViewModel? lobby = null, ReplaysViewModel? replays = null, Func<TsumegoViewModel?>? tsumego = null)
     {
         _tsumego = tsumego;
         _preferences = preferences;
@@ -156,7 +156,7 @@ public sealed partial class PhoneNavigation : ObservableObject,
 
     void IReplaysWindowService.Show() => Show(new ReplaysView { DataContext = _replays }, Tr.T("Replays.Title"));
 
-    void ITsumegoWindowService.Show() => Show(new TsumegoView { DataContext = _tsumego }, Tr.T("Tsumego.Title"));
+    void ITsumegoWindowService.Show() => Show(new TsumegoView { DataContext = _tsumego?.Invoke() }, Tr.T("Tsumego.Title"));
 
     public Task<bool> AskNewGameAsync(NewEngineGameViewModel options)
     {
