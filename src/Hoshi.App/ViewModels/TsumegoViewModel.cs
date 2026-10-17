@@ -46,11 +46,34 @@ public sealed partial class TsumegoViewModel : ViewModelBase
         _game = game;
         _time = time ?? TimeProvider.System;
         AddSource(builtIn ?? TsumegoLibrary.BuiltIn());
+        _fromGames = _library.FromMyGames();
+        if (_fromGames.Problems.Count > 0)
+        {
+            AddSource(_fromGames);
+        }
+
         _rules = TsumegoLibrary.Rules();
         Current = _library.Next(AllProblems, null, _time.GetUtcNow());
     }
 
     private readonly TsumegoSource _rules;
+    private TsumegoSource _fromGames;
+
+    /// <summary>Turns KataGo's mistakes in a reviewed game into problems ("From my games"); returns how many are new.</summary>
+    public int AddFromGame(GameTree game, IReadOnlyDictionary<GameNode, Services.Study.StudyVerdict> verdicts)
+    {
+        int added = _library.AddFromGames(MistakeProblems.Build(game, verdicts));
+        if (added > 0)
+        {
+            _sources.Remove(_fromGames);
+            _fromGames = _library.FromMyGames();
+            _sources.Add(_fromGames);
+            RefreshRows();
+            OnPropertyChanged(nameof(ProgressText));
+        }
+
+        return added;
+    }
 
     /// <summary>The rules lessons for beginners (opened from the welcome tour); added to the list the first time.</summary>
     public void ShowRules()
@@ -252,10 +275,15 @@ public sealed partial class TsumegoViewModel : ViewModelBase
         Changed();
     }
 
-    private string Explain(string key) =>
-        _attempt?.Comment is { Length: > 0 } c && !c.Equals("RIGHT", StringComparison.OrdinalIgnoreCase) && !c.Equals("WRONG", StringComparison.OrdinalIgnoreCase)
-            ? $"{Tr.T(key)} {Tr.T(c)}"
-            : Tr.T(key);
+    // The comment after the move, without the RIGHT/WRONG marks of the convention (alone on their line).
+    private string Explain(string key)
+    {
+        string text = string.Join("\n", (_attempt?.Comment ?? string.Empty).Split('\n')
+            .Select(l => l.Trim())
+            .Where(l => l.Length > 0 && !l.Equals("RIGHT", StringComparison.OrdinalIgnoreCase) && !l.Equals("WRONG", StringComparison.OrdinalIgnoreCase)
+                && !l.Equals("CORRECT", StringComparison.OrdinalIgnoreCase)));
+        return text.Length > 0 ? $"{Tr.T(key)} {Tr.T(text)}" : Tr.T(key);
+    }
 
     private void Changed()
     {

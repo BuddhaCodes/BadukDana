@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Hoshi.App.Services;
+using Hoshi.Core;
 using Hoshi.Core.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -92,6 +93,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _preferences = preferencesWindow;
         _replaysWindow = replaysWindow;
         _tsumegoWindow = tsumegoWindow;
+        _tsumego = tsumego;
         Welcome = welcome ?? new WelcomeViewModel();
         Welcome.RulesRequested += (_, _) =>
         {
@@ -106,7 +108,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         if (replaysList is not null)
         {
-            replaysList.OpenRequested += (_, entry) => OpenReplay(entry);
+            replaysList.OpenRequested += (_, entry) => OpenReplay(entry, replaysList.Selected?.MatchMove);
+            replaysList.PatternSource = SearchPattern;
         }
 
         Analysis = new AnalysisViewModel(game, engine, ui, sounds, settings);
@@ -299,6 +302,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly IReplaysWindowService? _replaysWindow;
     private readonly ITsumegoWindowService? _tsumegoWindow;
+    private readonly TsumegoViewModel? _tsumego;
 
     public bool HasTsumego => _tsumegoWindow is not null;
 
@@ -321,7 +325,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Game.ShowStatus(Tr.T("Review.Working"));
         int judged = await Analysis.AnnotateMainLineAsync(CancellationToken.None);
         _summaries?.Reviews.Record(Game.Tree, Analysis.LastReview, DateTimeOffset.Now);
-        Game.ShowStatus(judged > 0 ? Tr.F("Review.Done", judged) : Tr.T("Review.NoEngine"));
+        int problems = _tsumego?.AddFromGame(Game.Tree, Analysis.LastReview) ?? 0;
+        Game.ShowStatus(judged == 0 ? Tr.T("Review.NoEngine")
+            : problems > 0 ? Tr.F("Review.Done", judged) + " " + Tr.F("Tsumego.FromGamesAdded", problems)
+            : Tr.F("Review.Done", judged));
     }
     private readonly IReplayStore? _replayStore;
     private readonly Services.Summary.SummarySource? _summaries;
@@ -333,8 +340,39 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(HasReplays))]
     private void OpenReplays() => _replaysWindow?.Show();
 
-    /// <summary>Shows a played game from the start, in review mode: stepping forward replays the AI effects.</summary>
-    public void OpenReplay(ReplayEntry entry)
+    /// <summary>
+    /// The pattern to search in the game library: the stones in the shown move's study area (the last one drawn),
+    /// else the corner (a 9×9 square on 19×19, smaller boards in proportion) where the last move was played.
+    /// </summary>
+    public BoardPattern? SearchPattern()
+    {
+        BoardState board = Game.Board;
+        try
+        {
+            if (Hoshi.Sgf.Study.StudyStore.Read(Game.CurrentNode).Drawings.LastOrDefault(d => d.Kind == Hoshi.Sgf.Study.DrawingKind.Area && d.Points.Count >= 2) is { } area)
+            {
+                return BoardPattern.FromRegion(board, area.Points[0].X, area.Points[0].Y, area.Points[1].X, area.Points[1].Y);
+            }
+
+            if (Game.LastMove is { } last)
+            {
+                int w = Math.Max(3, (board.Width + 1) / 2 - 1), h = Math.Max(3, (board.Height + 1) / 2 - 1);
+                int x0 = last.X < board.Width / 2 ? 0 : board.Width - w;
+                int y0 = last.Y < board.Height / 2 ? 0 : board.Height - h;
+                return BoardPattern.FromRegion(board, x0, y0, x0 + w - 1, y0 + h - 1);
+            }
+        }
+        catch (ArgumentException)
+        {
+            // No stones there.
+        }
+
+        Game.ShowStatus(Tr.T("Replays.NoPattern"));
+        return null;
+    }
+
+    /// <summary>Shows a played game in review mode (from the start, or at a move): stepping forward replays the AI effects.</summary>
+    public void OpenReplay(ReplayEntry entry, int? atMove = null)
     {
         ArgumentNullException.ThrowIfNull(entry);
         if (_replayStore is null)
@@ -349,6 +387,17 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             Game.Load(tree, path: null);
             Game.IsReview = true;
             _recorder?.MarkReplay(entry);
+            if (atMove is { } move)
+            {
+                Hoshi.Sgf.GameNode node = tree.Root;
+                for (int n = 0; n < move && node.Children.Count > 0;)
+                {
+                    node = node.Children[0];
+                    n += node.HasMove ? 1 : 0;
+                }
+
+                Game.Cursor.GoTo(node);
+            }
         }
         catch (Exception ex) when (ex is IOException or FormatException or UnauthorizedAccessException)
         {
