@@ -540,8 +540,30 @@ public sealed partial class GameViewModel : ViewModelBase
 
     /// <summary>The stone waiting for its second tap (with <see cref="ConfirmMoves"/>), or null.</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(PendingStone))]
+    [NotifyPropertyChangedFor(nameof(PendingStone), nameof(PendingMoveText), nameof(HasPendingMove), nameof(ConfirmPendingLabel))]
+    [NotifyCanExecuteChangedFor(nameof(ConfirmPendingCommand), nameof(CancelPendingCommand))]
     private Point? _pendingMove;
+
+    public bool HasPendingMove => PendingMove is not null;
+
+    /// <summary>The waiting stone's coordinate ("L7"), for the confirm button.</summary>
+    public string PendingMoveText => PendingMove is { } p ? p.ToHuman(Board.Height) : string.Empty;
+
+    /// <summary>"Confirmar L7".</summary>
+    public string ConfirmPendingLabel => Tr.F("Phone.ConfirmMove", PendingMoveText);
+
+    /// <summary>Plays the waiting stone (the same as tapping it again).</summary>
+    [RelayCommand(CanExecute = nameof(HasPendingMove))]
+    private void ConfirmPending()
+    {
+        if (PendingMove is { } point && PlayCommand.CanExecute(point))
+        {
+            PlayCommand.Execute(point);
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(HasPendingMove))]
+    private void CancelPending() => PendingMove = null;
 
     /// <summary>The colour of the waiting stone.</summary>
     public Stone PendingStone => PendingMove is null ? Stone.Empty : Online is { } o ? o.MyColor : Board.ToMove;

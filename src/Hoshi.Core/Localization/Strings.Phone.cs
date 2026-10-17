@@ -11,6 +11,10 @@ public static partial class Tr
             "El primer toque muestra la piedra con líneas guía; tocar otra vez el mismo punto la juega. Evita jugadas por error en tableros pequeños.");
         Add(d, "Phone.Moves", "Moves", "Jugadas");
         Add(d, "Home.Menu", "Home", "Inicio");
+        Add(d, "Phone.ConfirmHint", "Tap again, or:", "Toca otra vez, o:");
+        Add(d, "Phone.ConfirmMove", "Play {0}", "Confirmar {0}");
+        Add(d, "Phone.Winrate", "Win chance", "Probabilidad");
+        Add(d, "Phone.BestMove", "Best move", "Mejor jugada");
         Add(d, "Home.Greeting", "What shall we do?", "¿Qué hacemos?");
         Add(d, "Home.Continue", "Continue the game", "Continuar la partida");
         Add(d, "Home.YourGame", "On the board", "En el tablero");
