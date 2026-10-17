@@ -1,21 +1,23 @@
 # Guía visual
 
 Objetivo: la sensación de Sabaki — **el tablero es el protagonista**, la interfaz es oscura, silenciosa y se aparta —
-pero con **identidad propia**: Hoshi (星, «estrella») tiene cinco temas, elegibles en *Preferencias* (☰ → Preferencias…,
+pero con **identidad propia**: Hoshi (星, «estrella») tiene siete temas, elegibles en *Preferencias* (☰ → Preferencias…,
 Ctrl+,), que cambian fondo, paleta, fuentes, iconos, piedras y animaciones al momento.
 
 ## Temas (`Themes/HoshiTheme.cs`, aplicados por `ThemeService`)
 
 | Tema | Fondo (propio, animado salvo indicación) | Acento | Fuentes (título · UI) | Iconos | Piedras | Efecto al jugar |
 |---|---|---|---|---|---|---|
-| **Cielo nocturno** (por defecto) | Azul noche con ~240 estrellas que titilan, nebulosa que deriva, constelaciones tenues y una estrella fugaz cada ~23 s | oro pálido `#D8B46A` | Cormorant Garamond · Manrope | Phosphor light | Perla | Halo dorado |
+| **Estrella polar** (por defecto; antes «Cielo nocturno», paleta del rediseño 2026-10) | Azul noche `#0B1026` con ~240 estrellas que titilan, nebulosa que deriva, constelaciones tenues y una estrella fugaz cada ~23 s | oro `#E8C36A` | Shippori Mincho · Manrope | Phosphor light | Perla | Halo dorado |
+| **Kaya** (claro) | Papel washi (estático) bajo un goban de shin-kaya claro; cromo crema `#F1E6CF`, tinta `#1E1A14`, barra de edición índigo `#26357F` | rojo sello `#B23A2A` | Shippori Mincho · Manrope | Phosphor regular | Pizarra y concha | Onda de tinta |
 | **Tinta y oro** | Niebla de tinta sumi-e que respira y un ensō de pincel en oro tenue enmarcando el tablero | oro `#C9A45C`, rojo sello `#B23A2E` | Shippori Mincho · Manrope | Phosphor regular | Pizarra y concha | Onda de tinta |
 | **Jardín zen** | Arena rastrillada con ondas alrededor de dos rocas, moviéndose muy despacio | musgo `#9DBB7F` | Zen Kaku Gothic New | Lucide | Pizarra y concha | Onda en la arena |
 | **Minimal cálido** | Papel washi con fibras (estático) | terracota `#D07A4A` | Manrope | Tabler | Suaves | Asentarse |
 | **Clásico** | Tatami de Sabaki (estático) | `#E0A94A` | Manrope | Lucide | Shudan | — |
 
 - Relojes siempre en JetBrains Mono. Las fuentes van recortadas a latín (+ 星 碁).
-- Recursos DynamicResource que cambia el tema: `Bg.*`, `Text.*`, `Accent`, `Danger`, `Border.Subtle`, `Bg.EditBar`,
+- Un tema claro (`IsLight`) cambia también Fluent a su variante clara (`RequestedThemeVariant`).
+- Recursos DynamicResource que cambia el tema: `Bg.*`, `Text.*`, `Accent`, `Danger`, `Good`, `Border.Subtle`, `Bg.EditBar`,
   `EditBar.Foreground/Hover`, `Bg.Surround`, `Font.UI/Title/Mono`, `Font.Size.Title`, `Icon.*` (21 iconos),
   `Theme.Board` (`BoardStyle`), `Theme.Background`, `Theme.Animations`; también el acento de Fluent.
 - «Animaciones» (Preferencias) apaga el fondo animado y las animaciones de piedra; se guarda en `settings.json`.
