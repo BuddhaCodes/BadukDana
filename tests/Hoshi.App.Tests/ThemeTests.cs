@@ -35,7 +35,8 @@ public sealed class ThemeTests
     public void Themes_are_distinct_and_reference_existing_icon_sets()
     {
         HoshiThemes.All.Select(t => t.Id).Should().OnlyHaveUniqueItems();
-        HoshiThemes.All.Should().HaveCount(6);
+        HoshiThemes.All.Should().HaveCount(7);
+        HoshiThemes.All.Where(t => t.IsLight).Should().Equal(HoshiThemes.Kaya);
         HoshiThemes.All.Should().OnlyContain(t => IconSets.All.ContainsKey(t.IconSet));
         HoshiThemes.ById("nope").Should().BeSameAs(HoshiThemes.Default);
         HoshiThemes.Default.Id.Should().Be("night");
@@ -54,6 +55,27 @@ public sealed class ThemeTests
         resources["Theme.Board"].Should().BeSameAs(HoshiThemes.ZenGarden.Board);
         resources["Icon.First"].Should().BeSameAs(IconSets.All["Lucide"]["First"]);
         ((FontFamily)resources["Font.UI"]!).Name.Should().Be("Zen Kaku Gothic New");
+    }
+
+    [AvaloniaFact]
+    public void The_light_kaya_theme_switches_fluent_to_its_light_look_and_back()
+    {
+        var themes = new ThemeService();
+        Avalonia.Styling.ThemeVariant? before = Application.Current!.RequestedThemeVariant;
+        try
+        {
+            themes.Select(HoshiThemes.Kaya, animations: false);
+            Application.Current.RequestedThemeVariant.Should().Be(Avalonia.Styling.ThemeVariant.Light);
+            ((SolidColorBrush)Application.Current.Resources["Good"]!).Color.Should().Be(HoshiThemes.Kaya.Good);
+
+            themes.Select(HoshiThemes.NightSky, animations: false);
+            Application.Current.RequestedThemeVariant.Should().Be(Avalonia.Styling.ThemeVariant.Dark);
+        }
+        finally
+        {
+            Application.Current.RequestedThemeVariant = before;
+            ThemeService.Apply(HoshiThemes.Default, animations: false, Application.Current.Resources);
+        }
     }
 
     [Fact]
@@ -92,15 +114,15 @@ public sealed class ThemeTests
         var vm = new PreferencesViewModel(themes);
         try
         {
-            vm.Cards.Select(c => c.Name).Should().Equal("Cielo nocturno", "Tinta y oro", "Jardín zen", "Minimal cálido", "Clásico", "Alto contraste");
+            vm.Cards.Select(c => c.Name).Should().Equal("Estrella polar", "Kaya", "Tinta y oro", "Jardín zen", "Minimal cálido", "Clásico", "Alto contraste");
             vm.Selected.Theme.Should().BeSameAs(HoshiThemes.NightSky);
 
-            vm.Selected = vm.Cards[1];
+            vm.Selected = vm.Cards[2];
             vm.Animations = false;
 
             themes.Current.Should().BeSameAs(HoshiThemes.InkAndGold);
             store.Current.Should().Be(new AppSettings { Theme = "sumi", Animations = false });
-            vm.Cards[1].IsSelected.Should().BeTrue();
+            vm.Cards[2].IsSelected.Should().BeTrue();
             vm.Cards[0].IsSelected.Should().BeFalse();
             Application.Current!.TryGetResource("Theme.Id", null, out object? id).Should().BeTrue();
             id.Should().Be("sumi");

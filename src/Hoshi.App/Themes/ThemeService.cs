@@ -83,6 +83,7 @@ public sealed class ThemeService
         Brush("Text.Secondary", theme.TextSecondary);
         Brush("Accent", theme.Accent);
         Brush("Danger", theme.Danger);
+        Brush("Good", theme.Good);
         Brush("Bg.EditBar", theme.EditBar);
         Brush("EditBar.Foreground", theme.EditBarText);
         Brush("EditBar.Hover", theme.EditBarHover);
@@ -108,6 +109,7 @@ public sealed class ThemeService
         resources["Theme.Background"] = background?.Kind ?? theme.Background;
         resources["Theme.Animations"] = animations;
         resources["Theme.Id"] = theme.Id;
+        resources["Theme.IsLight"] = theme.IsLight;
     }
 
     private void Apply(HoshiTheme theme, bool animations, IResourceDictionary? resources, bool save)
@@ -117,6 +119,11 @@ public sealed class ThemeService
         if ((resources ?? Application.Current?.Resources) is { } target)
         {
             Apply(theme, animations, target, Board, Stones, Background);
+        }
+
+        if (Application.Current is { } app)
+        {
+            app.RequestedThemeVariant = theme.IsLight ? Avalonia.Styling.ThemeVariant.Light : Avalonia.Styling.ThemeVariant.Dark;
         }
 
         if (save && _settings is not null)
