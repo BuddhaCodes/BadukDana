@@ -132,9 +132,9 @@ Para estudiantes y jugadores por igual. Numeradas para referirse a ellas; el ord
 - [x] 11. *(2026-10-17: Archivo → Compartir: PNG de 800 px con el tema actual; GIF con codificador propio, paleta por corte de mediana y solo el rectángulo que cambia)* **Exportar el tablero** como imagen (PNG) y una secuencia como GIF animado.
 - [x] 12. *(2026-10-17: jugador, fechas y resultado a la vez; patrón del área de estudio o de la esquina de la última jugada, en las 8 simetrías y con colores cambiados, buscado en segundo plano; «Revisar» abre en la jugada del patrón)* **Biblioteca de partidas con búsqueda**: por jugador, fecha y resultado, y por patrón en una zona del tablero (al estilo Kombilo).
 - [x] 13. *(2026-10-17: al escribir la revisión de KataGo, los errores de 3 puntos o más con mejor jugada pasan a Problemas → De mis partidas, guardados en `tsumego/from-my-games.sgf`)* **Problemas desde tus partidas**: los momentos donde KataGo vio un error grande se convierten en «encuentra la mejor jugada».
-- [ ] 14. **KataGo con nivel humano** (p. ej. 15k–1d, modelo «human-like») para practicar contra un rival a tu medida.
-- [ ] 15. **Tablet y horizontal en Android**, y aviso de versión nueva en el teléfono.
-- [ ] 16. **Accesibilidad**: jugadas y estado legibles por lector de pantalla, alto contraste, tamaño de letra.
+- [x] 14. *(2026-10-17: solo soporte; el modelo humano de KataGo se descarga aparte y se elige en Preferencias → Análisis; «KataGo (estilo humano)» con niveles 20k–5d en «Jugar contra un motor»; sin probar con el modelo real)* **KataGo con nivel humano** (p. ej. 15k–1d, modelo «human-like») para practicar contra un rival a tu medida.
+- [x] 15. *(2026-10-17: desde 600 px y más ancho que alto, la hoja va a la derecha del tablero; los teléfonos avisan de versiones nuevas y abren la web del APK; pendiente probarlo en un teléfono/tablet real)* **Tablet y horizontal en Android**, y aviso de versión nueva en el teléfono.
+- [x] 16. *(2026-10-17: tema Alto contraste; tamaño de la interfaz 100–150 %; casilla para jugar escribiendo D4/pasa; el tablero y el estado se anuncian al lector de pantalla — en Android depende del soporte de Avalonia)* **Accesibilidad**: jugadas y estado legibles por lector de pantalla, alto contraste, tamaño de letra.
 
 ### Compartir y redes sociales
 Todo lo que sale del equipo es una acción explícita del usuario; los nombres de los jugadores se pueden ocultar al compartir y la marca de Hoshi es opcional.

@@ -224,3 +224,11 @@ Arte de Hoshi renderizado por procedimiento (numpy + Pillow, semillas fijas; sin
 - Contraste AA en textos del chrome.
 - Coordenada de la última jugada en `AutomationProperties.Name` del tablero.
 - Todas las funciones accesibles por teclado.
+
+## Accesibilidad y tamaños (2026-10-17)
+
+- Tema **Alto contraste** (`contrast`): cromo negro, texto blanco, acento amarillo `#FFD400`, bordes grises, tablero claro sin sombras, piedras vectoriales y última jugada en rojo; fondo de pizarra estático.
+- **Tamaño de la interfaz** (100/115/130/150 %): un `LayoutTransformControl` envuelve la ventana principal y la vista de teléfono; todo escala junto.
+- En horizontal (≥ 600 px y más ancho que alto) la hoja del teléfono pasa a la derecha del tablero, con el 40 % del ancho (300–520 px) y sin asa.
+- Tarjetas para compartir: degradado oscuro `#1D1F24 → #2E3138`, números en `#F5B041`, texto `#E8E6E3`, marca «Hoshi» opcional en `#8A8F99`.
+

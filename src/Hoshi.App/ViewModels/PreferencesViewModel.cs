@@ -94,6 +94,9 @@ public sealed record LanguageOption(string Code, string Name);
 /// <summary>A choice of move numbers on the stones, with its translated name.</summary>
 public sealed record MoveNumbersOption(MoveNumbers Mode, string Name);
 
+/// <summary>A size of the interface, in Preferences.</summary>
+public sealed record UiScaleOption(double Scale, string Name);
+
 /// <summary>Preferences: theme and animations, and the KataGo analysis engine. Changes apply immediately and are saved.</summary>
 public sealed partial class PreferencesViewModel : ViewModelBase
 {
@@ -231,6 +234,8 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             _showCoordinates = Services.PlatformInfo.ShowCoordinates(s);
             _haptics = s.Haptics;
             _zenSilence = s.ZenSilence;
+            _uiScale = UiScaleOptions.Select(o => o.Scale).OrderBy(v => Math.Abs(v - s.UiScale)).First();
+            _showMoveEntry = s.ShowMoveEntry;
             _moveNumbers = s.MoveNumbers;
             _atariAlerts = s.AtariAlerts;
             _musicVolume = s.MusicVolume;
@@ -624,6 +629,52 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         }
 
         BoardDisplayChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public IReadOnlyList<UiScaleOption> UiScaleOptions { get; } =
+    [
+        new(1, "100 %"),
+        new(1.15, "115 %"),
+        new(1.3, "130 %"),
+        new(1.5, "150 %"),
+    ];
+
+    /// <summary>The size of the whole interface.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SelectedUiScale))]
+    private double _uiScale = 1;
+
+    public UiScaleOption SelectedUiScale
+    {
+        get => UiScaleOptions.FirstOrDefault(o => Math.Abs(o.Scale - UiScale) < 0.001) ?? UiScaleOptions[0];
+        set => UiScale = value?.Scale ?? 1;
+    }
+
+    /// <summary>The box to play by typing a coordinate.</summary>
+    [ObservableProperty]
+    private bool _showMoveEntry;
+
+    /// <summary>Raised when the interface size or the move box change.</summary>
+    public event EventHandler? AccessibilityChanged;
+
+    partial void OnUiScaleChanged(double value)
+    {
+        if (_settings is not null && Math.Abs(_settings.Current.UiScale - value) > 0.001)
+        {
+            _settings.Save(_settings.Current with { UiScale = value });
+        }
+
+        AccessibilityChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    partial void OnShowMoveEntryChanged(bool value)
+    {
+        if (_settings is not null && _settings.Current.ShowMoveEntry != value)
+        {
+            _settings.Save(_settings.Current with { ShowMoveEntry = value });
+        }
+
+        AccessibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>Zen mode also silences effects, music and sounds.</summary>

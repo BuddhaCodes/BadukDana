@@ -5,6 +5,16 @@ public static partial class Tr
     /// <summary>Searching the game library.</summary>
     static partial void AddLibrary(Dictionary<string, (string En, string Es)> d)
     {
+        Add(d, "Access.Move", "Move {0}: {1} {2}.", "Jugada {0}: {1} {2}.");
+        Add(d, "Access.Start", "Start of the game.", "Inicio de la partida.");
+        Add(d, "Access.ToPlay", "{0} to play.", "Juegan {0}.");
+        Add(d, "Access.Over", "The game is over.", "La partida ha terminado.");
+        Add(d, "Access.Captures", "Captures: black {0}, white {1}.", "Capturas: negras {0}, blancas {1}.");
+        Add(d, "Access.NotACoordinate", "\"{0}\" is not a point of the board (e.g. D4, Q16 or pass).", "«{0}» no es un punto del tablero (p. ej. D4, Q16 o pasa).");
+        Add(d, "Access.MoveEntry", "Play at… (D4, pass)", "Jugar en… (D4, pasa)");
+        Add(d, "Prefs.UiScale", "Interface size", "Tamaño de la interfaz");
+        Add(d, "Prefs.MoveEntry", "Play by typing a coordinate", "Jugar escribiendo la coordenada");
+        Add(d, "Prefs.MoveEntryHint", "A box under the board: type D4 (or pass) and Enter. With a screen reader the board also reads the last move, who plays and the captures.", "Una casilla bajo el tablero: escribe D4 (o pasa) y Enter. Con un lector de pantalla el tablero también lee la última jugada, a quién le toca y las capturas.");
         Add(d, "Replays.Player", "Player", "Jugador");
         Add(d, "Replays.From", "From", "Desde");
         Add(d, "Replays.To", "To", "Hasta");

@@ -113,6 +113,12 @@ public sealed record AppSettings
     /// <summary>The first-start tour was seen (or closed).</summary>
     public bool WelcomeSeen { get; init; }
 
+    /// <summary>Size of the whole interface (1 = 100 %; 1.15, 1.3, 1.5): for reading comfort.</summary>
+    public double UiScale { get; init; } = 1;
+
+    /// <summary>A box to play by typing a coordinate ("D4", "pass"), for keyboards and screen readers.</summary>
+    public bool ShowMoveEntry { get; init; }
+
     /// <summary>Shared pictures and pages say "Black"/"White" instead of the players' names.</summary>
     public bool ShareHideNames { get; init; }
 

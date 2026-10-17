@@ -383,7 +383,52 @@ public static class HoshiThemes
         Board = new BoardStyle { ShudanTexture = true },
     };
 
-    public static IReadOnlyList<HoshiTheme> All { get; } = [NightSky, InkAndGold, ZenGarden, WarmMinimal, Classic];
+    /// <summary>
+    /// High contrast (accessibility): black chrome, white text, a yellow accent, a pale flat board with black lines,
+    /// plain vector stones and a red last-move ring; nothing moves in the background.
+    /// </summary>
+    public static HoshiTheme HighContrast { get; } = new()
+    {
+        Id = "contrast",
+        NameKey = "Theme.Contrast.Name",
+        DescriptionKey = "Theme.Contrast.Description",
+        Window = Color.Parse("#000000"),
+        Bar = Color.Parse("#000000"),
+        Sidebar = Color.Parse("#000000"),
+        Properties = Color.Parse("#0A0A0A"),
+        PanelAlt = Color.Parse("#1F1F1F"),
+        Border = Color.Parse("#9A9A9A"),
+        Text = Color.Parse("#FFFFFF"),
+        TextSecondary = Color.Parse("#E6E6E6"),
+        Accent = Color.Parse("#FFD400"),
+        Danger = Color.Parse("#FF5C5C"),
+        EditBar = Color.Parse("#0033CC"),
+        EditBarText = Color.Parse("#FFFFFF"),
+        EditBarHover = Color.Parse("#1F4FFF"),
+        Surround = Color.Parse("#000000"),
+        UiFont = Fonts + "Manrope#Manrope",
+        TitleFont = Fonts + "Manrope#Manrope",
+        MonoFont = Fonts + "JetBrainsMono#JetBrains Mono",
+        TitleSize = 16,
+        IconSet = "PhosphorRegular",
+        Background = BackgroundKind.Slate,
+        Board = new BoardStyle
+        {
+            Wood = Color.Parse("#F3E3B5"),
+            Border = Color.Parse("#000000"),
+            BorderWidth = 0.08,
+            Lines = Color.Parse("#000000"),
+            Coordinates = Color.Parse("#FF000000"),
+            BoardShadow = Colors.Transparent,
+            BoardShadowBlur = 0,
+            StoneShadow = Colors.Transparent,
+            Stones = StoneStyle.Shudan,
+            Effect = PlacementEffect.None,
+            LastMove = Color.Parse("#FF1E1E"),
+        },
+    };
+
+    public static IReadOnlyList<HoshiTheme> All { get; } = [NightSky, InkAndGold, ZenGarden, WarmMinimal, Classic, HighContrast];
 
     public static HoshiTheme Default => NightSky;
 

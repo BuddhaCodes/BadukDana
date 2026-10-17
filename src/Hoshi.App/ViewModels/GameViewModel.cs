@@ -606,6 +606,60 @@ public sealed partial class GameViewModel : ViewModelBase
         MovePlayed?.Invoke(this, CurrentNode);
     }
 
+    /// <summary>
+    /// The position in words, for screen readers: the move just shown, who plays and the captures
+    /// ("Move 23: Black D4. White to play. Captures: Black 2, White 1.").
+    /// </summary>
+    public string BoardDescription
+    {
+        get
+        {
+            string move = CurrentNode.GetMove(Cursor.BoardSize) is { } m
+                ? Tr.F("Access.Move", MoveNumber, Tr.T(m.Color == Stone.Black ? "Common.Black" : "Common.White"), m.Point is { } p ? p.ToHuman(Board.Height) : Tr.T("Viewer.Pass"))
+                : Tr.T("Access.Start");
+            string toPlay = IsGameOver ? Tr.T("Access.Over") : Tr.F("Access.ToPlay", Tr.T(Board.ToMove == Stone.White ? "Common.White" : "Common.Black"));
+            return $"{move} {toPlay} {Tr.F("Access.Captures", Board.BlackCaptures, Board.WhiteCaptures)}";
+        }
+    }
+
+    /// <summary>
+    /// Plays a typed coordinate ("D4", "q16") or a pass ("pass", "pasa"); false when it is not a coordinate or the
+    /// move was not played. Typed moves need no second tap.
+    /// </summary>
+    public bool PlayTyped(string? text)
+    {
+        string t = text?.Trim() ?? string.Empty;
+        if (t.Length == 0)
+        {
+            return false;
+        }
+
+        int before = MoveNumber;
+        if (t.Equals("pass", StringComparison.OrdinalIgnoreCase) || t.Equals(Tr.T("Viewer.Pass"), StringComparison.OrdinalIgnoreCase))
+        {
+            if (PassCommand.CanExecute(null))
+            {
+                PassCommand.Execute(null);
+            }
+
+            return Online is not null || MoveNumber > before;
+        }
+
+        if (!Point.TryParseHuman(t, Board.Height, out Point point) || !Board.IsOnBoard(point))
+        {
+            SetStatus(Tr.F("Access.NotACoordinate", t));
+            return false;
+        }
+
+        PlayCommand.Execute(point);
+        if (PendingMove == point)
+        {
+            PlayCommand.Execute(point); // tap-and-confirm: typing is the confirmation
+        }
+
+        return Online is not null || MoveNumber > before;
+    }
+
     /// <summary>A stone was just played on the board by the user (not navigation, not an edit, not a pass).</summary>
     public event EventHandler<GameNode>? MovePlayed;
 
@@ -1033,6 +1087,7 @@ public sealed partial class GameViewModel : ViewModelBase
         OnPropertyChanged(nameof(Comment));
         OnPropertyChanged(nameof(MoveNumber));
         OnPropertyChanged(nameof(MoveNumberLabels));
+        OnPropertyChanged(nameof(BoardDescription));
         OnPropertyChanged(nameof(MoveNumberText));
         OnPropertyChanged(nameof(CapturesText));
         OnPropertyChanged(nameof(BlackName));

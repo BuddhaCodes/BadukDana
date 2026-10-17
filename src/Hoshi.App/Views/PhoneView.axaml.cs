@@ -19,8 +19,9 @@ public partial class PhoneView : UserControl
         PhoneMenuSheet.AddHandler(Button.ClickEvent, (_, _) => (DataContext as PhoneShellViewModel)?.CloseMenu(), RoutingStrategies.Bubble);
 
         // View-only gestures; what they do is up to the view model.
-        SizeChanged += (_, e) => ShellModel?.UpdateSize(e.NewSize.Width, e.NewSize.Height);
-        DataContextChanged += (_, _) => ShellModel?.UpdateSize(Bounds.Width, Bounds.Height);
+        // The interface size scales the content: the layout works in the scaled size.
+        SizeChanged += (_, e) => ShellModel?.UpdateSize(e.NewSize.Width / Scale, e.NewSize.Height / Scale);
+        DataContextChanged += (_, _) => ShellModel?.UpdateSize(Bounds.Width / Scale, Bounds.Height / Scale);
         PhoneSheetHandle.PointerPressed += OnHandlePressed;
         PhoneSheetHandle.PointerMoved += OnHandleMoved;
         PhoneSheetHandle.PointerReleased += OnHandleReleased;
@@ -40,6 +41,8 @@ public partial class PhoneView : UserControl
 
     private PhoneShellViewModel? ShellModel => DataContext as PhoneShellViewModel;
 
+    private double Scale => Math.Max(1, ShellModel?.Main.UiScale ?? 1);
+
     private void OnHandlePressed(object? sender, PointerPressedEventArgs e)
     {
         if (ShellModel is not { } shell)
@@ -57,7 +60,7 @@ public partial class PhoneView : UserControl
     {
         if (_dragStartY is { } start && ShellModel is { } shell)
         {
-            shell.DragSheet(_dragStartHeight + (start - e.GetPosition(this).Y), Bounds.Height);
+            shell.DragSheet(_dragStartHeight + ((start - e.GetPosition(this).Y) / Scale), Bounds.Height / Scale);
         }
     }
 

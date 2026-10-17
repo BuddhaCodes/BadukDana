@@ -97,3 +97,70 @@ public sealed class BoardDisplayTests
         window.Close();
     }
 }
+
+/// <summary>Accessibility: interface size, high contrast, the move box and the board read aloud.</summary>
+[Collection("Language")]
+public sealed class AccessibilityTests
+{
+    [AvaloniaFact]
+    public void The_board_describes_itself_and_typed_moves_are_played()
+    {
+        Hoshi.Core.Localization.Tr.SetLanguage(Hoshi.Core.Localization.Tr.English);
+        try
+        {
+            var game = new GameViewModel { ConfirmMoves = true };
+            game.Load(Hoshi.Sgf.GameTree.Create(9, RuleSet.Japanese), path: null);
+            game.BoardDescription.Should().Be("Start of the game. Black to play. Captures: black 0, white 0.");
+
+            game.PlayTyped("d4").Should().BeTrue("typing is the confirmation");
+            game.Board[new Point(3, 5)].Should().Be(Stone.Black);
+            game.BoardDescription.Should().StartWith("Move 1: Black D4. White to play.");
+            game.PlayTyped("Z9").Should().BeFalse();
+            game.StatusText.Should().Contain("Z9");
+            game.PlayTyped("pass").Should().BeTrue();
+            game.MoveNumber.Should().Be(2);
+        }
+        finally
+        {
+            Hoshi.Core.Localization.Tr.SetLanguage(Hoshi.Core.Localization.Tr.English);
+        }
+    }
+
+    [AvaloniaFact]
+    public void Interface_size_and_the_move_box_follow_preferences()
+    {
+        var settings = new TestSettings();
+        var preferences = new PreferencesViewModel(new ThemeService(settings), settings);
+        var game = new GameViewModel();
+        var main = new MainWindowViewModel(game, settings: settings, preferences: preferences);
+        var window = new MainWindow(main) { Width = 1400, Height = 900 };
+        window.Show();
+        TextBox box = window.FindDeep<TextBox>("MoveEntryBox")!;
+        box.IsVisible.Should().BeFalse();
+
+        preferences.SelectedUiScale = preferences.UiScaleOptions[2];
+        preferences.ShowMoveEntry = true;
+        settings.Current.UiScale.Should().Be(1.3);
+        settings.Current.ShowMoveEntry.Should().BeTrue();
+        main.UiScale.Should().Be(1.3);
+        window.UpdateLayout();
+        box.IsVisible.Should().BeTrue();
+        window.FindDeep<LayoutTransformControl>("UiScaleRoot")!.LayoutTransform!.Value.M11.Should().BeApproximately(1.3, 1e-9);
+
+        main.MoveEntryText = "Q16";
+        main.PlayEntryCommand.Execute(null);
+        game.Board[new Point(15, 3)].Should().Be(Stone.Black);
+        main.MoveEntryText.Should().BeEmpty();
+        window.FindDeep<GoBoardControl>("Board")!.GetValue(Avalonia.Automation.AutomationProperties.NameProperty).Should().Contain("Q16");
+        window.Close();
+    }
+
+    [Fact]
+    public void The_high_contrast_theme_is_flat_and_still()
+    {
+        HoshiThemes.All.Should().Contain(HoshiThemes.HighContrast);
+        HoshiThemes.HighContrast.Board.StoneShadow.A.Should().Be(0);
+        HoshiThemes.HighContrast.Board.Texture.Should().BeNull();
+        HoshiThemes.HighContrast.Text.Should().Be(Avalonia.Media.Colors.White);
+    }
+}

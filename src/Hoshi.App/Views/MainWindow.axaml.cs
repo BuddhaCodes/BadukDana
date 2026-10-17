@@ -25,7 +25,7 @@ public partial class MainWindow : Window
     {
         base.OnOpened(e);
         this.FindControl<Control>("Board")?.Focus();
-        if (DataContext is MainWindowViewModel { SidebarWidth: { } width } && Content is Grid root && root.ColumnDefinitions.Count > 2)
+        if (DataContext is MainWindowViewModel { SidebarWidth: { } width } && RootGrid is { } root && root.ColumnDefinitions.Count > 2)
         {
             root.ColumnDefinitions[2].Width = new GridLength(Math.Clamp(width, 220, 420));
         }
@@ -35,7 +35,7 @@ public partial class MainWindow : Window
         {
             splitter.DragCompleted += (_, _) =>
             {
-                if (DataContext is MainWindowViewModel vm && Content is Grid grid)
+                if (DataContext is MainWindowViewModel vm && RootGrid is { } grid)
                 {
                     vm.RememberSidebarWidth(grid.ColumnDefinitions[2].ActualWidth);
                 }
@@ -45,10 +45,13 @@ public partial class MainWindow : Window
 
     private GridLength _sidebarWidth = new(280);
 
+    /// <summary>The layout grid (inside the interface-size transform).</summary>
+    private Grid? RootGrid => Content as Grid ?? (Content as LayoutTransformControl)?.Child as Grid;
+
     /// <summary>Zen mode hides the sidebar and its splitter (and gives the board their room); leaving restores them.</summary>
     private void ApplyZen(bool zen)
     {
-        if (Content is not Grid root || root.ColumnDefinitions.Count < 3)
+        if (RootGrid is not { } root || root.ColumnDefinitions.Count < 3)
         {
             return;
         }
