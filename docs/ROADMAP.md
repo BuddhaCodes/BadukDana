@@ -148,6 +148,17 @@ Todo lo que sale del equipo es una acción explícita del usuario; los nombres d
 - [x] 24. *(2026-10-17: Compartir → Resumen; jugador = autor del estudio o el nombre de la mayoría de partidas guardadas; precisión de las revisiones de KataGo guardadas en `reviews.json`, solo recuentos)* **Resumen del mes / del año**: tarjeta con partidas jugadas, mejores jugadas, precisión media según KataGo y josekis aprendidos (calculado en el equipo, nada se envía).
 - [x] 25. *(2026-10-17: código listo, apagado por defecto; necesita que el usuario cree una aplicación en discord.com/developers y pegue su id en Preferencias; IPC local `discord-ipc-N`, solo el tipo de actividad; sin probar con Discord real)* **Estado en Discord** (opcional, apagado por defecto): «Estudiando una partida» / «Jugando en OGS», sin datos del rival.
 
+### Ajustes tras la 1.0 (2026-10-17)
+- [x] Botón de salir del zen visible (escritorio: píldora con Z; teléfono: botón grande abajo).
+- [x] Barra inferior adaptable: solo iconos bajo 1000 px; territorio, josekis y en línea pasan a «⋯» bajo 720 px.
+- [x] Reloj solo en partidas locales; «Pausar la partida» (Ctrl+Espacio) para reloj y motor, nunca en línea.
+- [x] Entrenador de josekis: «Volver a la partida» visible y «Atrás una jugada» (← o Retroceso).
+- [x] Textos claros para el test, el conteo, «hacer línea principal» y «borrar» (que ahora pregunta).
+- [x] Android: estudio en tres partes (esta jugada, dibujar, partida) y menú agrupado.
+- [x] Creador de replays (escritorio): MP4 con FFmpeg, GIF y página web animada.
+- [ ] Conectar KGS e IGS: investigación en `docs/SERVERS.md`; esperan permiso de los servidores y la decisión sobre las contraseñas. Fox, descartado para jugar.
+- [ ] Rediseño: prototipos para web, escritorio y Android publicados; esperan la elección de direcciones.
+
 ### Después de la 1.0
 Diseños y recomendaciones en `docs/AFTER_1_0.md` (2026-10-17); cada una espera una decisión del usuario.
 - [ ] 26. Sincronizar estudios y progreso entre escritorio y teléfono.

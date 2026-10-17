@@ -201,3 +201,8 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 - `Hoshi.Core.BoardPattern`: patrón rectangular (piedras y vacíos), variantes por simetría y colores, anclado a los bordes que toca. `GameSearch` (App) filtra el índice de `ReplayStore` y busca el patrón en la línea principal de cada SGF.
 - `Hoshi.Sgf.Problems.TsumegoWriter.BestMove` escribe problemas con la convención RIGHT/WRONG; `MistakeProblems` los saca de `AnalysisViewModel.LastReview` y `TsumegoLibrary.AddFromGames` los guarda sin duplicados.
 
+## Creador de replays (2026-10-17)
+
+- `ReplayPlan` (pasos: portada, jugadas con duración, resaltado y sonido, resultado) → `ReplayScene` (fotograma con Avalonia fuera de pantalla) → `FfmpegVideoEncoder` (BGRA crudo por stdin a 30 fps, H.264 + AAC) o `GifEncoder` (a la mitad de tamaño) o `WebViewer.Html(..., replay)` (autoplay).
+- `ReplayAudio` mezcla los WAV propios de Hoshi (piedra, captura) en una pista. FFmpeg no se distribuye: se busca en el PATH o en `AppSettings.FfmpegPath`.
+
