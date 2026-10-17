@@ -9,6 +9,7 @@ using Hoshi.Core;
 using Hoshi.Engines.KataGo;
 using Hoshi.Ogs;
 using Hoshi.Ogs.Games;
+using Hoshi.Sgf;
 using Point = Hoshi.Core.Point;
 
 namespace Hoshi.App.Tests;
@@ -80,6 +81,35 @@ public sealed class AnalysisViewModelTests
         {
             await Task.Delay(20);
         }
+    }
+
+    [AvaloniaFact]
+    public async Task Verdicts_colour_the_tree_and_the_review_is_written_into_the_game()
+    {
+        _engine.SecondGap = 9; // the best move is far better than the rest: other moves are mistakes
+        _vm.IsAnalysisOn = true;
+        _game.PlayCommand.Execute(new Point(15, 3)); // the engine's best move
+        _game.PlayCommand.Execute(new Point(3, 3));  // White: not the best
+        _game.PlayCommand.Execute(new Point(9, 9));  // Black: not the best
+        await SettleAsync();
+
+        _vm.NodeVerdicts.Should().HaveCount(3);
+        GameNode first = _game.Tree.Root.Children[0];
+        _vm.NodeVerdicts[first].Should().Be(MoveQuality.Best);
+
+        int judged = await _vm.AnnotateMainLineAsync(CancellationToken.None);
+        judged.Should().Be(3);
+        first.Comment.Should().StartWith(AnalysisViewModel.ReviewPrefix);
+        GameNode third = first.Children[0].Children[0];
+        third.Comment.Should().Contain("Q16", "the better move is named");
+        (third.HasProperty("BM") || third.HasProperty("DO")).Should().BeTrue();
+        _game.IsDirty.Should().BeTrue();
+
+        // A second run replaces the lines instead of adding more.
+        third.Comment = "My note\n" + third.Comment;
+        await _vm.AnnotateMainLineAsync(CancellationToken.None);
+        third.Comment!.Split('\n').Count(l => l.StartsWith(AnalysisViewModel.ReviewPrefix, StringComparison.Ordinal)).Should().Be(1);
+        third.Comment.Should().StartWith("My note");
     }
 
     [AvaloniaFact]

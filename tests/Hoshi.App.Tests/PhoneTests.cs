@@ -207,6 +207,8 @@ public sealed class PhoneTests
         services.GetRequiredService<IReplaysWindowService>().Should().BeSameAs(navigation);
         services.GetRequiredService<IEngineWindows>().Should().BeSameAs(navigation);
         services.GetRequiredService<IDialogService>().Should().BeSameAs(navigation);
+        services.GetRequiredService<ITsumegoWindowService>().Should().BeSameAs(navigation);
+        services.GetRequiredService<GameViewModel>().Should().NotBeNull("the game's dialogs are the navigation, which opens problems lazily");
         services.GetRequiredService<PhoneShellViewModel>().Main.Should().BeSameAs(services.GetRequiredService<MainWindowViewModel>());
     }
 

@@ -53,7 +53,10 @@ public static class AppHost
     /// </summary>
     public static IServiceCollection AddPhoneShell(this IServiceCollection services)
     {
-        services.AddSingleton<Services.Phone.PhoneNavigation>();
+        // Problems are resolved when first opened: their view model needs the game, whose dialogs are this navigation.
+        services.AddSingleton(sp => new Services.Phone.PhoneNavigation(
+            sp.GetRequiredService<PreferencesViewModel>(), sp.GetRequiredService<LobbyViewModel>(), sp.GetRequiredService<ReplaysViewModel>(),
+            () => sp.GetRequiredService<TsumegoViewModel>()));
         services.AddSingleton<IPreferencesWindowService>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
         services.AddSingleton<ILobbyWindowService>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
         services.AddSingleton<IReplaysWindowService>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
@@ -98,6 +101,7 @@ public static class AppHost
         services.AddSingleton(sp => new TsumegoViewModel(
             sp.GetRequiredService<Services.Tsumego.TsumegoLibrary>(), sp.GetRequiredService<IFileDialogService>(), sp.GetRequiredService<GameViewModel>()));
         services.AddSingleton<ITsumegoWindowService, TsumegoWindowService>();
+        services.AddSingleton<WelcomeViewModel>();
         services.AddSingleton<Services.Joseki.IJosekiLibrary, Services.Joseki.JosekiLibrary>();
         services.AddSingleton<Hoshi.Ogs.Joseki.IJosekiExplorerSource>(sp => new Hoshi.Ogs.Joseki.OgsJosekiClient(
             sp.GetRequiredService<IHttpClientFactory>().CreateClient(OgsServiceRegistration.HttpClientName),

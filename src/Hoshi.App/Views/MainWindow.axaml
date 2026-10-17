@@ -241,6 +241,7 @@
                 <MenuItem Header="{l:T Main.StudyMenu}" Command="{Binding Study.ToggleCommand}" InputGesture="S" />
                 <MenuItem Header="{l:T Study.Quiz}" Command="{Binding Study.StartQuizCommand}" />
                 <MenuItem Header="{l:T Count.Menu}" Command="{Binding Counting.StartCommand}" x:Name="CountItem" />
+                <MenuItem Header="{l:T Review.Menu}" Command="{Binding AnnotateReviewCommand}" x:Name="ReviewItem" />
                 <MenuItem Header="{l:T Clock.Menu}" x:Name="ClockMenu">
                   <MenuItem Header="{Binding Clock.Presets[0].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[0]}" />
                   <MenuItem Header="{Binding Clock.Presets[1].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[1]}" />
@@ -254,6 +255,7 @@
                 </MenuItem>
                 <MenuItem Header="{l:T Zen.Menu}" Command="{Binding ToggleZenCommand}" InputGesture="Z" x:Name="ZenItem" />
                 <Separator />
+                <MenuItem Header="{l:T Welcome.Menu}" Command="{Binding Welcome.OpenCommand}" x:Name="WelcomeItem" />
                 <MenuItem Header="{l:T Main.Preferences}" Command="{Binding OpenPreferencesCommand}" InputGesture="Ctrl+OemComma" />
                 <MenuItem Header="{l:T Main.CheckUpdates}" Command="{Binding Updates.CheckNowCommand, FallbackValue={x:Null}}" x:Name="CheckUpdatesItem" />
                 <MenuItem Header="{l:T Support.Menu}" Command="{Binding Updates.SupportCommand, FallbackValue={x:Null}}" x:Name="SupportItem" />
@@ -320,6 +322,29 @@
               <Button Content="{l:T Count.KeepPlaying}" Command="{Binding Counting.KeepPlayingCommand}" MinHeight="36" VerticalContentAlignment="Center" />
               <Button Classes="accent" Content="{l:T Count.Accept}" Command="{Binding Counting.AcceptCommand}" MinHeight="36" VerticalContentAlignment="Center" x:Name="CountingCardAccept" />
             </StackPanel>
+          </StackPanel>
+        </Border>
+        <!-- The first-start tour (and the menu's "Welcome tour"). -->
+        <Border x:Name="WelcomeCard" IsVisible="{Binding Welcome.IsOpen}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16"
+                MaxWidth="440" Padding="22,18" CornerRadius="16" Background="{DynamicResource Bg.Panel}"
+                BorderBrush="{DynamicResource Accent}" BorderThickness="1" BoxShadow="0 12 40 0 #80000000">
+          <StackPanel Spacing="12">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="{Binding Welcome.Title}" FontFamily="{DynamicResource Font.Title}" FontSize="21" TextWrapping="Wrap" x:Name="WelcomeCardTitle" />
+              <TextBlock Grid.Column="1" Classes="secondary" Text="{Binding Welcome.StepText}" VerticalAlignment="Top" Margin="10,4,0,0" />
+            </Grid>
+            <TextBlock Text="{Binding Welcome.Text}" TextWrapping="Wrap" LineHeight="21" />
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+              <Button Content="{l:T Welcome.Skip}" Command="{Binding Welcome.CloseCommand}" IsVisible="{Binding !Welcome.IsLast}" Classes="bar" />
+              <Button Grid.Column="1" Content="{l:T Welcome.Rules}" Command="{Binding Welcome.LearnRulesCommand}" IsVisible="{Binding Welcome.IsLast}" HorizontalAlignment="Left" x:Name="WelcomeCardRules" />
+              <Button Grid.Column="2" Content="{l:T Welcome.Back}" Command="{Binding Welcome.BackCommand}" IsVisible="{Binding !Welcome.IsFirst}" MinHeight="36" />
+              <Button Grid.Column="3" Classes="accent" Command="{Binding Welcome.NextCommand}" MinHeight="36" x:Name="WelcomeCardNext">
+                <Panel>
+                  <TextBlock Text="{l:T Welcome.Next}" IsVisible="{Binding !Welcome.IsLast}" />
+                  <TextBlock Text="{l:T Welcome.Done}" IsVisible="{Binding Welcome.IsLast}" />
+                </Panel>
+              </Button>
+            </Grid>
           </StackPanel>
         </Border>
         <!-- Your move in another OGS game: open it or dismiss. -->
@@ -513,6 +538,7 @@
 
         <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" x:Name="TreeScroll">
           <c:GameTreeControl x:Name="GameTree"
+                             Verdicts="{Binding Analysis.NodeVerdicts}"
                              Root="{Binding Game.Tree.Root}"
                              Current="{Binding Game.CurrentNode}"
                              Version="{Binding Game.TreeVersion}"

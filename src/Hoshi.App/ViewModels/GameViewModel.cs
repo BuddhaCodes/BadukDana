@@ -141,6 +141,13 @@ public sealed partial class GameViewModel : ViewModelBase
         return true;
     }
 
+    /// <summary>KataGo's review was written into the tree (comments and BM/DO marks).</summary>
+    public void ReviewAnnotated()
+    {
+        IsDirty = true;
+        _cursor.NotifyEdited();
+    }
+
     /// <summary>Writes the result (e.g. "W+R") into the game info.</summary>
     public void SetResult(string result)
     {

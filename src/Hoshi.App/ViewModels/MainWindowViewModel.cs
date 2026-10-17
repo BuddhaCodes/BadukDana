@@ -46,6 +46,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         ReplaysViewModel? replaysList = null,
         IReplaysWindowService? replaysWindow = null,
         ITsumegoWindowService? tsumegoWindow = null,
+        TsumegoViewModel? tsumego = null,
+        WelcomeViewModel? welcome = null,
         JosekiTrainerViewModel? joseki = null,
         JosekiAssistantViewModel? josekiHints = null,
         UpdateViewModel? updates = null,
@@ -87,6 +89,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _preferences = preferencesWindow;
         _replaysWindow = replaysWindow;
         _tsumegoWindow = tsumegoWindow;
+        Welcome = welcome ?? new WelcomeViewModel();
+        Welcome.RulesRequested += (_, _) =>
+        {
+            tsumego?.ShowRules();
+            tsumegoWindow?.Show();
+        };
         _replayStore = replays;
         if (replays is not null)
         {
@@ -283,8 +291,26 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     public bool HasTsumego => _tsumegoWindow is not null;
 
+    /// <summary>The first-start tour.</summary>
+    public WelcomeViewModel Welcome { get; }
+
     [RelayCommand]
     private void OpenTsumego() => _tsumegoWindow?.Show();
+
+    /// <summary>KataGo's review into the SGF: BM/DO marks and a comment line per move (then saved with the game).</summary>
+    [RelayCommand]
+    private async Task AnnotateReview()
+    {
+        if (!Analysis.IsEngineActive)
+        {
+            Game.ShowStatus(Tr.T("Review.NoEngine"));
+            return;
+        }
+
+        Game.ShowStatus(Tr.T("Review.Working"));
+        int judged = await Analysis.AnnotateMainLineAsync(CancellationToken.None);
+        Game.ShowStatus(judged > 0 ? Tr.F("Review.Done", judged) : Tr.T("Review.NoEngine"));
+    }
     private readonly IReplayStore? _replayStore;
     private readonly ReplayRecorder? _recorder;
 

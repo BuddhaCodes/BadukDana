@@ -138,3 +138,66 @@ public sealed class TsumegoTests : IDisposable
         window.Close();
     }
 }
+
+[Collection("Language")]
+public sealed class WelcomeTests
+{
+    [AvaloniaFact]
+    public void The_tour_shows_once_and_ends_with_the_rules()
+    {
+        var settings = new TestSettings();
+        var welcome = new WelcomeViewModel(settings);
+        welcome.IsOpen.Should().BeTrue("first start");
+        int rules = 0;
+        welcome.RulesRequested += (_, _) => rules++;
+
+        while (!welcome.IsLast)
+        {
+            welcome.Title.Should().NotStartWith("Welcome.");
+            welcome.Text.Should().NotStartWith("Welcome.");
+            welcome.NextCommand.Execute(null);
+        }
+
+        welcome.LearnRulesCommand.Execute(null);
+        rules.Should().Be(1);
+        welcome.IsOpen.Should().BeFalse();
+        settings.Current.WelcomeSeen.Should().BeTrue();
+        new WelcomeViewModel(settings).IsOpen.Should().BeFalse("seen once");
+    }
+
+    [AvaloniaFact]
+    public void The_rules_lessons_are_solved_by_their_answers()
+    {
+        TsumegoSource rules = TsumegoLibrary.Rules();
+        rules.Problems.Should().HaveCount(4);
+        foreach (TsumegoProblem p in rules.Problems)
+        {
+            Tr.Has(p.Name).Should().BeTrue();
+            var attempt = new TsumegoAttempt(p);
+            attempt.Play(attempt.Hint!.Value).Should().Be(TsumegoOutcome.Solved, p.Name);
+            Tr.Has(attempt.Comment!).Should().BeTrue("the explanation is translated");
+        }
+
+        var vm = new TsumegoViewModel(new TsumegoLibrary(), time: new ManualTime());
+        vm.ShowRules();
+        vm.Current!.Name.Should().Be("Rules.L1");
+        vm.Rows[0].Source.Should().Be(Tr.T("Rules.Source"));
+        vm.PlayCommand.Execute(vm.Current.Start.AllPoints.First(q => new TsumegoAttempt(vm.Current).Hint == q));
+        vm.StatusText.Should().Contain(Tr.T("Rules.L1.Right"));
+    }
+
+    [AvaloniaFact]
+    public void The_main_window_shows_the_tour_card()
+    {
+        var settings = new TestSettings();
+        var vm = new MainWindowViewModel(new GameViewModel(), settings: settings, welcome: new WelcomeViewModel(settings));
+        var window = new MainWindow(vm) { Width = 1200, Height = 820 };
+        window.Show();
+        window.FindDeep<Border>("WelcomeCard")!.IsVisible.Should().BeTrue();
+        window.FindDeep<Button>("WelcomeCardNext")!.Command!.Execute(null);
+        vm.Welcome.Step.Should().Be(1);
+        vm.Welcome.CloseCommand.Execute(null);
+        window.FindDeep<Border>("WelcomeCard")!.IsVisible.Should().BeFalse();
+        window.Close();
+    }
+}

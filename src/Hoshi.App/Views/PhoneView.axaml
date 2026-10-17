@@ -140,7 +140,7 @@
         <Panel>
           <Grid RowDefinitions="*,Auto" IsVisible="{Binding IsMoves}" x:Name="PhoneMovesSheet">
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-              <c:GameTreeControl Root="{Binding Main.Game.Tree.Root}" Current="{Binding Main.Game.CurrentNode}" Version="{Binding Main.Game.TreeVersion}"
+              <c:GameTreeControl Verdicts="{Binding Main.Analysis.NodeVerdicts}" Root="{Binding Main.Game.Tree.Root}" Current="{Binding Main.Game.CurrentNode}" Version="{Binding Main.Game.TreeVersion}"
                                  BoardSize="{Binding Main.Game.Board.Width}" NodeClickedCommand="{Binding Main.Game.GoToNodeCommand}"
                                  HorizontalAlignment="Left" VerticalAlignment="Top" Margin="6" />
             </ScrollViewer>
@@ -210,11 +210,17 @@
                   <Button Content="{l:T Clock.Remove}" Command="{Binding Main.Clock.RemoveCommand}" IsVisible="{Binding Main.Clock.HasClock}" />
                 </WrapPanel>
               </StackPanel>
+              <Button Classes="menu-item" Command="{Binding Main.AnnotateReviewCommand}" x:Name="MenuReview">
+                <TextBlock Text="{l:T Review.Menu}" Margin="28,0,0,0" />
+              </Button>
               <Button Classes="menu-item" Command="{Binding Main.Counting.StartCommand}" x:Name="MenuCount">
                 <TextBlock Text="{l:T Count.Menu}" Margin="28,0,0,0" />
               </Button>
               <Button Classes="menu-item" Command="{Binding Main.ToggleZenCommand}" x:Name="MenuZen">
                 <TextBlock Text="{l:T Zen.Menu}" Margin="28,0,0,0" />
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Welcome.OpenCommand}" x:Name="MenuWelcome">
+                <TextBlock Text="{l:T Welcome.Menu}" Margin="28,0,0,0" />
               </Button>
               <Separator Margin="12,4" />
               <Button Classes="menu-item" Command="{Binding Main.OpenPreferencesCommand}" x:Name="MenuPreferences">
@@ -269,6 +275,29 @@
               <Button Content="{l:T Count.KeepPlaying}" Command="{Binding Main.Counting.KeepPlayingCommand}" MinHeight="36" VerticalContentAlignment="Center" />
               <Button Classes="accent" Content="{l:T Count.Accept}" Command="{Binding Main.Counting.AcceptCommand}" MinHeight="36" VerticalContentAlignment="Center" x:Name="PhoneCountingCardAccept" />
             </StackPanel>
+          </StackPanel>
+        </Border>
+        <!-- The first-start tour (and the menu's "Welcome tour"). -->
+        <Border x:Name="PhoneWelcomeCard" IsVisible="{Binding Main.Welcome.IsOpen}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16"
+                MaxWidth="440" Padding="22,18" CornerRadius="16" Background="{DynamicResource Bg.Panel}"
+                BorderBrush="{DynamicResource Accent}" BorderThickness="1" BoxShadow="0 12 40 0 #80000000">
+          <StackPanel Spacing="12">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="{Binding Main.Welcome.Title}" FontFamily="{DynamicResource Font.Title}" FontSize="21" TextWrapping="Wrap" x:Name="PhoneWelcomeCardTitle" />
+              <TextBlock Grid.Column="1" Classes="secondary" Text="{Binding Main.Welcome.StepText}" VerticalAlignment="Top" Margin="10,4,0,0" />
+            </Grid>
+            <TextBlock Text="{Binding Main.Welcome.Text}" TextWrapping="Wrap" LineHeight="21" />
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+              <Button Content="{l:T Welcome.Skip}" Command="{Binding Main.Welcome.CloseCommand}" IsVisible="{Binding !Main.Welcome.IsLast}" Classes="bar" />
+              <Button Grid.Column="1" Content="{l:T Welcome.Rules}" Command="{Binding Main.Welcome.LearnRulesCommand}" IsVisible="{Binding Main.Welcome.IsLast}" HorizontalAlignment="Left" x:Name="PhoneWelcomeCardRules" />
+              <Button Grid.Column="2" Content="{l:T Welcome.Back}" Command="{Binding Main.Welcome.BackCommand}" IsVisible="{Binding !Main.Welcome.IsFirst}" MinHeight="36" />
+              <Button Grid.Column="3" Classes="accent" Command="{Binding Main.Welcome.NextCommand}" MinHeight="36" x:Name="PhoneWelcomeCardNext">
+                <Panel>
+                  <TextBlock Text="{l:T Welcome.Next}" IsVisible="{Binding !Main.Welcome.IsLast}" />
+                  <TextBlock Text="{l:T Welcome.Done}" IsVisible="{Binding Main.Welcome.IsLast}" />
+                </Panel>
+              </Button>
+            </Grid>
           </StackPanel>
         </Border>
         <!-- Your move in another OGS game: open it or dismiss. -->
