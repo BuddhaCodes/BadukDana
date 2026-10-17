@@ -163,7 +163,11 @@ Todo lo que sale del equipo es una acción explícita del usuario; los nombres d
   - [x] Escritorio: inspector de revisión (tres candidatas de KataGo, tres errores grandes, «Siguiente error» o E, puntos rojos en la gráfica) y paleta de herramientas de estudio flotando sobre el tablero.
   - [x] Android: pantalla de inicio (continuar, partida nueva, seis modos), «Inicio» en el menú y con Atrás; jugadores como dos tarjetas.
   - [x] Web: paleta y títulos nuevos, Android en la portada y la sección «Una partida, tres capítulos» (序 中 終).
-  - [ ] Pendiente del rediseño: encabezado con pestañas Jugar/Estudiar/Revisar en escritorio; lista de jugadas con gráfica a la izquierda; en Android, tarjetas de jugadores encima y debajo del tablero en partidas OGS y «Confirmar jugada» con la coordenada; en la web, tarjetas de plataforma con la detectada arriba y la variante Kaya clara; pasar los frames a Figma.
+  - [x] Escritorio: pestañas Jugar / Estudiar / Revisar (siguen al estudio y al análisis) y, en Revisar con ventana ≥ 1180 px, columna izquierda con la gráfica y la lista de jugadas coloreada por KataGo.
+  - [x] Android: en OGS, el rival arriba y tú abajo; «Confirmar L7» / «Descartar» en el lugar de la barra (sin mover el tablero); datos rápidos (probabilidad, mejor jugada) en el estudio cuando el motor está permitido.
+  - [x] Web: tu sistema primero y a lo ancho; botón noche/Kaya (recuerda la elección, si no sigue al sistema); aviso de Google Analytics con «No me cuentes» (apaga la etiqueta y borra sus cookies en ese navegador).
+  - [ ] Pasar los frames a Figma.
+  - [ ] Google Analytics: decidir si se pide consentimiento antes de cargarla (lo habitual para visitantes de la UE) en vez de solo avisar.
 
 ### Después de la 1.0
 Diseños y recomendaciones en `docs/AFTER_1_0.md` (2026-10-17); cada una espera una decisión del usuario.
