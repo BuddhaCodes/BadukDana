@@ -15,7 +15,9 @@ public sealed record BoardShot(
     BoardState Board,
     Point? LastMove = null,
     IReadOnlyList<Markup>? Markers = null,
-    IReadOnlyDictionary<Point, int>? MoveNumbers = null);
+    IReadOnlyDictionary<Point, int>? MoveNumbers = null,
+    ViewModels.BoardImpact? Impact = null,
+    double ImpactSeconds = 0);
 
 /// <summary>
 /// Draws a board off screen with the same control as the main window (the theme's goban and stones), for images,
@@ -45,6 +47,11 @@ public static class BoardPicture
             Width = pixels,
             Height = pixels,
         };
+        if (shot.Impact is { } impact)
+        {
+            control.FreezeImpact(impact, shot.ImpactSeconds);
+        }
+
         control.Measure(new Size(pixels, pixels));
         control.Arrange(new Rect(0, 0, pixels, pixels));
         var bitmap = new RenderTargetBitmap(new PixelSize(pixels, pixels), new Vector(96, 96));

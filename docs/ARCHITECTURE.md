@@ -204,5 +204,6 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 ## Creador de replays (2026-10-17)
 
 - `ReplayPlan` (pasos: portada, jugadas con duración, resaltado y sonido, resultado) → `ReplayScene` (fotograma con Avalonia fuera de pantalla) → `FfmpegVideoEncoder` (BGRA crudo por stdin a 30 fps, H.264 + AAC) o `GifEncoder` (a la mitad de tamaño) o `WebViewer.Html(..., replay)` (autoplay).
-- `ReplayAudio` mezcla los WAV propios de Hoshi (piedra, captura) en una pista. FFmpeg no se distribuye: se busca en el PATH o en `AppSettings.FfmpegPath`.
+- Momentos (`ReplayMoment`): `StudyVerdict.Criticality` (`MoveImportance.Criticality`, de `AnalysisViewModel.LineVerdicts` o de la revisión escrita) decide si una jugada buena es clave o brillante. Con efectos, `ReplayMakerViewModel.Frames` anima el momento (`ReplayScene.Render(..., effectSeconds)`: el `ImpactEffect` del tablero congelado con `GoBoardControl.FreezeImpact`, o el `MistakeShock` rojo con sacudida) y luego da la imagen quieta; las duraciones suman la del paso para que el audio no se desfase.
+- `ReplayAudio` mezcla los WAV propios de Hoshi (piedra, captura y, 60 ms después, la explosión o el golpe del momento) en una pista. FFmpeg no se distribuye: se busca en el PATH o en `AppSettings.FfmpegPath`.
 

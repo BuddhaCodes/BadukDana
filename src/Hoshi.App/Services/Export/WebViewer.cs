@@ -32,7 +32,7 @@ public static class WebViewer
     /// The page as an animated replay (the replay maker's web version): it opens on a title, then plays the steps
     /// by itself at their own pace (notes and mistakes stay longer), with play/pause; the viewer stays free to browse.
     /// </summary>
-    public static string Html(GameTree tree, GameNode? start, ShareOptions options, IReadOnlyList<(GameNode Node, TimeSpan Duration, string? Highlight)>? replay)
+    public static string Html(GameTree tree, GameNode? start, ShareOptions options, IReadOnlyList<(GameNode Node, TimeSpan Duration, string? Highlight, ReplayMoment Moment)>? replay)
     {
         ArgumentNullException.ThrowIfNull(tree);
         ArgumentNullException.ThrowIfNull(options);
@@ -122,6 +122,7 @@ public static class WebViewer
                 ["n"] = index[r.Node],
                 ["ms"] = (int)r.Duration.TotalMilliseconds,
                 ["h"] = r.Highlight,
+                ["f"] = r.Moment switch { ReplayMoment.Brilliant or ReplayMoment.Strong => "good", ReplayMoment.Mistake or ReplayMoment.Blunder => "bad", _ => null },
             }).ToArray(),
             ["nodes"] = data,
             ["labels"] = new Dictionary<string, string>
@@ -173,6 +174,14 @@ public static class WebViewer
         button[aria-current]{outline:2px solid #c0392b}
         #variations{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}#comment{white-space:pre-wrap;color:var(--fg)}
         #badge{display:inline-block;background:#c8432f;color:#fff;border-radius:6px;padding:4px 10px;margin:4px 0}
+        #badge.good{background:#e8c36a;color:#1e1a14}
+        .burst{fill:none;transform-box:fill-box;transform-origin:center;animation:burst 1.1s ease-out forwards}
+        .burst.good{stroke:#f3d995;stroke-width:12}.burst.bad{stroke:#e0503a;stroke-width:14}
+        @keyframes burst{from{opacity:1;transform:scale(.5)}to{opacity:0;transform:scale(6)}}
+        svg.fx-good{animation:glow 1.4s ease-out}svg.fx-bad{animation:jolt .5s ease-out}
+        @keyframes glow{0%{box-shadow:0 0 0 0 #e8c36a00}20%{box-shadow:0 0 48px 10px #e8c36acc}100%{box-shadow:0 2px 10px #0004}}
+        @keyframes jolt{0%,100%{transform:none}15%{transform:translate(-9px,2px)}35%{transform:translate(7px,-2px)}55%{transform:translate(-4px,1px)}75%{transform:translate(2px,0)}}
+        @media (prefers-reduced-motion:reduce){.burst,svg.fx-good,svg.fx-bad{animation:none}}
         footer{color:var(--muted);font-size:.85rem;margin-top:16px}
         """;
 
@@ -211,7 +220,9 @@ public static class WebViewer
         svg.addEventListener('click',function(e){var r=svg.getBoundingClientRect();go(e.clientX-r.left<r.width/2?-1:1)});
         var P=g.play,pi=-1,timer=null,pb=document.getElementById('play'),badge=document.getElementById('badge');
         function stop(){clearTimeout(timer);timer=null;if(P)pb.textContent='▶ '+L.play}
-        function tick(){if(pi>=P.length-1){stop();return}pi++;cur=P[pi].n;draw();badge.hidden=!P[pi].h;badge.textContent=P[pi].h||'';timer=setTimeout(tick,P[pi].ms)}
+        function fx(f){svg.classList.remove('fx-good','fx-bad');var n=N[cur];if(!f||n.m<0)return;void svg.getBoundingClientRect();svg.classList.add('fx-'+f);
+        var x=pad+(n.m%W)*c,y=pad+Math.floor(n.m/W)*c;el('circle',{cx:x,cy:y,r:30,'class':'burst '+f},stones);if(f==='bad')setTimeout(function(){if(stones.lastChild)el('circle',{cx:x,cy:y,r:30,'class':'burst bad'},stones)},160)}
+        function tick(){if(pi>=P.length-1){stop();return}pi++;cur=P[pi].n;draw();badge.hidden=!P[pi].h;badge.textContent=P[pi].h||'';badge.className=P[pi].f==='good'?'good':'';fx(P[pi].f);timer=setTimeout(tick,P[pi].ms)}
         if(P&&P.length){pb.hidden=false;pb.onclick=function(){if(timer)stop();else{if(pi>=P.length-1)pi=-1;pb.textContent='❚❚ '+L.pause;tick()}};
         ['prev','next','first','last'].forEach(function(id){document.getElementById(id).addEventListener('click',stop)});
         cur=P[0].n;pi=0;draw();pb.textContent='❚❚ '+L.pause;timer=setTimeout(tick,P[0].ms)}

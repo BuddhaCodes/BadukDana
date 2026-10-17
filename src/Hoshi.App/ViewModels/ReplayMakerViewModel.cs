@@ -59,6 +59,10 @@ public sealed partial class ReplayMakerViewModel : ViewModelBase
     [ObservableProperty]
     private bool _sounds = true;
 
+    /// <summary>The critical moves move: the app's impact for strong ones, a red shock for mistakes.</summary>
+    [ObservableProperty]
+    private bool _effects = true;
+
     [ObservableProperty]
     private int _previewIndex;
 
@@ -136,6 +140,7 @@ public sealed partial class ReplayMakerViewModel : ViewModelBase
         Notes = Notes,
         Highlights = Highlights,
         Sounds = Sounds,
+        Effects = Effects,
         Coordinates = _coordinates(),
         Share = _share(),
     };
@@ -205,6 +210,22 @@ public sealed partial class ReplayMakerViewModel : ViewModelBase
 
     partial void OnSoundsChanged(bool value) => Rebuild();
 
+    partial void OnEffectsChanged(bool value) => Rebuild();
+
+    /// <summary>The step shown is a big moment with an effect.</summary>
+    public bool PreviewHasEffect => Effects && _steps.Count > 0 && _steps[Math.Clamp(PreviewIndex, 0, LastStep)].EffectSeconds > 0;
+
+    /// <summary>The big moments of the replay (good and bad), for the summary under the preview.</summary>
+    public int MomentCount => _steps.Count(s => s.Moment != ReplayMoment.None && s.Kind == ReplayStepKind.Move);
+
+    /// <summary>How many big moments were found, or what is needed to find them.</summary>
+    public string MomentsText => MomentCount > 0
+        ? Tr.F("Replay.Moments", _steps.Count(s => s.IsGood && s.Kind == ReplayStepKind.Move), _steps.Count(s => s.Moment is ReplayMoment.Mistake or ReplayMoment.Blunder && s.Kind == ReplayStepKind.Move))
+        : Tr.T("Replay.EffectsHint");
+
+    /// <summary>Frames per second of a moment's effect: the video's rate, slower for GIFs (size).</summary>
+    public const double GifEffectFps = 12.5;
+
     partial void OnPreviewIndexChanged(int value) => RenderPreview();
 
     private bool _resetting;
@@ -220,6 +241,8 @@ public sealed partial class ReplayMakerViewModel : ViewModelBase
         OnPropertyChanged(nameof(Steps));
         OnPropertyChanged(nameof(LastStep));
         OnPropertyChanged(nameof(LengthText));
+        OnPropertyChanged(nameof(MomentCount));
+        OnPropertyChanged(nameof(MomentsText));
         if (PreviewIndex > LastStep)
         {
             PreviewIndex = LastStep;
@@ -238,7 +261,11 @@ public sealed partial class ReplayMakerViewModel : ViewModelBase
             return;
         }
 
-        Preview = ReplayScene.Render(_steps[Math.Clamp(PreviewIndex, 0, LastStep)], Players(), SelectedFormat.Format, _coordinates(), small: true);
+        // A big moment is previewed at the height of its effect.
+        ReplayStep step = _steps[Math.Clamp(PreviewIndex, 0, LastStep)];
+        double? peak = Effects && step.EffectSeconds > 0 ? (step.IsGood ? 0.28 : 0.12) : null;
+        Preview = ReplayScene.Render(step, Players(), SelectedFormat.Format, _coordinates(), small: true, effectSeconds: peak);
+        OnPropertyChanged(nameof(PreviewHasEffect));
     }
 
     private ReplayPlayers Players()
@@ -264,10 +291,12 @@ public sealed partial class ReplayMakerViewModel : ViewModelBase
     {
         PixelSizeInfo size = SizeOf(small: true);
         var frames = new List<GifFrame>();
+        TimeSpan total = ReplayPlan.Length(_steps), done = TimeSpan.Zero;
         await foreach ((byte[] bgra, TimeSpan duration) in Frames(small: true, ct))
         {
             frames.Add(new GifFrame(bgra, duration));
-            progress.Report(0.8 * frames.Count / _steps.Count);
+            done += duration;
+            progress.Report(0.8 * done.TotalSeconds / Math.Max(0.001, total.TotalSeconds));
         }
 
         byte[] gif = await Task.Run(() => GifEncoder.Encode(size.Width, size.Height, frames), ct);
@@ -277,7 +306,7 @@ public sealed partial class ReplayMakerViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanExport))]
     private Task ExportWeb() => Export(ExportFileType.Html, async (path, ct, _) =>
     {
-        var play = _steps.Where(s => s.Node is not null).Select(s => (s.Node!, s.Duration, s.Highlight)).ToList();
+        var play = _steps.Where(s => s.Node is not null).Select(s => (s.Node!, s.Duration, s.Highlight, Effects ? s.Moment : ReplayMoment.None)).ToList();
         string html = WebViewer.Html(_game.Tree, _game.CurrentNode, _share(), play);
         await File.WriteAllTextAsync(path, html, new System.Text.UTF8Encoding(false), ct);
     });
@@ -285,17 +314,36 @@ public sealed partial class ReplayMakerViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(IsBusy))]
     private void Cancel() => _work?.Cancel();
 
-    /// <summary>The frames of the replay in order, rendered on the UI thread one at a time.</summary>
+    /// <summary>
+    /// The frames of the replay in order, rendered on the UI thread one at a time. A big moment with effects is
+    /// animated (30 frames a second for the video, 12.5 for a GIF) and then held still for the rest of its time; the
+    /// durations add up to the step's, so the sound stays in step.
+    /// </summary>
     public async IAsyncEnumerable<(byte[] Bgra, TimeSpan Duration)> Frames(bool small, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ReplayPlayers players = Players();
         bool coordinates = _coordinates();
+        double fps = small ? GifEffectFps : FfmpegVideoEncoder.FramesPerSecond;
         foreach (ReplayStep step in _steps)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            byte[] bgra = BoardPicture.Bgra(ReplayScene.Render(step, players, SelectedFormat.Format, coordinates, small));
-            yield return (bgra, step.Duration);
-            await Task.Yield();
+            int animated = Effects ? (int)Math.Floor(step.EffectSeconds * fps) : 0;
+            TimeSpan frame = TimeSpan.FromSeconds(1 / fps);
+            for (int i = 0; i < animated; i++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                byte[] moving = BoardPicture.Bgra(ReplayScene.Render(step, players, SelectedFormat.Format, coordinates, small, effectSeconds: i / fps));
+                yield return (moving, frame);
+                await Task.Yield();
+            }
+
+            TimeSpan rest = step.Duration - (frame * animated);
+            if (rest > TimeSpan.Zero || animated == 0)
+            {
+                byte[] bgra = BoardPicture.Bgra(ReplayScene.Render(step, players, SelectedFormat.Format, coordinates, small));
+                yield return (bgra, animated == 0 ? step.Duration : rest);
+                await Task.Yield();
+            }
         }
     }
 
@@ -310,7 +358,12 @@ public sealed partial class ReplayMakerViewModel : ViewModelBase
     private static Dictionary<ReplaySound, PcmClip> LoadClips()
     {
         var clips = new Dictionary<ReplaySound, PcmClip>();
-        foreach ((ReplaySound sound, string name) in new[] { (ReplaySound.Stone, "stone_1"), (ReplaySound.Capture, "capture_small") })
+        foreach ((ReplaySound sound, string name) in new[]
+        {
+            (ReplaySound.Stone, "stone_1"), (ReplaySound.Capture, "capture_small"),
+            (ReplaySound.Strong, "explosion_medium"), (ReplaySound.Brilliant, "explosion_big"),
+            (ReplaySound.Mistake, "impact_small"), (ReplaySound.Blunder, "capture_big"),
+        })
         {
             try
             {

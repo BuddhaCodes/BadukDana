@@ -899,6 +899,17 @@ public sealed partial class GoBoardControl : Control
     /// <summary>Freezes the capture animation at this many seconds (tests).</summary>
     internal double? CaptureTime { get; set; }
 
+    /// <summary>
+    /// Draws <paramref name="impact"/> as it is <paramref name="seconds"/> after the move, without a timer: the replay
+    /// maker renders the effect frame by frame off screen.
+    /// </summary>
+    internal void FreezeImpact(ViewModels.BoardImpact impact, double seconds)
+    {
+        _impact = impact.Strength > 0 ? new ImpactEffect(impact.Point, impact.Strength, impact.Id) : null;
+        ImpactTime = seconds;
+        InvalidateVisual();
+    }
+
     private void StartImpact(ViewModels.BoardImpact impact)
     {
         if (!Animate || impact.Strength <= 0 || Effects == Services.EffectsLevel.Off)

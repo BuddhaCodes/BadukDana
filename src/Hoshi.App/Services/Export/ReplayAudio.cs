@@ -68,6 +68,9 @@ public sealed record PcmClip(short[] Samples)
 /// <summary>The replay's sound track: each step's sound placed at the time its picture appears.</summary>
 public static class ReplayAudio
 {
+    /// <summary>How long after the stone a big moment's impact sounds.</summary>
+    public static readonly TimeSpan AccentDelay = TimeSpan.FromMilliseconds(60);
+
     /// <summary>A WAV file (16-bit stereo, 44.1 kHz) as long as the replay.</summary>
     public static byte[] Track(IReadOnlyList<ReplayStep> steps, IReadOnlyDictionary<ReplaySound, PcmClip> clips, double volume = 0.8)
     {
@@ -76,16 +79,24 @@ public static class ReplayAudio
         long frames = (long)Math.Ceiling(ReplayPlan.Length(steps).TotalSeconds * PcmClip.Rate);
         var mix = new int[frames * PcmClip.Channels];
         TimeSpan at = TimeSpan.Zero;
+        void Mix(ReplaySound sound, TimeSpan when)
+        {
+            if (sound == ReplaySound.None || !clips.TryGetValue(sound, out PcmClip? clip))
+            {
+                return;
+            }
+
+            long start = (long)(when.TotalSeconds * PcmClip.Rate) * PcmClip.Channels;
+            for (int i = 0; i < clip.Samples.Length && start + i < mix.Length; i++)
+            {
+                mix[start + i] += (int)(clip.Samples[i] * volume);
+            }
+        }
+
         foreach (ReplayStep step in steps)
         {
-            if (clips.TryGetValue(step.Sound, out PcmClip? clip))
-            {
-                long start = (long)(at.TotalSeconds * PcmClip.Rate) * PcmClip.Channels;
-                for (int i = 0; i < clip.Samples.Length && start + i < mix.Length; i++)
-                {
-                    mix[start + i] += (int)(clip.Samples[i] * volume);
-                }
-            }
+            Mix(step.Sound, at);
+            Mix(step.Accent, at + AccentDelay); // a big moment's impact, just after the stone
 
             at += step.Duration;
         }
