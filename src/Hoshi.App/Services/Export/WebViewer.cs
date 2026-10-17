@@ -26,7 +26,13 @@ public sealed record ShareOptions(bool HideNames = false, bool ShowBrand = true)
 /// </summary>
 public static class WebViewer
 {
-    public static string Html(GameTree tree, GameNode? start, ShareOptions options)
+    public static string Html(GameTree tree, GameNode? start, ShareOptions options) => Html(tree, start, options, null);
+
+    /// <summary>
+    /// The page as an animated replay (the replay maker's web version): it opens on a title, then plays the steps
+    /// by itself at their own pace (notes and mistakes stay longer), with play/pause; the viewer stays free to browse.
+    /// </summary>
+    public static string Html(GameTree tree, GameNode? start, ShareOptions options, IReadOnlyList<(GameNode Node, TimeSpan Duration, string? Highlight)>? replay)
     {
         ArgumentNullException.ThrowIfNull(tree);
         ArgumentNullException.ThrowIfNull(options);
@@ -106,11 +112,17 @@ public static class WebViewer
         }
 
         var json = new JsonSerializerOptions { Encoder = JavaScriptEncoder.Default };
-        string game = JsonSerializer.Serialize(new Dictionary<string, object>
+        string game = JsonSerializer.Serialize(new Dictionary<string, object?>
         {
             ["w"] = tree.Info.Width,
             ["h"] = tree.Info.Height,
             ["start"] = start is not null && index.TryGetValue(start, out int s) ? s : 0,
+            ["play"] = replay is null ? null : replay.Where(r => index.ContainsKey(r.Node)).Select(r => new Dictionary<string, object?>
+            {
+                ["n"] = index[r.Node],
+                ["ms"] = (int)r.Duration.TotalMilliseconds,
+                ["h"] = r.Highlight,
+            }).ToArray(),
             ["nodes"] = data,
             ["labels"] = new Dictionary<string, string>
             {
@@ -120,6 +132,8 @@ public static class WebViewer
                 ["black"] = black,
                 ["white"] = white,
                 ["cols"] = Point.HumanColumns,
+                ["play"] = Tr.T("Viewer.Play"),
+                ["pause"] = Tr.T("Viewer.Pause"),
             },
         }, json);
 
@@ -133,7 +147,7 @@ public static class WebViewer
             .Append("<button id=\"first\" aria-label=\"").Append(E(Tr.T("Viewer.First"))).Append("\">⏮</button>")
             .Append("<button id=\"prev\" aria-label=\"").Append(E(Tr.T("Viewer.Previous"))).Append("\">◀</button>")
             .Append("<button id=\"next\" aria-label=\"").Append(E(Tr.T("Viewer.Next"))).Append("\">▶</button>")
-            .Append("<button id=\"last\" aria-label=\"").Append(E(Tr.T("Viewer.Last"))).Append("\">⏭</button></nav>")
+            .Append("<button id=\"last\" aria-label=\"").Append(E(Tr.T("Viewer.Last"))).Append("\">⏭</button><button id=\"play\" hidden></button></nav><p id=\"badge\" hidden></p>")
             .Append("<div id=\"variations\"></div><div id=\"comment\"></div></aside></div>");
         if (options.ShowBrand)
         {
@@ -158,6 +172,7 @@ public static class WebViewer
         nav{display:flex;gap:8px;margin:8px 0}button{font:inherit;padding:6px 14px;border-radius:6px;border:1px solid #8884;background:var(--bg);color:var(--fg);cursor:pointer}
         button[aria-current]{outline:2px solid #c0392b}
         #variations{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}#comment{white-space:pre-wrap;color:var(--fg)}
+        #badge{display:inline-block;background:#c8432f;color:#fff;border-radius:6px;padding:4px 10px;margin:4px 0}
         footer{color:var(--muted);font-size:.85rem;margin-top:16px}
         """;
 
@@ -194,6 +209,12 @@ public static class WebViewer
         document.getElementById('last').onclick=function(){while(N[cur].k.length)cur=N[cur].k[0];draw()};
         document.addEventListener('keydown',function(e){if(e.key==='ArrowLeft')go(-1);else if(e.key==='ArrowRight')go(1)});
         svg.addEventListener('click',function(e){var r=svg.getBoundingClientRect();go(e.clientX-r.left<r.width/2?-1:1)});
-        draw()})();
+        var P=g.play,pi=-1,timer=null,pb=document.getElementById('play'),badge=document.getElementById('badge');
+        function stop(){clearTimeout(timer);timer=null;if(P)pb.textContent='▶ '+L.play}
+        function tick(){if(pi>=P.length-1){stop();return}pi++;cur=P[pi].n;draw();badge.hidden=!P[pi].h;badge.textContent=P[pi].h||'';timer=setTimeout(tick,P[pi].ms)}
+        if(P&&P.length){pb.hidden=false;pb.onclick=function(){if(timer)stop();else{if(pi>=P.length-1)pi=-1;pb.textContent='❚❚ '+L.pause;tick()}};
+        ['prev','next','first','last'].forEach(function(id){document.getElementById(id).addEventListener('click',stop)});
+        cur=P[0].n;pi=0;draw();pb.textContent='❚❚ '+L.pause;timer=setTimeout(tick,P[0].ms)}
+        else draw()})();
         """;
 }

@@ -38,6 +38,7 @@
     <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding Game.SaveAsCommand}" />
     <KeyBinding Gesture="Ctrl+Shift+C" Command="{Binding Share.CopySgfCommand}" />
     <KeyBinding Gesture="Ctrl+Space" Command="{Binding TogglePauseGameCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+R" Command="{Binding OpenReplayMakerCommand}" />
     <KeyBinding Gesture="Ctrl+Shift+V" Command="{Binding Share.PasteSgfCommand}" />
     <KeyBinding Gesture="Ctrl+E" Command="{Binding Game.ToggleEditModeCommand}" />
     <KeyBinding Gesture="Ctrl+I" Command="{Binding Game.EditGameInfoCommand}" />
@@ -247,6 +248,8 @@
                 <MenuItem Header="{l:T Main.Save}" Command="{Binding Game.SaveCommand}" InputGesture="Ctrl+S" />
                 <MenuItem Header="{l:T Main.SaveAs}" Command="{Binding Game.SaveAsCommand}" InputGesture="Ctrl+Shift+S" />
                 <MenuItem Header="{l:T Share.Menu}" x:Name="ShareMenu">
+                  <MenuItem Header="{l:T Replay.Menu}" Command="{Binding OpenReplayMakerCommand}" InputGesture="Ctrl+Shift+R" x:Name="ReplayMakerItem" />
+                  <Separator />
                   <MenuItem Header="{l:T Share.Image}" Command="{Binding Share.ExportImageCommand}" />
                   <MenuItem Header="{l:T Share.Animation}" Command="{Binding Share.ExportAnimationCommand}" ToolTip.Tip="{l:T Share.AnimationTip}" />
                   <MenuItem Header="{l:T Share.Card}" ToolTip.Tip="{l:T Share.CardTip}">

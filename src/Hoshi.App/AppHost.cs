@@ -102,6 +102,7 @@ public static class AppHost
         services.AddSingleton(sp => new TsumegoViewModel(
             sp.GetRequiredService<Services.Tsumego.TsumegoLibrary>(), sp.GetRequiredService<IFileDialogService>(), sp.GetRequiredService<GameViewModel>()));
         services.AddSingleton<ITsumegoWindowService, TsumegoWindowService>();
+        services.AddSingleton<IReplayMakerWindowService, ReplayMakerWindowService>();
         services.AddSingleton<WelcomeViewModel>();
         services.AddSingleton(sp => new Services.Presence.DiscordPresence(settings: sp.GetService<ISettingsService>(), logger: sp.GetService<ILogger<Services.Presence.DiscordPresence>>()));
         services.AddSingleton(_ => new Services.Summary.ReviewLog(AppPaths.DataDirectory));

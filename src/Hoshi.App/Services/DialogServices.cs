@@ -258,4 +258,5 @@ public sealed record ExportFileType(string Extension, string Mime, string NameKe
     public static readonly ExportFileType Gif = new("gif", "image/gif", "Share.TypeGif");
     public static readonly ExportFileType Html = new("html", "text/html", "Dialog.WebPage");
     public static readonly ExportFileType Text = new("txt", "text/plain", "Share.TypeText");
+    public static readonly ExportFileType Mp4 = new("mp4", "video/mp4", "Share.TypeMp4");
 }

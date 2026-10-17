@@ -199,6 +199,12 @@
               <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding AnalysisVisitsBox}" x:Name="VisitsBox" Minimum="10" Maximum="100000" Increment="50"
                              FormatString="0" HorizontalAlignment="Left" Width="160" Margin="0,3" />
             </Grid>
+            <!-- Optional: FFmpeg for the replay maker's MP4 videos. -->
+            <TextBlock Classes="label" Text="{l:T Prefs.Ffmpeg}" Margin="0,6,0,0" IsVisible="{Binding IsDesktop}" />
+            <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding IsDesktop}">
+              <TextBox Text="{Binding FfmpegPath}" Watermark="ffmpeg" x:Name="FfmpegBox" />
+              <Button Grid.Column="1" Margin="8,0,0,0" Content="{l:T Prefs.Browse}" Command="{Binding BrowseFfmpegCommand}" />
+            </Grid>
             <!-- Optional: KataGo's human-style model adds "KataGo (human style)" with a rank, to play a rival of your level. -->
             <TextBlock Classes="label" Text="{l:T Prefs.HumanModel}" Margin="0,6,0,0" IsVisible="{Binding IsDesktop}" />
             <TextBlock Classes="secondary" Text="{l:T Prefs.HumanModelHint}" TextWrapping="Wrap" IsVisible="{Binding IsDesktop}" />
