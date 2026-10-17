@@ -16,7 +16,14 @@ public partial class PhoneView : UserControl
         InitializeComponent();
 
         // Choosing something in the menu closes it.
-        PhoneMenuSheet.AddHandler(Button.ClickEvent, (_, _) => (DataContext as PhoneShellViewModel)?.CloseMenu(), RoutingStrategies.Bubble);
+        PhoneMenuSheet.AddHandler(Button.ClickEvent, (_, e) =>
+        {
+            // A tap on an item closes the menu; folding a group (the Share expander) does not.
+            if (e.Source is not Avalonia.Controls.Primitives.ToggleButton)
+            {
+                (DataContext as PhoneShellViewModel)?.CloseMenu();
+            }
+        }, RoutingStrategies.Bubble);
 
         // View-only gestures; what they do is up to the view model.
         // The interface size scales the content: the layout works in the scaled size.

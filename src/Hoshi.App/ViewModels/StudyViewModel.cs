@@ -18,6 +18,19 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Hoshi.App.ViewModels;
 
+/// <summary>The parts of the study panel; phones show one at a time (desktops show them all).</summary>
+public enum StudySection
+{
+    /// <summary>This move's notes and replies, and a new note.</summary>
+    Move,
+
+    /// <summary>Drawing tools and colours.</summary>
+    Draw,
+
+    /// <summary>The notes along the game, saving, the report and the quiz.</summary>
+    Game,
+}
+
 /// <summary>What a click (or a drag) on the board does while the study panel is open.</summary>
 public enum StudyTool
 {
@@ -350,6 +363,56 @@ public sealed partial class StudyViewModel : ViewModelBase
     }
 
     partial void OnFilterChanged(StudyCategoryOption value) => RebuildTimeline();
+
+    /// <summary>The part shown on a phone.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowMoveSection), nameof(ShowDrawSection), nameof(ShowGameSection), nameof(IsMoveSection), nameof(IsDrawSection), nameof(IsGameSection))]
+    private StudySection _section = StudySection.Move;
+
+    /// <summary>Phones show the panel one part at a time, picked from tabs at the top.</summary>
+    public bool IsSectioned => PlatformInfo.IsPhone;
+
+    public bool ShowMoveSection => !IsSectioned || Section == StudySection.Move;
+
+    public bool ShowDrawSection => !IsSectioned || Section == StudySection.Draw;
+
+    public bool ShowGameSection => !IsSectioned || Section == StudySection.Game;
+
+    public bool IsMoveSection
+    {
+        get => Section == StudySection.Move;
+        set
+        {
+            if (value)
+            {
+                Section = StudySection.Move;
+            }
+        }
+    }
+
+    public bool IsDrawSection
+    {
+        get => Section == StudySection.Draw;
+        set
+        {
+            if (value)
+            {
+                Section = StudySection.Draw;
+            }
+        }
+    }
+
+    public bool IsGameSection
+    {
+        get => Section == StudySection.Game;
+        set
+        {
+            if (value)
+            {
+                Section = StudySection.Game;
+            }
+        }
+    }
 
     partial void OnIsActiveChanged(bool value)
     {

@@ -81,6 +81,10 @@ public static partial class Tr
         Add(d, "Joseki.BlockedOnline", "The trainer is closed while you are playing a game on OGS, to keep your games fair.", "El entrenador está cerrado mientras juegas una partida en OGS, para que tus partidas sean limpias.");
         Add(d, "Main.JosekiHints", "Joseki", "Joseki");
         Add(d, "Main.JosekiTip", "Show known joseki continuations in each corner (J): green ideal, olive good, yellow trick, blue open question, red mistake, violet from your library. Off during your OGS games.", "Muestra las continuaciones de joseki conocidas en cada esquina (J): verde ideal, oliva buena, amarillo truco, azul dudosa, rojo error, violeta de tu biblioteca. Apagado durante tus partidas en OGS.");
+        Add(d, "Joseki.BackToGameShort", "Back to the game", "Volver a la partida");
+        Add(d, "Joseki.StepBack", "← Move back", "← Atrás una jugada");
+        Add(d, "Joseki.StepBackTip", "Takes back the last stone of the line (← or Backspace); mistakes still count.", "Quita la última piedra de la línea (← o Retroceso); los errores siguen contando.");
+        Add(d, "Joseki.SteppedBack", "One move back: play it again.", "Una jugada atrás: vuelve a jugarla.");
         Add(d, "Joseki.BackToGame", "Back to the game (Esc)", "Volver a la partida (Esc)");
         Add(d, "Joseki.Fetch", "New line from OGS", "Nueva línea de OGS");
         Add(d, "Joseki.FetchTip", "Builds a new line from the OGS Joseki Explorer (ideal and good moves only) in the chosen family, and keeps it in your library.", "Crea una línea nueva con el Joseki Explorer de OGS (solo jugadas ideales y buenas) de la familia elegida, y la guarda en tu biblioteca.");
@@ -199,7 +203,7 @@ public static partial class Tr
         Add(d, "Main.Circle", "Circle", "Círculo");
         Add(d, "Main.Comment", "Comment", "Comentario");
         Add(d, "Main.Cross", "Cross", "Cruz");
-        Add(d, "Main.DeleteNode", "Delete node and variations", "Borrar nodo y variantes");
+        Add(d, "Main.DeleteNode", "Delete this move and what follows", "Borrar esta jugada y lo que sigue");
         Add(d, "Main.EditMode", "Edit mode", "Modo edición");
         Add(d, "Main.FinishEditing", "Finish editing", "Terminar edición");
         Add(d, "Main.First", "First (Home)", "Inicio (Home)");
@@ -221,7 +225,7 @@ public static partial class Tr
         Add(d, "Main.PlayOnline", "Play online…", "Jugar en línea…");
         Add(d, "Main.Preferences", "Preferences…", "Preferencias…");
         Add(d, "Main.Previous", "Previous (←)", "Anterior (←)");
-        Add(d, "Main.PromoteVariation", "Make main line", "Hacer línea principal");
+        Add(d, "Main.PromoteVariation", "Make this variation the main line", "Convertir esta variante en la línea principal");
         Add(d, "Main.RequestUndo", "Request undo", "Pedir deshacer");
         Add(d, "Main.Resign", "Resign", "Abandonar");
         Add(d, "Main.ResumeGame", "Resume game", "Reanudar partida");

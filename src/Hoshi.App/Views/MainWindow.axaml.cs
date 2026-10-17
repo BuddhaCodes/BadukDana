@@ -13,6 +13,37 @@ public partial class MainWindow : Window
         InitializeComponent();
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
         AddHandler(DragDrop.DropEvent, OnDrop);
+        if (this.FindControl<Border>("BottomBar") is { } bar)
+        {
+            bar.SizeChanged += (_, e) => ApplyBarWidth(bar, e.NewSize.Width);
+        }
+    }
+
+    /// <summary>Below this width the bar keeps icons only; below <see cref="NarrowBarWidth"/> some move to "⋯".</summary>
+    public const double CompactBarWidth = 1000;
+
+    public const double NarrowBarWidth = 720;
+
+    // Layout only: the bar's buttons fit the window (labels, then names and the less used buttons, go first).
+    private void ApplyBarWidth(Border bar, double width)
+    {
+        bool compact = width < CompactBarWidth, narrow = width < NarrowBarWidth;
+        bar.Classes.Set("compact", compact);
+        bar.Classes.Set("narrow", narrow);
+        if (this.FindControl<Control>("OptionalBarButtons") is { } optional)
+        {
+            optional.IsVisible = !narrow;
+        }
+
+        if (this.FindControl<Control>("OnlineButtonHost") is { } online)
+        {
+            online.IsVisible = !narrow;
+        }
+
+        if (this.FindControl<Control>("MoreButton") is { } more)
+        {
+            more.IsVisible = narrow;
+        }
     }
 
     public MainWindow(MainWindowViewModel viewModel)

@@ -191,6 +191,24 @@ public sealed class JosekiTrainerOgsTests : IDisposable
         vm.IsActive.Should().BeFalse();
     }
 
+    [Fact]
+    public void The_trainer_steps_back_a_move()
+    {
+        var library = new JosekiLibrary(dataDirectory: _dir, includeStarter: false);
+        library.AddLine([new(Stone.Black, H("R16")), new(Stone.White, H("Q17")), new(Stone.Black, H("R17"))], 19, "Line");
+        var vm = new JosekiTrainerViewModel(library, random: new Random(2));
+        vm.Open();
+        Point first = vm.Drill!.Expected!.Value;
+        vm.PlayCommand.Execute(first);
+        vm.Drill.Position.Should().Be(1);
+
+        vm.BackCommand.Execute(null);
+        vm.Drill.Position.Should().Be(0);
+        vm.Board[first].Should().Be(Stone.Empty);
+        vm.BackCommand.Execute(null);
+        vm.Drill.Position.Should().Be(0, "nothing before the first move");
+    }
+
     private static Point H(string human) => Point.FromHuman(human, 19);
 }
 

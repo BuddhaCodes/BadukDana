@@ -14,6 +14,21 @@
                 <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="14" />
               </Button>
             </Grid>
+            <!-- Phones: one part at a time (this move · draw · the whole game), nothing is lost, only grouped. -->
+            <Border DockPanel.Dock="Top" IsVisible="{Binding Study.IsSectioned}" Margin="10,2,10,4" Padding="3" CornerRadius="10"
+                    Background="{DynamicResource Bg.PanelAlt}" x:Name="StudySections">
+              <UniformGrid Columns="3">
+                <RadioButton Classes="segment" GroupName="study-section" IsChecked="{Binding Study.IsMoveSection}" x:Name="StudySectionMove">
+                  <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center"><c:HoshiIcon Icon="{DynamicResource Icon.Pin}" Size="14" /><TextBlock Text="{l:T Study.SectionMove}" /></StackPanel>
+                </RadioButton>
+                <RadioButton Classes="segment" GroupName="study-section" IsChecked="{Binding Study.IsDrawSection}" x:Name="StudySectionDraw">
+                  <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center"><c:HoshiIcon Icon="{DynamicResource Icon.Arrow}" Size="14" /><TextBlock Text="{l:T Study.SectionDraw}" /></StackPanel>
+                </RadioButton>
+                <RadioButton Classes="segment" GroupName="study-section" IsChecked="{Binding Study.IsGameSection}" x:Name="StudySectionGame">
+                  <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center"><c:HoshiIcon Icon="{DynamicResource Icon.Report}" Size="14" /><TextBlock Text="{l:T Study.SectionGame}" /></StackPanel>
+                </RadioButton>
+              </UniformGrid>
+            </Border>
             <!-- Tap and confirm: drawings made on the board wait, faded, until they are saved or discarded. -->
             <Border DockPanel.Dock="Top" IsVisible="{Binding Study.HasPendingEdit}" x:Name="StudyPending"
                     Margin="10,4,10,4" Padding="12,6,6,6" CornerRadius="10"
@@ -66,6 +81,7 @@
                   <TextBlock Classes="secondary" FontSize="11.5" TextWrapping="Wrap" Text="{l:T Study.OnlineNote}" IsVisible="{Binding Study.IsLiveOnline}" x:Name="StudyOnlineNote" />
 
                   <!-- Tools and colours. -->
+                  <StackPanel Spacing="8" IsVisible="{Binding Study.ShowDrawSection}" x:Name="StudyDrawSection">
                   <WrapPanel Orientation="Horizontal" x:Name="StudyTools">
                     <RadioButton Classes="tool" GroupName="study-tool" ToolTip.Tip="{l:T Study.Tool.Note}"
                                  IsChecked="{Binding Study.Tool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:StudyTool.Note}}"
@@ -107,9 +123,11 @@
                     </StackPanel>
                   </Grid>
                   <TextBlock Classes="secondary" FontSize="11.5" TextWrapping="Wrap" Text="{Binding Study.ToolHint}" x:Name="StudyToolHint" />
+                  </StackPanel>
 
                   <!-- The pins along the game. -->
-                  <Border Height="1" Background="{DynamicResource Border.Subtle}" Margin="0,2" />
+                  <StackPanel Spacing="8" IsVisible="{Binding Study.ShowGameSection}" x:Name="StudyTimelineSection">
+                  <Border Height="1" Background="{DynamicResource Border.Subtle}" Margin="0,2" IsVisible="{Binding !Study.IsSectioned}" />
                   <Grid ColumnDefinitions="*,Auto">
                     <TextBlock Classes="secondary" FontSize="12" FontWeight="SemiBold" Text="{l:T Study.Timeline}" VerticalAlignment="Center" />
                     <ComboBox Grid.Column="1" ItemsSource="{Binding Study.Filters}" SelectedItem="{Binding Study.Filter}" FontSize="12" MinHeight="26" Padding="8,2" x:Name="StudyFilter">
@@ -135,9 +153,11 @@
                     </Button>
                   </Grid>
                   <TextBlock Classes="secondary" FontSize="11.5" Text="{Binding Study.TimelineText}" HorizontalAlignment="Center" x:Name="StudyTimelineText" />
+                  </StackPanel>
 
                   <!-- This move: its pins, replies and a new pin. -->
-                  <Border Height="1" Background="{DynamicResource Border.Subtle}" Margin="0,2" />
+                  <StackPanel Spacing="8" IsVisible="{Binding Study.ShowMoveSection}" x:Name="StudyMoveSection">
+                  <Border Height="1" Background="{DynamicResource Border.Subtle}" Margin="0,2" IsVisible="{Binding !Study.IsSectioned}" />
                   <TextBlock Text="{Binding Study.MoveTitle}" FontWeight="SemiBold" x:Name="StudyMoveTitle" />
                   <TextBlock Classes="secondary" FontSize="12" Text="{l:T Study.NoPins}" IsVisible="{Binding !Study.HasPins}" />
                   <ItemsControl ItemsSource="{Binding Study.Pins}" x:Name="StudyPins">
@@ -195,7 +215,10 @@
                     <StackPanel Orientation="Horizontal" Spacing="6"><c:HoshiIcon Icon="{DynamicResource Icon.Pin}" Size="14" /><TextBlock Text="{l:T Study.AddPin}" /></StackPanel>
                   </Button>
 
+                  </StackPanel>
+
                   <!-- Share, quiz and report. -->
+                  <StackPanel Spacing="8" IsVisible="{Binding Study.ShowGameSection}" x:Name="StudyGameSection">
                   <Border Height="1" Background="{DynamicResource Border.Subtle}" Margin="0,2" />
                   <Grid ColumnDefinitions="Auto,*" ToolTip.Tip="{l:T Study.SignAsTip}">
                     <TextBlock Classes="secondary" FontSize="12" Text="{l:T Study.SignAs}" VerticalAlignment="Center" Margin="0,0,8,0" />
@@ -218,6 +241,7 @@
                       <StackPanel Orientation="Horizontal" Spacing="6"><c:HoshiIcon Icon="{DynamicResource Icon.Quiz}" Size="14" /><TextBlock Text="{l:T Study.Quiz}" FontSize="12" /></StackPanel>
                     </Button>
                   </WrapPanel>
+                  </StackPanel>
                 </StackPanel>
               </StackPanel>
             </ScrollViewer>

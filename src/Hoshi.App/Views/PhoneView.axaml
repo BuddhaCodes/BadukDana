@@ -162,33 +162,66 @@
           <Border IsVisible="{Binding IsChat}" x:Name="PhoneChatSheet">
             <v:ChatView DataContext="{Binding Main}" />
           </Border>
+          <!-- The phone menu, in groups: new game, play, study, this game, share (folded), settings. -->
           <ScrollViewer IsVisible="{Binding IsMenu}" x:Name="PhoneMenuSheet">
-            <StackPanel Margin="0,6">
-              <Button Classes="menu-item" Command="{Binding Main.Game.NewGameCommand}" x:Name="MenuNew19">
-                <Button.CommandParameter><sys:Int32>19</sys:Int32></Button.CommandParameter>
-                <TextBlock Text="{l:T Main.New19}" />
-              </Button>
-              <Button Classes="menu-item" Command="{Binding Main.Game.NewGameCommand}">
-                <Button.CommandParameter><sys:Int32>13</sys:Int32></Button.CommandParameter>
-                <TextBlock Text="{l:T Main.New13}" />
-              </Button>
-              <Button Classes="menu-item" Command="{Binding Main.Game.NewGameCommand}">
-                <Button.CommandParameter><sys:Int32>9</sys:Int32></Button.CommandParameter>
-                <TextBlock Text="{l:T Main.New9}" />
-              </Button>
+            <StackPanel Margin="0,4,0,8">
+              <TextBlock Classes="menu-section" Text="{l:T Menu.NewGame}" />
+              <UniformGrid Columns="3" Margin="12,0,12,6">
+                <UniformGrid.Styles><Style Selector="Button"><Setter Property="Margin" Value="3" /><Setter Property="MinHeight" Value="44" /><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="HorizontalContentAlignment" Value="Center" /></Style></UniformGrid.Styles>
+                <Button Command="{Binding Main.Game.NewGameCommand}" x:Name="MenuNew19"><Button.CommandParameter><sys:Int32>19</sys:Int32></Button.CommandParameter><TextBlock Text="19×19" /></Button>
+                <Button Command="{Binding Main.Game.NewGameCommand}"><Button.CommandParameter><sys:Int32>13</sys:Int32></Button.CommandParameter><TextBlock Text="13×13" /></Button>
+                <Button Command="{Binding Main.Game.NewGameCommand}"><Button.CommandParameter><sys:Int32>9</sys:Int32></Button.CommandParameter><TextBlock Text="9×9" /></Button>
+              </UniformGrid>
               <Button Classes="menu-item" Command="{Binding Main.PlayEngineCommand}" x:Name="MenuPlayKataGo">
                 <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Engine}" Size="18" /><TextBlock Text="{l:T Phone.PlayKataGo}" /></StackPanel>
               </Button>
               <Button Classes="menu-item" Command="{Binding Main.OpenLobbyCommand}" x:Name="MenuOnline">
                 <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Online}" Size="18" /><TextBlock Text="{l:T Main.PlayOnline}" /></StackPanel>
               </Button>
-              <Separator Margin="12,4" />
+              <TextBlock Classes="menu-section" Text="{l:T Menu.Study}" />
+              <Button Classes="menu-item" Command="{Binding Main.OpenTsumegoCommand}" x:Name="MenuTsumego">
+                <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Quiz}" Size="18" /><TextBlock Text="{l:T Tsumego.Menu}" /></StackPanel>
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.OpenReplaysCommand}" x:Name="MenuReplays">
+                <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Moves}" Size="18" /><TextBlock Text="{l:T Main.Replays}" /></StackPanel>
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.AnnotateReviewCommand}" x:Name="MenuReview">
+                <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Analysis}" Size="18" /><TextBlock Text="{l:T Review.Menu}" /></StackPanel>
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Counting.StartCommand}" x:Name="MenuCount" IsVisible="{Binding Main.IsLocal}">
+                <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Territory}" Size="18" /><TextBlock Text="{l:T Count.Menu}" /></StackPanel>
+              </Button>
+              <!-- The clock: only for games on this device (online games use the server's clock). -->
+              <StackPanel Margin="14,8,14,4" Spacing="6" x:Name="MenuClock" IsVisible="{Binding Main.IsLocal}">
+                <TextBlock Text="{l:T Clock.Menu}" Classes="secondary" />
+                <WrapPanel Orientation="Horizontal">
+                  <WrapPanel.Styles><Style Selector="Button"><Setter Property="Margin" Value="0,0,6,6" /><Setter Property="MinHeight" Value="40" /></Style></WrapPanel.Styles>
+                  <Button Content="{Binding Main.Clock.Presets[0].Name}" Command="{Binding Main.Clock.StartCommand}" CommandParameter="{Binding Main.Clock.Presets[0]}" />
+                  <Button Content="{Binding Main.Clock.Presets[1].Name}" Command="{Binding Main.Clock.StartCommand}" CommandParameter="{Binding Main.Clock.Presets[1]}" />
+                  <Button Content="{Binding Main.Clock.Presets[2].Name}" Command="{Binding Main.Clock.StartCommand}" CommandParameter="{Binding Main.Clock.Presets[2]}" />
+                  <Button Content="{Binding Main.Clock.Presets[4].Name}" Command="{Binding Main.Clock.StartCommand}" CommandParameter="{Binding Main.Clock.Presets[4]}" />
+                  <Button Content="{Binding Main.PauseGameLabel}" Command="{Binding Main.TogglePauseGameCommand}" IsVisible="{Binding Main.CanPauseGame}" />
+                  <Button Content="{l:T Clock.Remove}" Command="{Binding Main.Clock.RemoveCommand}" IsVisible="{Binding Main.Clock.HasClock}" />
+                </WrapPanel>
+              </StackPanel>
+              <TextBlock Classes="menu-section" Text="{l:T Menu.ThisGame}" />
               <Button Classes="menu-item" Command="{Binding Main.Game.OpenCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Folder}" Size="18" /><TextBlock Text="{l:T Main.Open}" /></StackPanel>
               </Button>
               <Button Classes="menu-item" Command="{Binding Main.Game.SaveAsCommand}">
                 <TextBlock Text="{l:T Main.SaveAs}" Margin="28,0,0,0" />
               </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Game.EditGameInfoCommand}">
+                <TextBlock Text="{l:T Main.GameInfo}" Margin="28,0,0,0" />
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.Analysis.ToggleTerritoryCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Territory}" Size="18" /><TextBlock Text="{l:T Main.Territory}" /></StackPanel>
+              </Button>
+              <Button Classes="menu-item" Command="{Binding Main.ToggleZenCommand}" x:Name="MenuZen">
+                <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Star}" Size="18" /><TextBlock Text="{l:T Zen.Menu}" /></StackPanel>
+              </Button>
+              <Expander Header="{l:T Share.Menu}" Margin="6,4" HorizontalAlignment="Stretch" x:Name="MenuShare">
+                <StackPanel>
               <Button Classes="menu-item" Command="{Binding Main.Share.ShareImageCommand}" x:Name="MenuShareImage">
                 <TextBlock Text="{l:T Share.ShareImage}" Margin="28,0,0,0" />
               </Button>
@@ -213,46 +246,14 @@
               <Button Classes="menu-item" Command="{Binding Main.Share.PasteSgfCommand}" x:Name="MenuPasteSgf">
                 <TextBlock Text="{l:T Share.PasteSgf}" Margin="28,0,0,0" />
               </Button>
-              <Button Classes="menu-item" Command="{Binding Main.OpenTsumegoCommand}" x:Name="MenuTsumego">
-                <TextBlock Text="{l:T Tsumego.Menu}" Margin="28,0,0,0" />
-              </Button>
-              <Button Classes="menu-item" Command="{Binding Main.OpenReplaysCommand}" x:Name="MenuReplays">
-                <TextBlock Text="{l:T Main.Replays}" Margin="28,0,0,0" />
-              </Button>
-              <Button Classes="menu-item" Command="{Binding Main.Game.EditGameInfoCommand}">
-                <TextBlock Text="{l:T Main.GameInfo}" Margin="28,0,0,0" />
-              </Button>
-              <Button Classes="menu-item" Command="{Binding Main.Analysis.ToggleTerritoryCommand}">
-                <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Territory}" Size="18" /><TextBlock Text="{l:T Main.Territory}" /></StackPanel>
-              </Button>
-              <!-- The clock: one tap on a time control starts it for this game. -->
-              <StackPanel Margin="14,8,14,4" Spacing="6" x:Name="MenuClock">
-                <TextBlock Text="{l:T Clock.Menu}" Classes="secondary" />
-                <WrapPanel Orientation="Horizontal">
-                  <WrapPanel.Styles><Style Selector="Button"><Setter Property="Margin" Value="0,0,6,6" /><Setter Property="MinHeight" Value="36" /></Style></WrapPanel.Styles>
-                  <Button Content="{Binding Main.Clock.Presets[0].Name}" Command="{Binding Main.Clock.StartCommand}" CommandParameter="{Binding Main.Clock.Presets[0]}" />
-                  <Button Content="{Binding Main.Clock.Presets[1].Name}" Command="{Binding Main.Clock.StartCommand}" CommandParameter="{Binding Main.Clock.Presets[1]}" />
-                  <Button Content="{Binding Main.Clock.Presets[2].Name}" Command="{Binding Main.Clock.StartCommand}" CommandParameter="{Binding Main.Clock.Presets[2]}" />
-                  <Button Content="{Binding Main.Clock.Presets[4].Name}" Command="{Binding Main.Clock.StartCommand}" CommandParameter="{Binding Main.Clock.Presets[4]}" />
-                  <Button Content="{l:T Clock.Pause}" Command="{Binding Main.Clock.TogglePauseCommand}" IsVisible="{Binding Main.Clock.HasClock}" />
-                  <Button Content="{l:T Clock.Remove}" Command="{Binding Main.Clock.RemoveCommand}" IsVisible="{Binding Main.Clock.HasClock}" />
-                </WrapPanel>
-              </StackPanel>
-              <Button Classes="menu-item" Command="{Binding Main.AnnotateReviewCommand}" x:Name="MenuReview">
-                <TextBlock Text="{l:T Review.Menu}" Margin="28,0,0,0" />
-              </Button>
-              <Button Classes="menu-item" Command="{Binding Main.Counting.StartCommand}" x:Name="MenuCount">
-                <TextBlock Text="{l:T Count.Menu}" Margin="28,0,0,0" />
-              </Button>
-              <Button Classes="menu-item" Command="{Binding Main.ToggleZenCommand}" x:Name="MenuZen">
-                <TextBlock Text="{l:T Zen.Menu}" Margin="28,0,0,0" />
+                </StackPanel>
+              </Expander>
+              <TextBlock Classes="menu-section" Text="{l:T Menu.Settings}" />
+              <Button Classes="menu-item" Command="{Binding Main.OpenPreferencesCommand}" x:Name="MenuPreferences">
+                <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Settings}" Size="18" /><TextBlock Text="{l:T Main.Preferences}" /></StackPanel>
               </Button>
               <Button Classes="menu-item" Command="{Binding Main.Welcome.OpenCommand}" x:Name="MenuWelcome">
                 <TextBlock Text="{l:T Welcome.Menu}" Margin="28,0,0,0" />
-              </Button>
-              <Separator Margin="12,4" />
-              <Button Classes="menu-item" Command="{Binding Main.OpenPreferencesCommand}" x:Name="MenuPreferences">
-                <StackPanel Orientation="Horizontal" Spacing="10"><c:HoshiIcon Icon="{DynamicResource Icon.Settings}" Size="18" /><TextBlock Text="{l:T Main.Preferences}" /></StackPanel>
               </Button>
               <Button Classes="menu-item" Command="{Binding Main.Updates.SupportCommand, FallbackValue={x:Null}}"
                       IsVisible="{Binding Main.Updates, Converter={x:Static ObjectConverters.IsNotNull}}">
@@ -340,6 +341,13 @@
             </Button>
           </StackPanel>
         </Border>
+        <!-- Paused local game: the board waits. -->
+        <Border x:Name="PhonePausedOverlay" IsVisible="{Binding Main.IsGamePaused}" Background="#99000000">
+          <StackPanel Spacing="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="{l:T Pause.Title}" FontSize="24" FontFamily="{DynamicResource Font.Title}" HorizontalAlignment="Center" Foreground="White" />
+            <Button Classes="accent" Content="{l:T Pause.Resume}" Command="{Binding Main.TogglePauseGameCommand}" MinHeight="44" HorizontalAlignment="Center" />
+          </StackPanel>
+        </Border>
         <!-- A new version on the website: phones update by installing the new APK over this one. -->
         <Border x:Name="PhoneUpdateCard" IsVisible="{Binding Main.Updates.IsVisible, FallbackValue=False}" Classes="warmup"
                 HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="8,0,8,10" Padding="12,8" MaxWidth="420">
@@ -352,9 +360,12 @@
             </StackPanel>
           </StackPanel>
         </Border>
-        <Button x:Name="PhoneZenExit" IsVisible="{Binding Main.IsZen}" Command="{Binding Main.ToggleZenCommand}" Classes="zen-exit"
-                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,8,0" MinHeight="36">
-          <TextBlock Text="{l:T Zen.Exit}" FontSize="12" />
+        <Button x:Name="PhoneZenExit" IsVisible="{Binding Main.IsZen}" Command="{Binding Main.ToggleZenCommand}" Classes="zen-exit phone"
+                HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,18">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="16" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
+            <TextBlock Text="{l:T Zen.Exit}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" />
+          </StackPanel>
         </Button>
         <Border Classes="warmup" IsHitTestVisible="False" IsVisible="{Binding Main.Study.IsQuizActive}"
                 HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0">
