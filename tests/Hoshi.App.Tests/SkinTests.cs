@@ -38,20 +38,10 @@ public sealed class SkinTests
     [Fact]
     public void Vector_stones_clear_the_sprite_set()
     {
-        BoardStyle s = Skins.Compose(HoshiThemes.NightSky.Board, null, Skins.StoneSet("shudan"));
+        BoardStyle s = Skins.Compose(HoshiThemes.NightSky.Board, null, Skins.StoneSet("gradient"));
 
         s.StoneSet.Should().BeNull();
-        s.Stones.Should().Be(StoneStyle.Shudan);
-    }
-
-    [Fact]
-    public void Classic_can_change_only_its_stones()
-    {
-        BoardStyle s = Skins.Compose(HoshiThemes.Classic.Board, null, Skins.StoneSet("clam-slate"));
-
-        s.ShudanTexture.Should().BeFalse();
-        s.Texture.Should().Be("avares://Hoshi.App/Assets/Sabaki/board.png", "Classic keeps Shudan's board");
-        s.StoneSet.Should().Be("clam-slate");
+        s.Stones.Should().Be(StoneStyle.Gradient);
     }
 
     [Fact]
@@ -132,8 +122,8 @@ public sealed class SkinTests
         vm.StoneOptions[0].Name.Should().Be("Del tema: Cristal");
         vm.BackgroundOptions[0].Name.Should().Be("Del tema: Cielo nocturno (animado)");
 
-        themes.Select(HoshiThemes.Classic, animations: false);
-        vm.BoardOptions[0].Name.Should().Be("Del tema: Sabaki (Shudan)", "the theme entries follow the theme");
+        themes.Select(HoshiThemes.ZenGarden, animations: false);
+        vm.BoardOptions[0].Name.Should().Be("Del tema: Shin-kaya (pícea clara)", "the theme entries follow the theme");
 
         vm.ResetSkinsCommand.Execute(null);
         settings.Current.StoneSkin.Should().BeNull();

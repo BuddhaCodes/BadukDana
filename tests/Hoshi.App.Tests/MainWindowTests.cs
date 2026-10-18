@@ -49,11 +49,6 @@ public sealed class MainWindowTests
             Pixels.Read(frame, 1100 - 20, 400).Should().Be(theme.Sidebar, "the sidebar uses the theme colour");
             Color backdrop = Pixels.Read(frame, 6, 6);
             backdrop.Should().NotBe(theme.Sidebar, "the board sits on the theme's backdrop");
-            if (theme.Background == Hoshi.App.Themes.BackgroundKind.Tatami)
-            {
-                backdrop.G.Should().BeGreaterThan(backdrop.B, "tatami is green-yellow straw");
-            }
-
             string outDir = Path.Combine(AppContext.BaseDirectory, "screenshots");
             Directory.CreateDirectory(outDir);
             frame.Save(Path.Combine(outDir, $"theme-{id}.png"));

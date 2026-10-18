@@ -13,7 +13,7 @@ using AvPoint = Avalonia.Point;
 namespace Hoshi.App.Controls;
 
 /// <summary>
-/// The backdrop around the board, drawn procedurally (Hoshi's own art, except Classic's tatami image).
+/// The backdrop around the board, drawn procedurally (Hoshi's own art).
 /// When <see cref="Animate"/> is on it redraws at ~24 fps with very slow motion: twinkling stars and a drifting
 /// nebula, dissolving ink clouds, or shifting raked sand. Everything is deterministic for a given time.
 /// </summary>
@@ -35,7 +35,6 @@ public sealed class ThemeBackground : Control
     private static readonly Star[] Stars = CreateStars();
     private static readonly Blob[] InkBlobs = CreateInkBlobs();
     private static readonly Fibre[] Fibres = CreateFibres();
-    private static readonly Lazy<Bitmap?> Tatami = new(() => LoadAsset("avares://Hoshi.App/Assets/Sabaki/tatami.png"));
     private static readonly Lazy<Bitmap> PaperGrain = new(() => Noise(256, 0xEF, 0xE9, 0xDD, 7));
     private static readonly Lazy<Bitmap> InkGrain = new(() => Noise(256, 0x14, 0x15, 0x18, 5));
 
@@ -82,9 +81,6 @@ public sealed class ThemeBackground : Control
         {
             switch (Kind)
             {
-                case BackgroundKind.Tatami:
-                    DrawTatami(context, size);
-                    break;
                 case BackgroundKind.NightSky:
                     DrawNightSky(context, size, t);
                     break;
@@ -139,19 +135,6 @@ public sealed class ThemeBackground : Control
         {
             _timer?.Stop();
         }
-    }
-
-    // ---------------- Tatami (Classic) ----------------
-
-    private static void DrawTatami(DrawingContext context, Rect r)
-    {
-        context.FillRectangle(new ImmutableSolidColorBrush(Color.Parse("#C2CB9C")), r);
-        if (Tatami.Value is not { } img)
-        {
-            return;
-        }
-
-        Tile(context, img, r);
     }
 
     // ---------------- Night sky ----------------
