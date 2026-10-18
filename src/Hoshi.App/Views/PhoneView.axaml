@@ -449,6 +449,25 @@
         </DockPanel>
       </Border>
 
+      <!-- Studying (redesign 2026-10): a position bar between the board and the sheet - drag through the game. -->
+      <Grid DockPanel.Dock="Bottom" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10" Margin="12,6,12,6" x:Name="PhoneStudyNav">
+        <Grid.IsVisible>
+          <MultiBinding Converter="{x:Static BoolConverters.And}">
+            <Binding Path="IsStudy" />
+            <Binding Path="!IsLandscape" />
+          </MultiBinding>
+        </Grid.IsVisible>
+        <Button Classes="home-round" Width="52" Height="40" Command="{Binding Main.Game.GoBackCommand}" ToolTip.Tip="{l:T Main.Previous}" x:Name="PhoneStudyPrev">
+          <c:HoshiIcon Icon="{DynamicResource Icon.Previous}" Size="18" />
+        </Button>
+        <Slider Grid.Column="1" Classes="moves" Minimum="0" Maximum="{Binding Main.Moves.LineLength}" Value="{Binding Main.Moves.Position}"
+                IsSnapToTickEnabled="True" TickFrequency="1" VerticalAlignment="Center" AutomationProperties.Name="{l:T Mode.Position}" x:Name="PhoneStudySlider" />
+        <TextBlock Grid.Column="2" Classes="secondary" FontFamily="{DynamicResource Font.Mono}" FontSize="12" VerticalAlignment="Center" Text="{Binding Main.Moves.PositionText}" />
+        <Button Grid.Column="3" Classes="home-round" Width="52" Height="40" Command="{Binding Main.Game.GoForwardCommand}" ToolTip.Tip="{l:T Main.Next}" x:Name="PhoneStudyNext">
+          <c:HoshiIcon Icon="{DynamicResource Icon.Next}" Size="18" />
+        </Button>
+      </Grid>
+
       <!-- The board. -->
       <Panel x:Name="PhoneBoardArea">
         <c:GoBoardControl x:Name="Board" AutomationProperties.Name="{Binding Main.Game.BoardDescription}" AutomationProperties.LiveSetting="Polite"
