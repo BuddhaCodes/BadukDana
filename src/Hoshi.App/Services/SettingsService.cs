@@ -7,7 +7,14 @@ namespace Hoshi.App.Services;
 /// <summary>User preferences, stored as JSON in the data folder (settings.json).</summary>
 public sealed record AppSettings
 {
-    public string Theme { get; init; } = "night";
+    /// <summary>The global theme's id; null = Hoshi's default (Mochi on desktops since 2026-10-18).</summary>
+    public string? Theme { get; init; }
+
+    /// <summary>
+    /// 1 once the theme was chosen in Preferences under the Mochi default. Before that every save wrote
+    /// "night" (the old default), so a "night" without it is not a choice and moves to the new default once.
+    /// </summary>
+    public int ThemeChoice { get; init; }
 
     /// <summary>Goban, stones and background chosen on top of the theme (ids from <c>Themes.Skins</c>); null = the theme's.</summary>
     public string? BoardSkin { get; init; }

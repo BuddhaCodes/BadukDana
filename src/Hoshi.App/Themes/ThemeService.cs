@@ -18,7 +18,13 @@ public sealed class ThemeService
     public ThemeService(ISettingsService? settings = null)
     {
         _settings = settings;
-        Current = HoshiThemes.ById(settings?.Current.Theme);
+        string? saved = settings?.Current.Theme;
+        if (saved == "night" && settings?.Current.ThemeChoice == 0)
+        {
+            saved = null; // the old default written by every save, not the player's choice
+        }
+
+        Current = HoshiThemes.ById(saved);
         Animations = settings?.Current.Animations ?? true;
         Board = Skins.Board(settings?.Current.BoardSkin);
         Stones = Skins.StoneSet(settings?.Current.StoneSkin);
@@ -92,6 +98,16 @@ public sealed class ThemeService
         Brush("EditBar.Hover", theme.EditBarHover);
         Brush("Bg.Surround", background?.Surround ?? theme.Surround);
 
+        // Fluent's tab headers in the theme's ink (they used to stay white on light themes).
+        foreach (string state in new[] { "Unselected", "Selected" })
+        {
+            resources["TabItemHeaderForeground" + state] = new SolidColorBrush(state == "Selected" ? theme.Text : theme.TextSecondary);
+            resources["TabItemHeaderForeground" + state + "PointerOver"] = new SolidColorBrush(theme.Text);
+            resources["TabItemHeaderForeground" + state + "Pressed"] = new SolidColorBrush(theme.Text);
+        }
+
+        resources["TabItemHeaderSelectedPipeFill"] = new SolidColorBrush(theme.Accent);
+
         // Fluent's own accent follows the theme, so selections, focus rings and accent buttons match.
         resources["SystemAccentColor"] = theme.Accent;
         resources["SystemAccentColorDark1"] = Shade(theme.Accent, 0.85);
@@ -143,6 +159,7 @@ public sealed class ThemeService
             _settings.Save(_settings.Current with
             {
                 Theme = theme.Id,
+                ThemeChoice = 1,
                 Animations = animations,
                 BoardSkin = Board?.Id,
                 StoneSkin = Stones?.Id,

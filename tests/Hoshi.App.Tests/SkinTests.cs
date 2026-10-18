@@ -109,6 +109,7 @@ public sealed class SkinTests
     public void Preferences_offer_the_skins_and_apply_them_at_once()
     {
         var settings = new MemorySettings();
+        settings.Save(new AppSettings { Theme = "night", ThemeChoice = 1 });
         var themes = new ThemeService(settings);
         var vm = new PreferencesViewModel(themes, settings);
 

@@ -69,6 +69,9 @@ public static class Skins
         new("sudare", "Skin.Bg.Sudare", BackgroundKind.Sudare, C("#B08E5A"), Art + "Backgrounds/sudare.jpg"),
         new("washi", "Skin.Bg.Washi", BackgroundKind.Washi, C("#EFE9DD")),
         new("mochi", "Skin.Bg.Mochi", BackgroundKind.Mochi, C("#F8F1E7")),
+        new("matcha", "Skin.Bg.Matcha", BackgroundKind.Matcha, C("#EEF3E6")),
+        new("yuzu", "Skin.Bg.Yuzu", BackgroundKind.Yuzu, C("#FBF3DF")),
+        new("mochi-night", "Skin.Bg.MochiNight", BackgroundKind.MochiNight, C("#1C1828")),
     ];
 
     public static BoardSkin? Board(string? id) => Boards.FirstOrDefault(b => b.Id == id);
