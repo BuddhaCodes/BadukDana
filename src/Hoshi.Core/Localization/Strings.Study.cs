@@ -41,12 +41,12 @@ public static partial class Tr
         Add(d, "Study.EditSaved", "Drawings saved.", "Dibujos guardados.");
         Add(d, "Study.DeletePinTitle", "Delete the note", "Borrar la nota");
         Add(d, "Study.DeletePinAsk", "Delete this note and its replies?", "¿Borrar esta nota y sus respuestas?");
-        Add(d, "Study.ClearTitle", "Clear the drawings", "Borrar los dibujos");
+        Add(d, "Study.ClearTitle", "Clear all drawings", "Borrar todos los dibujos");
         Add(d, "Study.ClearAsk", "Remove every drawing on this move?", "¿Quitar todos los dibujos de esta jugada?");
         Add(d, "Study.NewSequence", "New line", "Nueva línea");
         Add(d, "Study.NewSequenceTip", "Start another \"what if\" line on this move", "Empieza otra línea «¿y si…?» en esta jugada");
         Add(d, "Study.ClearDrawings", "Clear drawings", "Borrar dibujos");
-        Add(d, "Study.ClearDrawingsTip", "Remove every drawing on this move", "Quita todos los dibujos de esta jugada");
+        Add(d, "Study.ClearDrawingsTip", "Clear all drawings on this move", "Borrar todos los dibujos de esta jugada");
         Add(d, "Study.Color.Gold", "Gold", "Dorado");
         Add(d, "Study.Color.Red", "Red", "Rojo");
         Add(d, "Study.Color.Blue", "Blue", "Azul");

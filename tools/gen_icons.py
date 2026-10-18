@@ -48,6 +48,7 @@ ICONS = {  # key: (phosphor, lucide, tabler)
     "Report": ("file-text", "file-text", "file-text"),
     "Moves": ("git-branch", "git-branch", "git-branch"),
     "Back": ("arrow-left", "arrow-left", "arrow-left"),
+    "Trash": ("trash", "trash-2", "trash"),
 }
 
 def num(v): return float(v)
@@ -60,7 +61,18 @@ def element_to_path(el):
     if a.get("stroke") == "none" and a.get("fill") == "none":
         return None  # Tabler's invisible bounding box
     if tag == "path":
-        return a["d"]
+        # A path's first moveto is absolute even when written "m" (SVG spec); once joined after another
+        # element it would be read as relative, so it is made explicit (Lucide's "x" and "eraser" use it).
+        d = a["d"].strip()
+        if not d.startswith("m"):
+            return d
+        num_re = r"[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?"
+        m = re.match(r"m\s*(" + num_re + r")[\s,]*(" + num_re + r")(.*)$", d, re.S)
+        x, y, rest = m.group(1), m.group(2), m.group(3).strip()
+        # pairs right after a relative moveto are relative linetos: keep them so
+        if rest and not rest[0].isalpha():
+            rest = "l" + rest
+        return f"M{x} {y}" + (" " + rest if rest else "")
     if tag == "circle":
         cx, cy, r = num(a["cx"]), num(a["cy"]), num(a["r"])
         return f"M{fmt(cx - r)},{fmt(cy)} a{fmt(r)},{fmt(r)} 0 1,0 {fmt(2*r)},0 a{fmt(r)},{fmt(r)} 0 1,0 {fmt(-2*r)},0 Z"
