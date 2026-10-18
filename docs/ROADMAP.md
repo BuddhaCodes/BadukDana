@@ -171,6 +171,7 @@ Todo lo que sale del equipo es una acción explícita del usuario; los nombres d
   - [x] Google Analytics solo con consentimiento previo (UE): nada de Google se carga hasta «Aceptar»; «Rechazar» igual de visible; «Elegir cookies» en el pie.
   - [x] La web con un Mochi suave: títulos Fredoka, tarjetas redondas, capítulos en pastel, Kuro y Shiro sobre el tablero y un problema del día para tocar.
   - [x] Android: barra de posición entre el tablero y la hoja de estudio.
+  - [x] Escritorio en Mochi (2026-10-18): tema Mochi por defecto (como la web: crema, ciruela, rosa, Fredoka, esquinas redondas, nubes pastel); la cabecera es la barra de título (sin barra de Windows aparte; minimizar/maximizar/cerrar a la derecha); arranque redondo sin barra con Kuro y Shiro; «Borrar todos los dibujos» con papelera roja; arreglados los iconos Lucide que empezaban con «m» relativo (la «x» se veía como «<»).
 
 ### Después de la 1.0
 Diseños y recomendaciones en `docs/AFTER_1_0.md` (2026-10-17); cada una espera una decisión del usuario.

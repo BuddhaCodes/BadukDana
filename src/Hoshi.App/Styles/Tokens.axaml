@@ -43,6 +43,12 @@
   <FontFamily x:Key="Font.Mono">avares://Hoshi.App/Assets/Fonts/JetBrainsMono#JetBrains Mono</FontFamily>
   <FontFamily x:Key="Font.Brand">avares://Hoshi.App/Assets/Fonts/ShipporiMincho#Shippori Mincho</FontFamily>
   <x:Double x:Key="Font.Size.Title">14</x:Double>
+  <!-- Fredoka (OFL): the rounded face of the brand (splash, website); Latin only, so 星 keeps Font.Brand. -->
+  <FontFamily x:Key="Font.Rounded">avares://Hoshi.App/Assets/Fonts/Fredoka#Fredoka</FontFamily>
+  <CornerRadius x:Key="Radius.Control">3</CornerRadius>
+  <CornerRadius x:Key="Radius.Soft">6</CornerRadius>
+  <CornerRadius x:Key="Radius.Card">10</CornerRadius>
+  <CornerRadius x:Key="Radius.Palette">14</CornerRadius>
 
   <x:Double x:Key="BottomBar.Height">40</x:Double>
   <x:Double x:Key="Font.Size.Small">12</x:Double>

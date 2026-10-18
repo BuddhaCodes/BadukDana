@@ -35,11 +35,12 @@ public sealed class ThemeTests
     public void Themes_are_distinct_and_reference_existing_icon_sets()
     {
         HoshiThemes.All.Select(t => t.Id).Should().OnlyHaveUniqueItems();
-        HoshiThemes.All.Should().HaveCount(6);
-        HoshiThemes.All.Where(t => t.IsLight).Should().Equal(HoshiThemes.Kaya);
+        HoshiThemes.All.Should().HaveCount(7);
+        HoshiThemes.All.Where(t => t.IsLight).Should().Equal(HoshiThemes.Mochi, HoshiThemes.Kaya);
         HoshiThemes.All.Should().OnlyContain(t => IconSets.All.ContainsKey(t.IconSet));
         HoshiThemes.ById("nope").Should().BeSameAs(HoshiThemes.Default);
-        HoshiThemes.Default.Id.Should().Be("night");
+        HoshiThemes.Default.Id.Should().Be("mochi", "Mochi, the website's look, is the default since 2026-10-18");
+        HoshiThemes.All.Where(t => t.Rounded).Should().ContainSingle().Which.Should().BeSameAs(HoshiThemes.Mochi);
     }
 
     [AvaloniaFact]
@@ -114,15 +115,15 @@ public sealed class ThemeTests
         var vm = new PreferencesViewModel(themes);
         try
         {
-            vm.Cards.Select(c => c.Name).Should().Equal("Estrella polar", "Kaya", "Tinta y oro", "Jardín zen", "Minimal cálido", "Alto contraste");
+            vm.Cards.Select(c => c.Name).Should().Equal("Mochi", "Estrella polar", "Kaya", "Tinta y oro", "Jardín zen", "Minimal cálido", "Alto contraste");
             vm.Selected.Theme.Should().BeSameAs(HoshiThemes.NightSky);
 
-            vm.Selected = vm.Cards[2];
+            vm.Selected = vm.Cards[3];
             vm.Animations = false;
 
             themes.Current.Should().BeSameAs(HoshiThemes.InkAndGold);
             store.Current.Should().Be(new AppSettings { Theme = "sumi", Animations = false });
-            vm.Cards[2].IsSelected.Should().BeTrue();
+            vm.Cards[3].IsSelected.Should().BeTrue();
             vm.Cards[0].IsSelected.Should().BeFalse();
             Application.Current!.TryGetResource("Theme.Id", null, out object? id).Should().BeTrue();
             id.Should().Be("sumi");
@@ -206,5 +207,46 @@ public sealed class ThemeTests
         public AppSettings Current { get; private set; } = new();
 
         public void Save(AppSettings settings) => Current = settings;
+    }
+
+    [AvaloniaFact]
+    public void Mochi_rounds_the_corners_and_brings_the_pastel_background()
+    {
+        try
+        {
+            IResourceDictionary r = Application.Current!.Resources;
+            ThemeService.Apply(HoshiThemes.Mochi, animations: false, r);
+            r["Radius.Control"].Should().Be(new CornerRadius(10));
+            r["Radius.Card"].Should().Be(new CornerRadius(18));
+            r["ControlCornerRadius"].Should().Be(new CornerRadius(10), "Fluent's own controls follow");
+            r["Theme.Background"].Should().Be(BackgroundKind.Mochi);
+            r["Font.Title"].Should().Be(new Avalonia.Media.FontFamily("avares://Hoshi.App/Assets/Fonts/Fredoka#Fredoka"));
+            r["Icon.Trash"].Should().NotBeNull();
+
+            ThemeService.Apply(HoshiThemes.NightSky, animations: false, r);
+            r["Radius.Control"].Should().Be(new CornerRadius(3));
+            r["ControlCornerRadius"].Should().Be(new CornerRadius(4));
+        }
+        finally
+        {
+            ThemeService.Apply(HoshiThemes.Default, animations: false, Application.Current!.Resources);
+        }
+    }
+
+    [AvaloniaFact]
+    public void Every_icon_stays_inside_its_box()
+    {
+        // Guards the generator: a path joined after another must not start with a relative "m" (Lucide's "x"
+        // once drew as "<" and its eraser grew a stray line).
+        foreach (string set in new[] { "PhosphorLight", "PhosphorRegular", "Lucide", "Tabler" })
+        {
+            foreach ((string key, IconData icon) in ThemeService.IconSet(set))
+            {
+                Rect b = icon.Geometry.Bounds;
+                double slack = icon.Size * 0.05;
+                (b.X >= -slack && b.Y >= -slack && b.Right <= icon.Size + slack && b.Bottom <= icon.Size + slack)
+                    .Should().BeTrue($"{set}/{key} is drawn inside its {icon.Size}px box (bounds {b})");
+            }
+        }
     }
 }

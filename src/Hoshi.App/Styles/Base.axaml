@@ -34,25 +34,31 @@
     <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="CornerRadius" Value="{DynamicResource Radius.Card}" />
     <Setter Property="Padding" Value="12" />
   </Style>
 
   <!-- Caption buttons of the title bar: flat, hover in the theme's panel colour, close turns red. -->
-  <Style Selector="c|HoshiTitleBar Button.caption">
+  <Style Selector="c|CaptionButtons Button.caption">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
   </Style>
-  <Style Selector="c|HoshiTitleBar Button.caption:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+  <Style Selector="c|CaptionButtons Button.caption:pointerover /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
   </Style>
-  <Style Selector="c|HoshiTitleBar Button.caption:pressed /template/ ContentPresenter#PART_ContentPresenter">
+  <Style Selector="c|CaptionButtons Button.caption:pressed /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource Border.Subtle}" />
   </Style>
-  <Style Selector="c|HoshiTitleBar Button.caption.close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+  <Style Selector="c|CaptionButtons Button.caption.close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="#C42B1C" />
   </Style>
-  <Style Selector="c|HoshiTitleBar Button.caption.close:pointerover Path">
+  <Style Selector="Border.bottom-bar.edit c|CaptionButtons Path">
+    <Setter Property="Stroke" Value="{DynamicResource EditBar.Foreground}" />
+  </Style>
+  <Style Selector="Border.bottom-bar.edit c|CaptionButtons Button.caption:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource EditBar.Hover}" />
+  </Style>
+  <Style Selector="c|CaptionButtons Button.caption.close:pointerover Path">
     <Setter Property="Stroke" Value="White" />
   </Style>
 
@@ -140,7 +146,7 @@
     <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
     <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
     <Setter Property="Padding" Value="10,4" />
-    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="CornerRadius" Value="{DynamicResource Radius.Control}" />
     <Setter Property="FontSize" Value="{DynamicResource Font.Size.Normal}" />
   </Style>
 
@@ -155,7 +161,7 @@
   <Style Selector="Border.turn-toggle">
     <Setter Property="Width" Value="36" />
     <Setter Property="Height" Value="20" />
-    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="CornerRadius" Value="{DynamicResource Radius.Card}" />
     <Setter Property="Padding" Value="2" />
     <Setter Property="Background" Value="#E6E6E6" />
     <Setter Property="BorderBrush" Value="#111111" />
@@ -239,7 +245,7 @@
   <!-- Local game clock next to a player's name; red with ten seconds left. -->
   <Style Selector="Border.clock">
     <Setter Property="Padding" Value="7,1" />
-    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="CornerRadius" Value="{DynamicResource Radius.Soft}" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
   </Style>
@@ -286,7 +292,7 @@
     <Setter Property="FontSize" Value="{DynamicResource Font.Size.Normal}" />
     <Setter Property="Padding" Value="10,3" />
     <Setter Property="MinHeight" Value="26" />
-    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="CornerRadius" Value="{DynamicResource Radius.Control}" />
   </Style>
 
   <Style Selector="Button.bar /template/ ContentPresenter#PART_ContentPresenter">
@@ -327,7 +333,7 @@
     <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Name="bg" Background="Transparent" CornerRadius="3" Padding="9,3" MinHeight="26">
+        <Border Name="bg" Background="Transparent" CornerRadius="{DynamicResource Radius.Control}" Padding="9,3" MinHeight="26">
           <ContentPresenter Content="{TemplateBinding Content}" VerticalAlignment="Center"
                             Foreground="{TemplateBinding Foreground}" />
         </Border>
@@ -396,7 +402,7 @@
 
   <!-- Preferences: theme cards. -->
   <Style Selector="Border.theme-card">
-    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="CornerRadius" Value="{DynamicResource Radius.Card}" />
     <Setter Property="ClipToBounds" Value="True" />
     <Setter Property="BorderThickness" Value="2" />
     <Setter Property="BorderBrush" Value="Transparent" />
@@ -466,7 +472,7 @@
     <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="CornerRadius" Value="{DynamicResource Radius.Card}" />
     <Setter Property="Padding" Value="10,8" />
     <Setter Property="Margin" Value="0,4,0,0" />
   </Style>
@@ -486,7 +492,7 @@
     <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="CornerRadius" Value="14" />
+    <Setter Property="CornerRadius" Value="{DynamicResource Radius.Palette}" />
     <Setter Property="Padding" Value="6" />
     <Setter Property="BoxShadow" Value="0 14 36 -10 #B0000000" />
   </Style>
@@ -496,7 +502,7 @@
   <Style Selector="ListBox.move-list ListBoxItem">
     <Setter Property="Padding" Value="6,1" />
     <Setter Property="MinHeight" Value="26" />
-    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="CornerRadius" Value="{DynamicResource Radius.Soft}" />
   </Style>
   <Style Selector="ListBox.move-list ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
@@ -527,7 +533,7 @@
     <Setter Property="Background" Value="{DynamicResource Bg.Window}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="CornerRadius" Value="{DynamicResource Radius.Card}" />
     <Setter Property="Padding" Value="10,7" />
   </Style>
 </Styles>

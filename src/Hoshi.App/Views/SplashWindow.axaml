@@ -1,26 +1,70 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:c="using:Hoshi.App.Controls"
+        xmlns:l="using:Hoshi.App.Localization"
         x:Class="Hoshi.App.Views.SplashWindow"
         Title="Hoshi"
-        Width="440" Height="300"
+        Width="480" Height="340"
         CanResize="False"
         SystemDecorations="None"
+        ShowInTaskbar="True"
         WindowStartupLocation="CenterScreen"
         TransparencyLevelHint="Transparent"
         Background="Transparent"
         Icon="/Assets/hoshi.ico">
-  <!-- Shown at once while the main window is built (KataGo, the theme's textures, the music…): no black window. -->
-  <Border CornerRadius="16" ClipToBounds="True" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="1">
-    <Panel>
-      <c:ThemeBackground Kind="{DynamicResource Theme.Background}" Animate="False" />
-      <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
-        <Image Source="/Assets/hoshi.png" Width="96" Height="96" HorizontalAlignment="Center" />
-        <TextBlock Text="Hoshi 星" FontFamily="{DynamicResource Font.Brand}" FontSize="32" HorizontalAlignment="Center"
-                   Foreground="{DynamicResource Accent}" />
-        <TextBlock x:Name="SplashVersion" Classes="secondary" FontSize="12" HorizontalAlignment="Center" />
-        <ProgressBar IsIndeterminate="True" Width="120" MinWidth="120" Height="3" MinHeight="3" HorizontalAlignment="Center" Margin="0,6,0,0" />
-      </StackPanel>
-    </Panel>
+  <!-- The splash (redesign 2026-10-18, Mochi): a round card with the two stone friends of the website, the name in
+       Fredoka and a row of three stones that breathe while the main window is built. No title bar (the window has
+       no decorations); the margin leaves room for the card's soft shadow. -->
+  <Border Margin="18" CornerRadius="28" Background="{DynamicResource Bg.Window}" BoxShadow="0 12 32 0 #38000000">
+    <Border CornerRadius="28" ClipToBounds="True" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="1">
+      <Panel>
+        <c:ThemeBackground Kind="{DynamicResource Theme.Background}" Animate="False" />
+        <Grid RowDefinitions="*,Auto">
+          <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="4" Margin="0,18,0,0">
+            <!-- Kuro and Shiro (Hoshi's own drawing, the same as on the website). -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4" Margin="0,0,0,6" x:Name="SplashFriends">
+              <Viewbox Width="62" Height="62" x:Name="SplashKuro" VerticalAlignment="Bottom">
+                <Canvas Width="100" Height="100">
+                  <Ellipse Canvas.Left="6" Canvas.Top="16" Width="88" Height="80" Fill="#2D2440" />
+                  <Ellipse Canvas.Left="33" Canvas.Top="51" Width="10" Height="10" Fill="White" />
+                  <Ellipse Canvas.Left="57" Canvas.Top="51" Width="10" Height="10" Fill="White" />
+                  <Path Data="M42,70 Q50,76 58,70" Stroke="White" StrokeThickness="3" StrokeLineCap="Round" />
+                  <Ellipse Canvas.Left="22" Canvas.Top="61" Width="10" Height="10" Fill="#F6CFDB" />
+                  <Ellipse Canvas.Left="68" Canvas.Top="61" Width="10" Height="10" Fill="#F6CFDB" />
+                </Canvas>
+              </Viewbox>
+              <Viewbox Width="50" Height="50" x:Name="SplashShiro" VerticalAlignment="Bottom">
+                <Canvas Width="100" Height="100">
+                  <Ellipse Canvas.Left="6" Canvas.Top="16" Width="88" Height="80" Fill="White" Stroke="#2D2440" StrokeThickness="3" />
+                  <Path Data="M33,56 H43" Stroke="#2D2440" StrokeThickness="3.4" StrokeLineCap="Round" />
+                  <Ellipse Canvas.Left="57.4" Canvas.Top="51.4" Width="9.2" Height="9.2" Fill="#2D2440" />
+                  <Path Data="M42,70 Q50,75 58,70" Stroke="#2D2440" StrokeThickness="3" StrokeLineCap="Round" />
+                  <Ellipse Canvas.Left="22" Canvas.Top="61" Width="10" Height="10" Fill="#F6CFDB" />
+                  <Ellipse Canvas.Left="68" Canvas.Top="61" Width="10" Height="10" Fill="#F6CFDB" />
+                </Canvas>
+              </Viewbox>
+            </StackPanel>
+            <TextBlock HorizontalAlignment="Center" FontSize="40" Foreground="{DynamicResource Text.Primary}" x:Name="SplashTitle">
+              <Run Text="Hoshi" FontFamily="{DynamicResource Font.Rounded}" FontWeight="SemiBold" />
+              <Run Text="星" FontFamily="{DynamicResource Font.Brand}" FontWeight="Bold" Foreground="{DynamicResource Accent}" />
+            </TextBlock>
+            <TextBlock Text="{l:T Splash.Tagline}" HorizontalAlignment="Center" FontFamily="{DynamicResource Font.Rounded}" FontWeight="Medium"
+                       FontSize="13.5" Foreground="{DynamicResource Text.Secondary}" />
+          </StackPanel>
+          <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" Margin="26,0,26,22">
+            <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center" x:Name="SplashDots">
+              <Ellipse Width="10" Height="10" Fill="#2D2440" />
+              <Ellipse Width="10" Height="10" Fill="White" Stroke="#2D2440" StrokeThickness="1.4" />
+              <Ellipse Width="10" Height="10" Fill="{DynamicResource Accent}" />
+            </StackPanel>
+            <TextBlock Grid.Column="1" Text="{l:T Splash.Loading}" Margin="12,0,0,0" FontSize="12.5" VerticalAlignment="Center"
+                       Foreground="{DynamicResource Text.Secondary}" />
+            <Border Grid.Column="2" CornerRadius="999" Padding="10,3" Background="{DynamicResource Bg.PanelAlt}" VerticalAlignment="Center">
+              <TextBlock x:Name="SplashVersion" FontSize="11.5" FontFamily="{DynamicResource Font.Mono}" Foreground="{DynamicResource Text.Secondary}" />
+            </Border>
+          </Grid>
+        </Grid>
+      </Panel>
+    </Border>
   </Border>
 </Window>

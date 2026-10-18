@@ -32,6 +32,9 @@ public enum BackgroundKind
 
     /// <summary>A bamboo blind (tiled).</summary>
     Sudare,
+
+    /// <summary>Mochi: warm cream with soft pastel clouds (pink, mint, lavender, butter) drifting very slowly.</summary>
+    Mochi,
 }
 
 /// <summary>The little effect played when a stone is placed.</summary>
@@ -149,6 +152,9 @@ public sealed record HoshiTheme
 
     /// <summary>A light theme: Fluent's own controls switch to their light look too.</summary>
     public bool IsLight { get; init; }
+
+    /// <summary>Soft, round corners on buttons, cards and menus (Mochi).</summary>
+    public bool Rounded { get; init; }
 
     public required Color EditBar { get; init; }
 
@@ -457,9 +463,67 @@ public static class HoshiThemes
         },
     };
 
-    public static IReadOnlyList<HoshiTheme> All { get; } = [NightSky, Kaya, InkAndGold, ZenGarden, WarmMinimal, HighContrast];
+    /// <summary>
+    /// Mochi (light, the default since 2026-10-18; the website's look): warm cream, a plum ink, a rose accent,
+    /// pastel tints, rounded Fredoka titles, Lucide's round icons, soft corners and a pale shin-kaya board.
+    /// Friendly, not childish: the board and the text stay calm.
+    /// </summary>
+    public static HoshiTheme Mochi { get; } = new()
+    {
+        Id = "mochi",
+        NameKey = "Theme.Mochi.Name",
+        DescriptionKey = "Theme.Mochi.Description",
+        IsLight = true,
+        Rounded = true,
+        Window = Color.Parse("#F8F1E7"),
+        Bar = Color.Parse("#FFFAF3"),
+        Sidebar = Color.Parse("#FFFAF3"),
+        Properties = Color.Parse("#FFFFFF"),
+        PanelAlt = Color.Parse("#F7E8EE"),
+        Border = Color.Parse("#EBDDCC"),
+        Text = Color.Parse("#2D2440"),
+        TextSecondary = Color.Parse("#7B6F88"),
+        Accent = Color.Parse("#C8577A"),
+        Danger = Color.Parse("#C8432F"),
+        Good = Color.Parse("#3E8E6A"),
+        EditBar = Color.Parse("#2D2440"),
+        EditBarText = Color.Parse("#FFF8F0"),
+        EditBarHover = Color.Parse("#43385C"),
+        Surround = Color.Parse("#F8F1E7"),
+        UiFont = Fonts + "Manrope#Manrope",
+        TitleFont = Fonts + "Fredoka#Fredoka",
+        MonoFont = Fonts + "JetBrainsMono#JetBrains Mono",
+        TitleSize = 16,
+        IconSet = "Lucide",
+        Background = BackgroundKind.Mochi,
+        Board = new BoardStyle
+        {
+            Texture = "avares://Hoshi.App/Assets/Art/Boards/shin-kaya.jpg",
+            StoneSet = "clam-slate",
+            WhiteVariants = 8,
+            BlackVariants = 4,
+            Wood = Color.Parse("#EBD3A0"),
+            Border = Color.Parse("#C9A876"),
+            BorderWidth = 0.04,
+            Lines = Color.Parse("#3D2C1A"),
+            Coordinates = Color.Parse("#A03D2C1A"),
+            BoardShadow = Color.Parse("#4D7A5A46"),
+            BoardShadowBlur = 30,
+            StoneShadow = Color.Parse("#4A2D2440"),
+            Stones = StoneStyle.SlateShell,
+            Effect = PlacementEffect.Settle,
+            EffectColor = Color.Parse("#C8577A"),
+            LastMove = Color.Parse("#C8577A"),
+        },
+    };
 
-    public static HoshiTheme Default => NightSky;
+    public static IReadOnlyList<HoshiTheme> All { get; } = [Mochi, NightSky, Kaya, InkAndGold, ZenGarden, WarmMinimal, HighContrast];
+
+    /// <summary>
+    /// Mochi on desktops (2026-10-18). Phones keep Pole star until their own Mochi pass (their launch screen is
+    /// night blue, so a light first frame would flash).
+    /// </summary>
+    public static HoshiTheme Default => Services.PlatformInfo.IsPhone ? NightSky : Mochi;
 
     public static HoshiTheme ById(string? id) => All.FirstOrDefault(t => t.Id == id) ?? Default;
 }
