@@ -144,12 +144,14 @@
 
   <LayoutTransformControl LayoutTransform="{Binding Main.UiScaleTransform}" x:Name="UiScaleRoot">
   <Panel>
-    <c:ThemeBackground Kind="{DynamicResource Theme.Background}" Animate="False" />
+    <!-- The theme's background moves on phones too (2026-10-18), at 12 frames a second, and stops in zen. -->
+    <c:ThemeBackground Kind="{DynamicResource Theme.Background}" Animate="{DynamicResource Theme.Animations}" Paused="{Binding Main.IsBackgroundStill}"
+                       FramesPerSecond="12" x:Name="PhoneBackdrop" />
     <DockPanel x:Name="Shell">
 
       <!-- Top: players and the turn (local), or the online panel with clocks and actions. -->
       <Border DockPanel.Dock="Top" Background="{DynamicResource Bg.Sidebar}" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="0,0,0,1"
-              Padding="14,8,14,8" x:Name="PhoneTop">
+              Padding="14,8,14,8" x:Name="PhoneTop" IsVisible="{Binding !Main.IsZen}">
         <StackPanel Spacing="8">
         <!-- The header (redesign 2026-10): back to home, what is on the board and, online, the fair-play promise. -->
         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" x:Name="PhoneHeader">
@@ -232,7 +234,14 @@
 
       <!-- Bottom bar: navigation, the game's actions and the sheets; the confirm bar takes its place while a stone
            waits, at the same height, so the board does not move between the two taps. -->
-      <Panel DockPanel.Dock="Bottom" IsVisible="{Binding !Main.IsZen}" x:Name="PhoneBarHost">
+      <!-- Zen hides the bar, but a stone waiting for its second tap still shows «Play L7» (2026-10-18). -->
+      <Panel DockPanel.Dock="Bottom" x:Name="PhoneBarHost">
+        <Panel.IsVisible>
+          <MultiBinding Converter="{x:Static BoolConverters.Or}">
+            <Binding Path="!Main.IsZen" />
+            <Binding Path="Main.Game.HasPendingMove" />
+          </MultiBinding>
+        </Panel.IsVisible>
       <Border Background="{DynamicResource Bg.Sidebar}" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="0,1,0,0"
               x:Name="PhoneBar" IsVisible="{Binding !Main.IsZen}">
         <UniformGrid Rows="1">
@@ -276,7 +285,13 @@
 
 
       <!-- Online: your card and the game's actions, under the board. -->
-      <StackPanel DockPanel.Dock="Bottom" IsVisible="{Binding Main.IsOnline}" Spacing="6" Margin="14,6,14,6" x:Name="PhoneOnlineBottom">
+      <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="14,6,14,6" x:Name="PhoneOnlineBottom">
+        <StackPanel.IsVisible>
+          <MultiBinding Converter="{x:Static BoolConverters.And}">
+            <Binding Path="Main.IsOnline" />
+            <Binding Path="!Main.IsZen" />
+          </MultiBinding>
+        </StackPanel.IsVisible>
         <Border Classes="player-card" Classes.turn="{Binding BottomCard.IsToMove, FallbackValue=False}" IsVisible="{Binding BottomCard, Converter={x:Static ObjectConverters.IsNotNull}}" x:Name="PhoneBottomCard">
               <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                 <Panel VerticalAlignment="Center">
@@ -430,10 +445,10 @@
                 <TextBlock Text="{l:T Clock.Menu}" Classes="menu-section" Margin="4,4,4,0" />
                 <WrapPanel Orientation="Horizontal">
                   <WrapPanel.Styles><Style Selector="Button"><Setter Property="Margin" Value="0,0,6,6" /><Setter Property="MinHeight" Value="40" /></Style></WrapPanel.Styles>
-                  <Button Content="{Binding Main.Clock.Presets[0].Name}" Command="{Binding Main.Clock.StartCommand}" CommandParameter="{Binding Main.Clock.Presets[0]}" />
-                  <Button Content="{Binding Main.Clock.Presets[1].Name}" Command="{Binding Main.Clock.StartCommand}" CommandParameter="{Binding Main.Clock.Presets[1]}" />
-                  <Button Content="{Binding Main.Clock.Presets[2].Name}" Command="{Binding Main.Clock.StartCommand}" CommandParameter="{Binding Main.Clock.Presets[2]}" />
-                  <Button Content="{Binding Main.Clock.Presets[4].Name}" Command="{Binding Main.Clock.StartCommand}" CommandParameter="{Binding Main.Clock.Presets[4]}" />
+                  <Button Content="{Binding Main.Clock.Presets[0].Name}" Command="{Binding Main.Clock.StartCommand}" CommandParameter="{Binding Main.Clock.Presets[0]}" IsVisible="{Binding Main.CanChooseClock}" />
+                  <Button Content="{Binding Main.Clock.Presets[1].Name}" Command="{Binding Main.Clock.StartCommand}" CommandParameter="{Binding Main.Clock.Presets[1]}" IsVisible="{Binding Main.CanChooseClock}" />
+                  <Button Content="{Binding Main.Clock.Presets[2].Name}" Command="{Binding Main.Clock.StartCommand}" CommandParameter="{Binding Main.Clock.Presets[2]}" IsVisible="{Binding Main.CanChooseClock}" />
+                  <Button Content="{Binding Main.Clock.Presets[4].Name}" Command="{Binding Main.Clock.StartCommand}" CommandParameter="{Binding Main.Clock.Presets[4]}" IsVisible="{Binding Main.CanChooseClock}" />
                   <Button Content="{Binding Main.PauseGameLabel}" Command="{Binding Main.TogglePauseGameCommand}" IsVisible="{Binding Main.CanPauseGame}" />
                   <Button Content="{l:T Clock.Remove}" Command="{Binding Main.Clock.RemoveCommand}" IsVisible="{Binding Main.Clock.HasClock}" />
                 </WrapPanel>
@@ -515,6 +530,23 @@
                           DragColor="{Binding Main.Study.Color}"
                           PointClickedCommand="{Binding Main.Study.BoardClickCommand}"
                           PointDraggedCommand="{Binding Main.Study.BoardDragCommand}" />
+        <!-- Territory on (2026-10-18): who is ahead, over the board, and a tap to hide it again. -->
+        <Border x:Name="PhoneTerritoryCard" Classes="warmup" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="8,6,8,0" Padding="12,5,6,5">
+          <Border.IsVisible>
+            <MultiBinding Converter="{x:Static BoolConverters.And}">
+              <Binding Path="Main.Analysis.IsTerritoryOn" />
+              <Binding Path="!Main.Counting.IsActive" />
+            </MultiBinding>
+          </Border.IsVisible>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <c:HoshiIcon Icon="{DynamicResource Icon.Territory}" Size="15" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding Main.Analysis.TerritoryText}" FontSize="12.5" FontWeight="SemiBold" VerticalAlignment="Center"
+                       TextWrapping="Wrap" MaxWidth="290" x:Name="PhoneTerritoryText" />
+            <Button Classes="bar icon" Command="{Binding Main.Analysis.ToggleTerritoryCommand}" VerticalAlignment="Center" ToolTip.Tip="{l:T Main.Territory}">
+              <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="12" />
+            </Button>
+          </StackPanel>
+        </Border>
         <!-- Counting at the end of a local game: the result, and accept or keep playing. -->
         <Border x:Name="PhoneCountingCard" IsVisible="{Binding Main.Counting.IsActive}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="8,0,8,8"
                 MaxWidth="460" Padding="14,10" CornerRadius="12" Background="{DynamicResource Bg.Panel}"

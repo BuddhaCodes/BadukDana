@@ -642,6 +642,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>Only local games pause (with a clock or an engine playing); online games run on the server's clock.</summary>
     public bool CanPauseGame => IsLocal && (Clock.HasClock || EngineMatch?.IsActive == true);
 
+    /// <summary>The menu's clock presets are for games between people here; against an engine the clock comes with the game.</summary>
+    public bool CanChooseClock => IsLocal && EngineMatch?.IsActive != true;
+
     public string PauseGameLabel => Tr.T(IsGamePaused ? "Pause.Resume" : "Pause.Pause");
 
     [RelayCommand(CanExecute = nameof(CanPauseGame))]
@@ -683,6 +686,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
 
         OnPropertyChanged(nameof(CanPauseGame));
+        OnPropertyChanged(nameof(CanChooseClock));
         TogglePauseGameCommand.NotifyCanExecuteChanged();
     }
 
@@ -840,7 +844,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        var options = new NewEngineGameViewModel(_engines.Engines, Game.Board.Rules, _settings?.Current.HumanLevel);
+        var options = new NewEngineGameViewModel(_engines.Engines, Game.Board.Rules, _settings?.Current.HumanLevel, Clock.Presets, _settings?.Current.EngineClock);
         if (!await _engineWindows.AskNewGameAsync(options))
         {
             return;
@@ -869,6 +873,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         if (options.HasHumanEngine && _settings is not null && _settings.Current.HumanLevel != options.HumanLevel)
         {
             _settings.Save(_settings.Current with { HumanLevel = options.HumanLevel });
+        }
+
+        // The game's time control, as chosen in the dialog (none: no clock).
+        Clock.StartCommand.Execute(options.Time.Preset);
+        if (_settings is not null && _settings.Current.EngineClock != options.Time.Preset?.Name)
+        {
+            _settings.Save(_settings.Current with { EngineClock = options.Time.Preset?.Name });
         }
 
         EngineMatch.Start(options.EngineFor(options.Black), options.EngineFor(options.White));

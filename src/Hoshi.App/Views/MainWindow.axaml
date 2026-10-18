@@ -298,12 +298,12 @@
                 <MenuItem Header="{l:T Count.Menu}" Command="{Binding Counting.StartCommand}" x:Name="CountItem" ToolTip.Tip="{l:T Count.MenuTip}" />
                 <MenuItem Header="{l:T Review.Menu}" Command="{Binding AnnotateReviewCommand}" x:Name="ReviewItem" />
                 <MenuItem Header="{l:T Clock.Menu}" x:Name="ClockMenu" IsVisible="{Binding IsLocal}" ToolTip.Tip="{l:T Clock.LocalOnly}">
-                  <MenuItem Header="{Binding Clock.Presets[0].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[0]}" />
-                  <MenuItem Header="{Binding Clock.Presets[1].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[1]}" />
-                  <MenuItem Header="{Binding Clock.Presets[2].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[2]}" />
-                  <MenuItem Header="{Binding Clock.Presets[3].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[3]}" />
-                  <MenuItem Header="{Binding Clock.Presets[4].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[4]}" />
-                  <MenuItem Header="{Binding Clock.Presets[5].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[5]}" />
+                  <MenuItem Header="{Binding Clock.Presets[0].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[0]}" IsVisible="{Binding CanChooseClock}" />
+                  <MenuItem Header="{Binding Clock.Presets[1].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[1]}" IsVisible="{Binding CanChooseClock}" />
+                  <MenuItem Header="{Binding Clock.Presets[2].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[2]}" IsVisible="{Binding CanChooseClock}" />
+                  <MenuItem Header="{Binding Clock.Presets[3].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[3]}" IsVisible="{Binding CanChooseClock}" />
+                  <MenuItem Header="{Binding Clock.Presets[4].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[4]}" IsVisible="{Binding CanChooseClock}" />
+                  <MenuItem Header="{Binding Clock.Presets[5].Name}" Command="{Binding Clock.StartCommand}" CommandParameter="{Binding Clock.Presets[5]}" IsVisible="{Binding CanChooseClock}" />
                   <Separator />
                   <MenuItem Header="{Binding PauseGameLabel}" Command="{Binding TogglePauseGameCommand}" />
                   <MenuItem Header="{l:T Clock.Remove}" Command="{Binding Clock.RemoveCommand}" IsEnabled="{Binding Clock.HasClock}" />

@@ -155,9 +155,14 @@ public sealed partial class PhoneShellViewModel : ViewModelBase
                 WatchOnline();
             }
 
-            if (e.PropertyName is nameof(MainWindowViewModel.IsZen) && main.IsZen)
+            if (e.PropertyName is nameof(MainWindowViewModel.IsZen))
             {
-                Sheet = PhoneSheet.None; // zen: the board alone
+                if (main.IsZen)
+                {
+                    Sheet = PhoneSheet.None; // zen: the board alone
+                }
+
+                PlatformInfo.Immersive?.Invoke(main.IsZen); // and no system bars
             }
         };
         navigation.PropertyChanged += (_, e) =>

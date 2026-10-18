@@ -160,6 +160,8 @@ public sealed class ThemeService
             app.RequestedThemeVariant = theme.IsLight ? Avalonia.Styling.ThemeVariant.Light : Avalonia.Styling.ThemeVariant.Dark;
         }
 
+        Services.PlatformInfo.SystemBars?.Invoke(theme.Bar, theme.IsLight);
+
         if (save && _settings is not null)
         {
             _settings.Save(_settings.Current with
