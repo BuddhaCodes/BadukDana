@@ -16,20 +16,18 @@ public static class SkinThumbnails
     private const int Size = 64;
     private static readonly Dictionary<string, IImage?> Cache = [];
 
-    /// <summary>The wood of a board style (its texture, Shudan's board or Hoshi's tinted kaya).</summary>
+    /// <summary>The wood of a board style (its texture or Hoshi's tinted kaya).</summary>
     public static IImage? Board(BoardStyle style)
     {
         ArgumentNullException.ThrowIfNull(style);
-        return style.ShudanTexture
-            ? Skins.Image("avares://Hoshi.App/Assets/Sabaki/board.png")
-            : Skins.Image(style.Texture) ?? Cached("kaya:" + style.Wood, () => BoardTextures.KayaFor(style.Wood));
+        return Skins.Image(style.Texture) ?? Cached("kaya:" + style.Wood, () => BoardTextures.KayaFor(style.Wood));
     }
 
     /// <summary>A white and a black stone side by side (twice as wide as tall).</summary>
     public static IImage? Stones(BoardStyle style)
     {
         ArgumentNullException.ThrowIfNull(style);
-        string key = $"stones:{style.ShudanTexture}:{style.Stones}:{style.StoneSet}";
+        string key = $"stones:{style.Stones}:{style.StoneSet}";
         return Cached(key, () =>
         {
             var bitmap = new RenderTargetBitmap(new PixelSize(Size * 2, Size), new Vector(96, 96));

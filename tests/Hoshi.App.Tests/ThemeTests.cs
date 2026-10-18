@@ -35,7 +35,7 @@ public sealed class ThemeTests
     public void Themes_are_distinct_and_reference_existing_icon_sets()
     {
         HoshiThemes.All.Select(t => t.Id).Should().OnlyHaveUniqueItems();
-        HoshiThemes.All.Should().HaveCount(7);
+        HoshiThemes.All.Should().HaveCount(6);
         HoshiThemes.All.Where(t => t.IsLight).Should().Equal(HoshiThemes.Kaya);
         HoshiThemes.All.Should().OnlyContain(t => IconSets.All.ContainsKey(t.IconSet));
         HoshiThemes.ById("nope").Should().BeSameAs(HoshiThemes.Default);
@@ -114,7 +114,7 @@ public sealed class ThemeTests
         var vm = new PreferencesViewModel(themes);
         try
         {
-            vm.Cards.Select(c => c.Name).Should().Equal("Estrella polar", "Kaya", "Tinta y oro", "Jardín zen", "Minimal cálido", "Clásico", "Alto contraste");
+            vm.Cards.Select(c => c.Name).Should().Equal("Estrella polar", "Kaya", "Tinta y oro", "Jardín zen", "Minimal cálido", "Alto contraste");
             vm.Selected.Theme.Should().BeSameAs(HoshiThemes.NightSky);
 
             vm.Selected = vm.Cards[2];
@@ -152,7 +152,6 @@ public sealed class ThemeTests
     [InlineData(BackgroundKind.InkMist)]
     [InlineData(BackgroundKind.ZenSand)]
     [InlineData(BackgroundKind.Washi)]
-    [InlineData(BackgroundKind.Tatami)]
     public void Backgrounds_render_and_only_animated_ones_run_a_timer(BackgroundKind kind)
     {
         var bg = new ThemeBackground { Kind = kind, Animate = true };

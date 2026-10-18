@@ -28,7 +28,7 @@ public sealed record BackgroundSkin(string Id, string NameKey, BackgroundKind Ki
 
 /// <summary>
 /// The boards, stones and backgrounds Hoshi ships. The art in <c>Assets/Art</c> is rendered by
-/// <c>tools/art/generate.py</c> (Hoshi's own, no third-party images); Shudan's board and tatami are Sabaki's (MIT).
+/// <c>tools/art/generate.py</c> (Hoshi's own, no third-party images).
 /// </summary>
 public static class Skins
 {
@@ -42,7 +42,6 @@ public static class Skins
         new("katsura", "Skin.Board.Katsura", Art + "Boards/katsura.jpg", C("#E0AA72"), C("#3C220E"), C("#B03C220E"), C("#B98150"), 0.05),
         new("bamboo", "Skin.Board.Bamboo", Art + "Boards/bamboo.jpg", C("#D1AB71"), C("#3A2812"), C("#B03A2812"), C("#A88350"), 0.06),
         new("walnut", "Skin.Board.Walnut", Art + "Boards/walnut.jpg", C("#63442F"), C("#EADCC0"), C("#C0EADCC0"), C("#3E2A1C"), 0.06),
-        new("sabaki", "Skin.Board.Sabaki", "avares://Hoshi.App/Assets/Sabaki/board.png", C("#F1B458"), C("#5E2E0C"), C("#D05E2E0C"), C("#CA933A"), 0.15),
         new("kaya", "Skin.Board.Kaya", null, C("#E3C28A"), C("#5E2E0C"), C("#D05E2E0C"), C("#CA933A"), 0.05),
     ];
 
@@ -55,7 +54,7 @@ public static class Skins
         new("jade", "Skin.Stones.Jade", StoneStyle.Pearl, "jade", 4, 4),
         new("pearl", "Skin.Stones.Pearl", StoneStyle.Pearl),
         new("soft", "Skin.Stones.Soft", StoneStyle.Soft),
-        new("shudan", "Skin.Stones.Shudan", StoneStyle.Shudan),
+        new("gradient", "Skin.Stones.Gradient", StoneStyle.Gradient),
     ];
 
     public static IReadOnlyList<BackgroundSkin> Backgrounds { get; } =
@@ -69,7 +68,6 @@ public static class Skins
         new("linen", "Skin.Bg.Linen", BackgroundKind.Linen, C("#2C2D32"), Art + "Backgrounds/linen.jpg"),
         new("sudare", "Skin.Bg.Sudare", BackgroundKind.Sudare, C("#B08E5A"), Art + "Backgrounds/sudare.jpg"),
         new("washi", "Skin.Bg.Washi", BackgroundKind.Washi, C("#EFE9DD")),
-        new("tatami", "Skin.Bg.Tatami", BackgroundKind.Tatami, C("#C2CB9C"), "avares://Hoshi.App/Assets/Sabaki/tatami.png"),
     ];
 
     public static BoardSkin? Board(string? id) => Boards.FirstOrDefault(b => b.Id == id);
@@ -78,7 +76,7 @@ public static class Skins
     public static string BoardNameFor(BoardStyle style)
     {
         ArgumentNullException.ThrowIfNull(style);
-        BoardSkin? skin = style.ShudanTexture ? Board("sabaki") : Boards.FirstOrDefault(b => b.Texture == style.Texture);
+        BoardSkin? skin = Boards.FirstOrDefault(b => b.Texture == style.Texture);
         return (skin ?? Board("kaya")!).Name;
     }
 
@@ -86,11 +84,6 @@ public static class Skins
     public static string StonesNameFor(BoardStyle style)
     {
         ArgumentNullException.ThrowIfNull(style);
-        if (style.ShudanTexture)
-        {
-            return StoneSet("shudan")!.Name;
-        }
-
         StoneSkin? skin = style.StoneSet is { } set
             ? Stones.FirstOrDefault(s => s.Set == set)
             : Stones.FirstOrDefault(s => s.Set is null && s.Vector == style.Stones) ?? (style.Stones == StoneStyle.SlateShell ? StoneSet("clam-slate") : null);
@@ -112,7 +105,7 @@ public static class Skins
             return theme;
         }
 
-        BoardStyle style = Expand(theme);
+        BoardStyle style = theme;
         if (board is not null)
         {
             style = style with
@@ -133,20 +126,6 @@ public static class Skins
 
         return style;
     }
-
-    /// <summary>Classic's "Shudan" shortcut spelled out, so its board and stones can be changed one at a time.</summary>
-    public static BoardStyle Expand(BoardStyle s) => !s.ShudanTexture ? s : s with
-    {
-        ShudanTexture = false,
-        Texture = "avares://Hoshi.App/Assets/Sabaki/board.png",
-        Wood = C("#F1B458"),
-        Border = C("#CA933A"),
-        BorderWidth = 0.15,
-        Lines = C("#5E2E0C"),
-        Coordinates = C("#D05E2E0C"),
-        StoneShadow = C("#66170A02"),
-        Stones = StoneStyle.Shudan,
-    };
 
     private static readonly Dictionary<string, Bitmap> Cache = [];
 

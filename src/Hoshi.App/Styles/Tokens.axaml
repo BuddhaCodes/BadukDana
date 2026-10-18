@@ -1,13 +1,13 @@
 <!-- Design tokens. Source of truth: docs/DESIGN.md → "Paleta". -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Color x:Key="Bg.Window.Color">#1E1E1E</Color>
-  <Color x:Key="Bg.Panel.Color">#252526</Color>
-  <Color x:Key="Bg.PanelAlt.Color">#2D2D30</Color>
-  <Color x:Key="Border.Subtle.Color">#3A3A3A</Color>
-  <Color x:Key="Text.Primary.Color">#E6E6E6</Color>
-  <Color x:Key="Text.Secondary.Color">#9A9A9A</Color>
-  <Color x:Key="Accent.Color">#E0A94A</Color>
+  <Color x:Key="Bg.Window.Color">#0B1026</Color>
+  <Color x:Key="Bg.Panel.Color">#141A3A</Color>
+  <Color x:Key="Bg.PanelAlt.Color">#1B2350</Color>
+  <Color x:Key="Border.Subtle.Color">#2A315A</Color>
+  <Color x:Key="Text.Primary.Color">#E9E6DA</Color>
+  <Color x:Key="Text.Secondary.Color">#9AA0C3</Color>
+  <Color x:Key="Accent.Color">#E8C36A</Color>
   <Color x:Key="Danger.Color">#D9534F</Color>
   <Color x:Key="Good.Color">#6CC47A</Color>
   <Color x:Key="Board.Wood.Color">#DCB35C</Color>
@@ -25,25 +25,19 @@
   <SolidColorBrush x:Key="Board.Wood" Color="{StaticResource Board.Wood.Color}" />
   <SolidColorBrush x:Key="Board.Line" Color="{StaticResource Board.Line.Color}" />
 
-  <!-- Sabaki look (colours from Sabaki's index.css; tatami texture MIT, see THIRD_PARTY_NOTICES.md). -->
-  <Color x:Key="Bg.Bar.Color">#292A2D</Color>
-  <Color x:Key="Bg.Sidebar.Color">#111111</Color>
-  <Color x:Key="Bg.Properties.Color">#181818</Color>
-  <Color x:Key="Bg.EditBar.Color">#C4BD64</Color>
-  <Color x:Key="Bg.Tatami.Base.Color">#C2CB9C</Color>
+  <Color x:Key="Bg.Bar.Color">#0F1530</Color>
+  <Color x:Key="Bg.Sidebar.Color">#0F1530</Color>
+  <Color x:Key="Bg.Properties.Color">#141A3A</Color>
+  <Color x:Key="Bg.EditBar.Color">#2E3F73</Color>
   <SolidColorBrush x:Key="Bg.Bar" Color="{StaticResource Bg.Bar.Color}" />
   <SolidColorBrush x:Key="Bg.Sidebar" Color="{StaticResource Bg.Sidebar.Color}" />
   <SolidColorBrush x:Key="Bg.Properties" Color="{StaticResource Bg.Properties.Color}" />
   <SolidColorBrush x:Key="Bg.EditBar" Color="{StaticResource Bg.EditBar.Color}" />
-  <SolidColorBrush x:Key="Bg.Tatami.Base" Color="{StaticResource Bg.Tatami.Base.Color}" />
-  <ImageBrush x:Key="Bg.Tatami" Source="/Assets/Sabaki/tatami.png"
-              TileMode="Tile" Stretch="None" AlignmentX="Center" AlignmentY="Center"
-              DestinationRect="0,0,87,195" />
 
   <!-- Theme-driven keys: defaults here, replaced at start-up and on theme change by ThemeService. -->
-  <SolidColorBrush x:Key="EditBar.Foreground" Color="#222222" />
-  <SolidColorBrush x:Key="EditBar.Hover" Color="#B3AC53" />
-  <SolidColorBrush x:Key="Bg.Surround" Color="#C2CB9C" />
+  <SolidColorBrush x:Key="EditBar.Foreground" Color="#F1EEDF" />
+  <SolidColorBrush x:Key="EditBar.Hover" Color="#3B4E8A" />
+  <SolidColorBrush x:Key="Bg.Surround" Color="#0B1026" />
   <FontFamily x:Key="Font.UI">avares://Hoshi.App/Assets/Fonts/Manrope#Manrope</FontFamily>
   <FontFamily x:Key="Font.Title">avares://Hoshi.App/Assets/Fonts/Manrope#Manrope</FontFamily>
   <FontFamily x:Key="Font.Mono">avares://Hoshi.App/Assets/Fonts/JetBrainsMono#JetBrains Mono</FontFamily>

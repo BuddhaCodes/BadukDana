@@ -8,23 +8,14 @@ using Avalonia.Platform;
 namespace Hoshi.App.Controls;
 
 /// <summary>
-/// Board and stone look, after Sabaki's board component Shudan (MIT, see THIRD_PARTY_NOTICES.md): the board uses
-/// Shudan's <c>board.png</c> over <c>#F1B458</c>, and the stones reproduce the gradients of its
-/// <c>stone_1.svg</c> / <c>stone_-1.svg</c>. The procedural wood below is only a fallback if the asset cannot be loaded.
+/// Hoshi's procedural kaya (tinted per theme) and the vector stones. The "gradient" stones keep the colours of
+/// Shudan's <c>stone_1.svg</c> / <c>stone_-1.svg</c> (MIT, see THIRD_PARTY_NOTICES.md); no image of theirs is used.
 /// </summary>
 internal static class BoardTextures
 {
     public const int WoodSize = 512;
 
-    public static readonly Color BoardBackground = Color.FromRgb(0xF1, 0xB4, 0x58);
-    public static readonly Color BoardBorder = Color.FromRgb(0xCA, 0x93, 0x3A);
-    public static readonly Color BoardForeground = Color.FromRgb(0x5E, 0x2E, 0x0C);
-
-    private static readonly Lazy<Bitmap> LazyWood = new(LoadBoard);
     private static readonly Dictionary<Color, Bitmap> Kaya = [];
-
-    /// <summary>Shudan's board texture (Classic theme).</summary>
-    public static Bitmap Wood => LazyWood.Value;
 
     /// <summary>Hoshi's own procedural kaya, tinted to <paramref name="baseColor"/> (cached per colour).</summary>
     public static Bitmap KayaFor(Color baseColor)
@@ -113,19 +104,6 @@ internal static class BoardTextures
             new GradientStop(bottom.Color, bottom.Offset),
         },
     }.ToImmutable();
-
-    private static Bitmap LoadBoard()
-    {
-        try
-        {
-            using Stream s = AssetLoader.Open(new Uri("avares://Hoshi.App/Assets/Sabaki/board.png"));
-            return new Bitmap(s);
-        }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or FileNotFoundException)
-        {
-            return CreateWood(Color.FromRgb(0xE0, 0xB9, 0x68));
-        }
-    }
 
     private static Bitmap CreateWood(Color baseColor)
     {

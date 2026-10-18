@@ -194,7 +194,6 @@ public static partial class Tr
         Add(d, "Theme.Zen.Description", "Raked sand that shifts very slowly, stone tones and moss green.", "Arena rastrillada que se mueve muy despacio, tonos piedra y verde musgo.");
         Add(d, "Theme.Minimal.Name", "Warm minimal", "Minimal cálido");
         Add(d, "Theme.Minimal.Description", "Understated: washi paper, light wood and terracotta, with micro-animations.", "Sobrio: papel washi, madera clara y terracota, con micro-animaciones.");
-        Add(d, "Theme.Classic.Name", "Classic", "Clásico");
         Add(d, "Skin.FromTheme", "As in the theme", "Como en el tema");
         Add(d, "Skin.FromThemeNamed", "Theme: {0}", "Del tema: {0}");
         Add(d, "Skin.Board.KayaMasame", "Kaya, straight grain", "Kaya, veta recta (masame)");
@@ -203,7 +202,6 @@ public static partial class Tr
         Add(d, "Skin.Board.Katsura", "Katsura", "Katsura");
         Add(d, "Skin.Board.Bamboo", "Bamboo", "Bambú");
         Add(d, "Skin.Board.Walnut", "Walnut (dark)", "Nogal (oscuro)");
-        Add(d, "Skin.Board.Sabaki", "Sabaki (Shudan)", "Sabaki (Shudan)");
         Add(d, "Skin.Board.Kaya", "Kaya, tinted by the theme", "Kaya teñida por el tema");
         Add(d, "Skin.Stones.ClamSlate", "Clam shell and slate", "Concha y pizarra");
         Add(d, "Skin.Stones.Yunzi", "Yunzi", "Yunzi");
@@ -212,7 +210,7 @@ public static partial class Tr
         Add(d, "Skin.Stones.Jade", "Jade and obsidian", "Jade y obsidiana");
         Add(d, "Skin.Stones.Pearl", "Pearl (vector)", "Perla (vectorial)");
         Add(d, "Skin.Stones.Soft", "Soft (vector)", "Suaves (vectoriales)");
-        Add(d, "Skin.Stones.Shudan", "Shudan (Sabaki)", "Shudan (Sabaki)");
+        Add(d, "Skin.Stones.Gradient", "Classic gradient", "Degradado clásico");
         Add(d, "Skin.Bg.Night", "Night sky (animated)", "Cielo nocturno (animado)");
         Add(d, "Skin.Bg.Ink", "Ink mist (animated)", "Niebla de tinta (animada)");
         Add(d, "Skin.Bg.Zen", "Zen sand (animated)", "Arena zen (animada)");
@@ -222,7 +220,5 @@ public static partial class Tr
         Add(d, "Skin.Bg.Linen", "Charcoal linen", "Lino carbón");
         Add(d, "Skin.Bg.Sudare", "Bamboo blind", "Persiana de bambú (sudare)");
         Add(d, "Skin.Bg.Washi", "Washi paper", "Papel washi");
-        Add(d, "Skin.Bg.Tatami", "Tatami", "Tatami");
-        Add(d, "Theme.Classic.Description", "A tribute to Sabaki: tatami, Shudan wood and a dark grey interface.", "Homenaje a Sabaki: tatami, madera de Shudan e interfaz gris oscura.");
     }
 }

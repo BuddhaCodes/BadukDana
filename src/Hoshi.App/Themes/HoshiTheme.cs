@@ -6,9 +6,6 @@ namespace Hoshi.App.Themes;
 /// <summary>What is drawn around the board.</summary>
 public enum BackgroundKind
 {
-    /// <summary>Sabaki's tatami (static).</summary>
-    Tatami,
-
     /// <summary>Night sky: slow twinkling stars, drifting nebula, faint constellations, a rare shooting star.</summary>
     NightSky,
 
@@ -58,8 +55,8 @@ public enum PlacementEffect
 /// <summary>How stones are drawn.</summary>
 public enum StoneStyle
 {
-    /// <summary>Shudan's gradients (Classic).</summary>
-    Shudan,
+    /// <summary>Vector stones with a soft vertical gradient (the colours of Shudan's SVG stones).</summary>
+    Gradient,
 
     /// <summary>Glassy slate with a cool highlight and pearly white stones.</summary>
     Pearl,
@@ -74,9 +71,6 @@ public enum StoneStyle
 /// <summary>How a theme draws the goban.</summary>
 public sealed record BoardStyle
 {
-    /// <summary>Use Shudan's board.png (Classic); otherwise Hoshi's procedural kaya tinted with <see cref="Wood"/>.</summary>
-    public bool ShudanTexture { get; init; }
-
     public Color Wood { get; init; } = Color.Parse("#E3C28A");
 
     /// <summary>An image of the wood (<c>avares://</c>); null = Hoshi's procedural kaya tinted with <see cref="Wood"/>.</summary>
@@ -104,7 +98,7 @@ public sealed record BoardStyle
 
     public Color StoneShadow { get; init; } = Color.Parse("#66170A02");
 
-    public StoneStyle Stones { get; init; } = StoneStyle.Shudan;
+    public StoneStyle Stones { get; init; } = StoneStyle.Gradient;
 
     public PlacementEffect Effect { get; init; } = PlacementEffect.None;
 
@@ -366,32 +360,6 @@ public static class HoshiThemes
         },
     };
 
-    public static HoshiTheme Classic { get; } = new()
-    {
-        Id = "classic",
-        NameKey = "Theme.Classic.Name",
-        DescriptionKey = "Theme.Classic.Description",
-        Window = Color.Parse("#1E1E1E"),
-        Bar = Color.Parse("#292A2D"),
-        Sidebar = Color.Parse("#111111"),
-        Properties = Color.Parse("#181818"),
-        PanelAlt = Color.Parse("#2D2D30"),
-        Border = Color.Parse("#3A3A3A"),
-        Text = Color.Parse("#E6E6E6"),
-        TextSecondary = Color.Parse("#9A9A9A"),
-        Accent = Color.Parse("#E0A94A"),
-        EditBar = Color.Parse("#C4BD64"),
-        EditBarText = Color.Parse("#222222"),
-        EditBarHover = Color.Parse("#B3AC53"),
-        Surround = Color.Parse("#C2CB9C"),
-        UiFont = Fonts + "Manrope#Manrope",
-        TitleFont = Fonts + "Manrope#Manrope",
-        MonoFont = Fonts + "JetBrainsMono#JetBrains Mono",
-        IconSet = "Lucide",
-        Background = BackgroundKind.Tatami,
-        Board = new BoardStyle { ShudanTexture = true },
-    };
-
     /// <summary>
     /// High contrast (accessibility): black chrome, white text, a yellow accent, a pale flat board with black lines,
     /// plain vector stones and a red last-move ring; nothing moves in the background.
@@ -431,7 +399,7 @@ public static class HoshiThemes
             BoardShadow = Colors.Transparent,
             BoardShadowBlur = 0,
             StoneShadow = Colors.Transparent,
-            Stones = StoneStyle.Shudan,
+            Stones = StoneStyle.Gradient,
             Effect = PlacementEffect.None,
             LastMove = Color.Parse("#FF1E1E"),
         },
@@ -489,7 +457,7 @@ public static class HoshiThemes
         },
     };
 
-    public static IReadOnlyList<HoshiTheme> All { get; } = [NightSky, Kaya, InkAndGold, ZenGarden, WarmMinimal, Classic, HighContrast];
+    public static IReadOnlyList<HoshiTheme> All { get; } = [NightSky, Kaya, InkAndGold, ZenGarden, WarmMinimal, HighContrast];
 
     public static HoshiTheme Default => NightSky;
 

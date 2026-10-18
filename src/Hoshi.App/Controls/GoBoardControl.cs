@@ -64,7 +64,7 @@ public sealed partial class GoBoardControl : Control
     public static readonly StyledProperty<ICommand?> ScrollCommandProperty =
         AvaloniaProperty.Register<GoBoardControl, ICommand?>(nameof(ScrollCommand));
 
-    /// <summary>The theme's board look (bind to <c>{DynamicResource Theme.Board}</c>); null = Classic.</summary>
+    /// <summary>The theme's board look (bind to <c>{DynamicResource Theme.Board}</c>); null = the default kaya.</summary>
     public static readonly StyledProperty<BoardStyle?> BoardStyleProperty =
         AvaloniaProperty.Register<GoBoardControl, BoardStyle?>(nameof(BoardStyle));
 
@@ -100,7 +100,7 @@ public sealed partial class GoBoardControl : Control
     public static readonly TimeSpan SettleDuration = TimeSpan.FromMilliseconds(200);
     public static readonly TimeSpan EffectDuration = TimeSpan.FromMilliseconds(650);
 
-    private static readonly BoardStyle ClassicStyle = new() { ShudanTexture = true };
+    private static readonly BoardStyle DefaultStyle = new();
 
     private readonly System.Diagnostics.Stopwatch _animClock = new();
     private Avalonia.Threading.DispatcherTimer? _animTimer;
@@ -117,13 +117,9 @@ public sealed partial class GoBoardControl : Control
 
     private static readonly Typeface CoordinateTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.Medium);
     private static readonly Typeface LabelTypeface = new(FontFamily.Default, FontStyle.Normal, FontWeight.SemiBold);
-    // Colours after Shudan's goban.css (MIT, see THIRD_PARTY_NOTICES.md).
-    private static readonly IBrush LineBrush = new ImmutableSolidColorBrush(BoardTextures.BoardForeground);
-    private static readonly IBrush CoordinateBrush = new ImmutableSolidColorBrush(Color.FromArgb(0xD0, 0x5E, 0x2E, 0x0C));
-    private static readonly IBrush LabelBackground = new ImmutableSolidColorBrush(BoardTextures.BoardBackground);
-    private static readonly IBrush BoardBackgroundBrush = new ImmutableSolidColorBrush(BoardTextures.BoardBackground);
+    private static readonly IBrush LineBrush = new ImmutableSolidColorBrush(Color.FromRgb(0x5E, 0x2E, 0x0C));
 
-    /// <summary>Shudan's board sheen: a light wash at the top and a faint darkening towards the bottom.</summary>
+    /// <summary>The board's sheen: a light wash at the top and a faint darkening towards the bottom.</summary>
     private static readonly IBrush BoardSheen = new LinearGradientBrush
     {
         StartPoint = new RelativePoint(0.5, 0, RelativeUnit.Relative),
@@ -290,8 +286,8 @@ public sealed partial class GoBoardControl : Control
         }
 
         double scale = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1.0;
-        BoardStyle style = BoardStyle ?? ClassicStyle;
-        var lines = new ImmutableSolidColorBrush(style.ShudanTexture ? BoardTextures.BoardForeground : style.Lines);
+        BoardStyle style = BoardStyle ?? DefaultStyle;
+        var lines = new ImmutableSolidColorBrush(style.Lines);
 
         double t = ImpactTime ?? _impactClock.Elapsed.TotalSeconds;
         ImpactEffect? impact = _impact is { } fx && board.IsOnBoard(fx.Point) ? fx : null;
@@ -302,7 +298,7 @@ public sealed partial class GoBoardControl : Control
         DrawGrid(context, g, board, scale, lines);
         if (ShowCoordinates)
         {
-            DrawCoordinates(context, g, style.ShudanTexture ? CoordinateBrush : new ImmutableSolidColorBrush(style.Coordinates));
+            DrawCoordinates(context, g, new ImmutableSolidColorBrush(style.Coordinates));
         }
 
         if (impact is not null)
@@ -463,9 +459,9 @@ public sealed partial class GoBoardControl : Control
     private static void DrawWood(DrawingContext context, BoardGeometry g, BoardStyle style)
     {
         Rect outer = g.BoardRect;
-        double border = style.ShudanTexture ? Math.Max(2, g.Cell * 0.15) : style.BorderWidth * g.Cell;
+        double border = style.BorderWidth * g.Cell;
         Rect rect = outer.Deflate(border);
-        Color frame = style.ShudanTexture ? BoardTextures.BoardBorder : (border > 0 ? style.Border : style.Wood);
+        Color frame = border > 0 ? style.Border : style.Wood;
 
         // The goban floats over the background with a deep, soft shadow.
         context.DrawRectangle(
@@ -474,9 +470,8 @@ public sealed partial class GoBoardControl : Control
 
         using (context.PushClip(rect))
         {
-            context.DrawRectangle(style.ShudanTexture ? BoardBackgroundBrush : new ImmutableSolidColorBrush(style.Wood), null, rect);
-            Bitmap wood = style.ShudanTexture ? BoardTextures.Wood
-                : Themes.Skins.Image(style.Texture) ?? BoardTextures.KayaFor(style.Wood);
+            context.DrawRectangle(new ImmutableSolidColorBrush(style.Wood), null, rect);
+            Bitmap wood = Themes.Skins.Image(style.Texture) ?? BoardTextures.KayaFor(style.Wood);
             Size src = wood.Size;
 
             // Cover the board with the texture, keeping its aspect ratio (the grain runs vertically).
@@ -559,7 +554,7 @@ public sealed partial class GoBoardControl : Control
     private void DrawStones(DrawingContext context, BoardGeometry g, BoardState board, BoardStyle style)
     {
         double r = g.Cell * StoneRadius;
-        Color shadowColor = style.ShudanTexture ? BoardTextures.ShadowColor : style.StoneShadow;
+        Color shadowColor = style.StoneShadow;
         var shadow = new BoxShadows(new BoxShadow { OffsetX = 0, OffsetY = g.Cell * 0.1, Blur = g.Cell * 0.2, Color = shadowColor });
         var shadowBrush = new ImmutableSolidColorBrush(shadowColor);
 
@@ -973,14 +968,14 @@ public sealed partial class GoBoardControl : Control
     internal static void DrawStone(DrawingContext context, AvPoint c, double r, Stone color, BoardStyle board, Point p)
     {
         bool black = color == Stone.Black;
-        if (!board.ShudanTexture && board.StoneSet is { } set
+        if (board.StoneSet is { } set
             && Themes.Skins.StoneSprite(set, black, black ? board.BlackVariants : board.WhiteVariants, p.X, p.Y) is { } sprite)
         {
             context.DrawImage(sprite, new Rect(sprite.Size), new Rect(c.X - r, c.Y - r, 2 * r, 2 * r));
             return;
         }
 
-        StoneStyle style = board.ShudanTexture ? StoneStyle.Shudan : board.Stones;
+        StoneStyle style = board.Stones;
         switch (style)
         {
             case StoneStyle.Pearl:
@@ -1092,7 +1087,7 @@ public sealed partial class GoBoardControl : Control
 
     private void DrawMarkers(DrawingContext context, BoardGeometry g, BoardState board, IBrush LineBrush, BoardStyle style)
     {
-        IBrush labelBackground = style.ShudanTexture ? LabelBackground : new ImmutableSolidColorBrush(style.Wood);
+        IBrush labelBackground = new ImmutableSolidColorBrush(style.Wood);
         if (Markers is not { Count: > 0 } markers)
         {
             return;
@@ -1174,7 +1169,7 @@ public sealed partial class GoBoardControl : Control
 
         using (context.PushOpacity(0.4))
         {
-            BoardStyle style = BoardStyle ?? ClassicStyle;
+            BoardStyle style = BoardStyle ?? DefaultStyle;
             DrawStone(context, g.Center(p), g.Cell * StoneRadius, GhostStone, style, p);
         }
     }
