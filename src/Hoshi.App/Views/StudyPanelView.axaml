@@ -119,7 +119,7 @@
                       <Button Classes="bar" Padding="6,2" FontSize="11.5" Content="{l:T Study.NewSequence}" ToolTip.Tip="{l:T Study.NewSequenceTip}"
                               Command="{Binding Study.NewSequenceCommand}" IsVisible="{Binding Study.IsSequenceTool}" />
                       <Button Classes="bar icon" ToolTip.Tip="{l:T Study.ClearDrawingsTip}" Command="{Binding Study.ClearDrawingsCommand}" x:Name="StudyClear">
-                        <c:HoshiIcon Icon="{DynamicResource Icon.Erase}" Size="14" />
+                        <c:HoshiIcon Icon="{DynamicResource Icon.Trash}" Size="15" Foreground="{DynamicResource Danger}" />
                       </Button>
                     </StackPanel>
                   </Grid>

@@ -59,6 +59,9 @@ public sealed class ThemeService
         Apply(Current, Animations, null, save: true);
     }
 
+    /// <summary>The icons of a set ("PhosphorLight", "PhosphorRegular", "Lucide", "Tabler").</summary>
+    public static IReadOnlyDictionary<string, IconData> IconSet(string name) => IconSets.All[name];
+
     public static void Apply(HoshiTheme theme, bool animations, IResourceDictionary resources) =>
         Apply(theme, animations, resources, null, null, null);
 
@@ -98,6 +101,15 @@ public sealed class ThemeService
         resources["Font.Title"] = new FontFamily(theme.TitleFont);
         resources["Font.Mono"] = new FontFamily(theme.MonoFont);
         resources["Font.Size.Title"] = theme.TitleSize;
+
+        // Corners: square-ish by default, soft and round in Mochi (Fluent's own controls follow).
+        bool round = theme.Rounded;
+        resources["Radius.Control"] = new CornerRadius(round ? 10 : 3);
+        resources["Radius.Soft"] = new CornerRadius(round ? 12 : 6);
+        resources["Radius.Card"] = new CornerRadius(round ? 18 : 10);
+        resources["Radius.Palette"] = new CornerRadius(round ? 22 : 14);
+        resources["ControlCornerRadius"] = new CornerRadius(round ? 10 : 4);
+        resources["OverlayCornerRadius"] = new CornerRadius(round ? 14 : 8);
 
         IReadOnlyDictionary<string, IconData> icons = IconSets.All[theme.IconSet];
         foreach ((string key, IconData icon) in icons)
