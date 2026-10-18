@@ -11,6 +11,9 @@ public static partial class Tr
             "El primer toque muestra la piedra con líneas guía; tocar otra vez el mismo punto la juega. Evita jugadas por error en tableros pequeños.");
         Add(d, "Phone.Moves", "Moves", "Jugadas");
         Add(d, "Home.Menu", "Home", "Inicio");
+        Add(d, "Phone.AskUndo", "Undo?", "¿Deshacer?");
+        Add(d, "Phone.FairPlay", "Fair play", "Juego limpio");
+        Add(d, "Phone.FairPlayTip", "No AI help while you play on OGS: analysis, hints and the joseki trainer are off.", "Sin ayuda de IA mientras juegas en OGS: el análisis, las pistas y el entrenador de josekis están apagados.");
         Add(d, "Phone.ConfirmHint", "Tap again, or:", "Toca otra vez, o:");
         Add(d, "Phone.ConfirmMove", "Play {0}", "Confirmar {0}");
         Add(d, "Phone.Winrate", "Win chance", "Probabilidad");
