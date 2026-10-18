@@ -56,7 +56,8 @@ internal static class AndroidPlatform
 
         global::Hoshi.App.App.ServiceFactory = () =>
         {
-            IHost host = AppHost.Create([], services =>
+            // After the OGS sign-in in the browser, its "signed in" page brings Hoshi back (MainActivity's hoshi:// filter).
+            IHost host = AppHost.Create(["--Ogs:AppReturnUri=" + MainActivity.SignedInIntentUri], services =>
             {
                 services.AddPhoneShell();
                 services.AddSingleton(_ => new AndroidSoundService(context));

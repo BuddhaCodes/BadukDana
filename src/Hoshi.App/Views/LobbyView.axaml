@@ -67,6 +67,18 @@
       <StackPanel IsVisible="{Binding IsSignedOut}" VerticalAlignment="Center" HorizontalAlignment="Center"
                   Width="320" Spacing="10" x:Name="SignInPanel">
         <TextBlock Text="{l:T Lobby.SignInHeading}" FontSize="18" HorizontalAlignment="Center" />
+        <!-- A browser sign-in is waiting: back without being in (Google may end on OGS's home), authorize again. -->
+        <Border IsVisible="{Binding IsWaitingForBrowser}" Classes="review-card" Padding="14,12" x:Name="BrowserWaitCard">
+          <StackPanel Spacing="8">
+            <TextBlock Text="{l:T Lobby.BrowserWaiting}" FontWeight="SemiBold" />
+            <TextBlock Classes="secondary" Text="{l:T Lobby.BrowserWaitingHint}" TextWrapping="Wrap" />
+            <Grid ColumnDefinitions="*,8,Auto">
+              <Button Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" MinHeight="40"
+                      Content="{l:T Lobby.AuthorizeAgain}" Command="{Binding ContinueInBrowserCommand}" x:Name="AuthorizeAgainButton" />
+              <Button Grid.Column="2" MinHeight="40" Content="{l:T Lobby.CancelSignIn}" Command="{Binding CancelBrowserSignInCommand}" x:Name="CancelSignInButton" />
+            </Grid>
+          </StackPanel>
+        </Border>
         <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                 Content="{l:T Lobby.Google}" Command="{Binding SignInWithGoogleCommand}" x:Name="GoogleSignInButton"
                 ToolTip.Tip="{l:T Lobby.GoogleTip}" />

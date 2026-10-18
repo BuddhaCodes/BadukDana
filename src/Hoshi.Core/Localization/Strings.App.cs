@@ -101,6 +101,11 @@ public static partial class Tr
         Add(d, "Lobby.Rules.Korean", "Korean", "Coreanas");
         Add(d, "Lobby.AuthorizeInBrowser", "Authorize Hoshi in the browser window…", "Autoriza a Hoshi en la ventana del navegador…");
         Add(d, "Lobby.NoBrowserServer", "No server supports browser sign-in.", "No hay ningún servidor con inicio de sesión por navegador.");
+        Add(d, "Lobby.BrowserSignInStopped", "Sign-in stopped. You can try again.", "Inicio de sesión detenido. Puedes volver a intentarlo.");
+        Add(d, "Lobby.BrowserWaiting", "Waiting for OGS in the browser…", "Esperando a OGS en el navegador…");
+        Add(d, "Lobby.BrowserWaitingHint", "Signed in but still here? Tap «Authorize Hoshi»: OGS asks once and Hoshi is in.", "¿Entraste pero sigues aquí? Toca «Autorizar Hoshi»: OGS pregunta una vez y Hoshi entra.");
+        Add(d, "Lobby.AuthorizeAgain", "Authorize Hoshi", "Autorizar Hoshi");
+        Add(d, "Lobby.CancelSignIn", "Cancel", "Cancelar");
         Add(d, "Lobby.GoogleInBrowser", "Sign in with Google in the browser and authorize Hoshi…", "Entra con Google en el navegador y autoriza a Hoshi…");
         Add(d, "Lobby.SignedOut", "Signed out.", "Sesión cerrada.");
         Add(d, "Lobby.AcceptedGame", "Challenge accepted: game #{0}.", "Desafío aceptado: partida #{0}.");

@@ -180,6 +180,30 @@ public sealed class OgsAuthServiceTests
     }
 
     [Fact]
+    public async Task A_google_login_that_lands_elsewhere_finishes_by_opening_the_pending_authorization()
+    {
+        var back = new Uri("intent://signed-in#Intent;scheme=hoshi;package=io.github.buddhacodes.hoshi;end");
+        (OgsAuthService auth, FakeHttpHandler http, _, _, _) = Create(OAuthOptions with { RedirectPort = FreePort(), AppReturnUri = back });
+        http.On("POST", "/oauth2/token/", HttpStatusCode.OK, Fixtures.Read("token_response.json"))
+            .On("GET", "/api/v1/ui/config", HttpStatusCode.OK, Fixtures.Read("ui_config.json"));
+
+        // The browser signs in with Google but ends on OGS's home page: no code reaches the loopback.
+        Task<OgsSession> signIn = auth.SignInWithBrowserAsync(OgsLoginProvider.Google, (_, _) => Task.CompletedTask, CancellationToken.None);
+        auth.PendingAuthorization.Should().NotBeNull();
+        auth.PendingAuthorization!.AbsolutePath.Should().Be("/oauth2/authorize/", "opening it again is a plain authorization");
+
+        // "Authorize Hoshi" in the lobby opens it; the browser (signed in by now) comes back with the code.
+        var q = HttpUtility.ParseQueryString(auth.PendingAuthorization.Query);
+        using var browser = new HttpClient();
+        string page = await browser.GetStringAsync($"{q["redirect_uri"]}?code=auth-code-1&state={q["state"]}");
+        OgsSession session = await signIn;
+
+        session.User.Id.Should().Be(1001);
+        auth.PendingAuthorization.Should().BeNull();
+        page.Should().Contain(back.OriginalString, "on phones the page brings Hoshi back to the front");
+    }
+
+    [Fact]
     public async Task Google_sign_in_goes_through_OGS_social_login_and_then_the_same_PKCE_authorization()
     {
         (OgsAuthService auth, FakeHttpHandler http, _, _, _) = Create(OAuthOptions with { RedirectPort = FreePort() });

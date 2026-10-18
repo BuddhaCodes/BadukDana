@@ -28,6 +28,8 @@ public static partial class Tr
         Add(d, "Ogs.CodeMissing", "The redirect does not include an authorization code.", "La redirección no incluye un código de autorización.");
         Add(d, "Ogs.Page.SignedInTitle", "Signed in", "Sesión iniciada");
         Add(d, "Ogs.Page.SignedInBody", "Hoshi now has access to your OGS account. You can close this tab.", "Hoshi ya tiene acceso a tu cuenta de OGS. Puedes cerrar esta pestaña.");
+        Add(d, "Ogs.Page.SignedInPhoneBody", "Hoshi now has access to your OGS account. Going back to Hoshi…", "Hoshi ya tiene acceso a tu cuenta de OGS. Volviendo a Hoshi…");
+        Add(d, "Ogs.Page.BackToApp", "Back to Hoshi", "Volver a Hoshi");
 
         // REST / realtime
         Add(d, "Ogs.HttpStatus", "OGS answered {0} {1}.", "OGS respondió {0} {1}.");

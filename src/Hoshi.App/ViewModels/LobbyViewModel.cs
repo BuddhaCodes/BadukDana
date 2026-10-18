@@ -91,6 +91,18 @@ public sealed partial class LobbyViewModel : ViewModelBase
     [ObservableProperty]
     private string? _errorMessage;
 
+    /// <summary>
+    /// A browser sign-in waits for OGS: the lobby offers "Authorize Hoshi" again (when Google or the closed tab
+    /// left the browser elsewhere) and "Cancel". It gives up by itself after <see cref="BrowserSignInTimeout"/>.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ContinueInBrowserCommand), nameof(CancelBrowserSignInCommand))]
+    private bool _isWaitingForBrowser;
+
+    public static readonly TimeSpan BrowserSignInTimeout = TimeSpan.FromMinutes(10);
+
+    private CancellationTokenSource? _browserCts;
+
     [ObservableProperty]
     private string? _statusMessage;
 
@@ -372,8 +384,7 @@ public sealed partial class LobbyViewModel : ViewModelBase
             }
             else
             {
-                StatusMessage = Tr.T("Lobby.AuthorizeInBrowser");
-                await _ogs.SignInWithBrowserAsync(OgsLoginProvider.Ogs, ct);
+                await BrowserSignInAsync(OgsLoginProvider.Ogs, "Lobby.AuthorizeInBrowser");
             }
 
             Session = _ogs.Session;
@@ -401,8 +412,7 @@ public sealed partial class LobbyViewModel : ViewModelBase
                 SelectedServer = oauth;
             }
 
-            StatusMessage = Tr.T("Lobby.GoogleInBrowser");
-            await _ogs.SignInWithBrowserAsync(OgsLoginProvider.Google, ct);
+            await BrowserSignInAsync(OgsLoginProvider.Google, "Lobby.GoogleInBrowser");
             Session = _ogs.Session;
             StatusMessage = null;
         });
@@ -411,6 +421,35 @@ public sealed partial class LobbyViewModel : ViewModelBase
             await LoadAsync();
         }
     }
+
+    private async Task BrowserSignInAsync(OgsLoginProvider provider, string statusKey)
+    {
+        StatusMessage = Tr.T(statusKey);
+        using var cts = new CancellationTokenSource(BrowserSignInTimeout);
+        _browserCts = cts;
+        IsWaitingForBrowser = true;
+        try
+        {
+            await _ogs.SignInWithBrowserAsync(provider, cts.Token);
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        {
+            StatusMessage = null;
+            throw new OgsAuthException(Tr.T("Lobby.BrowserSignInStopped"));
+        }
+        finally
+        {
+            IsWaitingForBrowser = false;
+            _browserCts = null;
+        }
+    }
+
+    /// <summary>Back from the browser without being signed in: open OGS's "authorize Hoshi" page again.</summary>
+    [RelayCommand(CanExecute = nameof(IsWaitingForBrowser))]
+    private Task ContinueInBrowserAsync() => _ogs.ReopenAuthorizationAsync(CancellationToken.None);
+
+    [RelayCommand(CanExecute = nameof(IsWaitingForBrowser))]
+    private void CancelBrowserSignIn() => _browserCts?.Cancel();
 
     private bool CanUseSession() => !IsBusy && Session is not null;
 

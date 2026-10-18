@@ -7,6 +7,7 @@ using Hoshi.App.Services;
 using Hoshi.App.ViewModels;
 using Hoshi.App.Views;
 using Hoshi.Core;
+using Hoshi.Core.Localization;
 using Hoshi.Ogs;
 using Hoshi.Ogs.Auth;
 using Hoshi.Ogs.Realtime;
@@ -138,7 +139,20 @@ internal sealed class FakeOgsClient : IOgsClient
         return Task.FromResult(HasStoredSession);
     }
 
-    public Task SignInWithBrowserAsync(OgsLoginProvider provider, CancellationToken cancellationToken)
+    /// <summary>When set, a browser sign-in waits for it (the user is still in the browser).</summary>
+    public TaskCompletionSource? BrowserGate { get; set; }
+
+    public bool IsWaitingForBrowser { get; private set; }
+
+    public int Reopened { get; private set; }
+
+    public Task ReopenAuthorizationAsync(CancellationToken cancellationToken)
+    {
+        Reopened++;
+        return Task.CompletedTask;
+    }
+
+    public async Task SignInWithBrowserAsync(OgsLoginProvider provider, CancellationToken cancellationToken)
     {
         BrowserSignIns.Add(provider);
         if (SignInError is { } e)
@@ -146,8 +160,20 @@ internal sealed class FakeOgsClient : IOgsClient
             throw e;
         }
 
+        if (BrowserGate is { } gate)
+        {
+            IsWaitingForBrowser = true;
+            try
+            {
+                await gate.Task.WaitAsync(cancellationToken);
+            }
+            finally
+            {
+                IsWaitingForBrowser = false;
+            }
+        }
+
         SignIn();
-        return Task.CompletedTask;
     }
 
     public Task SignInWithPasswordAsync(string username, string password, CancellationToken cancellationToken)
@@ -297,6 +323,37 @@ public sealed class LobbyViewModelTests
         vm.IsSignedIn.Should().BeTrue();
         vm.ActiveGames.Should().ContainSingle();
         vm.SignInWithGoogleCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Waiting_for_the_browser_offers_to_authorize_again_and_to_cancel()
+    {
+        _ogs.Options = FakeOgsClient.Production;
+        _ogs.BrowserGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        LobbyViewModel vm = Create();
+
+        Task signIn = vm.SignInWithGoogleCommand.ExecuteAsync(null);
+        vm.IsWaitingForBrowser.Should().BeTrue("the user is in the browser");
+        vm.ContinueInBrowserCommand.CanExecute(null).Should().BeTrue();
+
+        // Back in Hoshi without being in (Google ended on OGS's home page): open "authorize Hoshi" again.
+        await vm.ContinueInBrowserCommand.ExecuteAsync(null);
+        _ogs.Reopened.Should().Be(1);
+        _ogs.BrowserGate.SetResult();
+        await signIn;
+        vm.IsSignedIn.Should().BeTrue();
+        vm.IsWaitingForBrowser.Should().BeFalse();
+
+        // A second try that the user gives up: the lobby is free again (it used to stay busy for ever).
+        await vm.SignOutCommand.ExecuteAsync(null);
+        _ogs.BrowserGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        signIn = vm.SignInWithGoogleCommand.ExecuteAsync(null);
+        vm.CancelBrowserSignInCommand.Execute(null);
+        await signIn;
+        vm.IsSignedIn.Should().BeFalse();
+        vm.IsBusy.Should().BeFalse();
+        vm.ErrorMessage.Should().Be(Tr.T("Lobby.BrowserSignInStopped"));
+        vm.SignInWithGoogleCommand.CanExecute(null).Should().BeTrue();
     }
 
     [Fact]

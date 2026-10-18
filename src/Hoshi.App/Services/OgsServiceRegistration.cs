@@ -35,7 +35,8 @@ public sealed class OgsServerCatalog
 
     /// <summary>
     /// <c>Ogs:ClientId</c> (public OAuth client of online-go.com), <c>Ogs:RedirectPort</c> and
-    /// <c>Ogs:DefaultServer</c> = <c>online-go</c> (default) | <c>beta</c>.
+    /// <c>Ogs:DefaultServer</c> = <c>online-go</c> (default) | <c>beta</c>; phones also set <c>Ogs:AppReturnUri</c>
+    /// (the link that brings the app back after the browser sign-in).
     /// </summary>
     public static OgsServerCatalog FromConfiguration(IConfiguration configuration)
     {
@@ -51,6 +52,7 @@ public sealed class OgsServerCatalog
             ClientId = s["ClientId"] is { Length: > 0 } c ? c : null,
             RedirectPort = int.TryParse(s["RedirectPort"], out int p) ? p : defaults.RedirectPort,
             ClientVersion = version,
+            AppReturnUri = s["AppReturnUri"] is { Length: > 0 } back ? new Uri(back) : null,
         };
         OgsOptions beta = defaults with
         {
