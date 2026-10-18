@@ -57,6 +57,27 @@ public sealed class GoBoardControlTests
     }
 
     [AvaloniaFact]
+    public void A_finger_leaves_no_ghost_stone_behind()
+    {
+        (MainWindow window, GoBoardControl board, GameViewModel game) = Open(1000, 800);
+        var finger = new Avalonia.Input.Pointer(Avalonia.Input.Pointer.GetNextFreeId(), PointerType.Touch, isPrimary: true);
+        Avalonia.Point at = board.CurrentGeometry!.Value.Center(P(10, 4));
+
+        board.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, board, finger, board, at, 0,
+            new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.Other), KeyModifiers.None));
+
+        game.HoverPoint.Should().BeNull("a finger has no hover: the see-through stone stayed where it last touched");
+        board.GhostStone.Should().Be(Stone.Empty);
+
+        // A mouse still shows where it would play, and a lifted finger clears it.
+        window.MouseMove(InWindow(window, board, P(10, 4)));
+        game.HoverPoint.Should().Be(P(10, 4));
+        board.RaiseEvent(new PointerReleasedEventArgs(board, finger, board, at, 0,
+            new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonReleased), KeyModifiers.None, MouseButton.Left));
+        game.HoverPoint.Should().BeNull();
+    }
+
+    [AvaloniaFact]
     public void Right_click_does_not_play()
     {
         (MainWindow window, GoBoardControl board, GameViewModel game) = Open(1000, 800);
