@@ -35,6 +35,15 @@ public enum BackgroundKind
 
     /// <summary>Mochi: warm cream with soft pastel clouds (pink, mint, lavender, butter) drifting very slowly.</summary>
     Mochi,
+
+    /// <summary>Matcha: pale tea green with mint and cream clouds.</summary>
+    Matcha,
+
+    /// <summary>Yuzu: warm butter with peach and citrus clouds.</summary>
+    Yuzu,
+
+    /// <summary>Kuro mochi: a deep plum night with dim lavender, dusk-pink and teal clouds.</summary>
+    MochiNight,
 }
 
 /// <summary>The little effect played when a stone is placed.</summary>
@@ -517,7 +526,156 @@ public static class HoshiThemes
         },
     };
 
-    public static IReadOnlyList<HoshiTheme> All { get; } = [Mochi, NightSky, Kaya, InkAndGold, ZenGarden, WarmMinimal, HighContrast];
+    /// <summary>Matcha (light, Mochi's family): tea green and cream, a deep green ink, a katsura board.</summary>
+    public static HoshiTheme Matcha { get; } = new()
+    {
+        Id = "matcha",
+        NameKey = "Theme.Matcha.Name",
+        DescriptionKey = "Theme.Matcha.Description",
+        IsLight = true,
+        Rounded = true,
+        Window = Color.Parse("#EEF3E6"),
+        Bar = Color.Parse("#F8FBF2"),
+        Sidebar = Color.Parse("#F8FBF2"),
+        Properties = Color.Parse("#FFFFFF"),
+        PanelAlt = Color.Parse("#E3EED7"),
+        Border = Color.Parse("#D2DEC3"),
+        Text = Color.Parse("#22302A"),
+        TextSecondary = Color.Parse("#62726A"),
+        Accent = Color.Parse("#5B8C48"),
+        Danger = Color.Parse("#C0533A"),
+        Good = Color.Parse("#3B7F58"),
+        EditBar = Color.Parse("#22302A"),
+        EditBarText = Color.Parse("#F8FBF2"),
+        EditBarHover = Color.Parse("#33463C"),
+        Surround = Color.Parse("#EEF3E6"),
+        UiFont = Fonts + "Manrope#Manrope",
+        TitleFont = Fonts + "Fredoka#Fredoka",
+        MonoFont = Fonts + "JetBrainsMono#JetBrains Mono",
+        TitleSize = 16,
+        IconSet = "Lucide",
+        Background = BackgroundKind.Matcha,
+        Board = new BoardStyle
+        {
+            Texture = "avares://Hoshi.App/Assets/Art/Boards/katsura.jpg",
+            StoneSet = "clam-slate",
+            WhiteVariants = 8,
+            BlackVariants = 4,
+            Wood = Color.Parse("#DDBB84"),
+            Border = Color.Parse("#B8955E"),
+            BorderWidth = 0.04,
+            Lines = Color.Parse("#36281A"),
+            Coordinates = Color.Parse("#A036281A"),
+            BoardShadow = Color.Parse("#4D3C5A3A"),
+            BoardShadowBlur = 30,
+            StoneShadow = Color.Parse("#4A22302A"),
+            Stones = StoneStyle.SlateShell,
+            Effect = PlacementEffect.Settle,
+            EffectColor = Color.Parse("#5B8C48"),
+            LastMove = Color.Parse("#5B8C48"),
+        },
+    };
+
+    /// <summary>Yuzu (light, Mochi's family): warm butter and peach, a citrus accent, a pale kaya board.</summary>
+    public static HoshiTheme Yuzu { get; } = new()
+    {
+        Id = "yuzu",
+        NameKey = "Theme.Yuzu.Name",
+        DescriptionKey = "Theme.Yuzu.Description",
+        IsLight = true,
+        Rounded = true,
+        Window = Color.Parse("#FBF3DF"),
+        Bar = Color.Parse("#FFFAEC"),
+        Sidebar = Color.Parse("#FFFAEC"),
+        Properties = Color.Parse("#FFFFFF"),
+        PanelAlt = Color.Parse("#F8E8C2"),
+        Border = Color.Parse("#EAD9AE"),
+        Text = Color.Parse("#3A2E1F"),
+        TextSecondary = Color.Parse("#85735A"),
+        Accent = Color.Parse("#D97E22"),
+        Danger = Color.Parse("#C8432F"),
+        Good = Color.Parse("#4B8749"),
+        EditBar = Color.Parse("#3A2E1F"),
+        EditBarText = Color.Parse("#FFFAEC"),
+        EditBarHover = Color.Parse("#4E3F2C"),
+        Surround = Color.Parse("#FBF3DF"),
+        UiFont = Fonts + "Manrope#Manrope",
+        TitleFont = Fonts + "Fredoka#Fredoka",
+        MonoFont = Fonts + "JetBrainsMono#JetBrains Mono",
+        TitleSize = 16,
+        IconSet = "Lucide",
+        Background = BackgroundKind.Yuzu,
+        Board = new BoardStyle
+        {
+            Texture = "avares://Hoshi.App/Assets/Art/Boards/kaya-itame.jpg",
+            StoneSet = "clam-slate",
+            WhiteVariants = 8,
+            BlackVariants = 4,
+            Wood = Color.Parse("#E6C68C"),
+            Border = Color.Parse("#C49F62"),
+            BorderWidth = 0.04,
+            Lines = Color.Parse("#3B2A16"),
+            Coordinates = Color.Parse("#A03B2A16"),
+            BoardShadow = Color.Parse("#4D7A5A30"),
+            BoardShadowBlur = 30,
+            StoneShadow = Color.Parse("#4A3A2E1F"),
+            Stones = StoneStyle.SlateShell,
+            Effect = PlacementEffect.Settle,
+            EffectColor = Color.Parse("#D97E22"),
+            LastMove = Color.Parse("#D97E22"),
+        },
+    };
+
+    /// <summary>Kuro mochi (dark, Mochi's family): a deep plum night, a soft pink accent, round corners, glass stones.</summary>
+    public static HoshiTheme MochiNight { get; } = new()
+    {
+        Id = "kuromochi",
+        NameKey = "Theme.KuroMochi.Name",
+        DescriptionKey = "Theme.KuroMochi.Description",
+        Rounded = true,
+        Window = Color.Parse("#1C1828"),
+        Bar = Color.Parse("#231E33"),
+        Sidebar = Color.Parse("#231E33"),
+        Properties = Color.Parse("#2A2440"),
+        PanelAlt = Color.Parse("#352D4F"),
+        Border = Color.Parse("#3E3658"),
+        Text = Color.Parse("#F3EDF7"),
+        TextSecondary = Color.Parse("#B3A8C6"),
+        Accent = Color.Parse("#F0A3BC"),
+        Danger = Color.Parse("#F0786A"),
+        Good = Color.Parse("#8FD6B0"),
+        EditBar = Color.Parse("#4A3D6E"),
+        EditBarText = Color.Parse("#F3EDF7"),
+        EditBarHover = Color.Parse("#5A4C82"),
+        Surround = Color.Parse("#1C1828"),
+        UiFont = Fonts + "Manrope#Manrope",
+        TitleFont = Fonts + "Fredoka#Fredoka",
+        MonoFont = Fonts + "JetBrainsMono#JetBrains Mono",
+        TitleSize = 16,
+        IconSet = "Lucide",
+        Background = BackgroundKind.MochiNight,
+        Board = new BoardStyle
+        {
+            Texture = "avares://Hoshi.App/Assets/Art/Boards/kaya-masame.jpg",
+            StoneSet = "glass",
+            WhiteVariants = 3,
+            BlackVariants = 3,
+            Wood = Color.Parse("#E8C483"),
+            Border = Color.Parse("#C9A45C"),
+            BorderWidth = 0.05,
+            Lines = Color.Parse("#3B2A14"),
+            Coordinates = Color.Parse("#B03B2A14"),
+            BoardShadow = Color.Parse("#E6080614"),
+            BoardShadowBlur = 36,
+            StoneShadow = Color.Parse("#70080614"),
+            Stones = StoneStyle.Pearl,
+            Effect = PlacementEffect.Settle,
+            EffectColor = Color.Parse("#F0A3BC"),
+            LastMove = Color.Parse("#F0A3BC"),
+        },
+    };
+
+    public static IReadOnlyList<HoshiTheme> All { get; } = [Mochi, Matcha, Yuzu, MochiNight, NightSky, Kaya, InkAndGold, ZenGarden, WarmMinimal, HighContrast];
 
     /// <summary>
     /// Mochi on desktops (2026-10-18). Phones keep Pole star until their own Mochi pass (their launch screen is

@@ -197,6 +197,12 @@ public static partial class Tr
         Add(d, "Splash.Loading", "Setting up the board…", "Preparando el tablero…");
         Add(d, "Theme.Mochi.Name", "Mochi", "Mochi");
         Add(d, "Theme.Mochi.Description", "Light and soft, like the website: cream, plum ink, a rose accent and round corners.", "Claro y suave, como la web: crema, tinta ciruela, acento rosa y esquinas redondas.");
+        Add(d, "Theme.Matcha.Name", "Matcha", "Matcha");
+        Add(d, "Theme.Matcha.Description", "Light and soft: tea green, cream and a katsura board.", "Claro y suave: verde té, crema y un goban de katsura.");
+        Add(d, "Theme.Yuzu.Name", "Yuzu", "Yuzu");
+        Add(d, "Theme.Yuzu.Description", "Light and warm: butter, peach and a citrus accent.", "Claro y cálido: mantequilla, melocotón y acento cítrico.");
+        Add(d, "Theme.KuroMochi.Name", "Kuro mochi", "Kuro mochi");
+        Add(d, "Theme.KuroMochi.Description", "Mochi at night: deep plum, soft pink and glass stones.", "Mochi de noche: ciruela profundo, rosa suave y piedras de cristal.");
         Add(d, "Theme.Kaya.Name", "Kaya", "Kaya");
         Add(d, "Theme.Kaya.Description", "Light: cream paper, ink, a pale kaya board and a seal-red accent.", "Claro: papel crema, tinta, un goban de kaya claro y rojo sello.");
         Add(d, "Theme.Sumi.Name", "Ink and gold", "Tinta y oro");
@@ -232,5 +238,8 @@ public static partial class Tr
         Add(d, "Skin.Bg.Sudare", "Bamboo blind", "Persiana de bambú (sudare)");
         Add(d, "Skin.Bg.Washi", "Washi paper", "Papel washi");
         Add(d, "Skin.Bg.Mochi", "Pastel clouds", "Nubes pastel");
+        Add(d, "Skin.Bg.Matcha", "Matcha clouds", "Nubes de matcha");
+        Add(d, "Skin.Bg.Yuzu", "Yuzu clouds", "Nubes de yuzu");
+        Add(d, "Skin.Bg.MochiNight", "Night clouds", "Nubes de noche");
     }
 }

@@ -93,8 +93,8 @@ public sealed class ThemeBackground : Control
                 case BackgroundKind.Washi:
                     DrawWashi(context, size);
                     break;
-                case BackgroundKind.Mochi:
-                    DrawMochi(context, size, t);
+                case BackgroundKind.Mochi or BackgroundKind.Matcha or BackgroundKind.Yuzu or BackgroundKind.MochiNight:
+                    DrawClouds(context, size, t, Kind);
                     break;
                 default:
                     DrawArt(context, size, Kind);
@@ -127,7 +127,8 @@ public sealed class ThemeBackground : Control
     private void UpdateTimer()
     {
         bool moving = Animate && !Paused
-            && (Kind is BackgroundKind.NightSky or BackgroundKind.InkMist or BackgroundKind.ZenSand or BackgroundKind.Mochi)
+            && (Kind is BackgroundKind.NightSky or BackgroundKind.InkMist or BackgroundKind.ZenSand
+                or BackgroundKind.Mochi or BackgroundKind.Matcha or BackgroundKind.Yuzu or BackgroundKind.MochiNight)
             && VisualRoot is not null;
         if (moving)
         {
@@ -450,31 +451,44 @@ public sealed class ThemeBackground : Control
         }
     }
 
-    // ---------------- Mochi ----------------
+    // ---------------- Mochi and its family: pastel clouds ----------------
 
-    private static readonly ImmutableSolidColorBrush MochiCream = new(Color.Parse("#F8F1E7"));
-
-    // Pastel clouds: where they rest (fractions of the area), their size (of the longer side), how fast and from
-    // where they drift. Very slow on purpose (a full loop takes minutes).
-    private static readonly (double X, double Y, double Size, double Speed, double Phase, Color Tint)[] MochiClouds =
+    // Where the clouds rest (fractions of the area), their size (of the longer side), how fast and from where they
+    // drift. Very slow on purpose (a full loop takes minutes). Each kind brings its own paper and tints.
+    private static readonly (double X, double Y, double Size, double Speed, double Phase)[] Clouds =
     [
-        (0.10, 0.16, 0.52, 0.011, 0.0, Color.Parse("#F6CFDB")),
-        (0.90, 0.20, 0.46, 0.009, 1.7, Color.Parse("#E2DCF5")),
-        (0.84, 0.88, 0.58, 0.010, 3.1, Color.Parse("#D3ECE2")),
-        (0.16, 0.86, 0.44, 0.012, 4.4, Color.Parse("#F6E8BD")),
-        (0.50, 0.50, 0.36, 0.008, 2.2, Color.Parse("#FBE3EA")),
+        (0.10, 0.16, 0.52, 0.011, 0.0),
+        (0.90, 0.20, 0.46, 0.009, 1.7),
+        (0.84, 0.88, 0.58, 0.010, 3.1),
+        (0.16, 0.86, 0.44, 0.012, 4.4),
+        (0.50, 0.50, 0.36, 0.008, 2.2),
     ];
 
-    private static void DrawMochi(DrawingContext context, Rect r, double t)
+    private static readonly Dictionary<BackgroundKind, (ImmutableSolidColorBrush Paper, Color[] Tints, byte Alpha)> CloudPalettes = new()
     {
-        context.FillRectangle(MochiCream, r);
+        [BackgroundKind.Mochi] = (Solid("#F8F1E7"), [C("#F6CFDB"), C("#E2DCF5"), C("#D3ECE2"), C("#F6E8BD"), C("#FBE3EA")], 170),
+        [BackgroundKind.Matcha] = (Solid("#EEF3E6"), [C("#D3ECE2"), C("#E6F0C8"), C("#CFE3D2"), C("#F4EFD6"), C("#DDEBD3")], 170),
+        [BackgroundKind.Yuzu] = (Solid("#FBF3DF"), [C("#F9DDB8"), C("#F6E8BD"), C("#FBD9C4"), C("#F2E6C6"), C("#FFE9C2")], 170),
+        [BackgroundKind.MochiNight] = (Solid("#1C1828"), [C("#3B2F5C"), C("#4A2B45"), C("#1F3B45"), C("#3A3354"), C("#452F4E")], 200),
+    };
+
+    private static ImmutableSolidColorBrush Solid(string hex) => new(Color.Parse(hex));
+
+    private static Color C(string hex) => Color.Parse(hex);
+
+    private static void DrawClouds(DrawingContext context, Rect r, double t, BackgroundKind kind)
+    {
+        (ImmutableSolidColorBrush paper, Color[] tints, byte alpha) = CloudPalettes[kind];
+        context.FillRectangle(paper, r);
         double longer = Math.Max(r.Width, r.Height);
-        foreach ((double x, double y, double size, double speed, double phase, Color tint) in MochiClouds)
+        for (int i = 0; i < Clouds.Length; i++)
         {
+            (double x, double y, double size, double speed, double phase) = Clouds[i];
+            Color tint = tints[i % tints.Length];
             double a = (t * speed * 2 * Math.PI) + phase;
             double cx = (x + (0.05 * Math.Sin(a))) * r.Width;
             double cy = (y + (0.04 * Math.Cos(a * 1.3))) * r.Height;
-            Glow(context, cx, cy, size * longer * (1 + (0.04 * Math.Sin(a * 0.7))), Color.FromArgb(170, tint.R, tint.G, tint.B));
+            Glow(context, cx, cy, size * longer * (1 + (0.04 * Math.Sin(a * 0.7))), Color.FromArgb(alpha, tint.R, tint.G, tint.B));
         }
     }
 

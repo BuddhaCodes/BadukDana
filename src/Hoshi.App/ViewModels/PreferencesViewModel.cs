@@ -29,6 +29,11 @@ public sealed partial class ThemeCard : ObservableObject
 
     public Avalonia.Media.IBrush Chrome => new Avalonia.Media.SolidColorBrush(Theme.Bar);
 
+    /// <summary>The card's own ink (light themes have dark text).</summary>
+    public Avalonia.Media.IBrush Ink => new Avalonia.Media.SolidColorBrush(Theme.Text);
+
+    public Avalonia.Media.IBrush SecondaryInk => new Avalonia.Media.SolidColorBrush(Theme.TextSecondary);
+
     public Avalonia.Media.IBrush Surround => new Avalonia.Media.SolidColorBrush(Theme.Surround);
 
     public Avalonia.Media.FontFamily TitleFont => new(Theme.TitleFont);
@@ -278,6 +283,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         _themes.Changed += (_, _) =>
         {
             DescribeTheme();
+            OnPropertyChanged(nameof(ResetSkinsLabel));
             OnPropertyChanged(nameof(PreviewStyle));
             OnPropertyChanged(nameof(PreviewBackground));
         };
@@ -495,6 +501,9 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     partial void OnSelectedStonesChanged(SkinOption value) => ApplySkins();
 
     partial void OnSelectedBackgroundChanged(SkinOption value) => ApplySkins();
+
+    /// <summary>"Use Mochi's": the reset names the global theme it goes back to.</summary>
+    public string ResetSkinsLabel => Tr.F("Prefs.ResetSkinsNamed", _themes.Current.Name);
 
     /// <summary>Back to the theme's own goban, stones and background.</summary>
     [CommunityToolkit.Mvvm.Input.RelayCommand]

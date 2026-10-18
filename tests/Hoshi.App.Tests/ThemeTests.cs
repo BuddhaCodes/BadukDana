@@ -35,12 +35,12 @@ public sealed class ThemeTests
     public void Themes_are_distinct_and_reference_existing_icon_sets()
     {
         HoshiThemes.All.Select(t => t.Id).Should().OnlyHaveUniqueItems();
-        HoshiThemes.All.Should().HaveCount(7);
-        HoshiThemes.All.Where(t => t.IsLight).Should().Equal(HoshiThemes.Mochi, HoshiThemes.Kaya);
+        HoshiThemes.All.Should().HaveCount(10);
+        HoshiThemes.All.Where(t => t.IsLight).Should().Equal(HoshiThemes.Mochi, HoshiThemes.Matcha, HoshiThemes.Yuzu, HoshiThemes.Kaya);
         HoshiThemes.All.Should().OnlyContain(t => IconSets.All.ContainsKey(t.IconSet));
         HoshiThemes.ById("nope").Should().BeSameAs(HoshiThemes.Default);
         HoshiThemes.Default.Id.Should().Be("mochi", "Mochi, the website's look, is the default since 2026-10-18");
-        HoshiThemes.All.Where(t => t.Rounded).Should().ContainSingle().Which.Should().BeSameAs(HoshiThemes.Mochi);
+        HoshiThemes.All.Where(t => t.Rounded).Should().Equal(HoshiThemes.Mochi, HoshiThemes.Matcha, HoshiThemes.Yuzu, HoshiThemes.MochiNight);
     }
 
     [AvaloniaFact]
@@ -115,15 +115,16 @@ public sealed class ThemeTests
         var vm = new PreferencesViewModel(themes);
         try
         {
-            vm.Cards.Select(c => c.Name).Should().Equal("Mochi", "Estrella polar", "Kaya", "Tinta y oro", "Jardín zen", "Minimal cálido", "Alto contraste");
-            vm.Selected.Theme.Should().BeSameAs(HoshiThemes.NightSky);
+            vm.Cards.Select(c => c.Name).Should().Equal("Mochi", "Matcha", "Yuzu", "Kuro mochi", "Estrella polar", "Kaya", "Tinta y oro", "Jardín zen", "Minimal cálido", "Alto contraste");
+            vm.Selected.Theme.Should().BeSameAs(HoshiThemes.Mochi, "a fresh install starts in Mochi");
+            vm.Cards[0].IsSelected.Should().BeTrue();
 
-            vm.Selected = vm.Cards[3];
+            vm.Selected = vm.Cards[6];
             vm.Animations = false;
 
             themes.Current.Should().BeSameAs(HoshiThemes.InkAndGold);
-            store.Current.Should().Be(new AppSettings { Theme = "sumi", Animations = false });
-            vm.Cards[3].IsSelected.Should().BeTrue();
+            store.Current.Should().Be(new AppSettings { Theme = "sumi", ThemeChoice = 1, Animations = false });
+            vm.Cards[6].IsSelected.Should().BeTrue();
             vm.Cards[0].IsSelected.Should().BeFalse();
             Application.Current!.TryGetResource("Theme.Id", null, out object? id).Should().BeTrue();
             id.Should().Be("sumi");
@@ -204,7 +205,7 @@ public sealed class ThemeTests
 
     private sealed class MemorySettings : ISettingsService
     {
-        public AppSettings Current { get; private set; } = new();
+        public AppSettings Current { get; set; } = new();
 
         public void Save(AppSettings settings) => Current = settings;
     }
@@ -248,5 +249,49 @@ public sealed class ThemeTests
                     .Should().BeTrue($"{set}/{key} is drawn inside its {icon.Size}px box (bounds {b})");
             }
         }
+    }
+
+    [AvaloniaFact]
+    public void Desktop_preferences_scroll_and_show_every_global_theme_first()
+    {
+        var settings = new TestSettings();
+        var themes = new ThemeService(settings);
+        var window = new Hoshi.App.Views.PreferencesWindow { DataContext = new PreferencesViewModel(themes, settings), Width = 760, Height = 600 };
+        window.Show();
+        try
+        {
+            ScrollViewer scroll = window.FindDeep<ScrollViewer>("AppearanceScroll")!;
+            scroll.VerticalScrollBarVisibility.Should().Be(Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
+                "the options under the themes used to squeeze the theme list out of sight");
+            ListBox list = window.FindDeep<ListBox>("ThemeList")!;
+            list.ItemCount.Should().Be(HoshiThemes.All.Count);
+            list.Bounds.Height.Should().BeGreaterThan(400, "every theme card is laid out, not squeezed");
+            scroll.Extent.Height.Should().BeGreaterThan(scroll.Viewport.Height, "the tab scrolls to reach the options");
+            string dir = Path.Combine(AppContext.BaseDirectory, "screenshots");
+            Directory.CreateDirectory(dir);
+            using (Avalonia.Media.Imaging.WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
+            {
+                frame.Save(Path.Combine(dir, "preferences-appearance.png"));
+            }
+
+            window.FindDeep<TextBlock>("GlobalThemeTitle")!.Text.Should().Be(Hoshi.Core.Localization.Tr.T("Prefs.GlobalTheme"));
+            window.FindDeep<Button>("ResetSkinsButton")!.Content.Should().Be(
+                Hoshi.Core.Localization.Tr.F("Prefs.ResetSkinsNamed", themes.Current.Name));
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [Fact]
+    public void The_old_default_moves_to_mochi_once_but_a_chosen_theme_stays()
+    {
+        new ThemeService(new MemorySettings { Current = new AppSettings { Theme = "night" } }).Current
+            .Should().BeSameAs(HoshiThemes.Mochi, "every save used to write \"night\", so it was not a choice");
+        new ThemeService(new MemorySettings { Current = new AppSettings { Theme = "night", ThemeChoice = 1 } }).Current
+            .Should().BeSameAs(HoshiThemes.NightSky, "chosen in Preferences after the change");
+        new ThemeService(new MemorySettings { Current = new AppSettings { Theme = "zen" } }).Current
+            .Should().BeSameAs(HoshiThemes.ZenGarden, "any other theme was picked on purpose");
     }
 }

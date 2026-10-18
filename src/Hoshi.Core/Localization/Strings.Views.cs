@@ -264,6 +264,10 @@ public static partial class Tr
         Add(d, "Prefs.Stones", "Stones", "Piedras");
         Add(d, "Prefs.Background", "Background", "Fondo");
         Add(d, "Prefs.ResetSkins", "Use the theme's", "Usar los del tema");
+        Add(d, "Prefs.ResetSkinsNamed", "Use the global theme's ({0})", "Usar los del tema global ({0})");
+        Add(d, "Prefs.GlobalTheme", "Global theme", "Tema global");
+        Add(d, "Prefs.GlobalThemeHint", "Colours, fonts, icons, corners, board and background of the whole app. The «Board & stones» tab can change the board, stones and background on top of it.", "Colores, fuentes, iconos, esquinas, goban y fondo de toda la app. La pestaña «Tablero y piedras» puede cambiar el goban, las piedras y el fondo encima del tema.");
+        Add(d, "Prefs.OptionsTitle", "Options", "Opciones");
         Add(d, "Prefs.ThemeHint", "The theme applies at once and is remembered.", "El tema se aplica al momento y se recuerda.");
         Add(d, "Prefs.Title", "Preferences", "Preferencias");
         Add(d, "Prefs.Volume", "Volume", "Volumen");
