@@ -93,8 +93,28 @@
       <Setter Property="Padding" Value="10,7" />
     </Style>
     <Style Selector="Border.player-card.turn"><Setter Property="BorderBrush" Value="{DynamicResource Accent}" /><Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" /></Style>
-    <Style Selector="v|OnlinePanelView.actions-only Grid#OnlineNames"><Setter Property="IsVisible" Value="False" /></Style>
-    <Style Selector="v|OnlinePanelView.actions-only TextBlock#OnlineStatus"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="Button.action">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.action-icon">
+      <Setter Property="Width" Value="50" />
+      <Setter Property="Height" Value="46" />
+      <Setter Property="CornerRadius" Value="14" />
+      <Setter Property="Background" Value="{DynamicResource Bg.Panel}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.action TextBlock.action-label">
+      <Setter Property="FontSize" Value="11.5" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="0,4,0,0" />
+    </Style>
+    <Style Selector="Button.action.danger"><Setter Property="Foreground" Value="{DynamicResource Danger}" /></Style>
   </UserControl.Styles>
 
   <LayoutTransformControl LayoutTransform="{Binding Main.UiScaleTransform}" x:Name="UiScaleRoot">
@@ -104,7 +124,21 @@
 
       <!-- Top: players and the turn (local), or the online panel with clocks and actions. -->
       <Border DockPanel.Dock="Top" Background="{DynamicResource Bg.Sidebar}" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="0,0,0,1"
-              Padding="14,10,14,8" x:Name="PhoneTop">
+              Padding="14,8,14,8" x:Name="PhoneTop">
+        <StackPanel Spacing="8">
+        <!-- The header (redesign 2026-10): back to home, what is on the board and, online, the fair-play promise. -->
+        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" x:Name="PhoneHeader">
+          <Button Classes="home-round" Width="38" Height="38" Command="{Binding ShowHomeCommand}" ToolTip.Tip="{l:T Home.Menu}" x:Name="PhoneHeaderHome">
+            <c:HoshiIcon Icon="{DynamicResource Icon.Back}" Size="18" />
+          </Button>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center">
+            <TextBlock Text="{Binding Main.Game.HeaderTitle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+            <TextBlock Classes="secondary" FontSize="11.5" Text="{Binding Main.Game.HeaderSubtitle}" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+          <Border Grid.Column="2" IsVisible="{Binding Main.IsOnline}" BorderBrush="{DynamicResource Good}" BorderThickness="1" CornerRadius="999" Padding="10,3" VerticalAlignment="Center">
+            <TextBlock Text="{l:T Phone.FairPlay}" Foreground="{DynamicResource Good}" FontSize="11.5" ToolTip.Tip="{l:T Phone.FairPlayTip}" />
+          </Border>
+        </Grid>
         <Panel>
           <StackPanel Spacing="4" IsVisible="{Binding Main.IsLocal}">
             <!-- Two player cards (redesign 2026-10): stone, name, captures and clock; the one to move is lit. -->
@@ -163,6 +197,7 @@
             <TextBlock Classes="secondary" FontSize="12" Text="{Binding Main.Online.StatusText, FallbackValue={x:Null}}" TextTrimming="CharacterEllipsis" x:Name="PhoneOnlineStatus" />
           </StackPanel>
         </Panel>
+        </StackPanel>
       </Border>
 
       <!-- Bottom bar: navigation, the game's actions and the sheets; the confirm bar takes its place while a stone
@@ -233,7 +268,47 @@
                 </Border>
               </Grid>
             </Border>
-        <v:OnlinePanelView DataContext="{Binding Main}" Classes="actions-only" x:Name="PhoneOnlineActions" />
+        <!-- The game's actions as big targets (redesign 2026-10). -->
+        <UniformGrid Columns="5" IsVisible="{Binding Main.Online.IsPlayPhase, FallbackValue=False}" x:Name="PhoneOnlineActionsRow">
+          <Button Classes="action" Command="{Binding Main.Online.PassCommand}" x:Name="PhoneActPass">
+            <StackPanel>
+              <Border Classes="action-icon"><c:HoshiIcon Icon="{DynamicResource Icon.Pass}" Size="20" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+              <TextBlock Classes="action-label" Text="{l:T Main.Pass}" />
+            </StackPanel>
+          </Button>
+          <Button Classes="action" Command="{Binding Main.Online.RequestUndoCommand}" x:Name="PhoneActUndo">
+            <StackPanel>
+              <Border Classes="action-icon"><c:HoshiIcon Icon="{DynamicResource Icon.Undo}" Size="20" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+              <TextBlock Classes="action-label" Text="{l:T Phone.AskUndo}" />
+            </StackPanel>
+          </Button>
+          <Button Classes="action" Command="{Binding ToggleSheetCommand}" CommandParameter="{x:Static vm:PhoneSheet.Chat}" x:Name="PhoneActChat">
+            <StackPanel>
+              <Border Classes="action-icon"><c:HoshiIcon Icon="{DynamicResource Icon.Chat}" Size="20" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+              <TextBlock Classes="action-label" Text="{l:T Online.Chat}" />
+            </StackPanel>
+          </Button>
+          <Button Classes="action danger" Command="{Binding Main.Online.ResignCommand}" x:Name="PhoneActResign">
+            <StackPanel>
+              <Border Classes="action-icon"><c:HoshiIcon Icon="{DynamicResource Icon.Resign}" Size="20" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+              <TextBlock Classes="action-label" Text="{l:T Main.Resign}" />
+            </StackPanel>
+          </Button>
+          <Button Classes="action" Command="{Binding Main.Online.LeaveCommand}" x:Name="PhoneActLeave">
+            <StackPanel>
+              <Border Classes="action-icon"><c:HoshiIcon Icon="{DynamicResource Icon.Back}" Size="20" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+              <TextBlock Classes="action-label" Text="{l:T Main.Leave}" />
+            </StackPanel>
+          </Button>
+        </UniformGrid>
+        <!-- The moments that need an answer: an undo asked by the opponent, the score at the end. -->
+        <WrapPanel Orientation="Horizontal" x:Name="PhoneOnlineActions">
+          <WrapPanel.Styles><Style Selector="Button"><Setter Property="Margin" Value="0,0,6,6" /><Setter Property="MinHeight" Value="40" /></Style></WrapPanel.Styles>
+          <Button Classes="accent" Content="{l:T Main.AcceptUndo}" Command="{Binding Main.Online.AcceptUndoCommand, FallbackValue={x:Null}}" IsVisible="{Binding Main.Online.IsUndoRequested, FallbackValue=False}" />
+          <Button Classes="accent" Content="{l:T Main.AcceptScore}" Command="{Binding Main.Online.AcceptScoreCommand, FallbackValue={x:Null}}" IsVisible="{Binding Main.Online.IsStoneRemoval, FallbackValue=False}" x:Name="PhoneAcceptScore" />
+          <Button Content="{l:T Main.ResumeGame}" Command="{Binding Main.Online.RejectScoreCommand, FallbackValue={x:Null}}" IsVisible="{Binding Main.Online.IsStoneRemoval, FallbackValue=False}" />
+          <Button Content="{l:T Main.Leave}" Command="{Binding Main.Online.LeaveCommand, FallbackValue={x:Null}}" IsVisible="{Binding !Main.Online.IsPlayPhase, FallbackValue=False}" />
+        </WrapPanel>
       </StackPanel>
 
       <!-- The sheet under the board. -->

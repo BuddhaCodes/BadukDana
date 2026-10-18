@@ -28,7 +28,7 @@
                 </WrapPanel.Styles>
                 <Button Content="{l:T Main.Pass}" Command="{Binding Online.PassCommand}" IsVisible="{Binding Online.IsPlayPhase}" x:Name="OnlinePassButton" />
                 <Button Content="{l:T Main.Resign}" Command="{Binding Online.ResignCommand}" IsVisible="{Binding Online.IsPlayPhase}" x:Name="ResignButton" />
-                <Button Content="{l:T Main.RequestUndo}" Command="{Binding Online.RequestUndoCommand}" IsVisible="{Binding Online.IsPlayPhase}" />
+                <Button Content="{l:T Main.RequestUndo}" Command="{Binding Online.RequestUndoCommand}" IsVisible="{Binding Online.IsPlayPhase}" x:Name="RequestUndoButton" />
                 <Button Classes="accent" Content="{l:T Main.AcceptUndo}" Command="{Binding Online.AcceptUndoCommand}" IsVisible="{Binding Online.IsUndoRequested}" />
                 <Button Classes="accent" Content="{l:T Main.AcceptScore}" Command="{Binding Online.AcceptScoreCommand}" IsVisible="{Binding Online.IsStoneRemoval}" x:Name="AcceptScoreButton" />
                 <Button Content="{l:T Main.ResumeGame}" Command="{Binding Online.RejectScoreCommand}" IsVisible="{Binding Online.IsStoneRemoval}" />
