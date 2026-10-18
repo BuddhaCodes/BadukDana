@@ -390,7 +390,10 @@ public sealed partial class GoBoardControl : Control
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
-        HoverPoint = IsInteractive ? CurrentGeometry?.HitTest(e.GetPosition(this)) : null;
+
+        // The see-through "about to play here" stone follows a mouse only: a finger has no hover, and a ghost left
+        // where it last touched stayed on the board like a stone about to be placed (bug, 2026-10-18).
+        HoverPoint = IsInteractive && e.Pointer.Type == PointerType.Mouse ? CurrentGeometry?.HitTest(e.GetPosition(this)) : null;
         TrackDrag(e);
     }
 
@@ -417,9 +420,22 @@ public sealed partial class GoBoardControl : Control
         HoverPoint = null;
     }
 
+    protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+    {
+        base.OnPointerCaptureLost(e);
+        if (e.Pointer.Type != PointerType.Mouse)
+        {
+            HoverPoint = null;
+        }
+    }
+
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
+        if (e.Pointer.Type != PointerType.Mouse)
+        {
+            HoverPoint = null; // a lifted finger leaves no ghost behind
+        }
 
         // A drag ends on the nearest intersection, however fast it was and wherever the pointer was let go (a
         // quick flick often ends between two intersections or just past the edge).
@@ -601,21 +617,10 @@ public sealed partial class GoBoardControl : Control
             return;
         }
 
-        var whiteEdge = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromArgb(0x50, 0, 0, 0)), Math.Max(0.5, g.Cell * 0.015));
-        var blackWash = new ImmutableSolidColorBrush(Color.FromArgb(0x78, 0x10, 0x10, 0x16));
-        var whiteWash = new ImmutableSolidColorBrush(Color.FromArgb(0x9C, 0xFF, 0xFF, 0xFC));
+        var whiteEdge = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromArgb(0x90, 0, 0, 0)), Math.Max(0.7, g.Cell * 0.025));
+        var blackEdge = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromArgb(0x70, 0xFF, 0xFF, 0xFF)), Math.Max(0.5, g.Cell * 0.015));
         foreach (Point p in board.AllPoints)
         {
-            // Secure territory: the owner's wash over the whole point, under the stones (its square comes later),
-            // so areas read at a glance on a small phone board too (2026-10-18).
-            if (board[p] == Stone.Empty && t.SecureOwner(p) is var secure and not Stone.Empty)
-            {
-                AvPoint at = g.Center(p);
-                context.DrawRectangle(secure == Stone.Black ? blackWash : whiteWash, null,
-                    new Rect(at.X - (g.Cell / 2), at.Y - (g.Cell / 2), g.Cell, g.Cell));
-                continue;
-            }
-
             double o = t.OwnershipAt(p);
             double k = Math.Min(1, Math.Abs(o) / TerritoryEstimate.SecureThreshold);
             if (board[p] != Stone.Empty || k < 0.2 || t.SecureOwner(p) != Stone.Empty)
@@ -623,21 +628,18 @@ public sealed partial class GoBoardControl : Control
                 continue;
             }
 
-            double h = g.Cell * (0.05 + (0.12 * k));
+            // Bigger and firmer than before (2026-10-18), with a fine edge on both colours, so the squares stand
+            // out on light wood and on a small phone board.
+            double h = g.Cell * (0.08 + (0.14 * k));
             AvPoint c = g.Center(p);
             var rect = new Rect(c.X - h, c.Y - h, 2 * h, 2 * h);
-            // A softer wash for likely (not yet secure) territory, stronger as the estimate firms up.
-            var cell = new Rect(c.X - (g.Cell / 2), c.Y - (g.Cell / 2), g.Cell, g.Cell);
-            context.DrawRectangle(new ImmutableSolidColorBrush(o > 0
-                ? Color.FromArgb((byte)(30 + (60 * k)), 0x10, 0x10, 0x16)
-                : Color.FromArgb((byte)(40 + (80 * k)), 0xFF, 0xFF, 0xFC)), null, cell);
             if (o > 0)
             {
-                context.DrawRectangle(new ImmutableSolidColorBrush(Color.FromArgb((byte)(90 + (110 * k)), 0x14, 0x14, 0x18)), null, rect);
+                context.DrawRectangle(new ImmutableSolidColorBrush(Color.FromArgb((byte)(130 + (110 * k)), 0x14, 0x14, 0x18)), blackEdge, rect);
             }
             else
             {
-                context.DrawRectangle(new ImmutableSolidColorBrush(Color.FromArgb((byte)(120 + (110 * k)), 0xFA, 0xFA, 0xF8)), whiteEdge, rect);
+                context.DrawRectangle(new ImmutableSolidColorBrush(Color.FromArgb((byte)(160 + (90 * k)), 0xFA, 0xFA, 0xF8)), whiteEdge, rect);
             }
         }
     }
@@ -650,10 +652,11 @@ public sealed partial class GoBoardControl : Control
             return;
         }
 
-        double h = g.Cell * 0.24;
-        var blackFill = new ImmutableSolidColorBrush(Color.FromArgb(0xE6, 0x12, 0x12, 0x14));
-        var whiteFill = new ImmutableSolidColorBrush(Color.FromArgb(0xF2, 0xFA, 0xFA, 0xF8));
-        var whiteEdge = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromArgb(0x90, 0, 0, 0)), Math.Max(0.6, g.Cell * 0.02));
+        double h = g.Cell * 0.26;
+        var blackFill = new ImmutableSolidColorBrush(Color.FromArgb(0xF5, 0x12, 0x12, 0x14));
+        var whiteFill = new ImmutableSolidColorBrush(Color.FromArgb(0xFF, 0xFC, 0xFC, 0xFA));
+        var whiteEdge = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromArgb(0xC0, 0, 0, 0)), Math.Max(0.9, g.Cell * 0.035));
+        var blackEdge = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromArgb(0x80, 0xFF, 0xFF, 0xFF)), Math.Max(0.6, g.Cell * 0.02));
         foreach (Point p in board.AllPoints)
         {
             Stone owner = t.SecureOwner(p);
@@ -666,7 +669,7 @@ public sealed partial class GoBoardControl : Control
             var rect = new Rect(c.X - h, c.Y - h, 2 * h, 2 * h);
             if (owner == Stone.Black)
             {
-                context.DrawRectangle(blackFill, null, rect);
+                context.DrawRectangle(blackFill, blackEdge, rect);
             }
             else
             {
