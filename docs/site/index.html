@@ -15,7 +15,7 @@
 <script>
   // Night or Kaya (light): the visitor's choice, else the system's.
   (function () { var t = null; try { t = localStorage.getItem('hoshi-theme'); } catch (e) { /* storage blocked */ }
-    if (!t) t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'kaya' : 'night';
+    if (!t) t = 'kaya'; // Kaya is the page; the night look is an option (the button in the bar)
     document.documentElement.setAttribute('data-theme', t); })();
 </script>
 <meta charset="utf-8">
@@ -46,7 +46,7 @@
 <meta name="twitter:image:alt" content="Hoshi: a wooden Go board with stones and the words “A Go board that feels every move.”">
 <link rel="sitemap" type="application/xml" href="https://buddhacodes.github.io/BadukDana/sitemap.xml">
 <link rel="apple-touch-icon" href="icon.png">
-<meta name="theme-color" content="#0b1026">
+<meta name="theme-color" content="#f1e6cf">
 <style>
   /* Fonts are served with the page (SIL OFL 1.1, see THIRD_PARTY_NOTICES.md): no third-party requests. */
   @font-face { font-family: Figtree; font-weight: 400; font-display: swap; src: url(fonts/figtree-latin-400-normal.woff2) format("woff2"); }
@@ -328,6 +328,30 @@
   .notice .row { display: flex; gap: 8px; }
   .notice button { font: 600 13.5px Figtree, sans-serif; border-radius: 999px; padding: 8px 14px; cursor: pointer; border: 1px solid var(--line); background: none; color: var(--text); }
   .notice button.ok { background: var(--gold); color: var(--ink); border-color: transparent; }
+
+  /* Kaya structure (redesign 2026-10): the board on the left, chapters with a big seal-red kanji, a table of downloads. */
+  .hero { grid-template-columns: 1.05fr 1fr; }
+  .hero > .goban-wrap { order: -1; }
+  .hero .goban, .hero .goban-bar { margin-left: 0; margin-right: auto; }
+  .chapters { padding: 84px 0; }
+  .chapter { display: grid; grid-template-columns: 120px minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; border-top: 1px solid var(--line); padding: 36px 0; }
+  .chapter .k { font: 700 72px/1 "Shippori Mincho B1", serif; color: var(--gold); }
+  html[data-theme="kaya"] .chapter .k { color: #b23a2a; }
+  .chapter h2 { font-size: 34px; }
+  .chapter p { color: var(--muted); margin-top: 10px; }
+  .chapter ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: 15.5px; }
+  .chapter li { border-bottom: 1px dotted var(--line); padding-bottom: 8px; }
+  .chapter a.more { display: inline-block; margin-top: 14px; font-weight: 600; color: var(--gold-2); text-decoration: none; }
+  @media (max-width: 860px) { .chapter { grid-template-columns: 1fr; gap: 12px; } .chapter .k { font-size: 52px; } }
+  .dl-table { width: 100%; border-collapse: collapse; font-size: 15.5px; margin-bottom: 26px; }
+  .dl-table th { text-align: left; font: 500 12.5px "JetBrains Mono", monospace; color: var(--muted); padding: 10px 8px; border-bottom: 1px solid var(--text); }
+  .dl-table td { padding: 14px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  .dl-table td:last-child { text-align: right; white-space: nowrap; }
+  .dl-table tr.current td { background: rgba(178, 58, 42, .06); }
+  .dl-table tr.current td:first-child::after { content: attr(data-yours); margin-left: 10px; font: 700 10.5px Figtree, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); background: var(--gold); border-radius: 4px; padding: 3px 7px; }
+  .dl-wrap { overflow-x: auto; }
+  details.how { border-top: 1px solid var(--line); padding-top: 18px; }
+  details.how > summary { cursor: pointer; font-weight: 600; margin-bottom: 18px; }
 </style>
 </head>
 <body>
@@ -358,7 +382,7 @@
   <div class="wrap hero">
     <div>
       <p class="eyebrow" data-i18n="hero.eyebrow">Go · Baduk · Weiqi</p>
-      <h1 data-i18n-html="hero.title">A Go board that <em>feels</em> every move.</h1>
+      <h1 data-i18n-html="hero.title">Every game, a <em>book</em> you read again.</h1>
       <p class="lead" data-i18n="hero.lead">Hoshi is a free app for playing and studying Go, on your computer and your Android phone. A beautiful board, KataGo judging every move live, joseki guidance in every corner, cinematic effects when you find the best move, and lo-fi music that heats up with your streaks.</p>
       <div class="cta">
         <a class="btn primary big" href="#download" id="hero-dl" data-i18n="hero.cta">Get Hoshi</a>
@@ -384,31 +408,26 @@
   </div>
 </header>
 
-<section class="moments" id="moments" aria-labelledby="mo-title">
+<section class="chapters" id="moments" aria-labelledby="mo-title">
   <div class="wrap">
     <div class="head reveal">
       <p class="eyebrow" data-i18n="mo.eyebrow">One game, three chapters</p>
       <h2 id="mo-title" data-i18n="mo.title">Play it, study it, read it again.</h2>
     </div>
-    <div class="grid">
-      <a class="moment reveal" href="#features">
-        <span class="k" lang="ja" aria-hidden="true">序</span>
-        <h3 data-i18n="mo.play.t">Play</h3>
-        <p data-i18n="mo.play.d">On OGS with automatch, clock and chat; at home face to face, or against a KataGo that plays like a person of your level.</p>
-        <span class="more" data-i18n="mo.play.more">How you play →</span>
-      </a>
-      <a class="moment reveal" href="#joseki">
-        <span class="k" lang="ja" aria-hidden="true">中</span>
-        <h3 data-i18n="mo.study.t">Study</h3>
-        <p data-i18n="mo.study.d">Notes and drawings on the board, what-if lines, problems that come back when it is time to review, and a joseki trainer.</p>
-        <span class="more" data-i18n="mo.study.more">The joseki trainer →</span>
-      </a>
-      <a class="moment reveal" href="#review">
-        <span class="k" lang="ja" aria-hidden="true">終</span>
-        <h3 data-i18n="mo.review.t">Review</h3>
-        <p data-i18n="mo.review.d">KataGo marks your biggest mistakes and what it would have played; then share the game as a card, a video or a web page.</p>
-        <span class="more" data-i18n="mo.review.more">How a review works →</span>
-      </a>
+    <div class="chapter reveal">
+      <span class="k" lang="ja" aria-hidden="true">序</span>
+      <div><h2 data-i18n="mo.learn.t">Learn</h2><p data-i18n="mo.learn.d">A welcome tour, the rules explained on the board, and problems that come back when it is time to review them.</p></div>
+      <ul><li data-i18n="mo.learn.1">Four lessons on the rules</li><li data-i18n="mo.learn.2">Problems with spaced repetition</li><li data-i18n="mo.learn.3">A joseki trainer, family by family</li></ul>
+    </div>
+    <div class="chapter reveal">
+      <span class="k" lang="ja" aria-hidden="true">中</span>
+      <div><h2 data-i18n="mo.play.t">Play</h2><p data-i18n="mo.play.d">On OGS with automatch, clock and chat; at home face to face, or against a KataGo that plays like a person of your level.</p><a class="more" href="#features" data-i18n="mo.play.more">How you play →</a></div>
+      <ul><li data-i18n="mo.play.1">Clock, pause and counting in local games</li><li data-i18n="mo.play.2">A human-like KataGo, from 20k to 5d</li><li data-i18n="mo.play.3">No AI during your live games</li></ul>
+    </div>
+    <div class="chapter reveal">
+      <span class="k" lang="ja" aria-hidden="true">終</span>
+      <div><h2 data-i18n="mo.review.t">Review and share</h2><p data-i18n="mo.review.d">KataGo marks your biggest mistakes and what it would have played; then share the game as a card, a video or a web page.</p><a class="more" href="#review" data-i18n="mo.review.more">How a review works →</a></div>
+      <ul><li data-i18n="mo.review.1">The move list coloured by KataGo</li><li data-i18n="mo.review.2">Effects on the critical moves, good and bad</li><li data-i18n="mo.review.3">Replays as MP4, GIF or a web page</li></ul>
     </div>
   </div>
 </section>
@@ -484,7 +503,7 @@
       <ul class="items">
         <li><span class="ico">✦</span><div><h3 data-i18n="f2.t">Moves you can feel</h3><p data-i18n="f2.d">The move that wins a fight shakes the board, cracks the wood and throws embers; routine opening moves just click. Captured stones shatter and weak groups glow faintly. Too much? Turn it down to subtle or off at any time with F.</p></div></li>
         <li><span class="ico">♪</span><div><h3 data-i18n="f3.t">Adaptive music</h3><p data-i18n="f3.d">A calm lo-fi loop that adds drums, arpeggios and an overdrive layer as strong moves at key moments stack up. It stays calm through the opening and cools down when you slip.</p></div></li>
-        <li><span class="ico">☾</span><div><h3><span data-i18n="f7.t">Themes, boards and stones</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f7.d">Five themes — Night sky, Ink and gold, Zen garden, Warm minimal and a Classic tribute — plus six gobans, five stone sets and ten backgrounds to mix with any of them.</p></div></li>
+        <li><span class="ico">☾</span><div><h3><span data-i18n="f7.t">Themes, boards and stones</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f7.d">Six themes — Pole star, Kaya (light), Ink and gold, Zen garden, Warm minimal and High contrast — plus six gobans, eight stone sets and nine backgrounds to mix with any of them.</p></div></li>
       </ul>
     </div>
   </div>
@@ -588,7 +607,7 @@
           <span><i style="background-image:url(art/bg-slate.jpg)"></i><b data-i18n="g3" style="font-weight:500">Slate</b></span>
           <span><i style="background-image:url(art/bg-linen.jpg)"></i><b data-i18n="g4" style="font-weight:500">Charcoal linen</b></span>
           <span><i style="background-image:url(art/bg-sudare.jpg)"></i><b data-i18n="g5" style="font-weight:500">Bamboo blind</b></span>
-          <span><i style="background:radial-gradient(circle at 30% 30%,#fff 6%,transparent 8%),#1b2347"></i><b data-i18n="g6" style="font-weight:500">Night sky, ink mist, zen sand, washi, tatami</b></span>
+          <span><i style="background:radial-gradient(circle at 30% 30%,#fff 6%,transparent 8%),#1b2347"></i><b data-i18n="g6" style="font-weight:500">Night sky, ink mist, zen sand, washi</b></span>
         </div>
       </div>
       <div class="shot reveal"><img src="img/board-prefs.jpg" width="900" height="600" alt="Preferences: Board &amp; stones, with a live preview and pickers for goban, stones and background" loading="lazy"></div>
@@ -673,6 +692,19 @@
       <a class="btn primary big" id="dl-primary" href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-win-x64-Setup.exe">Download</a>
       <p class="muted" id="dl-meta" data-i18n="dl.meta">Free · open source · other systems below</p>
     </div>
+    <div class="dl-wrap">
+      <table class="dl-table" aria-label="Downloads">
+        <thead><tr><th data-i18n="dt.system">System</th><th data-i18n="dt.file">File</th><th data-i18n="dt.updates">Updates</th><th></th></tr></thead>
+        <tbody>
+          <tr data-os="windows"><td data-yours="Your system"><b>Windows</b></td><td data-i18n="dt.win">Installer (.exe), x64 or ARM64</td><td data-i18n="dt.self">By itself</td><td><a href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-win-x64-Setup.exe" data-i18n="dt.get">Download</a></td></tr>
+          <tr data-os="macos"><td data-yours="Your system"><b>macOS</b></td><td data-i18n="dt.mac">.pkg for Apple Silicon or Intel</td><td data-i18n="dt.self">By itself</td><td><a href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-osx-arm64-Setup.pkg" data-i18n="dt.get">Download</a></td></tr>
+          <tr data-os="linux"><td data-yours="Your system"><b>Linux</b></td><td data-i18n="dt.linux">AppImage, x64 or ARM64</td><td data-i18n="dt.self">By itself</td><td><a href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/HoshiGo-linux-x64.AppImage" data-i18n="dt.get">Download</a></td></tr>
+          <tr data-os="android"><td data-yours="Your system"><b>Android</b></td><td data-i18n="dt.android">APK with KataGo inside</td><td data-i18n="dt.notice">A notice in the app</td><td><a href="https://github.com/BuddhaCodes/BadukDana/releases/latest/download/Hoshi-android.apk" data-i18n="dt.get">Download</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <details class="how">
+    <summary data-i18n="dt.how">Every file and the first start, system by system</summary>
     <div class="platforms">
       <div class="card" data-os="windows">
         <h3>Windows<span class="you" data-i18n="dl.yours">Your system</span></h3>
@@ -702,6 +734,7 @@
         <p class="note" data-i18n="pa.n">Not on Google Play yet: open the APK and allow your browser to install apps when Android asks. If Play Protect warns about an unknown app, choose “Install anyway”. To update, install the new APK over the old one: your games and settings stay.</p>
       </div>
     </div>
+    </details>
     <div class="extras">
       <div class="card"><h3 data-i18n="s3.t">KataGo included</h3><p class="muted" data-i18n="s3.d">The Windows, Linux and Android downloads come with KataGo and a quick network, ready from the first start. On a Mac, run brew install katago and Hoshi finds it. Stronger networks can be picked in Preferences → Analysis.</p></div>
       <div class="card"><h3 data-i18n="s2.t">Build from source</h3><p class="muted" data-i18n="s2.d">With the .NET 10 SDK:</p><pre>git clone https://github.com/BuddhaCodes/BadukDana.git
@@ -726,7 +759,7 @@ dotnet run --project src/Hoshi.Desktop -c Release</pre></div>
 <footer>
   <div class="wrap">
     <div class="row"><img src="icon.png" alt=""><strong style="color:var(--text)">Hoshi 星</strong></div>
-    <p data-i18n="ft.credits">Analysis by KataGo (MIT). Classic theme textures from Sabaki and Shudan (MIT). Fonts under the SIL Open Font License; icons from Phosphor, Lucide and Tabler. Joseki ratings and comments come live from the OGS Joseki Explorer, a community project. Boards, stones, backgrounds, effects, sounds and music are Hoshi's own.</p>
+    <p data-i18n="ft.credits">Analysis by KataGo (MIT). Fonts under the SIL Open Font License; icons from Phosphor, Lucide and Tabler. Joseki ratings and comments come live from the OGS Joseki Explorer, a community project. Boards, stones, backgrounds, effects, sounds and music are Hoshi's own.</p>
     <p><a href="https://github.com/BuddhaCodes/BadukDana" style="color:var(--gold-2)">github.com/BuddhaCodes/BadukDana</a> · <a href="https://paypal.me/CarlosFernandez934" rel="noopener" style="color:var(--gold-2)" data-i18n="sp.footer">Donate to Hoshi on PayPal</a></p>
     <p data-i18n="ft.ogs">Not affiliated with OGS (online-go.com) or KataGo.</p>
     <p><span data-i18n="ga.footer">Privacy: this page counts visits with Google Analytics (a cookie; pages viewed, country, device). The app itself sends nothing.</span> <a href="#" id="ga-toggle" style="color:var(--gold-2)" data-i18n="ga.stop">Don't count my visits</a></p>
@@ -744,19 +777,26 @@ dotnet run --project src/Hoshi.Desktop -c Release</pre></div>
 <script>
   const ES = {
     "nav.features": "Funciones", "nav.review": "Repaso", "nav.joseki": "Joseki", "nav.craft": "Tableros y piedras", "nav.effects": "Efectos", "nav.themes": "Temas", "nav.download": "Consíguelo",
-    "dl.yours": "Tu sistema", "th.toggle": "Página clara u oscura",
+    "dl.yours": "Tu sistema",
+    "dt.system": "Sistema", "dt.file": "Archivo", "dt.updates": "Se actualiza", "dt.get": "Descargar", "dt.self": "Solo",
+    "dt.win": "Instalador (.exe), x64 o ARM64", "dt.mac": ".pkg para Apple Silicon o Intel", "dt.linux": "AppImage, x64 o ARM64",
+    "dt.android": "APK con KataGo dentro", "dt.notice": "Aviso en la app", "dt.how": "Todos los archivos y el primer arranque, sistema por sistema", "th.toggle": "Página clara u oscura",
     "ga.footer": "Privacidad: esta página cuenta las visitas con Google Analytics (una cookie; páginas vistas, país, dispositivo). La app no envía nada.",
     "ga.stop": "No contar mis visitas", "ga.counting": "Volver a contar mis visitas",
     "ga.notice": "Esta página cuenta las visitas con Google Analytics, que guarda una cookie (páginas vistas, país, dispositivo). Hoshi solo ve los totales, y la app no envía nada.",
     "ga.no": "No me cuentes", "ga.ok": "Entendido",
     "hero.eyebrow": "Go · Baduk · Weiqi",
-    "hero.title": "Un tablero de Go que <em>siente</em> cada jugada.",
+    "hero.title": "Cada partida, un <em>libro</em> que vuelves a leer.",
     "hero.lead": "Hoshi es una app gratuita para jugar y estudiar Go, en tu ordenador y en tu teléfono Android. Un tablero precioso, KataGo valorando cada jugada en vivo, guía de josekis en cada esquina, efectos de cine cuando das con la mejor jugada y música lo-fi que se anima con tus rachas.",
     "hero.cta": "Consigue Hoshi", "hero.github": "Código en GitHub", "hero.support": "Apoya Hoshi", "hero.badge2": "KataGo incluido", "hero.badge3": "Juega en OGS", "hero.badge4": "Entrenador de josekis", "hero.badge5": "Motores GTP",
     "mo.eyebrow": "Una partida, tres capítulos", "mo.title": "Juégala, estúdiala, vuelve a leerla.",
+    "mo.learn.t": "Aprender", "mo.learn.d": "Un recorrido de bienvenida, las reglas explicadas en el tablero y problemas que vuelven cuando toca repasarlos.",
+    "mo.learn.1": "Cuatro lecciones de reglas", "mo.learn.2": "Problemas con repetición espaciada", "mo.learn.3": "Entrenador de josekis por familias",
+    "mo.play.1": "Reloj, pausa y conteo en partidas locales", "mo.play.2": "KataGo con juego humano, de 20k a 5d", "mo.play.3": "Sin IA durante tus partidas en vivo",
+    "mo.review.1": "La lista de jugadas coloreada por KataGo", "mo.review.2": "Efectos en las jugadas críticas, buenas y malas", "mo.review.3": "Replays en MP4, GIF o página web",
     "mo.play.t": "Jugar", "mo.play.d": "En OGS con automatch, reloj y chat; en casa, frente a frente o contra un KataGo que juega como una persona de tu nivel.", "mo.play.more": "Cómo se juega →",
     "mo.study.t": "Estudiar", "mo.study.d": "Notas y dibujos en el tablero, líneas «¿y si…?», problemas que vuelven cuando toca repasarlos y un entrenador de josekis.", "mo.study.more": "El entrenador de josekis →",
-    "mo.review.t": "Revisar", "mo.review.d": "KataGo marca tus errores más grandes y lo que habría jugado; luego compártela como tarjeta, vídeo o página web.", "mo.review.more": "Cómo es una revisión →",
+    "mo.review.t": "Revisar y compartir", "mo.review.d": "KataGo marca tus errores más grandes y lo que habría jugado; luego compártela como tarjeta, vídeo o página web.", "mo.review.more": "Cómo es una revisión →",
     "board.watch": "Se está jugando una apertura…", "board.reset": "Vaciar el tablero",
     "board.black": "Juegan negras: pon una piedra", "board.white": "Juegan blancas: pon una piedra",
     "feat.eyebrow": "Funciones", "feat.title": "Todo lo que necesitas frente al tablero.",
@@ -768,7 +808,7 @@ dotnet run --project src/Hoshi.Desktop -c Release</pre></div>
     "f4.t": "Territorio de un vistazo", "f4.d": "Mira el territorio seguro y potencial y el resultado estimado, con el estimador de Hoshi o el mapa de KataGo.",
     "f5.t": "En línea en OGS", "f5.d": "Inicia sesión en online-go.com, acepta desafíos y juega en tiempo real con reloj y chat. Hoshi solo crea partidas no clasificatorias.",
     "f6.t": "Editor SGF", "f6.d": "Abre y guarda archivos SGF, explora variantes en el árbol, añade comentarios, marcas y piedras de posición.",
-    "f7.t": "Temas, tableros y piedras", "f7.d": "Cinco temas —Cielo nocturno, Tinta y oro, Jardín zen, Minimal cálido y un homenaje Clásico— y además seis gobanes, cinco juegos de piedras y diez fondos para combinar con cualquiera de ellos.",
+    "f7.t": "Temas, tableros y piedras", "f7.d": "Seis temas —Estrella polar, Kaya (claro), Tinta y oro, Jardín zen, Minimal cálido y Alto contraste— y además seis gobanes, ocho juegos de piedras y nueve fondos para combinar con cualquiera de ellos.",
     "f8.t": "Tuyo, sin conexión", "f8.d": "Libre y de código abierto. No necesitas cuenta para jugar en local; el acceso a OGS usa OAuth y Hoshi nunca guarda tu contraseña.",
     "new": "Nuevo",
     "f9.t": "Josekis en el tablero", "f9.d": "Activa Joseki y cada esquina muestra las continuaciones conocidas, coloreadas según las valora el Joseki Explorer de OGS, con sus comentarios en la barra lateral.",
@@ -811,7 +851,7 @@ dotnet run --project src/Hoshi.Desktop -c Release</pre></div>
     "b1": "Kaya, veta recta", "b2": "Kaya, veta en arco", "b3": "Shin-kaya", "b5": "Bambú", "b6": "Nogal",
     "s1": "Concha y pizarra", "s3": "Cristal", "s4": "Cerámica mate", "s5": "Jade y obsidiana",
     "cr.mix.t": "Combínalos con cualquier tema", "cr.mix.d": "Cada tema trae su propio juego. En Preferencias → Tablero y piedras eliges cualquier goban, piedras y fondo, y los ves en vivo antes de jugar.",
-    "g1": "Sashiko índigo", "g2": "Mesa de nogal", "g3": "Pizarra", "g4": "Lino carbón", "g5": "Persiana de bambú", "g6": "Cielo nocturno, niebla de tinta, arena zen, washi, tatami",
+    "g1": "Sashiko índigo", "g2": "Mesa de nogal", "g3": "Pizarra", "g4": "Lino carbón", "g5": "Persiana de bambú", "g6": "Cielo nocturno, niebla de tinta, arena zen, washi",
     "fx.eyebrow": "Efectos", "fx.title": "Encuentra la jugada que importa. El tablero lo nota.",
     "fx.lead": "Todos los efectos los dibuja y sintetiza Hoshi: sin vídeos de archivo ni muestras de sonido.",
     "fx1.t": "La jugada que importa", "fx1.d": "La mejor jugada en un momento decisivo: una explosión de cine, ondas expansivas y grietas fundidas.",
@@ -844,7 +884,7 @@ dotnet run --project src/Hoshi.Desktop -c Release</pre></div>
     "pl.n": "Si no arranca, instala FUSE 2 (sudo apt install libfuse2). La música necesita PulseAudio/PipeWire (pacat) o ALSA (aplay).",
     "s2.t": "Compilar desde el código", "s2.d": "Con el SDK de .NET 10:",
     "s3.t": "KataGo incluido", "s3.d": "Las descargas de Windows, Linux y Android traen KataGo y una red rápida, listos desde el primer arranque. En un Mac, ejecuta brew install katago y Hoshi lo encuentra. Puedes elegir redes más fuertes en Preferencias → Análisis.",
-    "ft.credits": "Análisis de KataGo (MIT). Texturas del tema Clásico de Sabaki y Shudan (MIT). Fuentes con licencia SIL Open Font; iconos de Phosphor, Lucide y Tabler. Las valoraciones y comentarios de josekis llegan en vivo del Joseki Explorer de OGS, un proyecto comunitario. Los tableros, las piedras, los fondos, los efectos, los sonidos y la música son de Hoshi.",
+    "ft.credits": "Análisis de KataGo (MIT). Fuentes con licencia SIL Open Font; iconos de Phosphor, Lucide y Tabler. Las valoraciones y comentarios de josekis llegan en vivo del Joseki Explorer de OGS, un proyecto comunitario. Los tableros, las piedras, los fondos, los efectos, los sonidos y la música son de Hoshi.",
     "sp.title": "Hoshi es gratis, y lo seguirá siendo.",
     "sp.text": "Está hecho en ratos libres, por amor al juego. Si te da buenas partidas y quieres ayudar a que crezca —firmar la versión de Windows, más tableros, más herramientas de estudio—, puedes apoyarlo con una donación en PayPal. Totalmente opcional; gracias igual.",
     "sp.note": "PayPal no está disponible donde vivo, así que las donaciones las recibe un colaborador de confianza, Carlos Fernandez: es el nombre que verás en PayPal.",
@@ -894,7 +934,8 @@ dotnet run --project src/Hoshi.Desktop -c Release</pre></div>
     a.href = DL + file;
     a.textContent = FOR[lang].replace("{0}", OS_NAME[sys.os]);
     if (sys.version) document.getElementById("dl-meta").textContent = VER[lang].replace("{0}", sys.version);
-    document.querySelectorAll(".platforms .card").forEach(c => c.classList.toggle("current", c.dataset.os === sys.os));
+    document.querySelectorAll(".platforms .card, .dl-table tr[data-os]").forEach(c => c.classList.toggle("current", c.dataset.os === sys.os));
+    document.querySelectorAll(".dl-table td[data-yours]").forEach(td => td.dataset.yours = T("dl.yours"));
   }
 
   function setLang(lang) {
