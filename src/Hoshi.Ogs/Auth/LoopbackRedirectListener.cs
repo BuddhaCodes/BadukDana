@@ -14,14 +14,17 @@ public sealed class LoopbackRedirectListener : IDisposable
 {
     private readonly TcpListener _listener;
     private readonly string _path;
+    private readonly Uri? _appReturn;
 
-    private LoopbackRedirectListener(TcpListener listener, string path)
+    private LoopbackRedirectListener(TcpListener listener, string path, Uri? appReturn)
     {
         _listener = listener;
         _path = path;
+        _appReturn = appReturn;
     }
 
-    public static LoopbackRedirectListener Start(int port, string path)
+    /// <param name="appReturn">Phones: a link back to the app, shown on the "signed in" page and followed by itself.</param>
+    public static LoopbackRedirectListener Start(int port, string path, Uri? appReturn = null)
     {
         var listener = new TcpListener(IPAddress.Loopback, port);
         try
@@ -33,7 +36,7 @@ public sealed class LoopbackRedirectListener : IDisposable
             throw new OgsAuthException(Tr.F("Ogs.PortBusy", port), ex);
         }
 
-        return new LoopbackRedirectListener(listener, path);
+        return new LoopbackRedirectListener(listener, path, appReturn);
     }
 
     /// <summary>Waits for the browser to hit the redirect path and returns the authorization code.</summary>
@@ -76,7 +79,7 @@ public sealed class LoopbackRedirectListener : IDisposable
                 throw new OgsAuthException(Tr.T("Ogs.CodeMissing"));
             }
 
-            await RespondAsync(stream, 200, Page(Tr.T("Ogs.Page.SignedInTitle"), Tr.T("Ogs.Page.SignedInBody")), cancellationToken);
+            await RespondAsync(stream, 200, Page(Tr.T("Ogs.Page.SignedInTitle"), Tr.T(_appReturn is null ? "Ogs.Page.SignedInBody" : "Ogs.Page.SignedInPhoneBody"), _appReturn), cancellationToken);
             return code;
         }
     }
@@ -120,11 +123,21 @@ public sealed class LoopbackRedirectListener : IDisposable
         await stream.FlushAsync(cancellationToken);
     }
 
-    private static string Page(string title, string message) =>
-        $$"""
-        <!doctype html><html lang="{{Tr.Language}}"><head><meta charset="utf-8"><title>Hoshi · {{title}}</title>
-        <style>body{background:#1e1e1e;color:#e6e6e6;font-family:system-ui,sans-serif;display:grid;place-items:center;height:100vh;margin:0}
-        div{max-width:28rem;text-align:center}h1{color:#e0a94a;font-weight:500}</style></head>
-        <body><div><h1>Hoshi · {{title}}</h1><p>{{message}}</p></div></body></html>
-        """;
+    private static string Page(string title, string message, Uri? appReturn = null)
+    {
+        // Phones: a big "Back to Hoshi" button, and the page follows it by itself after a moment.
+        string back = appReturn is null ? string.Empty : $$"""
+            <p><a class="back" href="{{WebUtility.HtmlEncode(appReturn.OriginalString)}}">{{WebUtility.HtmlEncode(Tr.T("Ogs.Page.BackToApp"))}}</a></p>
+            <script>setTimeout(function(){location.href={{System.Text.Json.JsonSerializer.Serialize(appReturn.OriginalString)}};},700);</script>
+            """;
+        return $$"""
+            <!doctype html><html lang="{{Tr.Language}}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+            <title>Hoshi · {{title}}</title>
+            <style>body{background:#f8f1e7;color:#2d2440;font-family:system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;margin:0;padding:0 18px}
+            div{max-width:28rem;text-align:center;background:#fff;border-radius:24px;padding:28px 24px;box-shadow:0 6px 0 rgba(120,90,60,.12)}
+            h1{color:#c8577a;font-weight:600;font-size:1.5rem}p{line-height:1.5}
+            a.back{display:inline-block;margin-top:8px;background:#2d2440;color:#fff;text-decoration:none;font-weight:600;border-radius:999px;padding:14px 26px}</style></head>
+            <body><div><h1>Hoshi · {{title}}</h1><p>{{message}}</p>{{back}}</div></body></html>
+            """;
+    }
 }

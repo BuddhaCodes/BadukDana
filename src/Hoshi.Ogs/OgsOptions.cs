@@ -49,6 +49,12 @@ public sealed record OgsOptions
 
     public string ClientVersion { get; init; } = "0.1.0";
 
+    /// <summary>
+    /// Phones: a link that brings Hoshi back to the front (Android: an <c>intent://</c> URI for the activity's
+    /// <c>hoshi://signed-in</c> filter). The loopback page shows it as "Back to Hoshi" and follows it by itself.
+    /// </summary>
+    public Uri? AppReturnUri { get; init; }
+
     public Uri RedirectUri => new($"http://127.0.0.1:{RedirectPort}{RedirectPath}");
 
     public Uri EffectiveWebSocketUrl => WebSocketUrl ?? new UriBuilder(BaseUrl)

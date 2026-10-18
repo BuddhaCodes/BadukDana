@@ -55,6 +55,13 @@ public sealed class OgsAuthService : IOgsCredentials
 
     public bool IsSignedIn => Session is not null;
 
+    /// <summary>
+    /// While a browser sign-in waits for its code: OGS's "authorize Hoshi" page for it (same state and PKCE
+    /// challenge). Opening it again finishes a sign-in whose social login (Google…) ended on OGS's home page
+    /// instead of following <c>next</c>, or whose tab was closed: the browser is signed in to OGS by then.
+    /// </summary>
+    public Uri? PendingAuthorization { get; private set; }
+
     /// <summary>Updates the JWT after the realtime socket pushes a new one (<c>user/jwt</c>).</summary>
     public void UpdateJwt(string jwt)
     {
@@ -102,8 +109,9 @@ public sealed class OgsAuthService : IOgsCredentials
                 Param("state", state)),
         }.Uri;
 
-        using LoopbackRedirectListener listener = LoopbackRedirectListener.Start(_options.RedirectPort, _options.RedirectPath);
+        using LoopbackRedirectListener listener = LoopbackRedirectListener.Start(_options.RedirectPort, _options.RedirectPath, _options.AppReturnUri);
         Task<string> codeTask = listener.WaitForCodeAsync(state, cancellationToken);
+        PendingAuthorization = authorize;
         _logger.LogInformation("Opening the browser for OGS authorization at {Host} ({Provider})", _options.BaseUrl.Host, provider);
         Uri start = provider == OgsLoginProvider.Ogs
             ? authorize
@@ -112,8 +120,16 @@ public sealed class OgsAuthService : IOgsCredentials
                 // Relative, same-site next: social-auth rejects redirects to other hosts.
                 Query = Param("next", authorize.PathAndQuery),
             }.Uri;
-        await openBrowser(start, cancellationToken);
-        string code = await codeTask;
+        string code;
+        try
+        {
+            await openBrowser(start, cancellationToken);
+            code = await codeTask;
+        }
+        finally
+        {
+            PendingAuthorization = null;
+        }
 
         await RequestTokensAsync(
             new Dictionary<string, string>

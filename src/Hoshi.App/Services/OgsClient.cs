@@ -44,6 +44,12 @@ public interface IOgsClient
     /// <summary>Browser OAuth sign-in, optionally starting at one of OGS's social logins (Google…).</summary>
     Task SignInWithBrowserAsync(OgsLoginProvider provider, CancellationToken cancellationToken);
 
+    /// <summary>A browser sign-in is waiting for OGS's answer.</summary>
+    bool IsWaitingForBrowser { get; }
+
+    /// <summary>Opens OGS's "authorize Hoshi" page of the waiting sign-in again (the browser is signed in by then).</summary>
+    Task ReopenAuthorizationAsync(CancellationToken cancellationToken);
+
     Task SignInWithPasswordAsync(string username, string password, CancellationToken cancellationToken);
 
     Task SignOutAsync(CancellationToken cancellationToken);
@@ -231,6 +237,11 @@ public sealed class OgsClient : IOgsClient, IAsyncDisposable
 
         return false;
     }
+
+    public bool IsWaitingForBrowser => _current.Auth.PendingAuthorization is not null;
+
+    public Task ReopenAuthorizationAsync(CancellationToken cancellationToken) =>
+        _current.Auth.PendingAuthorization is { } authorize ? _browser.OpenAsync(authorize, cancellationToken) : Task.CompletedTask;
 
     public async Task SignInWithBrowserAsync(OgsLoginProvider provider, CancellationToken cancellationToken)
     {
