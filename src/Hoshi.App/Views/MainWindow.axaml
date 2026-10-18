@@ -54,26 +54,28 @@
 
   <!-- Interface size (Preferences → Appearance): everything scales together. -->
   <LayoutTransformControl LayoutTransform="{Binding UiScaleTransform}" x:Name="UiScaleRoot">
-  <Grid ColumnDefinitions="*,Auto,280">
-    <DockPanel Grid.Column="0">
-      <!-- Bottom bar under the board only (Sabaki): navigation · players · actions. In edit mode it shows the tools. -->
-      <Border Classes="bottom-bar" Classes.edit="{Binding Game.IsEditMode}" DockPanel.Dock="Bottom" x:Name="BottomBar">
+  <Grid ColumnDefinitions="*,Auto,280" RowDefinitions="Auto,*">
+      <!-- The header (redesign 2026-10): who plays, the three tabs and the tools; the menu holds everything else. -->
+      <Border Grid.Row="0" Grid.ColumnSpan="3" Classes="bottom-bar app-header" Classes.edit="{Binding Game.IsEditMode}" x:Name="AppHeader">
         <Border.IsVisible>
           <MultiBinding Converter="{x:Static BoolConverters.And}">
             <Binding Path="!Joseki.IsActive" />
             <Binding Path="!IsZen" />
           </MultiBinding>
         </Border.IsVisible>
-        <Grid ColumnDefinitions="Auto,*,Auto">
-          <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-            <Button Classes="bar icon" Command="{Binding Game.GoFirstCommand}" ToolTip.Tip="{l:T Main.First}"><c:HoshiIcon Icon="{DynamicResource Icon.First}" Size="18" /></Button>
-            <Button Classes="bar icon" Command="{Binding Game.GoBackCommand}" ToolTip.Tip="{l:T Main.Previous}"><c:HoshiIcon Icon="{DynamicResource Icon.Previous}" Size="18" /></Button>
-            <Button Classes="bar icon" Command="{Binding Game.GoForwardCommand}" ToolTip.Tip="{l:T Main.Next}"><c:HoshiIcon Icon="{DynamicResource Icon.Next}" Size="18" /></Button>
-            <Button Classes="bar icon" Command="{Binding Game.GoLastCommand}" ToolTip.Tip="{l:T Main.Last}"><c:HoshiIcon Icon="{DynamicResource Icon.Last}" Size="18" /></Button>
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+          <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" x:Name="HeaderBrand">
+            <Border Width="30" Height="30" CornerRadius="7" Background="{DynamicResource Accent}">
+              <TextBlock Text="星" FontFamily="{DynamicResource Font.Brand}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource Bg.Window}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <StackPanel VerticalAlignment="Center" MaxWidth="260" x:Name="HeaderTitle">
+              <TextBlock Text="{Binding Game.HeaderTitle}" FontFamily="{DynamicResource Font.Title}" FontSize="15" TextTrimming="CharacterEllipsis" />
+              <TextBlock Classes="secondary" FontSize="11.5" Text="{Binding Game.HeaderSubtitle}" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
           </StackPanel>
-
-          <!-- Players, as in Sabaki's bar: black name · turn toggle · white name. -->
-          <Grid Grid.Column="1" ColumnDefinitions="*,Auto,*" VerticalAlignment="Center" Margin="12,0" ClipToBounds="True"
+          <!-- Players: black name · turn · white name, with clocks and captures. -->
+          <Grid Grid.Column="1" ColumnDefinitions="*,Auto,*" VerticalAlignment="Center" Margin="16,0" ClipToBounds="True"
                 IsVisible="{Binding !Game.IsEditMode}" x:Name="PlayerInfo">
             <DockPanel HorizontalAlignment="Right">
               <Border DockPanel.Dock="Left" Classes="clock" Classes.low="{Binding Clock.IsBlackLow}" IsVisible="{Binding Clock.HasClock}" Margin="0,0,8,0" x:Name="BlackClock">
@@ -100,8 +102,7 @@
                          FontWeight="{Binding !Game.IsBlackToMove, Converter={x:Static c:BoolToFontWeightConverter.Instance}}" />
             </DockPanel>
           </Grid>
-
-        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center" HorizontalAlignment="Center"
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="12,0"
                     IsVisible="{Binding Game.IsEditMode}" x:Name="EditBar" Classes="appear">
           <RadioButton Classes="tool" GroupName="tool" ToolTip.Tip="{l:T Main.BlackStone}"
                        IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.BlackStone}}"
@@ -125,13 +126,27 @@
                        IsChecked="{Binding Game.EditTool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:EditTool.Label}}"
                        Command="{Binding Game.SelectToolCommand}" CommandParameter="{x:Static vm:EditTool.Label}"><c:HoshiIcon Icon="{DynamicResource Icon.Label}" Size="17" /></RadioButton>
         </StackPanel>
-
-          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-            <Button Classes="bar" Command="{Binding Game.PassCommand}" ToolTip.Tip="{l:T Main.PassTip}" x:Name="PassButton"
-                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Pass}" Size="17" /><TextBlock Classes="label" Text="{l:T Main.Pass}" VerticalAlignment="Center" x:Name="PassLabel" /></StackPanel></Button>
-            <Button Classes="bar" Command="{Binding Game.UndoCommand}" ToolTip.Tip="{l:T Main.UndoTip}" x:Name="UndoButton"
-                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Undo}" Size="17" /><TextBlock Classes="label" Text="{l:T Main.Undo}" VerticalAlignment="Center" /></StackPanel></Button>
-            <!-- Narrow windows: these go into the "more" menu (code-behind sets the size classes). -->
+          <Border Grid.Column="2" x:Name="ModeTabs" Padding="3" CornerRadius="10" Background="{DynamicResource Bg.PanelAlt}" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal">
+              <RadioButton Classes="segment" GroupName="work-mode" IsChecked="{Binding IsPlayMode, Mode=OneWay}" MinWidth="78"
+                           Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:WorkMode.Play}" x:Name="ModePlay" ToolTip.Tip="{l:T Mode.PlayTip}">
+                <TextBlock Text="{l:T Mode.Play}" HorizontalAlignment="Center" />
+              </RadioButton>
+              <RadioButton Classes="segment" GroupName="work-mode" IsChecked="{Binding IsStudyMode, Mode=OneWay}" MinWidth="78"
+                           Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:WorkMode.Study}" x:Name="ModeStudy" ToolTip.Tip="{l:T Mode.StudyTip}">
+                <TextBlock Text="{l:T Mode.Study}" HorizontalAlignment="Center" />
+              </RadioButton>
+              <RadioButton Classes="segment" GroupName="work-mode" IsChecked="{Binding IsReviewMode, Mode=OneWay}" IsEnabled="{Binding CanReview}" MinWidth="78"
+                           Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:WorkMode.Review}" x:Name="ModeReview" ToolTip.Tip="{l:T Mode.ReviewTip}">
+                <TextBlock Text="{l:T Mode.Review}" HorizontalAlignment="Center" />
+              </RadioButton>
+            </StackPanel>
+          </Border>
+          <Button Grid.Column="3" Classes="accent" Margin="10,0,0,0" VerticalAlignment="Center" Command="{Binding OpenReplayMakerCommand}"
+                  IsVisible="{Binding IsReviewMode}" Content="{l:T Mode.MakeReplay}" x:Name="HeaderReplay" />
+          <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center" Margin="10,0,0,0">
+            
+            <!-- Narrow windows: these go into the "more" menu (code-behind sets the size classes). Icons only in the header. -->
             <StackPanel Orientation="Horizontal" Spacing="2" x:Name="OptionalBarButtons">
             <Button Classes="bar toggle" Classes.on="{Binding Analysis.IsTerritoryOn}" Command="{Binding Analysis.ToggleTerritoryCommand}"
                     ToolTip.Tip="{l:T Main.TerritoryTip}" x:Name="TerritoryButton"
@@ -151,17 +166,8 @@
                 </MultiBinding>
               </Button.IsVisible><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Star}" Size="17" /><TextBlock Classes="label" Text="{l:T Main.JosekiHints}" VerticalAlignment="Center" /></StackPanel></Button>
             </StackPanel>
-            <Button Classes="bar toggle" Classes.on="{Binding Analysis.IsAnalysisOn}" Command="{Binding Analysis.ToggleAnalysisCommand}"
-                    ToolTip.Tip="{l:T Main.AnalysisTip}" x:Name="AnalysisButton"
-                    >
-              <Button.IsVisible>
-                <MultiBinding Converter="{x:Static BoolConverters.And}">
-                  <Binding Path="!Game.IsEditMode" />
-                  <Binding Path="!Analysis.IsBlocked" />
-                </MultiBinding>
-              </Button.IsVisible><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Analysis}" Size="17" /><TextBlock Classes="label" Text="{l:T Main.Analysis}" VerticalAlignment="Center" /></StackPanel></Button>
-            <Button Classes="bar toggle" Classes.on="{Binding Study.IsActive}" Command="{Binding Study.ToggleCommand}"
-                    ToolTip.Tip="{l:T Main.StudyTip}" x:Name="StudyButton" IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Study}" Size="17" /><TextBlock Classes="label" Text="{l:T Main.Study}" VerticalAlignment="Center" /></StackPanel></Button>
+            
+            
 <Panel x:Name="OnlineButtonHost">
             <Button Classes="bar" Command="{Binding OpenLobbyCommand}" ToolTip.Tip="{l:T Main.OnlineTip}" x:Name="OnlineButton"
                     IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Online}" Size="17" /><TextBlock Classes="label" Text="{l:T Main.Online}" VerticalAlignment="Center" /></StackPanel></Button>
@@ -176,12 +182,12 @@
                 </MenuFlyout>
               </Button.Flyout>
             </Button>
-            <Button Classes="bar" Command="{Binding Game.ToggleEditModeCommand}" IsVisible="{Binding Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Check}" Size="17" /><TextBlock Text="{l:T Main.FinishEditing}" VerticalAlignment="Center" /></StackPanel></Button>
+            
             <!-- Board effects: explosions, shattering captures, atari alert — Off / Subtle / Full, also with F. -->
             <Button Classes="bar icon" ToolTip.Tip="{Binding Effects.Tooltip}" x:Name="EffectsButton" Classes.dim="{Binding Effects.IsOff}">
               <c:HoshiIcon Icon="{DynamicResource Icon.Effects}" Size="18" />
               <Button.Flyout>
-                <Flyout Placement="TopEdgeAlignedRight">
+                <Flyout Placement="BottomEdgeAlignedRight">
                   <StackPanel Width="250" Spacing="8" Margin="4" x:Name="EffectsPanel">
                     <TextBlock Text="{l:T Effects.Title}" FontWeight="SemiBold" />
                     <StackPanel Spacing="2" x:Name="EffectsLevels">
@@ -202,7 +208,7 @@
                 <c:HoshiIcon Icon="{DynamicResource Icon.Muted}" Size="18" IsVisible="{Binding Audio.IsMuted, FallbackValue=False}" />
               </Panel>
               <Button.Flyout>
-                <Flyout Placement="TopEdgeAlignedRight" Opened="OnAudioOpened">
+                <Flyout Placement="BottomEdgeAlignedRight" Opened="OnAudioOpened">
                   <StackPanel Width="250" Spacing="6" Margin="4" x:Name="AudioPanel">
                     <Button Classes.accent="{Binding !Audio.IsMuted}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                             Content="{Binding Audio.MuteLabel}" Command="{Binding Audio.ToggleMuteCommand}" x:Name="MuteButton" />
@@ -309,6 +315,39 @@
               </MenuFlyout>
             </Button.Flyout>
             </Button>
+          </StackPanel>
+        </Grid>
+      </Border>
+
+    <DockPanel Grid.Row="1" Grid.Column="0">
+      <!-- The footer (redesign 2026-10): moving through the game, and the move's actions. In edit mode the header shows the tools. -->
+      <Border Classes="bottom-bar" Classes.edit="{Binding Game.IsEditMode}" DockPanel.Dock="Bottom" x:Name="BottomBar">
+        <Border.IsVisible>
+          <MultiBinding Converter="{x:Static BoolConverters.And}">
+            <Binding Path="!Joseki.IsActive" />
+            <Binding Path="!IsZen" />
+          </MultiBinding>
+        </Border.IsVisible>
+        <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto" ColumnSpacing="10">
+          <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+            <Button Classes="bar icon" Command="{Binding Game.GoFirstCommand}" ToolTip.Tip="{l:T Main.First}"><c:HoshiIcon Icon="{DynamicResource Icon.First}" Size="18" /></Button>
+            <Button Classes="bar icon" Command="{Binding Game.GoBackCommand}" ToolTip.Tip="{l:T Main.Previous}"><c:HoshiIcon Icon="{DynamicResource Icon.Previous}" Size="18" /></Button>
+            <Button Classes="bar icon" Command="{Binding Game.GoForwardCommand}" ToolTip.Tip="{l:T Main.Next}"><c:HoshiIcon Icon="{DynamicResource Icon.Next}" Size="18" /></Button>
+            <Button Classes="bar icon" Command="{Binding Game.GoLastCommand}" ToolTip.Tip="{l:T Main.Last}"><c:HoshiIcon Icon="{DynamicResource Icon.Last}" Size="18" /></Button>
+          </StackPanel>
+          <Button Grid.Column="1" Classes="bar danger-outline" Command="{Binding Analysis.NextMistakeCommand}" IsVisible="{Binding IsReviewMode}"
+                  Content="{l:T Review.NextMistake}" ToolTip.Tip="{l:T Review.NextMistakeTip}" VerticalAlignment="Center" x:Name="FooterNextMistake" />
+          <Slider Grid.Column="2" Classes="moves" Minimum="0" Maximum="{Binding Moves.LineLength}" Value="{Binding Moves.Position}"
+                  IsSnapToTickEnabled="True" TickFrequency="1" VerticalAlignment="Center" x:Name="MoveSlider"
+                  AutomationProperties.Name="{l:T Mode.Position}" IsEnabled="{Binding Moves.LineLength}" />
+          <TextBlock Grid.Column="3" Classes="secondary" FontFamily="{DynamicResource Font.Mono}" FontSize="12" VerticalAlignment="Center"
+                     Text="{Binding Moves.PositionText}" x:Name="MoveCounter" />
+          <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+            <Button Classes="bar" Command="{Binding Game.PassCommand}" ToolTip.Tip="{l:T Main.PassTip}" x:Name="PassButton"
+                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Pass}" Size="17" /><TextBlock Classes="label" Text="{l:T Main.Pass}" VerticalAlignment="Center" x:Name="PassLabel" /></StackPanel></Button>
+            <Button Classes="bar" Command="{Binding Game.UndoCommand}" ToolTip.Tip="{l:T Main.UndoTip}" x:Name="UndoButton"
+                    IsVisible="{Binding !Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Undo}" Size="17" /><TextBlock Classes="label" Text="{l:T Main.Undo}" VerticalAlignment="Center" /></StackPanel></Button>
+            <Button Classes="bar" Command="{Binding Game.ToggleEditModeCommand}" IsVisible="{Binding Game.IsEditMode}"><StackPanel Orientation="Horizontal" Spacing="7"><c:HoshiIcon Icon="{DynamicResource Icon.Check}" Size="17" /><TextBlock Text="{l:T Main.FinishEditing}" VerticalAlignment="Center" /></StackPanel></Button>
           </StackPanel>
         </Grid>
       </Border>
@@ -632,36 +671,16 @@
       </Panel>
     </DockPanel>
 
-    <GridSplitter Grid.Column="1" Width="1" Background="{DynamicResource Border.Subtle}" ResizeDirection="Columns" x:Name="SidebarSplitter" />
+    <GridSplitter Grid.Row="1" Grid.Column="1" Width="1" Background="{DynamicResource Border.Subtle}" ResizeDirection="Columns" x:Name="SidebarSplitter" />
 
     <!-- Sidebar: players, variation tree, comment. Width 220–420 (DESIGN.md). -->
-      <DockPanel Grid.Column="2" x:Name="SidebarHost" MinWidth="220" MaxWidth="420" Background="{DynamicResource Bg.Sidebar}">
-      <!-- The three tabs (redesign 2026-10): play, study (the study's tools and notes), review (KataGo and the move list). -->
-      <Border DockPanel.Dock="Top" x:Name="ModeTabs" Margin="10,10,10,2" Padding="3" CornerRadius="10" Background="{DynamicResource Bg.PanelAlt}"
-              IsVisible="{Binding !Joseki.IsActive}">
-        <UniformGrid Columns="3">
-          <RadioButton Classes="segment" GroupName="work-mode" IsChecked="{Binding IsPlayMode, Mode=OneWay}"
-                       Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:WorkMode.Play}" x:Name="ModePlay" ToolTip.Tip="{l:T Mode.PlayTip}">
-            <TextBlock Text="{l:T Mode.Play}" HorizontalAlignment="Center" />
-          </RadioButton>
-          <RadioButton Classes="segment" GroupName="work-mode" IsChecked="{Binding IsStudyMode, Mode=OneWay}"
-                       Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:WorkMode.Study}" x:Name="ModeStudy" ToolTip.Tip="{l:T Mode.StudyTip}">
-            <TextBlock Text="{l:T Mode.Study}" HorizontalAlignment="Center" />
-          </RadioButton>
-          <RadioButton Classes="segment" GroupName="work-mode" IsChecked="{Binding IsReviewMode, Mode=OneWay}" IsEnabled="{Binding CanReview}"
-                       Command="{Binding SetModeCommand}" CommandParameter="{x:Static vm:WorkMode.Review}" x:Name="ModeReview" ToolTip.Tip="{l:T Mode.ReviewTip}">
-            <TextBlock Text="{l:T Mode.Review}" HorizontalAlignment="Center" />
-          </RadioButton>
-        </UniformGrid>
-      </Border>
+      <DockPanel Grid.Row="1" Grid.Column="2" x:Name="SidebarHost" MinWidth="220" MaxWidth="420" Background="{DynamicResource Bg.Sidebar}">
       <Grid x:Name="Sidebar" RowDefinitions="Auto,Auto,*,Auto,Auto,Auto">
-        <Border Grid.Row="0" Classes="game-header" IsVisible="{Binding IsLocal}" x:Name="GameHeader">
+        <Border Grid.Row="0" Classes="game-header" IsVisible="{Binding EngineMatch.IsActive, FallbackValue=False}" x:Name="GameHeader">
           <StackPanel Spacing="3">
-            <TextBlock Text="{Binding Game.HeaderTitle}" FontFamily="{DynamicResource Font.Title}" FontSize="{DynamicResource Font.Size.Title}"
-                       TextTrimming="CharacterEllipsis" />
-            <TextBlock Classes="secondary" Text="{Binding Game.HeaderSubtitle}" TextTrimming="CharacterEllipsis" />
+            <!-- The title and the players are in the header now; a game against an engine keeps its bar here. -->
             <!-- A game against an engine (or between two): who plays, what the engine is doing, pause and end. -->
-            <Border x:Name="EngineBar" Classes="appear" Margin="0,8,0,0" Padding="10,8" CornerRadius="8"
+            <Border x:Name="EngineBar" Classes="appear" Margin="0" Padding="10,8" CornerRadius="8"
                     Background="{DynamicResource Bg.Panel}" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="1"
                     IsVisible="{Binding EngineMatch.IsActive, FallbackValue=False}">
               <StackPanel Spacing="6">

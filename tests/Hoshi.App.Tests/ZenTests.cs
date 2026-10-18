@@ -85,7 +85,7 @@ public sealed class ZenTests
     }
 
     [AvaloniaFact]
-    public void The_bottom_bar_folds_into_icons_and_a_more_menu_on_small_windows()
+    public void The_header_folds_into_icons_and_a_more_menu_on_small_windows()
     {
         foreach ((double width, bool compact, bool narrow) in new[] { (1600.0, false, false), (1150.0, true, false), (850.0, true, true) })
         {
@@ -93,7 +93,7 @@ public sealed class ZenTests
             var window = new MainWindow(vm) { Width = width, Height = 820 };
             window.Show();
             window.UpdateLayout();
-            Border bar = window.FindDeep<Border>("BottomBar")!;
+            Border bar = window.FindDeep<Border>("AppHeader")!;
             bar.Classes.Contains("compact").Should().Be(compact, $"at {width} px the bar is {bar.Bounds.Width} wide");
             bar.Classes.Contains("narrow").Should().Be(narrow);
             window.FindDeep<Button>("MoreButton")!.IsVisible.Should().Be(narrow);

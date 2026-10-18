@@ -47,7 +47,7 @@ public sealed class MainWindowTests
             using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
 
             Pixels.Read(frame, 1100 - 20, 400).Should().Be(theme.Sidebar, "the sidebar uses the theme colour");
-            Color backdrop = Pixels.Read(frame, 6, 6);
+            Color backdrop = Pixels.Read(frame, 6, 100); // under the header
             backdrop.Should().NotBe(theme.Sidebar, "the board sits on the theme's backdrop");
             string outDir = Path.Combine(AppContext.BaseDirectory, "screenshots");
             Directory.CreateDirectory(outDir);
