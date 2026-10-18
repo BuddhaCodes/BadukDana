@@ -669,4 +669,66 @@ public sealed class PhoneTests
             frame.Save(Path.Combine(dir, name));
         }
     }
+
+    [AvaloniaFact]
+    public void Zen_on_a_phone_leaves_the_board_alone_and_territory_shows_who_is_ahead()
+    {
+        bool? immersive = null;
+        Action<bool>? before = PlatformInfo.Immersive;
+        PlatformInfo.Immersive = on => immersive = on;
+        try
+        {
+            var game = new GameViewModel();
+            foreach ((int x, int y) in new[] { (2, 2), (6, 6), (2, 6), (6, 2) })
+            {
+                game.PlayCommand.Execute(new Point(x, y));
+            }
+
+            (Window window, PhoneShellViewModel shell) = Phone(game);
+            shell.Main.Analysis.ToggleTerritoryCommand.Execute(null);
+            window.FindDeep<Border>("PhoneTerritoryCard")!.IsVisible.Should().BeTrue("the estimate is written over the board");
+            window.FindDeep<TextBlock>("PhoneTerritoryText")!.Text.Should().NotBeNullOrEmpty();
+            string dir = Path.Combine(AppContext.BaseDirectory, "screenshots");
+            Directory.CreateDirectory(dir);
+            using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
+            {
+                frame.Save(Path.Combine(dir, "phone-territory.png"));
+            }
+
+            shell.Main.ToggleZenCommand.Execute(null);
+            window.FindDeep<Border>("PhoneTop")!.IsVisible.Should().BeFalse("zen hides the players' header");
+            window.FindDeep<Border>("PhoneBar")!.IsEffectivelyVisible.Should().BeFalse();
+            window.FindDeep<Button>("PhoneZenExit")!.IsVisible.Should().BeTrue();
+            immersive.Should().BeTrue("the system bars go away too");
+
+            shell.Main.ToggleZenCommand.Execute(null);
+            window.FindDeep<Border>("PhoneTop")!.IsVisible.Should().BeTrue();
+            immersive.Should().BeFalse();
+            window.Close();
+        }
+        finally
+        {
+            PlatformInfo.Immersive = before;
+        }
+    }
+
+    [AvaloniaFact]
+    public void Phone_preferences_offer_every_global_theme()
+    {
+        bool was = PlatformInfo.IsPhone;
+        try
+        {
+            PlatformInfo.IsPhone = true;
+            var settings = new TestSettings();
+            var view = new PreferencesView { DataContext = new PreferencesViewModel(new ThemeService(settings), settings) };
+            var window = new Window { Width = 412, Height = 892, Content = view };
+            window.Show();
+            window.FindDeep<ListBox>("ThemeList")!.ItemCount.Should().Be(HoshiThemes.All.Count, "the desktop's themes are all on the phone");
+            window.Close();
+        }
+        finally
+        {
+            PlatformInfo.IsPhone = was;
+        }
+    }
 }

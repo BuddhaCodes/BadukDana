@@ -27,6 +27,12 @@ public static class PlatformInfo
     /// <summary>Keeps the screen from dimming while true (set by Android); null where it does not apply.</summary>
     public static Action<bool>? KeepScreenOn { get; set; }
 
+    /// <summary>Zen on a phone: hides the status and navigation bars while true (set by Android).</summary>
+    public static Action<bool>? Immersive { get; set; }
+
+    /// <summary>The system bars take the theme's colour (colour, light theme → dark icons); set by Android.</summary>
+    public static Action<Avalonia.Media.Color, bool>? SystemBars { get; set; }
+
     /// <summary>
     /// The system share sheet for a file (path, MIME type, sheet title); set by Android, null on the desktop (where
     /// files are saved and text goes to the clipboard).

@@ -20,6 +20,9 @@ internal static class AndroidPlatform
     private static bool _musicWasPlaying;
     private static Activity? _activity;
     private static bool _keepScreenOn;
+    private static bool _immersive;
+    private static bool _lightBars;
+    private static Android.Graphics.Color? _barColor;
 
     public static void Initialize(Activity activity)
     {
@@ -43,6 +46,17 @@ internal static class AndroidPlatform
         {
             _keepScreenOn = on;
             ApplyKeepScreenOn();
+        };
+        PlatformInfo.Immersive = on =>
+        {
+            _immersive = on;
+            ApplySystemBars();
+        };
+        PlatformInfo.SystemBars = (color, light) =>
+        {
+            _barColor = Android.Graphics.Color.Argb(255, color.R, color.G, color.B);
+            _lightBars = light;
+            ApplySystemBars();
         };
 
         // KataGo: the executable is installed with the app's native libraries; the network is copied out of the APK.
@@ -100,6 +114,7 @@ internal static class AndroidPlatform
     {
         _activity = activity;
         ApplyKeepScreenOn();
+        ApplySystemBars();
 
         if (_musicWasPlaying && global::Hoshi.App.App.Services?.GetService<IMusicService>() is { } music)
         {
@@ -207,6 +222,47 @@ internal static class AndroidPlatform
         {
             Avalonia.Threading.Dispatcher.UIThread.Post(async () => await main.OpenOnlineGameAsync(gameId));
         }
+    }
+
+    /// <summary>
+    /// The status and navigation bars: in the theme's bar colour with icons that read on it, and hidden in zen
+    /// (a swipe from the edge shows them for a moment).
+    /// </summary>
+    private static void ApplySystemBars()
+    {
+        if (_activity is not { } activity)
+        {
+            return;
+        }
+
+        activity.RunOnUiThread(() =>
+        {
+            if (activity.Window is not { } window)
+            {
+                return;
+            }
+
+            if (_barColor is { } c)
+            {
+#pragma warning disable CA1422, CS0618 // the colours are ignored, not wrong, on Android 15's edge-to-edge
+                window.SetStatusBarColor(c);
+                window.SetNavigationBarColor(c);
+#pragma warning restore CA1422, CS0618
+            }
+
+            var insets = AndroidX.Core.View.WindowCompat.GetInsetsController(window, window.DecorView);
+            insets.AppearanceLightStatusBars = _lightBars;
+            insets.AppearanceLightNavigationBars = _lightBars;
+            if (_immersive)
+            {
+                insets.SystemBarsBehavior = AndroidX.Core.View.WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
+                insets.Hide(AndroidX.Core.View.WindowInsetsCompat.Type.SystemBars());
+            }
+            else
+            {
+                insets.Show(AndroidX.Core.View.WindowInsetsCompat.Type.SystemBars());
+            }
+        });
     }
 
     private static void ApplyKeepScreenOn()

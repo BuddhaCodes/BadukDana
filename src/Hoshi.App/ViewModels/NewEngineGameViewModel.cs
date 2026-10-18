@@ -15,6 +15,12 @@ public sealed record PlayerOption(string Label, EngineChoice? Engine)
 /// <summary>A rule set in the dialog.</summary>
 public sealed record RulesOption(string Label, RuleSet Rules);
 
+/// <summary>A time control in the dialog: one of the clock's presets, or none.</summary>
+public sealed record TimeOption(string Label, ClockPreset? Preset)
+{
+    public override string ToString() => Label;
+}
+
 /// <summary>
 /// "New game against an engine": who plays Black and White (you or any engine, so also engine vs engine), board
 /// size, handicap, komi and rules.
@@ -66,8 +72,18 @@ public sealed partial class NewEngineGameViewModel : ViewModelBase
 
     partial void OnWhiteChanged(PlayerOption value) => OnPropertyChanged(nameof(HasHumanEngine));
 
-    public NewEngineGameViewModel(IReadOnlyList<EngineChoice> engines, RuleSet? rules = null, string? humanLevel = null)
+    /// <summary>The time control of the new game (2026-10-18: chosen here, with the game, not later from the menu).</summary>
+    public IReadOnlyList<TimeOption> TimeOptions { get; }
+
+    [ObservableProperty]
+    private TimeOption _time;
+
+    public NewEngineGameViewModel(IReadOnlyList<EngineChoice> engines, RuleSet? rules = null, string? humanLevel = null,
+        IReadOnlyList<ClockPreset>? clocks = null, string? lastClock = null)
     {
+        TimeOptions = [new TimeOption(Tr.T("Engines.NoClock"), null), .. (clocks ?? []).Select(c => new TimeOption(c.Name, c))];
+        _time = TimeOptions.FirstOrDefault(t => t.Preset is not null && t.Preset.Name == lastClock) ?? TimeOptions[0];
+
         if (humanLevel is not null && Services.Engines.GtpEngineHost.HumanLevels.Contains(humanLevel))
         {
             _humanLevel = humanLevel;

@@ -59,6 +59,16 @@ public sealed class ThemeBackground : Control
         set => SetValue(AnimateProperty, value);
     }
 
+    /// <summary>How often a moving background is redrawn (phones use fewer frames to save battery).</summary>
+    public static readonly StyledProperty<double> FramesPerSecondProperty =
+        AvaloniaProperty.Register<ThemeBackground, double>(nameof(FramesPerSecond), 24);
+
+    public double FramesPerSecond
+    {
+        get => GetValue(FramesPerSecondProperty);
+        set => SetValue(FramesPerSecondProperty, value);
+    }
+
     public bool Paused
     {
         get => GetValue(PausedProperty);
@@ -118,7 +128,8 @@ public sealed class ThemeBackground : Control
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == KindProperty || change.Property == AnimateProperty || change.Property == PausedProperty)
+        if (change.Property == KindProperty || change.Property == AnimateProperty || change.Property == PausedProperty
+            || change.Property == FramesPerSecondProperty)
         {
             UpdateTimer();
         }
@@ -132,7 +143,13 @@ public sealed class ThemeBackground : Control
             && VisualRoot is not null;
         if (moving)
         {
-            _timer ??= new DispatcherTimer(TimeSpan.FromMilliseconds(42), DispatcherPriority.Render, (_, _) => InvalidateVisual());
+            TimeSpan interval = TimeSpan.FromSeconds(1.0 / Math.Clamp(FramesPerSecond, 1, 60));
+            if (_timer is not null && _timer.Interval != interval)
+            {
+                _timer.Interval = interval;
+            }
+
+            _timer ??= new DispatcherTimer(interval, DispatcherPriority.Render, (_, _) => InvalidateVisual());
             _timer.Start();
         }
         else

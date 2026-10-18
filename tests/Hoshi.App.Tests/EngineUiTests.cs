@@ -282,4 +282,31 @@ public sealed class EngineUiTests
         {
         }
     }
+
+    [AvaloniaFact]
+    public async Task The_clock_against_an_engine_comes_from_the_new_game_dialog()
+    {
+        var host = new FakeGtpHost("KataGo de Hoshi") { Gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously) };
+        var game = new GameViewModel();
+        var match = new EngineMatchViewModel(game, host, new ImmediateDispatcher());
+        var vm = new MainWindowViewModel(game, ui: new ImmediateDispatcher(), engineMatch: match, engines: host);
+
+        var options = new NewEngineGameViewModel(host.Engines, clocks: vm.Clock.Presets, lastClock: vm.Clock.Presets[1].Name) { Size = 9 };
+        options.TimeOptions[0].Preset.Should().BeNull("«No clock» comes first");
+        options.TimeOptions.Should().HaveCount(vm.Clock.Presets.Count + 1);
+        options.Time.Preset.Should().BeSameAs(vm.Clock.Presets[1], "the last choice is offered again");
+        options.White = options.Players[1];
+        await vm.StartEngineGameAsync(options);
+
+        vm.Clock.HasClock.Should().BeTrue("the game starts with its clock");
+        vm.Clock.Description.Should().Be(vm.Clock.Presets[1].Control.Describe());
+        vm.CanChooseClock.Should().BeFalse("the menu's presets are for games between people");
+
+        options = new NewEngineGameViewModel(host.Engines, clocks: vm.Clock.Presets) { Size = 9 };
+        options.Time.Preset.Should().BeNull();
+        options.White = options.Players[1];
+        await vm.StartEngineGameAsync(options);
+        vm.Clock.HasClock.Should().BeFalse("«No clock» means none");
+        host.Gate.SetResult();
+    }
 }

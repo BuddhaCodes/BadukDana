@@ -8,6 +8,8 @@ public static partial class Tr
         Add(d, "Engines.HumanKataGo", "KataGo (human style)", "KataGo (estilo humano)");
         Add(d, "Engines.HumanKataGoLevel", "KataGo (human {0})", "KataGo (humano {0})");
         Add(d, "Engines.HumanLevel", "Rank", "Nivel");
+        Add(d, "Engines.Clock", "Clock", "Reloj");
+        Add(d, "Engines.NoClock", "No clock", "Sin reloj");
         Add(d, "Engines.HumanLevelTip", "KataGo's human model plays like people of this rank (it learned from their games), mistakes included.", "El modelo humano de KataGo juega como las personas de ese nivel (aprendió de sus partidas), errores incluidos.");
         Add(d, "Prefs.HumanModel", "Human-style model (optional)", "Modelo de estilo humano (opcional)");
         Add(d, "Prefs.HumanModelHint", "With KataGo's human model (b18c384nbt-humanv0.bin.gz, about 100 MB, from KataGo's v1.15.0 release) \"Play against an engine\" offers KataGo playing like a 20k to 5d human. Hoshi does not download it for you.", "Con el modelo humano de KataGo (b18c384nbt-humanv0.bin.gz, unos 100 MB, de la versión v1.15.0 de KataGo) «Jugar contra un motor» ofrece a KataGo jugando como una persona de 20k a 5d. Hoshi no lo descarga por ti.");

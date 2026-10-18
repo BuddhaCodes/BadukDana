@@ -43,6 +43,9 @@ public sealed record AppSettings
     /// <summary>The last rank chosen for the human-style KataGo ("10k").</summary>
     public string? HumanLevel { get; init; }
 
+    /// <summary>The time control last chosen for a game against an engine (its description); null = no clock.</summary>
+    public string? EngineClock { get; init; }
+
     public string? KataGoConfig { get; init; }
 
     /// <summary>GTP engines added in Preferences → Engines (to play against, engine vs engine, analysis).</summary>

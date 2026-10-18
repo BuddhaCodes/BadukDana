@@ -602,8 +602,20 @@ public sealed partial class GoBoardControl : Control
         }
 
         var whiteEdge = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromArgb(0x50, 0, 0, 0)), Math.Max(0.5, g.Cell * 0.015));
+        var blackWash = new ImmutableSolidColorBrush(Color.FromArgb(0x78, 0x10, 0x10, 0x16));
+        var whiteWash = new ImmutableSolidColorBrush(Color.FromArgb(0x9C, 0xFF, 0xFF, 0xFC));
         foreach (Point p in board.AllPoints)
         {
+            // Secure territory: the owner's wash over the whole point, under the stones (its square comes later),
+            // so areas read at a glance on a small phone board too (2026-10-18).
+            if (board[p] == Stone.Empty && t.SecureOwner(p) is var secure and not Stone.Empty)
+            {
+                AvPoint at = g.Center(p);
+                context.DrawRectangle(secure == Stone.Black ? blackWash : whiteWash, null,
+                    new Rect(at.X - (g.Cell / 2), at.Y - (g.Cell / 2), g.Cell, g.Cell));
+                continue;
+            }
+
             double o = t.OwnershipAt(p);
             double k = Math.Min(1, Math.Abs(o) / TerritoryEstimate.SecureThreshold);
             if (board[p] != Stone.Empty || k < 0.2 || t.SecureOwner(p) != Stone.Empty)
@@ -614,6 +626,11 @@ public sealed partial class GoBoardControl : Control
             double h = g.Cell * (0.05 + (0.12 * k));
             AvPoint c = g.Center(p);
             var rect = new Rect(c.X - h, c.Y - h, 2 * h, 2 * h);
+            // A softer wash for likely (not yet secure) territory, stronger as the estimate firms up.
+            var cell = new Rect(c.X - (g.Cell / 2), c.Y - (g.Cell / 2), g.Cell, g.Cell);
+            context.DrawRectangle(new ImmutableSolidColorBrush(o > 0
+                ? Color.FromArgb((byte)(30 + (60 * k)), 0x10, 0x10, 0x16)
+                : Color.FromArgb((byte)(40 + (80 * k)), 0xFF, 0xFF, 0xFC)), null, cell);
             if (o > 0)
             {
                 context.DrawRectangle(new ImmutableSolidColorBrush(Color.FromArgb((byte)(90 + (110 * k)), 0x14, 0x14, 0x18)), null, rect);
@@ -633,7 +650,7 @@ public sealed partial class GoBoardControl : Control
             return;
         }
 
-        double h = g.Cell * 0.2;
+        double h = g.Cell * 0.24;
         var blackFill = new ImmutableSolidColorBrush(Color.FromArgb(0xE6, 0x12, 0x12, 0x14));
         var whiteFill = new ImmutableSolidColorBrush(Color.FromArgb(0xF2, 0xFA, 0xFA, 0xF8));
         var whiteEdge = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromArgb(0x90, 0, 0, 0)), Math.Max(0.6, g.Cell * 0.02));
