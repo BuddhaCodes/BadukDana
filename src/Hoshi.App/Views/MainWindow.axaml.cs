@@ -16,6 +16,21 @@ public partial class MainWindow : Window
         if (this.FindControl<Border>("AppHeader") is { } bar)
         {
             bar.SizeChanged += (_, e) => ApplyBarWidth(bar, e.NewSize.Width);
+
+            // Window chrome: the header is the title bar while it shows (room for macOS's traffic lights).
+            if (Controls.HoshiTitleBar.TrafficLightsRoom > 0)
+            {
+                bar.Padding = new Avalonia.Thickness(bar.Padding.Left + Controls.HoshiTitleBar.TrafficLightsRoom, 0, bar.Padding.Right, 0);
+            }
+
+            Controls.HoshiTitleBar.SetIsMerged(this, bar.IsVisible);
+            bar.PropertyChanged += (_, e) =>
+            {
+                if (e.Property == IsVisibleProperty)
+                {
+                    Controls.HoshiTitleBar.SetIsMerged(this, bar.IsVisible);
+                }
+            };
         }
 
         // Layout only: the review's move column needs a wide window.

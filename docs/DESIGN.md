@@ -9,7 +9,8 @@ Ctrl+,), que cambian fondo, paleta, fuentes, iconos, piedras y animaciones al mo
 
 | Tema | Fondo (propio, animado salvo indicación) | Acento | Fuentes (título · UI) | Iconos | Piedras | Efecto al jugar |
 |---|---|---|---|---|---|---|
-| **Estrella polar** (por defecto; antes «Cielo nocturno», paleta del rediseño 2026-10) | Azul noche `#0B1026` con ~240 estrellas que titilan, nebulosa que deriva, constelaciones tenues y una estrella fugaz cada ~23 s | oro `#E8C36A` | Shippori Mincho · Manrope | Phosphor light | Perla | Halo dorado |
+| **Mochi** (claro, por defecto desde 2026-10-18; el estilo de la web) | Crema `#F8F1E7` con nubes pastel (rosa, menta, lavanda, mantequilla) que derivan muy despacio; tinta ciruela `#2D2440`, paneles blancos y rosados, barra de edición ciruela; esquinas redondas | rosa `#C8577A` | Fredoka · Manrope | Lucide | Pizarra y concha (shin-kaya) | Asentarse |
+| **Estrella polar** (antes «Cielo nocturno», paleta del rediseño 2026-10; por defecto hasta 2026-10-17) | Azul noche `#0B1026` con ~240 estrellas que titilan, nebulosa que deriva, constelaciones tenues y una estrella fugaz cada ~23 s | oro `#E8C36A` | Shippori Mincho · Manrope | Phosphor light | Perla | Halo dorado |
 | **Kaya** (claro) | Papel washi (estático) bajo un goban de shin-kaya claro; cromo crema `#F1E6CF`, tinta `#1E1A14`, barra de edición índigo `#26357F` | rojo sello `#B23A2A` | Shippori Mincho · Manrope | Phosphor regular | Pizarra y concha | Onda de tinta |
 | **Tinta y oro** | Niebla de tinta sumi-e que respira y un ensō de pincel en oro tenue enmarcando el tablero | oro `#C9A45C`, rojo sello `#B23A2E` | Shippori Mincho · Manrope | Phosphor regular | Pizarra y concha | Onda de tinta |
 | **Jardín zen** | Arena rastrillada con ondas alrededor de dos rocas, moviéndose muy despacio | musgo `#9DBB7F` | Zen Kaku Gothic New | Lucide | Pizarra y concha | Onda en la arena |
@@ -17,8 +18,10 @@ Ctrl+,), que cambian fondo, paleta, fuentes, iconos, piedras y animaciones al mo
 
 - Relojes siempre en JetBrains Mono. Las fuentes van recortadas a latín (+ 星 碁).
 - Un tema claro (`IsLight`) cambia también Fluent a su variante clara (`RequestedThemeVariant`).
+- Esquinas: `Radius.Control` / `Radius.Soft` / `Radius.Card` / `Radius.Palette` (3 / 6 / 10 / 14 px; en un tema `Rounded`, como Mochi, 10 / 12 / 18 / 22) y los `ControlCornerRadius` / `OverlayCornerRadius` de Fluent (4 / 8 → 10 / 14).
+- Mochi es amable sin ser infantil: Fredoka solo en títulos y marca, el texto sigue en Manrope; el tablero y las piedras se quedan sobrios. Kuro y Shiro (las dos piedras con cara de la web) solo aparecen en el arranque.
 - Recursos DynamicResource que cambia el tema: `Bg.*`, `Text.*`, `Accent`, `Danger`, `Good`, `Border.Subtle`, `Bg.EditBar`,
-  `EditBar.Foreground/Hover`, `Bg.Surround`, `Font.UI/Title/Mono`, `Font.Size.Title`, `Icon.*` (21 iconos),
+  `EditBar.Foreground/Hover`, `Bg.Surround`, `Font.UI/Title/Mono`, `Font.Size.Title`, `Radius.*`, `Icon.*` (40 iconos; borrar todos los dibujos usa `Icon.Trash`, en el color de peligro),
   `Theme.Board` (`BoardStyle`), `Theme.Background`, `Theme.Animations`; también el acento de Fluent.
 - «Animaciones» (Preferencias) apaga el fondo animado y las animaciones de piedra; se guarda en `settings.json`.
 
@@ -78,7 +81,7 @@ Arte de Hoshi renderizado por procedimiento (numpy + Pillow, semillas fijas; sin
 
 ## Barra de título y sonido (2026-10-03)
 
-- Todas las ventanas usan la plantilla de `Window` de `Styles/Base.axaml`: `HoshiTitleBar` (36 px, `Bg.Bar`) arriba y el contenido debajo. Botones de 46 px; pasar el ratón usa `Bg.PanelAlt` y cerrar se pone rojo (#C42B1C). Doble clic maximiza; arrastrar mueve. Los diálogos con dueño no muestran minimizar; las ventanas sin `CanResize` no muestran maximizar.
+- Todas las ventanas usan la plantilla de `Window` de `Styles/Base.axaml`: `HoshiTitleBar` (36 px, `Bg.Bar`) arriba y el contenido debajo. **Desde 2026-10-18** la ventana principal no tiene barra aparte: su cabecera es la barra de título (`HoshiTitleBar.IsMerged` en la ventana, `HoshiTitleBar.IsDragArea` en la cabecera: arrastrar mueve, doble clic maximiza) y los botones minimizar/maximizar/cerrar (`CaptionButtons`, 46×55 px) van en su extremo derecho; en macOS la cabecera deja 78 px a los semáforos. Si la cabecera se oculta (zen, josekis) vuelve la barra fina. Las ventanas sin decoraciones (el arranque) no reciben barra ni extienden el área cliente. Botones de 46 px; pasar el ratón usa `Bg.PanelAlt` y cerrar se pone rojo (#C42B1C). Doble clic maximiza; arrastrar mueve. Los diálogos con dueño no muestran minimizar; las ventanas sin `CanResize` no muestran maximizar.
 - El botón de sonido (icono `Volume`/`Muted` de cada juego de iconos) abre un panel con «Silenciar todo», efectos, piedras, música y volumen. Los flyouts usan `Bg.Panel` y esquinas de 10 px.
 
 ## Marcadores
@@ -185,7 +188,7 @@ Arte de Hoshi renderizado por procedimiento (numpy + Pillow, semillas fijas; sin
 ## Modo zen y arranque
 
 - Modo zen (Z, menú o menú del teléfono): solo el tablero; se ocultan barra lateral, barras y hojas; fondo quieto; efectos como máximo sutiles. «Modo zen silencioso» (Preferencias) apaga también efectos, música y sonidos salvo el de las piedras. Para salir: Z, el botón «Salir del zen» (35 % de opacidad hasta pasar el puntero) o Atrás en Android.
-- Arranque: en escritorio, una ventana sin bordes de 440×300 con el fondo del tema, el icono, «Hoshi 星» en Shippori Mincho, la versión y una barra fina, mientras se construye la ventana principal. En Android, el fondo de la ventana ya es el color nocturno con el icono y el nombre (y en Android 12+ la pantalla de inicio del sistema usa ese color e icono): nunca una pantalla negra o blanca.
+- Arranque (rediseño 2026-10-18, Mochi): en escritorio, una tarjeta redonda (radio 28, sombra suave) sin barra de título, con el fondo del tema, Kuro y Shiro, «Hoshi» en Fredoka y 星 en el acento, «Go · Baduk · Weiqi», tres piedras que respiran por turnos junto a «Preparando el tablero…» y la versión en una píldora. Las animaciones son de composición (hilo de render), así que siguen moviéndose mientras se construye la ventana principal. En Android, el fondo de la ventana ya es el color nocturno con el icono y el nombre (y en Android 12+ la pantalla de inicio del sistema usa ese color e icono): nunca una pantalla negra o blanca.
 - Arrastres en el tablero (flechas, áreas): terminan en la intersección más cercana aunque el puntero se suelte entre dos puntos o un poco fuera del tablero.
 
 ## Atajos de teclado (mínimo)

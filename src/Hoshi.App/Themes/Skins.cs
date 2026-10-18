@@ -68,6 +68,7 @@ public static class Skins
         new("linen", "Skin.Bg.Linen", BackgroundKind.Linen, C("#2C2D32"), Art + "Backgrounds/linen.jpg"),
         new("sudare", "Skin.Bg.Sudare", BackgroundKind.Sudare, C("#B08E5A"), Art + "Backgrounds/sudare.jpg"),
         new("washi", "Skin.Bg.Washi", BackgroundKind.Washi, C("#EFE9DD")),
+        new("mochi", "Skin.Bg.Mochi", BackgroundKind.Mochi, C("#F8F1E7")),
     ];
 
     public static BoardSkin? Board(string? id) => Boards.FirstOrDefault(b => b.Id == id);

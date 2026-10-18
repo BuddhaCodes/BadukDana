@@ -18,6 +18,7 @@ load as one family. None of them declares a Reserved Font Name. Full license tex
 | Shippori Mincho | © 2021 The Shippori Mincho Project Authors |
 | Zen Kaku Gothic New | © 2022 The Zen Kaku Gothic Project Authors |
 | JetBrains Mono | © 2020 The JetBrains Mono Project Authors |
+| Fredoka (500, 600; from `@expo-google-fonts/fredoka` 0.4.1, cut to Latin with fontTools) | © 2016 The Fredoka Project Authors |
 
 ### Fonts of the promotional page (SIL Open Font License 1.1)
 

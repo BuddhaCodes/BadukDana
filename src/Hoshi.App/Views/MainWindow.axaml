@@ -56,16 +56,19 @@
   <LayoutTransformControl LayoutTransform="{Binding UiScaleTransform}" x:Name="UiScaleRoot">
   <Grid ColumnDefinitions="*,Auto,280" RowDefinitions="Auto,*">
       <!-- The header (redesign 2026-10): who plays, the three tabs and the tools; the menu holds everything else. -->
-      <Border Grid.Row="0" Grid.ColumnSpan="3" Classes="bottom-bar app-header" Classes.edit="{Binding Game.IsEditMode}" x:Name="AppHeader">
+      <!-- It is also the window's title bar (2026-10-18): drag it to move the window, double-click to maximise; the
+           caption buttons sit at its right end. When it hides (zen, joseki), Hoshi's own thin title bar comes back. -->
+      <Border Grid.Row="0" Grid.ColumnSpan="3" Classes="bottom-bar app-header" Classes.edit="{Binding Game.IsEditMode}" x:Name="AppHeader"
+              c:HoshiTitleBar.IsDragArea="True">
         <Border.IsVisible>
           <MultiBinding Converter="{x:Static BoolConverters.And}">
             <Binding Path="!Joseki.IsActive" />
             <Binding Path="!IsZen" />
           </MultiBinding>
         </Border.IsVisible>
-        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto">
           <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" x:Name="HeaderBrand">
-            <Border Width="30" Height="30" CornerRadius="7" Background="{DynamicResource Accent}">
+            <Border Width="30" Height="30" CornerRadius="{DynamicResource Radius.Soft}" Background="{DynamicResource Accent}">
               <TextBlock Text="星" FontFamily="{DynamicResource Font.Brand}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource Bg.Window}"
                          HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Border>
@@ -316,6 +319,7 @@
             </Button.Flyout>
             </Button>
           </StackPanel>
+          <c:CaptionButtons Grid.Column="5" x:Name="HeaderCaption" ButtonHeight="55" VerticalAlignment="Top" Margin="10,0,-14,0" />
         </Grid>
       </Border>
 
@@ -550,8 +554,10 @@
                          IsChecked="{Binding Study.Tool, Converter={x:Static c:EnumEqualsConverter.Instance}, ConverterParameter={x:Static vm:StudyTool.Erase}}"
                          Command="{Binding Study.SelectToolCommand}" CommandParameter="{x:Static vm:StudyTool.Erase}" x:Name="PaletteErase"><c:HoshiIcon Icon="{DynamicResource Icon.Erase}" Size="17" /></RadioButton>
             <Border Height="1" Margin="4,2" Background="{DynamicResource Border.Subtle}" />
-            <Button Classes="bar icon palette" ToolTip.Tip="{l:T Study.ClearDrawingsTip}" ToolTip.Placement="Right" Command="{Binding Study.ClearDrawingsCommand}" x:Name="PaletteClear">
-              <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="15" />
+            <!-- Clear every drawing: a bin in the danger colour, apart from the pens (an "x" read as "close"). -->
+            <Button Classes="bar icon palette danger" ToolTip.Tip="{l:T Study.ClearDrawingsTip}" ToolTip.Placement="Right" Command="{Binding Study.ClearDrawingsCommand}" x:Name="PaletteClear"
+                    AutomationProperties.Name="{l:T Study.ClearTitle}">
+              <c:HoshiIcon Icon="{DynamicResource Icon.Trash}" Size="17" Foreground="{DynamicResource Danger}" />
             </Button>
           </StackPanel>
         </Border>

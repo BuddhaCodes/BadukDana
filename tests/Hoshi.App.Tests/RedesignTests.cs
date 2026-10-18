@@ -1,3 +1,5 @@
+using Hoshi.App.Controls;
+using Avalonia.VisualTree;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
@@ -121,6 +123,9 @@ public sealed class RedesignTests
         RadioButton arrow = window.FindDeep<RadioButton>("PaletteArrow")!;
         arrow.Command!.Execute(arrow.CommandParameter);
         vm.Study.Tool.Should().Be(StudyTool.Arrow);
+        Button clear = window.FindDeep<Button>("PaletteClear")!;
+        ((HoshiIcon)clear.Content!).Icon.Should().BeSameAs(Application.Current!.FindResource("Icon.Trash"),
+            "clearing every drawing is a bin, not an \"x\" that reads as close");
         Save(window, "study-palette.png");
 
         vm.ToggleZenCommand.Execute(null);
@@ -149,6 +154,41 @@ public sealed class RedesignTests
 
             window.ActualThemeVariant.Should().Be(Avalonia.Styling.ThemeVariant.Light);
             Save(window, "theme-kaya.png");
+        }
+        finally
+        {
+            Application.Current.RequestedThemeVariant = before;
+            ThemeService.Apply(HoshiThemes.Default, animations: false, Application.Current.Resources);
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task The_mochi_theme_is_the_default_and_is_saved_as_screenshot()
+    {
+        HoshiThemes.Default.Should().BeSameAs(HoshiThemes.Mochi);
+        var engine = new FakeAnalysisEngine { BestMove = new Point(16, 3), SecondGap = 9, MissFactor = 4 };
+        var vm = new MainWindowViewModel(new GameViewModel(), engine: engine, ui: new ImmediateDispatcher());
+        foreach ((int x, int y) in Moves)
+        {
+            vm.Game.PlayCommand.Execute(new Point(x, y));
+        }
+
+        Avalonia.Styling.ThemeVariant? before = Application.Current!.RequestedThemeVariant;
+        try
+        {
+            new ThemeService().Select(HoshiThemes.Mochi, animations: false);
+            var window = new MainWindow(vm) { Width = 1440, Height = 900 };
+            window.Show();
+            vm.Analysis.IsAnalysisOn = true;
+            await SettleAsync();
+            vm.SetModeCommand.Execute(WorkMode.Review);
+            await SettleAsync();
+
+            window.ActualThemeVariant.Should().Be(Avalonia.Styling.ThemeVariant.Light);
+            Save(window, "theme-mochi.png");
+            vm.SetModeCommand.Execute(WorkMode.Study);
+            await SettleAsync();
+            Save(window, "theme-mochi-study.png");
         }
         finally
         {
