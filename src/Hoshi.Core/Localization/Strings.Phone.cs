@@ -10,6 +10,11 @@ public static partial class Tr
             "The first tap shows the stone with guide lines; tapping the same point again plays it. Avoids slips of the finger on small boards.",
             "El primer toque muestra la piedra con líneas guía; tocar otra vez el mismo punto la juega. Evita jugadas por error en tableros pequeños.");
         Add(d, "Phone.Moves", "Moves", "Jugadas");
+        Add(d, "Phone.Review", "Review", "Revisar");
+        Add(d, "Phone.More", "More", "Más");
+        Add(d, "Phone.Back1", "Back", "Atrás");
+        Add(d, "Phone.Forward1", "Next", "Adelante");
+        Add(d, "Menu.Play", "PLAY", "JUGAR");
         Add(d, "Home.Menu", "Home", "Inicio");
         Add(d, "Phone.AskUndo", "Undo?", "¿Deshacer?");
         Add(d, "Phone.FairPlay", "Fair play", "Juego limpio");

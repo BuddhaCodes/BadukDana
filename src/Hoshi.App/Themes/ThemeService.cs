@@ -138,6 +138,12 @@ public sealed class ThemeService
         resources["Theme.Animations"] = animations;
         resources["Theme.Id"] = theme.Id;
         resources["Theme.IsLight"] = theme.IsLight;
+
+        // Fluent's own controls take the theme's variant too (also when only the resources are applied: tests).
+        if (Application.Current is { } app && ReferenceEquals(app.Resources, resources))
+        {
+            app.RequestedThemeVariant = theme.IsLight ? Avalonia.Styling.ThemeVariant.Light : Avalonia.Styling.ThemeVariant.Dark;
+        }
     }
 
     private void Apply(HoshiTheme theme, bool animations, IResourceDictionary? resources, bool save)

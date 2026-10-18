@@ -37,6 +37,8 @@ Hoshi usa dos modos, elegidos por configuración (`Ogs:AuthMode`):
 - ⚠️ Sin verificar hasta la primera prueba: que OGS acepte PKCE sin secreto y que `ui/config` devuelva `user_jwt` con Bearer.
 
 - **Botón «Continuar con Google»:** abre `GET /login/google-oauth2/?next=<ruta relativa de /oauth2/authorize/?…>` (ruta del login social de OGS, python-social-auth; verificada en `SocialLoginButtons.tsx`). Tras Google, OGS redirige a `next`, el usuario autoriza a Hoshi y el código llega al listener loopback como en el flujo normal. `next` debe ser relativo (social-auth rechaza otros hosts). Otras rutas: `/login/facebook/`, `/login/github/`, `/login/apple-id/` (`OgsLoginProvider`).
+- **Si el código no vuelve** (2026-10-18; en Android, el login con Google podía dejar el navegador dentro de OGS sin pasar por `next`, o el usuario cerraba la pestaña): mientras espera, `OgsAuthService.PendingAuthorization` guarda la URL de `/oauth2/authorize/` de ese intento (mismo `state` y reto PKCE) y el lobby ofrece «Autorizar Hoshi» (la abre otra vez: el navegador ya tiene sesión en OGS) y «Cancelar»; el intento se rinde solo a los 10 minutos. Antes el lobby se quedaba ocupado para siempre.
+- **Volver a la app (teléfonos):** con `Ogs:AppReturnUri` (Android: `intent://signed-in#Intent;scheme=hoshi;package=io.github.buddhacodes.hoshi;end`, filtro `hoshi://signed-in` en `MainActivity`), la página «sesión iniciada» del listener muestra «Volver a Hoshi» y lo sigue sola a los 0,7 s. Sin verificar aún en un teléfono real.
 - Hoshi **no** habla con Google ni recibe tokens de Google: la API de OGS no los acepta y exigiría un secreto en la app.
 
 ### 1.2 Login web (beta, desarrollo)
