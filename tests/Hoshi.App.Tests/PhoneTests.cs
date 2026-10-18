@@ -399,6 +399,11 @@ public sealed class PhoneTests
         shell.IsHome.Should().BeFalse();
         shell.Sheet.Should().Be(PhoneSheet.Study);
         shell.Main.Study.IsActive.Should().BeTrue();
+        window.FindDeep<Grid>("PhoneStudyNav")!.IsVisible.Should().BeTrue("studying shows the position bar");
+        shell.Main.Moves.LineLength.Should().Be(2);
+        shell.Main.Moves.Position = 1;
+        game.MoveNumber.Should().Be(1, "dragging the bar moves through the game");
+        shell.Main.Moves.PositionText.Should().Be("1 / 2");
         Save(window, "phone-study.png");
         window.Close();
     }
