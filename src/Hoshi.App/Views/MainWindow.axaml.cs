@@ -13,7 +13,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
         AddHandler(DragDrop.DropEvent, OnDrop);
-        if (this.FindControl<Border>("BottomBar") is { } bar)
+        if (this.FindControl<Border>("AppHeader") is { } bar)
         {
             bar.SizeChanged += (_, e) => ApplyBarWidth(bar, e.NewSize.Width);
         }
@@ -21,9 +21,15 @@ public partial class MainWindow : Window
         // Layout only: the review's move column needs a wide window.
         SizeChanged += (_, e) =>
         {
+            bool wide = e.NewSize.Width >= MoveColumnWidth;
             if (this.FindControl<Control>("MoveColumnHost") is { } column)
             {
-                column.IsVisible = e.NewSize.Width >= MoveColumnWidth && DataContext is not MainWindowViewModel { IsZen: true };
+                column.IsVisible = wide && DataContext is not MainWindowViewModel { IsZen: true };
+            }
+
+            if (DataContext is MainWindowViewModel vm)
+            {
+                vm.IsWideLayout = wide;
             }
         };
     }
@@ -31,12 +37,12 @@ public partial class MainWindow : Window
     /// <summary>The review's move column shows from this window width (narrower: the board keeps the room).</summary>
     public const double MoveColumnWidth = 1180;
 
-    /// <summary>Below this width the bar keeps icons only; below <see cref="NarrowBarWidth"/> some move to "⋯".</summary>
-    public const double CompactBarWidth = 1000;
+    /// <summary>Below this width the header drops the game's title; below <see cref="NarrowBarWidth"/> some tools move to "⋯".</summary>
+    public const double CompactBarWidth = 1280;
 
-    public const double NarrowBarWidth = 720;
+    public const double NarrowBarWidth = 1000;
 
-    // Layout only: the bar's buttons fit the window (labels, then names and the less used buttons, go first).
+    // Layout only: the header fits the window (the title, then names and the less used tools, go first).
     private void ApplyBarWidth(Border bar, double width)
     {
         bool compact = width < CompactBarWidth, narrow = width < NarrowBarWidth;

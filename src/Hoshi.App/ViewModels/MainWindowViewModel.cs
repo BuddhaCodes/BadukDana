@@ -315,6 +315,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     public bool IsReviewMode => Mode == WorkMode.Review;
 
+    /// <summary>The window is wide enough for the review's move column (set by the window: layout only).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowPanelGraph))]
+    private bool _isWideLayout;
+
+    /// <summary>The analysis panel's own graph: hidden while the move column shows the bigger one.</summary>
+    public bool ShowPanelGraph => !(IsReviewMode && IsWideLayout);
+
     /// <summary>Review needs the analysis, which is off during your live OGS games.</summary>
     public bool CanReview => !Analysis.IsBlocked;
 
@@ -344,6 +352,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsStudyMode));
         OnPropertyChanged(nameof(IsReviewMode));
         OnPropertyChanged(nameof(CanReview));
+        OnPropertyChanged(nameof(ShowPanelGraph));
     }
 
     /// <summary>False in design/test contexts without OGS services.</summary>

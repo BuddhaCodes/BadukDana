@@ -41,7 +41,7 @@
             <c:ScoreGraph Height="64" Values="{Binding Analysis.Graph}" CurrentIndex="{Binding Analysis.GraphIndex}"
                           Marks="{Binding Analysis.MistakeMarks}" MarkBrush="{DynamicResource Danger}"
                           LineBrush="{DynamicResource Text.Primary}" Accent="{DynamicResource Accent}"
-                          MoveClickedCommand="{Binding Analysis.GoToMoveCommand}" x:Name="ScoreGraph"
+                          MoveClickedCommand="{Binding Analysis.GoToMoveCommand}" x:Name="ScoreGraph" IsVisible="{Binding ShowPanelGraph}"
                           ToolTip.Tip="{l:T Main.GraphTip}" />
             <!-- The game's three costliest mistakes, and a jump to the next one. -->
             <Border Classes="review-card" IsVisible="{Binding Analysis.HasMistakes}" x:Name="ReviewMistakes">

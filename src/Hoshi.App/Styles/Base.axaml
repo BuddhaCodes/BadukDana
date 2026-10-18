@@ -70,7 +70,7 @@
     </Style.Animations>
   </Style>
 
-  <!-- Sabaki's bar: flat #292A2D, 40 px; the edit bar turns olive with dark text. -->
+  <!-- The header and the footer (redesign 2026-10): flat bars; in edit mode they take the theme's edit colour. -->
   <Style Selector="Border.bottom-bar">
     <Setter Property="Transitions">
       <Transitions>
@@ -120,7 +120,22 @@
   <Style Selector="Border.bottom-bar.edit">
     <Setter Property="Background" Value="{DynamicResource Bg.EditBar}" />
   </Style>
-  <!-- Buttons inside sidebar panels: flat, like Sabaki's sidebar controls. -->
+  <Style Selector="Border.app-header">
+    <Setter Property="Height" Value="56" />
+    <Setter Property="Padding" Value="14,0" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+  </Style>
+  <Style Selector="Border.app-header Button.bar TextBlock.label"><Setter Property="IsVisible" Value="False" /></Style>
+  <Style Selector="Border.app-header.compact StackPanel#HeaderTitle"><Setter Property="IsVisible" Value="False" /></Style>
+  <Style Selector="Border.bottom-bar#BottomBar">
+    <Setter Property="Height" Value="52" />
+    <Setter Property="Padding" Value="12,0" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Border.Subtle}" />
+    <Setter Property="BorderThickness" Value="0,1,0,0" />
+  </Style>
+  <Style Selector="Slider.moves"><Setter Property="MinWidth" Value="120" /></Style>
+  <!-- Buttons inside sidebar panels: flat. -->
   <Style Selector="Border.panel-header Button">
     <Setter Property="Background" Value="{DynamicResource Bg.PanelAlt}" />
     <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />

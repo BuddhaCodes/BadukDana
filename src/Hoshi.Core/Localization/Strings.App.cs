@@ -17,6 +17,8 @@ public static partial class Tr
         Add(d, "Mode.StudyTip", "Notes, drawings and what-if lines (S)", "Notas, dibujos y líneas «¿y si…?» (S)");
         Add(d, "Mode.ReviewTip", "KataGo's reading of the game, its mistakes and the move list (A); off during your live OGS games", "La lectura de KataGo, los errores y la lista de jugadas (A); apagado en tus partidas de OGS en curso");
         Add(d, "Mode.Lead", "Score lead", "Ventaja");
+        Add(d, "Mode.MakeReplay", "Make a replay", "Crear replay");
+        Add(d, "Mode.Position", "Move", "Jugada");
         Add(d, "Mode.LegendBad", "mistake", "error");
         Add(d, "Mode.LegendDoubtful", "doubtful", "dudosa");
         Add(d, "Review.Candidates", "What KataGo would play", "Lo que KataGo jugaría");

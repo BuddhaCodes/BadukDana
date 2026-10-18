@@ -43,6 +43,37 @@ public sealed partial class MoveListViewModel : ViewModelBase
     [ObservableProperty]
     private MovePairRow? _currentRow;
 
+    // The line through the shown move: its first node (the position before any move) and its move nodes.
+    private GameNode? _lineStart;
+    private IReadOnlyList<GameNode> _lineMoves = [];
+    private int _position;
+
+    /// <summary>Moves on the line through the shown move (the footer's slider goes from 0 to this).</summary>
+    public int LineLength => _lineMoves.Count;
+
+    /// <summary>Where the shown move is on its line (0 = before the first move); setting it goes there.</summary>
+    public int Position
+    {
+        get => _position;
+        set
+        {
+            int target = Math.Clamp(value, 0, _lineMoves.Count);
+            if (target == _position)
+            {
+                return;
+            }
+
+            GameNode? node = target == 0 ? _lineStart : _lineMoves[target - 1];
+            if (node is not null)
+            {
+                _game.GoToNodeCommand.Execute(node);
+            }
+        }
+    }
+
+    /// <summary>"73 / 187".</summary>
+    public string PositionText => string.Create(CultureInfo.InvariantCulture, $"{_position} / {_lineMoves.Count}");
+
     public MoveListViewModel(GameViewModel game, AnalysisViewModel analysis)
     {
         _game = game ?? throw new ArgumentNullException(nameof(game));
@@ -84,6 +115,7 @@ public sealed partial class MoveListViewModel : ViewModelBase
         int height = _game.Board.Height;
         GameNode current = _game.CurrentNode;
         var line = GameCursor.Path(current).ToList();
+        int pathLength = line.Count;
         for (GameNode n = current; n.Children.Count > 0;)
         {
             n = n.Children[0];
@@ -93,6 +125,8 @@ public sealed partial class MoveListViewModel : ViewModelBase
         IReadOnlyDictionary<GameNode, MoveQuality> verdicts = _analysis.NodeVerdicts;
         IReadOnlyDictionary<GameNode, Services.Study.StudyVerdict> full = _analysis.LineVerdicts;
         var cells = new List<MoveCell>();
+        var moves = new List<GameNode>();
+        int position = line.Take(pathLength).Count(n => n.GetMove(size) is not null);
         int number = 0;
         foreach (GameNode node in line)
         {
@@ -102,6 +136,8 @@ public sealed partial class MoveListViewModel : ViewModelBase
             }
 
             number++;
+            moves.Add(node);
+
             string quality = verdicts.TryGetValue(node, out MoveQuality q) ? q switch
             {
                 MoveQuality.Blunder => "blunder",
@@ -135,5 +171,19 @@ public sealed partial class MoveListViewModel : ViewModelBase
         }
 
         CurrentRow = Rows.FirstOrDefault(r => r.IsCurrent);
+        bool lengthChanged = moves.Count != _lineMoves.Count;
+        _lineStart = line.Count > 0 ? line[0] : null;
+        _lineMoves = moves;
+        if (lengthChanged)
+        {
+            OnPropertyChanged(nameof(LineLength));
+        }
+
+        if (position != _position || lengthChanged)
+        {
+            _position = position;
+            OnPropertyChanged(nameof(Position));
+            OnPropertyChanged(nameof(PositionText));
+        }
     }
 }
