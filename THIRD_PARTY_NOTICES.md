@@ -25,13 +25,15 @@ Served from `docs/site/fonts/`, copied unmodified from the `@fontsource/*` 5.3.0
 Shippori Mincho B1 Japanese subsets that hold 星 and 正). `shippori-mincho-700-jo-chu-shu.woff2` is a subset of the app's
 Shippori Mincho Bold with only 序, 中 and 終 (made with fontTools; the OFL allows modified versions under the same
 licence). No Reserved Font Name. Texts: `licenses/OFL-Fraunces.txt`, `licenses/OFL-Figtree.txt`,
-`licenses/OFL-ShipporiMinchoB1.txt`, `licenses/OFL-ShipporiMincho.txt`, `licenses/OFL-JetBrainsMono.txt`.
+`licenses/OFL-ShipporiMinchoB1.txt`, `licenses/OFL-ShipporiMincho.txt`, `licenses/OFL-JetBrainsMono.txt`,
+`licenses/OFL-Fredoka.txt` (Fredoka 500/600, Latin, from `@fontsource/fredoka` 5.3.0, unmodified).
 
 | Family | Copyright |
 |---|---|
 | Fraunces | © 2020 The Fraunces Project Authors |
 | Figtree | © 2022 The Figtree Project Authors |
 | Shippori Mincho B1 | © 2021 The Shippori Mincho Project Authors |
+| Fredoka | © 2016 The Fredoka Project Authors |
 | Shippori Mincho (subset: 序 中 終) | © 2021 The Shippori Mincho Project Authors |
 | JetBrains Mono | © 2020 The JetBrains Mono Project Authors |
 
