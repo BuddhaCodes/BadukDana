@@ -78,7 +78,7 @@ Regla de dependencias: `Desktop → App` · `Android → App` · `App → Ogs, S
 
 ## 6. Qué NO hacer
 
-- No copiar código de Sabaki. Sus assets están bajo licencia MIT: el tema Clásico usa `board.png` (Shudan) y `tatami.png` con su aviso en `THIRD_PARTY_NOTICES.md`. Los demás temas usan arte generado por Hoshi, fuentes OFL e iconos MIT/ISC; todo recurso de terceros nuevo debe añadirse a `THIRD_PARTY_NOTICES.md` (y su licencia a `licenses/`) en el mismo commit.
+- No copiar código de Sabaki. Desde 2026-10-17 Hoshi no incluye ningún recurso de Sabaki ni de Shudan (se quitaron el tema Clásico, el tatami y `board.png`); solo las piedras «degradado clásico» conservan los colores de Shudan, con su aviso. Los temas usan arte generado por Hoshi, fuentes OFL e iconos MIT/ISC; todo recurso de terceros nuevo debe añadirse a `THIRD_PARTY_NOTICES.md` (y su licencia a `licenses/`) en el mismo commit.
 - No usar socket.io: OGS usa ahora un WebSocket JSON plano.
 - No implementar "bots" que jueguen automáticamente en OGS sin marcar la cuenta como bot (va contra sus términos).
 - No usar KataGo de ninguna forma durante las partidas de OGS en curso del jugador (análisis, territorio con el mapa del motor, efectos o música basados en sus valoraciones): OGS prohíbe la ayuda de IA. Sí se permiten (decisión del usuario 2026-10-01) la estimación rápida de territorio propia de Hoshi (sin motor) y los efectos y la música basados en la intensidad de la pelea (`FightMeter`: contacto, libertades cortas, capturas). El aviso de atari sigue apagado online. Lo mismo vale para cualquier motor GTP (partida contra el motor, análisis por GTP, consola GTP): apagados durante tus partidas de OGS en curso. Tras la partida, la revisión (biblioteca de partidas) usa KataGo con todos sus efectos. El módulo de estudio sí funciona durante esas partidas (decisión del usuario 2026-10-10: notas, dibujos y líneas «¿y si…?»), pero sin motor ni test, y sus clics nunca se envían a OGS. El entrenador de josekis y las sugerencias de joseki (biblioteca y Joseki Explorer de OGS) también se cierran durante las partidas de OGS en curso del jugador. Las líneas incluidas en el repo son solo secuencias que conocemos con seguridad (nada generado por IA ni de fuentes con licencia dudosa); las del Joseki Explorer se consultan en línea y se cachean en el equipo del usuario, nunca se guardan en el repo.
@@ -88,7 +88,7 @@ Regla de dependencias: `Desktop → App` · `Android → App` · `App → Ogs, S
 ## 7. Documentos de referencia
 
 - `docs/ARCHITECTURE.md` — capas, modelos principales, flujo de datos.
-- `docs/DESIGN.md` — guía visual estilo Sabaki (colores, tablero, piedras, layout).
+- `docs/DESIGN.md` — guía visual (temas, tablero, piedras, layout de cabecera/columnas/pie).
 - `docs/OGS_API.md` — autenticación, REST y WebSocket de OGS.
 - `docs/ROADMAP.md` — fases, tareas y criterios de aceptación.
 - `docs/AFTER_1_0.md` — diseños de lo que viene después de la 1.0 (sincronizar, más servidores, iOS, modo profesor).
