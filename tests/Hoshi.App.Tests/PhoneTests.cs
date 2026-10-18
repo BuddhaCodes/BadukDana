@@ -4,6 +4,7 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
+using Avalonia.VisualTree;
 using Hoshi.App.Controls;
 using Hoshi.App.Services;
 using Hoshi.App.Services.Engines;
@@ -602,6 +603,70 @@ public sealed class PhoneTests
         finally
         {
             PlatformInfo.IsPhone = was;
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task One_review_button_switches_moves_analysis_and_study_and_the_bar_stays_short()
+    {
+        bool wasPhone = PlatformInfo.IsPhone;
+        PlatformInfo.IsPhone = true;
+        string dir = Path.Combine(AppContext.BaseDirectory, "screenshots");
+        Directory.CreateDirectory(dir);
+        try
+        {
+            foreach (HoshiTheme theme in new[] { HoshiThemes.Mochi, HoshiThemes.NightSky })
+            {
+                ThemeService.Apply(theme, animations: false, Application.Current!.Resources);
+                var game = new GameViewModel();
+                foreach ((int x, int y) in new[] { (15, 3), (3, 15), (16, 15), (3, 3), (14, 16) })
+                {
+                    game.PlayCommand.Execute(new Point(x, y));
+                }
+
+                (Window window, PhoneShellViewModel shell) = Phone(game, engine: new FakeAnalysisEngine(), width: 412, height: 892);
+                shell.IsHome = true;
+                await Task.Delay(400);
+                Save(window, dir, $"phone-redesign-{theme.Id}-home.png");
+                shell.ContinueGameCommand.Execute(null);
+
+                Border bar = window.FindDeep<Border>("PhoneBar")!;
+                bar.GetVisualDescendants().OfType<Button>().Count(b => b.IsEffectivelyVisible)
+                    .Should().BeLessThanOrEqualTo(6, "back, next, pass, undo, review and more");
+                await Task.Delay(400);
+                Save(window, dir, $"phone-redesign-{theme.Id}-board.png");
+
+                shell.ToggleReviewCommand.Execute(null);
+                shell.Sheet.Should().Be(PhoneSheet.Moves, "review opens on the moves the first time");
+                window.FindDeep<Border>("PhoneReviewTabs")!.IsVisible.Should().BeTrue();
+                window.FindDeep<RadioButton>("PhoneTabStudy")!.Command!.Execute(PhoneSheet.Study);
+                shell.Sheet.Should().Be(PhoneSheet.Study);
+                shell.Main.Study.IsActive.Should().BeTrue();
+                await Task.Delay(400);
+                Save(window, dir, $"phone-redesign-{theme.Id}-study.png");
+
+                shell.ToggleReviewCommand.Execute(null);
+                shell.Sheet.Should().Be(PhoneSheet.None, "a second tap closes the sheet");
+                shell.ToggleReviewCommand.Execute(null);
+                shell.Sheet.Should().Be(PhoneSheet.Study, "it reopens where the player left it");
+
+                shell.ToggleSheetCommand.Execute(PhoneSheet.Menu);
+                window.FindDeep<Border>("PhoneReviewTabs")!.IsVisible.Should().BeFalse();
+                await Task.Delay(400);
+                Save(window, dir, $"phone-redesign-{theme.Id}-more.png");
+                window.Close();
+            }
+        }
+        finally
+        {
+            PlatformInfo.IsPhone = wasPhone;
+            ThemeService.Apply(HoshiThemes.Default, animations: false, Application.Current!.Resources);
+        }
+
+        static void Save(Window window, string dir, string name)
+        {
+            using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
+            frame.Save(Path.Combine(dir, name));
         }
     }
 }

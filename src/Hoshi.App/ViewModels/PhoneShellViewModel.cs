@@ -50,7 +50,7 @@ public enum PhoneHomeAction
 public sealed partial class PhoneShellViewModel : ViewModelBase
 {
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsMoves), nameof(IsAnalysis), nameof(IsStudy), nameof(IsChat), nameof(IsMenu), nameof(HasSheet))]
+    [NotifyPropertyChangedFor(nameof(IsMoves), nameof(IsAnalysis), nameof(IsStudy), nameof(IsChat), nameof(IsMenu), nameof(HasSheet), nameof(IsReview))]
     private PhoneSheet _sheet;
 
     private bool _syncing;
@@ -309,9 +309,32 @@ public sealed partial class PhoneShellViewModel : ViewModelBase
 
     public bool HasSheet => Sheet != PhoneSheet.None;
 
+    /// <summary>The moves, the analysis or the study: one sheet with a switch on top (one «Review» button).</summary>
+    public bool IsReview => Sheet is PhoneSheet.Moves or PhoneSheet.Analysis or PhoneSheet.Study;
+
+    /// <summary>The part of «Review» last shown; the button opens it again.</summary>
+    public PhoneSheet LastReview { get; private set; } = PhoneSheet.Moves;
+
     /// <summary>The bar buttons: a second tap closes the sheet.</summary>
     [RelayCommand]
     private void ToggleSheet(PhoneSheet sheet) => Sheet = Sheet == sheet ? PhoneSheet.None : sheet;
+
+    /// <summary>The switch inside a sheet: shows that part (never closes).</summary>
+    [RelayCommand]
+    private void ShowSheet(PhoneSheet sheet) => Sheet = sheet;
+
+    /// <summary>«Review»: opens the part last used (the moves at first), or closes the sheet.</summary>
+    [RelayCommand]
+    private void ToggleReview()
+    {
+        if (IsReview)
+        {
+            Sheet = PhoneSheet.None;
+            return;
+        }
+
+        Sheet = LastReview == PhoneSheet.Analysis && Main.Analysis.IsBlocked ? PhoneSheet.Moves : LastReview;
+    }
 
     /// <summary>
     /// The sheet's handle is being dragged: <paramref name="height"/> is where the finger would put it, within
@@ -415,6 +438,11 @@ public sealed partial class PhoneShellViewModel : ViewModelBase
 
     partial void OnSheetChanged(PhoneSheet oldValue, PhoneSheet newValue)
     {
+        if (newValue is PhoneSheet.Moves or PhoneSheet.Analysis or PhoneSheet.Study)
+        {
+            LastReview = newValue;
+        }
+
         _syncing = true;
         try
         {

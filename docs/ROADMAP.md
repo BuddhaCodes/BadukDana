@@ -171,6 +171,9 @@ Todo lo que sale del equipo es una acción explícita del usuario; los nombres d
   - [x] Google Analytics solo con consentimiento previo (UE): nada de Google se carga hasta «Aceptar»; «Rechazar» igual de visible; «Elegir cookies» en el pie.
   - [x] La web con un Mochi suave: títulos Fredoka, tarjetas redondas, capítulos en pastel, Kuro y Shiro sobre el tablero y un problema del día para tocar.
   - [x] Android: barra de posición entre el tablero y la hoja de estudio.
+  - [x] Preferencias (2026-10-18): Apariencia con desplazamiento, «Tema global» primero, tarjetas legibles en temas claros; Mochi de verdad por defecto (el ajuste guardaba «night» siempre); temas Matcha, Yuzu y Kuro mochi.
+  - [x] Android: login con Google que no volvía a la app — «Autorizar Hoshi»/«Cancelar» mientras espera, límite de 10 min y la página de OGS trae Hoshi al frente (`hoshi://signed-in`). Falta probarlo en un teléfono real.
+  - [x] Android más simple (2026-10-18): barra de 6 botones con etiquetas («Revisar» reúne jugadas, análisis y estudio con un selector; «Más» es una cuadrícula de mosaicos), estado en la cabecera, temas claros legibles en el teléfono.
   - [x] Escritorio en Mochi (2026-10-18): tema Mochi por defecto (como la web: crema, ciruela, rosa, Fredoka, esquinas redondas, nubes pastel); la cabecera es la barra de título (sin barra de Windows aparte; minimizar/maximizar/cerrar a la derecha); arranque redondo sin barra con Kuro y Shiro; «Borrar todos los dibujos» con papelera roja; arreglados los iconos Lucide que empezaban con «m» relativo (la «x» se veía como «<»).
 
 ### Después de la 1.0
