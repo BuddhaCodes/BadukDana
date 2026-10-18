@@ -166,6 +166,7 @@ Todo lo que sale del equipo es una acción explícita del usuario; los nombres d
   - [x] Escritorio: pestañas Jugar / Estudiar / Revisar (siguen al estudio y al análisis) y, en Revisar con ventana ≥ 1180 px, columna izquierda con la gráfica y la lista de jugadas coloreada por KataGo.
   - [x] Android: en OGS, el rival arriba y tú abajo; «Confirmar L7» / «Descartar» en el lugar de la barra (sin mover el tablero); datos rápidos (probabilidad, mejor jugada) en el estudio cuando el motor está permitido.
   - [x] Web: tu sistema primero y a lo ancho; botón noche/Kaya (recuerda la elección, si no sigue al sistema); aviso de Google Analytics con «No me cuentes» (apaga la etiqueta y borra sus cookies en ese navegador).
+  - [x] Despegarse de Sabaki (2026-10-17): fuera el tema Clásico y sus imágenes; escritorio con cabecera (jugadores, pestañas, herramientas) y pie (navegación, barra de posición, Pasar/Deshacer) en vez de la barra inferior; Android con cabecera (volver, título, «Juego limpio») y acciones grandes en línea; la web en Kaya con tablero a la izquierda, capítulos 序 中 終 y tabla de descargas.
   - [ ] Pasar los frames a Figma.
   - [ ] Google Analytics: decidir si se pide consentimiento antes de cargarla (lo habitual para visitantes de la UE) en vez de solo avisar.
 

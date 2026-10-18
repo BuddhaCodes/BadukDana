@@ -1,7 +1,8 @@
 # Guía visual
 
-Objetivo: la sensación de Sabaki — **el tablero es el protagonista**, la interfaz es oscura, silenciosa y se aparta —
-pero con **identidad propia**: Hoshi (星, «estrella») tiene siete temas, elegibles en *Preferencias* (☰ → Preferencias…,
+Objetivo: **el tablero es el protagonista** y la interfaz se aparta, con identidad propia. Hoshi nació inspirado en
+Sabaki, pero desde el rediseño de 2026-10-17 tiene su propia estructura (cabecera, columnas y pie, ver «Layout») y
+ningún recurso de Sabaki. Hoshi (星, «estrella») tiene seis temas, elegibles en *Preferencias* (☰ → Preferencias…,
 Ctrl+,), que cambian fondo, paleta, fuentes, iconos, piedras y animaciones al momento.
 
 ## Temas (`Themes/HoshiTheme.cs`, aplicados por `ThemeService`)
@@ -13,7 +14,6 @@ Ctrl+,), que cambian fondo, paleta, fuentes, iconos, piedras y animaciones al mo
 | **Tinta y oro** | Niebla de tinta sumi-e que respira y un ensō de pincel en oro tenue enmarcando el tablero | oro `#C9A45C`, rojo sello `#B23A2E` | Shippori Mincho · Manrope | Phosphor regular | Pizarra y concha | Onda de tinta |
 | **Jardín zen** | Arena rastrillada con ondas alrededor de dos rocas, moviéndose muy despacio | musgo `#9DBB7F` | Zen Kaku Gothic New | Lucide | Pizarra y concha | Onda en la arena |
 | **Minimal cálido** | Papel washi con fibras (estático) | terracota `#D07A4A` | Manrope | Tabler | Suaves | Asentarse |
-| **Clásico** | Tatami de Sabaki (estático) | `#E0A94A` | Manrope | Lucide | Shudan | — |
 
 - Relojes siempre en JetBrains Mono. Las fuentes van recortadas a latín (+ 星 碁).
 - Un tema claro (`IsLight`) cambia también Fluent a su variante clara (`RequestedThemeVariant`).
@@ -31,46 +31,35 @@ Ctrl+,), que cambian fondo, paleta, fuentes, iconos, piedras y animaciones al mo
 - Tarjetas de Preferencias: se elevan 3 px al pasar el ratón; borde de acento en la seleccionada.
 - Fondo animado a ~24 fps con movimiento muy lento; se detiene fuera de pantalla o con animaciones apagadas.
 
-## Referencia Sabaki
+## Origen
 
-Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su componente de tablero Shudan 1.8.0
-(`css/goban.css`, `board.png`, `stone_±1.svg`). Ambos MIT; los assets incluidos y sus licencias están en
-`THIRD_PARTY_NOTICES.md`. Tomamos colores, medidas y texturas; **no** su código.
+Hoshi tomó de Sabaki (MIT) la idea de una interfaz silenciosa con el tablero en el centro. Desde 2026-10-17 no
+incluye ninguno de sus recursos (se quitaron el tema Clásico, el tatami y la textura `board.png` de Shudan); las
+piedras «degradado clásico» conservan los colores de los SVG de Shudan (aviso en `THIRD_PARTY_NOTICES.md`).
 
 ## Principios
 
-1. El tablero ocupa todo el espacio disponible sobre un fondo de tatami; la UI se adapta a él.
-2. Barra inferior solo bajo el tablero; la barra lateral ocupa toda la altura.
+1. El tablero ocupa todo el espacio disponible sobre el fondo del tema; la UI se adapta a él.
+2. Cabecera arriba (quién juega, pestañas, herramientas), pie bajo el tablero (moverse por la partida y acciones).
 3. Tipografía pequeña y discreta; iconos lineales monocromos.
 4. Toda acción importante tiene atajo de teclado (ver abajo).
 5. Modo "zen" (F11): solo tablero *(pendiente)*.
 
-## Paleta del tema Clásico (valores por defecto en `Styles/Tokens.axaml`)
+## Paleta por defecto (`Styles/Tokens.axaml`, la de Estrella polar)
 
-| Token | Valor | Origen / uso |
-|---|---|---|
-| `Bg.Tatami.Base` + `Bg.Tatami` | `#C2CB9C` + `Assets/Sabaki/tatami.png` en mosaico | Fondo alrededor del tablero (Sabaki `main`) |
-| `Bg.Bar` | `#292A2D` | Barra inferior (Sabaki `#bar`) |
-| `Bg.EditBar` | `#C4BD64` (texto `#222`, hover `#B3AC53`) | Barra en modo edición (Sabaki `.edit #bar`) |
-| `Bg.Sidebar` | `#111111` | Barra lateral / árbol (Sabaki `#sidebar`) |
-| `Bg.Properties` | `#181818` (texto `#D0D0D0`) | Comentario, chat, panel en línea (Sabaki `#properties`) |
-| `Bg.Window` | `#1E1E1E` | Ventanas secundarias (lobby, diálogos) |
-| `Border.Subtle` | `#3A3A3A` | Separadores de 1 px |
-| `Text.Primary` / `Text.Secondary` | `#E6E6E6` / `#9A9A9A` | Texto |
-| `Accent` | `#E0A94A` | Foco, reloj bajo, estado en línea |
-| `Danger` | `#D9534F` | Errores |
+`Bg.Window` `#0B1026` · `Bg.Bar`/`Bg.Sidebar` `#0F1530` · `Bg.Panel`/`Bg.Properties` `#141A3A` · `Bg.PanelAlt` `#1B2350` ·
+`Border.Subtle` `#2A315A` · `Text.Primary` `#E9E6DA` · `Text.Secondary` `#9AA0C3` · `Accent` `#E8C36A` · `Danger` ·
+`Good` · `Bg.EditBar` `#2E3F73`. El tema elegido los reemplaza al arrancar (`ThemeService`).
 
 ## Tablero (`GoBoardControl`, `BoardTextures`)
 
-- Fondo `#F1B458` con la textura `board.png` de Shudan cubriendo el tablero (manteniendo proporción).
-- Borde de 0.15 celdas `#CA933A`; sombra `0 5px 20px rgba(20,0,15,.8)` sobre el tatami; brillo vertical sutil.
-- Líneas, hoshi y coordenadas en `#5E2E0C`; bordes exteriores 1.5×; hoshi de radio 0.1 celda.
+- La madera del tema (`BoardStyle.Texture`, de `Assets/Art/Boards`) o la kaya procedural teñida con `Wood`, cubriendo el tablero.
+- Borde y sombra del tema; brillo vertical sutil. Líneas, hoshi y coordenadas del tema; bordes exteriores 1.5×.
 - Márgenes: 0.8 celdas sin coordenadas, 1.35 con coordenadas.
-- Si la textura no carga, se usa la madera procedural propia.
 
 ## Piedras
 
-- Radio 0.46 celda (Shudan: vértice − 0.08 em). Dibujo vectorial de `stone_±1.svg`:
+- Radio 0.46 celda. «Degradado clásico» (vectorial, colores de los `stone_±1.svg` de Shudan):
   - Negras: degradado vertical `#443432` → `#0B0B0B`, brillo gris en la mitad superior, borde negro.
   - Blancas: `#FFFFFF` → `#C9D1FF`, reflejo claro en el borde inferior, borde `#C3C3C3`.
 - Sombra: disco `rgba(23,10,2,.4)` + sombra `0 .1 .2` celdas del mismo color.
@@ -81,9 +70,9 @@ Referencia directa (2026-09-29): Sabaki `d451324` (`style/index.css`) y su compo
 
 Arte de Hoshi renderizado por procedimiento (numpy + Pillow, semillas fijas; sin imágenes de terceros), en `Assets/Art/`:
 
-- **Gobanes** (1024 px JPEG, veta de arriba abajo): kaya masame (veta recta), kaya itame (arcos), shin-kaya, katsura, bambú laminado, nogal oscuro (líneas color crema). También Sabaki (Shudan) y la kaya procedural teñida por el tema.
-- **Piedras** (192 px PNG con alfa, sombreado de lente biconvexa vista desde arriba, supermuestreo 3×): concha y pizarra (8 blancas con bandas de crecimiento en ángulos distintos, 4 negras), yunzi, cristal, cerámica mate, jade y obsidiana; más las vectoriales (perla, suaves, Shudan). La variante es estable por intersección (`Skins.StoneSprite`), así que una piedra nunca cambia de aspecto.
-- **Fondos** (1024 px JPEG sin costuras, dibujados a la mitad para nitidez en HiDPI, con viñeta): sashiko índigo (seigaiha), mesa de nogal, pizarra, lino carbón, persiana de bambú; además los animados de los temas, washi y tatami.
+- **Gobanes** (1024 px JPEG, veta de arriba abajo): kaya masame (veta recta), kaya itame (arcos), shin-kaya, katsura, bambú laminado, nogal oscuro (líneas color crema). También la kaya procedural teñida por el tema.
+- **Piedras** (192 px PNG con alfa, sombreado de lente biconvexa vista desde arriba, supermuestreo 3×): concha y pizarra (8 blancas con bandas de crecimiento en ángulos distintos, 4 negras), yunzi, cristal, cerámica mate, jade y obsidiana; más las vectoriales (perla, suaves, degradado clásico). La variante es estable por intersección (`Skins.StoneSprite`), así que una piedra nunca cambia de aspecto.
+- **Fondos** (1024 px JPEG sin costuras, dibujados a la mitad para nitidez en HiDPI, con viñeta): sashiko índigo (seigaiha), mesa de nogal, pizarra, lino carbón, persiana de bambú; además los animados de los temas y washi.
 - Cada tema trae su combinación; Preferencias → **Tablero y piedras** permite mezclar goban, piedras y fondo con cualquier tema (`AppSettings.BoardSkin/StoneSkin/BackgroundSkin`, null = el del tema; `Skins.Compose` sustituye solo esa parte del `BoardStyle`).
 - Regenerar: `python3 tools/art/generate.py --sheet hoja.png`.
 
@@ -98,29 +87,31 @@ Arte de Hoshi renderizado por procedimiento (numpy + Pillow, semillas fijas; sin
 - `TR`, `SQ`, `CR`, `MA`, `LB` (etiqueta con fondo del tablero en intersección vacía).
 - Conteo en línea: cruces sobre las piedras muertas.
 
-## Layout de MainWindow
+## Layout de MainWindow (rediseño 2026-10-17, como el lienzo)
 
 ```
-┌──────────────────────────────────────────────┬──────────────┐
-│ tatami                                       │ (en línea)   │
-│        ┌───────────────────────────┐         │ ● Negro 5k   │
-│        │          TABLERO          │         │   9:50 + 5×… │
-│        │    (centrado, cuadrado)   │         │ ○ Blanco 3k  │
-│        └───────────────────────────┘         │ botones      │
-│                                              ├──────────────┤
-│                                              │ Árbol        │
-├──────────────────────────────────────────────┤──────────────┤
-│ ⏮ ◀ ▶ ⏭    Negro 5k (●○) Blanco 3k   Pasar Deshacer En línea ☰ │ estado · Jugada │
-│                                              │ Comentario / │
-│                                              │ Chat         │
-└──────────────────────────────────────────────┴──────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 星 Título · detalles   Negras ● ○ Blancas (relojes)   [Jugar|Estudiar|Revisar] (Crear replay) ⊞ ☆ ⊕ ϟ ♪ ☰ │
+├───────────────┬──────────────────────────────────────────┬───────────────────┤
+│ (Revisar,     │                                          │ análisis /        │
+│ ≥ 1180 px)    │               TABLERO                    │ inspector         │
+│ gráfica       │ (paleta de estudio flotando a la         │ árbol             │
+│ jugadas       │  izquierda en Estudiar)                  │ comentario,       │
+│ coloreadas    │                                          │ chat o estudio    │
+├───────────────┴──────────────────────────────────────────┤                   │
+│ ⏮ ◀ ▶ ⏭  (Siguiente error)  ───────●────── 73 / 187  Pasar Deshacer │                   │
+└──────────────────────────────────────────────────────────┴───────────────────┘
 ```
 
-- Barra inferior de 40 px bajo el tablero: navegación · jugadores con el interruptor de turno de Sabaki
-  (capturas como `+n`) · acciones y menú ☰ (archivo, edición, en línea).
-- En modo edición la barra se vuelve `#C4BD64` y muestra las herramientas.
-- Barra lateral de 280 px (redimensionable, 220–420): panel en línea (solo en partidas de OGS), árbol,
-  encabezado con estado y número de jugada, comentario o chat.
+- Cabecera (`AppHeader`, 56 px): título y detalles de la partida (se ocultan por debajo de 1280 px), jugadores con
+  turno, relojes y capturas, las pestañas, «Crear replay» en Revisar y las herramientas solo con icono; por debajo
+  de 1000 px territorio, pistas de joseki y en línea pasan a «⋯». En modo edición muestra las herramientas de edición
+  con `Bg.EditBar`.
+- Pie (`BottomBar`, 52 px): primera/anterior/siguiente/última, «Siguiente error» en Revisar, barra de posición sobre
+  toda la línea (`MoveListViewModel.Position`) con «n / total», Pasar y Deshacer.
+- Barra lateral (220–420 px, redimensionable): partida contra el motor, panel en línea, análisis e inspector, árbol,
+  estado y comentario, chat o estudio.
+- Zen oculta cabecera, pie y barra lateral; el entrenador de josekis oculta cabecera y pie.
 
 ## Árbol de variantes (`GameTreeControl`, como el *game graph* de Sabaki)
 
