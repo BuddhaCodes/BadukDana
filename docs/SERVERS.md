@@ -118,9 +118,26 @@ Queda por leer con detalle el reloj y el estado (`dataTypes.html`).
 
 **Juego limpio.** KataGo y los motores se cierran durante las partidas en vivo del jugador en **cualquier** servidor, como ya ocurre con OGS. KGS habla de «dishonest play» e IGS de «cheating». Que Hoshi sea más estricto que ellos es seguro.
 
-## 6. Decisiones pendientes del usuario
+## 6. Solicitudes de permiso (2026-10-17)
 
-1. ¿Escribimos a KGS y a Pandanet para pedir autorización antes de programar?
+Decidido: pedir permiso por escrito **antes de programar**. Los borradores (en inglés) se entregaron al usuario para
+que los envíe él; aquí queda dónde va cada uno y qué se pregunta. No se escribe código de `Hoshi.Kgs` ni `Hoshi.Igs`
+hasta tener respuesta.
+
+| Servidor | A quién | Qué se pide |
+|---|---|---|
+| KGS | admin@gokgs.com (dirección de los ToS, que prohíben clientes no autorizados); copia a wms@igoweb.org | Permiso; qué endpoint JSON usar (el público `/json/access` o alojar `kgs-json`); identificación del cliente, invitados, límites; cómo probar |
+| Pandanet IGS | Formulario de contacto para el servidor (pandanet-igs.com/communities/pandanet/53); gopanda@pandanet-igs.com es solo para su cliente GoPanda | Conformidad; host y puerto, y si hay TLS; reglas de identificación, frecuencia y «toggles»; servidor o procedimiento de prueba |
+
+Lo que se promete en ambos: conexión directa desde el dispositivo (sin pasarela que vea contraseñas), contraseña
+nunca guardada ni registrada, cliente identificado, motores apagados en las partidas en vivo del jugador, nunca jugar
+solo, y respetar sus límites.
+
+Estado: **pendiente de envío por el usuario** · respuestas: — .
+
+## 7. Decisiones pendientes del usuario
+
+1. ~~¿Escribimos a KGS y a Pandanet para pedir autorización antes de programar?~~ Sí (borradores arriba).
 2. ¿Se acepta guardar contraseñas en el almacén seguro con consentimiento, o se piden siempre?
 3. Si IGS no tiene TLS, ¿lo soportamos con aviso o lo descartamos?
 4. ¿Interesa importar SGF de Fox, aunque sea un uso no oficial?

@@ -157,7 +157,7 @@ Todo lo que sale del equipo es una acción explícita del usuario; los nombres d
 - [x] Android: estudio en tres partes (esta jugada, dibujar, partida) y menú agrupado.
 - [x] Creador de replays (escritorio): MP4 con FFmpeg, GIF y página web animada.
   - [x] Efectos en las jugadas críticas (2026-10-17): la mejor o excelente donde había ≥ 3 puntos en juego es «Jugada clave» (≥ 8 y la mejor: «Jugada brillante») con el impacto del tablero (destello, ondas, chispas, grietas, temblor), luz dorada y su explosión; los errores y errores graves, onda roja, sacudida y un golpe sordo. Nada en la apertura. Vídeo a 30 fps, GIF a 12,5; la web, con onda y sacudida en CSS.
-- [ ] Conectar KGS e IGS: investigación en `docs/SERVERS.md`; esperan permiso de los servidores y la decisión sobre las contraseñas. Fox, descartado para jugar.
+- [ ] Conectar KGS e IGS: investigación en `docs/SERVERS.md`; borradores de solicitud de permiso entregados (2026-10-17), pendientes de envío y respuesta; falta la decisión sobre las contraseñas. Fox, descartado para jugar.
 - [x] Rediseño (lienzo «Hoshi: rediseño en lienzo», 2026-10-17): «Estrella polar» como base y «Kaya» (claro) como tema.
   - [x] Tema por defecto con la paleta noche/oro/rojo sello y títulos en Shippori Mincho; tema Kaya claro (Fluent pasa a claro).
   - [x] Escritorio: inspector de revisión (tres candidatas de KataGo, tres errores grandes, «Siguiente error» o E, puntos rojos en la gráfica) y paleta de herramientas de estudio flotando sobre el tablero.
@@ -168,7 +168,9 @@ Todo lo que sale del equipo es una acción explícita del usuario; los nombres d
   - [x] Web: tu sistema primero y a lo ancho; botón noche/Kaya (recuerda la elección, si no sigue al sistema); aviso de Google Analytics con «No me cuentes» (apaga la etiqueta y borra sus cookies en ese navegador).
   - [x] Despegarse de Sabaki (2026-10-17): fuera el tema Clásico y sus imágenes; escritorio con cabecera (jugadores, pestañas, herramientas) y pie (navegación, barra de posición, Pasar/Deshacer) en vez de la barra inferior; Android con cabecera (volver, título, «Juego limpio») y acciones grandes en línea; la web en Kaya con tablero a la izquierda, capítulos 序 中 終 y tabla de descargas.
   - [ ] Pasar los frames a Figma.
-  - [ ] Google Analytics: decidir si se pide consentimiento antes de cargarla (lo habitual para visitantes de la UE) en vez de solo avisar.
+  - [x] Google Analytics solo con consentimiento previo (UE): nada de Google se carga hasta «Aceptar»; «Rechazar» igual de visible; «Elegir cookies» en el pie.
+  - [x] La web con un Mochi suave: títulos Fredoka, tarjetas redondas, capítulos en pastel, Kuro y Shiro sobre el tablero y un problema del día para tocar.
+  - [x] Android: barra de posición entre el tablero y la hoja de estudio.
 
 ### Después de la 1.0
 Diseños y recomendaciones en `docs/AFTER_1_0.md` (2026-10-17); cada una espera una decisión del usuario.
