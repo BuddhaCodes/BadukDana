@@ -33,7 +33,7 @@ public sealed class TitleBarTests
             Border header = window.FindControl<Border>("AppHeader")!;
             HoshiTitleBar.GetIsDragArea(header).Should().BeTrue();
             CaptionButtons caption = header.GetVisualDescendants().OfType<CaptionButtons>().Single();
-            caption.IsVisible.Should().BeTrue();
+            caption.IsVisible.Should().Be(!OperatingSystem.IsMacOS(), "macOS keeps its own traffic lights (the CI also runs there)");
 
             Button maximize = caption.GetVisualDescendants().OfType<Button>().Single(b => Avalonia.Automation.AutomationProperties.GetName(b) == "Maximize");
             maximize.Command.Should().BeNull();
