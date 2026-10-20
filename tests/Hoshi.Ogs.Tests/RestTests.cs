@@ -118,7 +118,9 @@ public sealed class OgsRestClientTests
                   "pause_on_weekends": false,
                   "time_control": "byoyomi"
                 },
-                "pause_on_weekends": false
+                "pause_on_weekends": false,
+                "rengo": false,
+                "rengo_casual_mode": true
               }
             }
             """)!;

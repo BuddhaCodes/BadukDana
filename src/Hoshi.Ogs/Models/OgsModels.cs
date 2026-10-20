@@ -145,6 +145,11 @@ public sealed record ChallengeRequest
         game["time_control"] = TimeControl.System;
         game["time_control_parameters"] = TimeControl.ToJson(Width, Height);
         game["pause_on_weekends"] = false;
+
+        // The web client always says explicitly that the game is not rengo. Without these fields the server
+        // has created games it then handled as rengo ("rengo: Empty rengo player list!" on the first pass).
+        game["rengo"] = false;
+        game["rengo_casual_mode"] = true;
         return game;
     }
 }
