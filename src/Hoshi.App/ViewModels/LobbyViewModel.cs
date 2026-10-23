@@ -81,11 +81,11 @@ public sealed partial class LobbyViewModel : ViewModelBase
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsSignedIn), nameof(IsSignedOut), nameof(UserText))]
-    [NotifyCanExecuteChangedFor(nameof(SignInCommand), nameof(SignInWithGoogleCommand), nameof(SignOutCommand), nameof(RefreshGamesCommand), nameof(CreateChallengeCommand), nameof(AcceptCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SignInCommand), nameof(SignInWithGoogleCommand), nameof(SignOutCommand), nameof(RefreshGamesCommand), nameof(RefreshFinishedCommand), nameof(CreateChallengeCommand), nameof(AcceptCommand), nameof(FindMatchCommand))]
     private OgsSession? _session;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SignInCommand), nameof(SignInWithGoogleCommand), nameof(SignOutCommand), nameof(RefreshGamesCommand), nameof(CreateChallengeCommand), nameof(AcceptCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SignInCommand), nameof(SignInWithGoogleCommand), nameof(SignOutCommand), nameof(RefreshGamesCommand), nameof(RefreshFinishedCommand), nameof(CreateChallengeCommand), nameof(AcceptCommand), nameof(FindMatchCommand))]
     private bool _isBusy;
 
     [ObservableProperty]
@@ -144,7 +144,7 @@ public sealed partial class LobbyViewModel : ViewModelBase
     }
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(CreateChallengeCommand), nameof(CancelWaitingCommand), nameof(AcceptCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CreateChallengeCommand), nameof(CancelWaitingCommand), nameof(AcceptCommand), nameof(FindMatchCommand))]
     private bool _isWaiting;
 
     [ObservableProperty]

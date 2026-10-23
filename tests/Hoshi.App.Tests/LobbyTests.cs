@@ -603,6 +603,8 @@ public sealed class LobbyWindowTests
         window.UpdateLayout();
         window.FindDeep<TextBlock>("AutomatchRankedNote")!.IsEffectivelyVisible.Should().BeTrue("automatch games are ranked: say so");
 
+        window.FindDeep<Button>("FindMatchButton")!.IsEffectivelyEnabled.Should().BeTrue("the restored session can search right away");
+
         vm.MatchSize = 9;
         vm.SelectedMatchSpeed = vm.MatchSpeeds[0];
         vm.FindMatchCommand.Execute(null);
