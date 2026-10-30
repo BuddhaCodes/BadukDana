@@ -60,6 +60,9 @@ public sealed partial class EngineMatchViewModel : ViewModelBase, ILocalOpponent
         _game.TreeReplacing += (_, _) => Stop();
     }
 
+    /// <summary>The engine's clock when the game has one (set by the main window from the local clock); null: no limit.</summary>
+    public Func<Stone, GtpTime?>? TimeSource { get; set; }
+
     public EngineChoice? Black { get; private set; }
 
     public EngineChoice? White { get; private set; }
@@ -207,7 +210,7 @@ public sealed partial class EngineMatchViewModel : ViewModelBase, ILocalOpponent
             }
 
             GtpEngine gtp = await _host.AcquireAsync(engine, token);
-            GtpMove move = await gtp.GenMoveAsync(position, token);
+            GtpMove move = await gtp.GenMoveAsync(position, TimeSource?.Invoke(position.ToMove), token);
             _ui.Post(() => Apply(engine, node, position.ToMove, move, cts));
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)

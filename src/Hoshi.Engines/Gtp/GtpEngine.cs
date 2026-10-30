@@ -50,6 +50,7 @@ public sealed class GtpEngine : IAsyncDisposable
     private readonly SemaphoreSlim _operation = new(1, 1);
     private CancellationTokenSource? _analysis;
     private GtpPosition? _position;
+    private string? _timeSettings;
 
     private GtpEngine(GtpClient client, GtpEngineConfig config, ILogger logger)
     {
@@ -244,13 +245,21 @@ public sealed class GtpEngine : IAsyncDisposable
     }
 
     /// <summary>Asks the engine for a move for <paramref name="color"/> in the given position; the engine plays it on its board.</summary>
-    public async Task<GtpMove> GenMoveAsync(GtpPosition position, CancellationToken cancellationToken = default)
+    public Task<GtpMove> GenMoveAsync(GtpPosition position, CancellationToken cancellationToken = default) =>
+        GenMoveAsync(position, time: null, cancellationToken);
+
+    /// <summary>
+    /// As <see cref="GenMoveAsync(GtpPosition, CancellationToken)"/>, telling the engine its clock first
+    /// (<c>time_settings</c> when the control changed, then <c>time_left</c>). Null: no time limit.
+    /// </summary>
+    public async Task<GtpMove> GenMoveAsync(GtpPosition position, GtpTime? time, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(position);
         await BeginAsync(cancellationToken);
         try
         {
             await SyncAsync(position, cancellationToken);
+            await SendTimeAsync(position.ToMove, time, cancellationToken);
             GtpResponse r = await _client.SendAsync("genmove " + Color(position.ToMove), cancellationToken);
             if (!r.Success)
             {
@@ -270,6 +279,31 @@ public sealed class GtpEngine : IAsyncDisposable
         finally
         {
             _operation.Release();
+        }
+    }
+
+    // The clock is advice for the engine: a refusal is logged, never fatal (the game goes on without it).
+    private async Task SendTimeAsync(Stone color, GtpTime? time, CancellationToken cancellationToken)
+    {
+        string? settings = time is null ? null : GtpTimeCommands.Settings(time.Control, c => _commands.Contains(c));
+        if (settings != _timeSettings && (settings is not null || _timeSettings is not null))
+        {
+            GtpResponse r = await _client.SendAsync(settings ?? GtpTimeCommands.NoLimit, cancellationToken);
+            if (!r.Success)
+            {
+                _logger.LogInformation("{Engine} ignored the time settings: {Error}", Config.Name, r.Text);
+            }
+
+            _timeSettings = settings;
+        }
+
+        if (time is not null && settings is not null)
+        {
+            GtpResponse r = await _client.SendAsync(GtpTimeCommands.TimeLeft(color, time, settings), cancellationToken);
+            if (!r.Success)
+            {
+                _logger.LogDebug("{Engine} ignored time_left: {Error}", Config.Name, r.Text);
+            }
         }
     }
 
