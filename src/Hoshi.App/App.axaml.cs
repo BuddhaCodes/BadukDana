@@ -46,6 +46,12 @@ public partial class App : Application
             Hoshi.App.Services.Diagnostics.CrashGuard.Install(loggers.CreateLogger("Hoshi.Crash"), Path.Combine(Hoshi.App.Services.AppPaths.DataDirectory, "logs"));
         }
 
+        // "Your move" in another OGS game reaches the player outside the window (Android installs its own).
+        if (_services is not null)
+        {
+            Hoshi.App.Services.DesktopNotifier.Install();
+        }
+
         // The saved language (English by default). Without a host (designer, UI tests) the current language is kept.
         if (_services is not null)
         {
