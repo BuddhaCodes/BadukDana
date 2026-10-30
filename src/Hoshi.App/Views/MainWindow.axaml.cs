@@ -213,7 +213,15 @@ public partial class MainWindow : Window
         if (DataContext is MainWindowViewModel vm
             && e.DataTransfer.TryGetFiles()?.FirstOrDefault()?.TryGetLocalPath() is { } path)
         {
-            await vm.Game.OpenFileAsync(path);
+            // async void (an event handler): a bad file must end in the log, not take the app down.
+            try
+            {
+                await vm.Game.OpenFileAsync(path);
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                Services.Diagnostics.CrashGuard.Report(ex, "Opening a dropped file");
+            }
         }
     }
 

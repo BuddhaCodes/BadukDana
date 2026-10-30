@@ -473,6 +473,9 @@
                 <Button Classes="menu-tile" Command="{Binding Main.Welcome.OpenCommand}" x:Name="MenuWelcome">
                   <StackPanel Spacing="6"><c:HoshiIcon Icon="{DynamicResource Icon.Star}" Size="20" HorizontalAlignment="Center" /><TextBlock Text="{l:T Welcome.Menu}" /></StackPanel>
                 </Button>
+                <Button Classes="menu-tile" Command="{Binding Main.Report.ReportCommand}" x:Name="MenuReport">
+                  <StackPanel Spacing="6"><TextBlock Text="⚑" FontSize="18" HorizontalAlignment="Center" /><TextBlock Text="{l:T Report.Menu}" TextWrapping="Wrap" TextAlignment="Center" /></StackPanel>
+                </Button>
                 <Button Classes="menu-tile" Command="{Binding Main.Updates.SupportCommand, FallbackValue={x:Null}}"
                         IsVisible="{Binding Main.Updates, Converter={x:Static ObjectConverters.IsNotNull}}" x:Name="MenuSupport">
                   <StackPanel Spacing="6"><TextBlock Text="♥" FontSize="18" HorizontalAlignment="Center" Foreground="{DynamicResource Accent}" /><TextBlock Text="{l:T Support.Menu}" /></StackPanel>

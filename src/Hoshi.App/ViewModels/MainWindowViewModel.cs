@@ -73,8 +73,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IClipboardService? clipboard = null,
         Services.Summary.SummarySource? summaries = null,
         Services.Presence.DiscordPresence? presence = null,
-        IReplayMakerWindowService? replayMakerWindow = null)
+        IReplayMakerWindowService? replayMakerWindow = null,
+        ReportViewModel? report = null)
     {
+        Report = report ?? new ReportViewModel(pending: static () => null, clear: static () => { });
         _replayMakerWindow = replayMakerWindow;
         _summaries = summaries;
         _presence = presence;
@@ -410,6 +412,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>The update banner and "Check for updates…" (null without a host, e.g. the designer).</summary>
     public UpdateViewModel? Updates { get; }
+
+    /// <summary>"Report a problem" and the card after a crash.</summary>
+    public ReportViewModel Report { get; }
 
     /// <summary>
     /// The stone's own sound: a soft thud for quiet moves (openings, extensions, connections) and a firmer clack for

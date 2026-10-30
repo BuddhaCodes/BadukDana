@@ -314,6 +314,7 @@
                 <MenuItem Header="{l:T Welcome.Menu}" Command="{Binding Welcome.OpenCommand}" x:Name="WelcomeItem" />
                 <MenuItem Header="{l:T Main.Preferences}" Command="{Binding OpenPreferencesCommand}" InputGesture="Ctrl+OemComma" />
                 <MenuItem Header="{l:T Main.CheckUpdates}" Command="{Binding Updates.CheckNowCommand, FallbackValue={x:Null}}" x:Name="CheckUpdatesItem" />
+                <MenuItem Header="{l:T Report.Menu}" Command="{Binding Report.ReportCommand}" x:Name="ReportItem" />
                 <MenuItem Header="{l:T Support.Menu}" Command="{Binding Updates.SupportCommand, FallbackValue={x:Null}}" x:Name="SupportItem" />
               </MenuFlyout>
             </Button.Flyout>
@@ -662,6 +663,20 @@
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
               <Button Content="{l:T Support.Close}" Command="{Binding Updates.DismissThanksCommand}" x:Name="ThanksClose" />
               <Button Classes="accent" Content="{l:T Support.Button}" Command="{Binding Updates.SupportCommand}" x:Name="ThanksSupport" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+        <!-- After a crash: a quiet card offering a ready-made report (opened in the browser, never sent by Hoshi). -->
+        <Border x:Name="CrashBanner" IsVisible="{Binding Report.HasCrash}"
+                HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="20,0,0,20" MaxWidth="380"
+                Background="{DynamicResource Bg.Panel}" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="1" CornerRadius="10" Padding="14,12">
+          <StackPanel Spacing="8">
+            <TextBlock Text="{Binding Report.CrashText}" FontWeight="SemiBold" TextWrapping="Wrap" />
+            <TextBlock Classes="secondary" Text="{l:T Report.Ask}" TextWrapping="Wrap" FontSize="12.5" />
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+              <Button Content="{l:T Support.Close}" Command="{Binding Report.DismissCommand}" x:Name="CrashClose" />
+              <Button Content="{l:T Report.Copy}" Command="{Binding Report.CopyCommand}" x:Name="CrashCopy" />
+              <Button Classes="accent" Content="{l:T Report.Open}" Command="{Binding Report.ReportCommand}" x:Name="CrashReport" />
             </StackPanel>
           </StackPanel>
         </Border>

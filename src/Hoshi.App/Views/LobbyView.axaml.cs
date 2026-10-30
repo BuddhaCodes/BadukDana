@@ -23,9 +23,19 @@ public partial class LobbyView : UserControl
     protected override async void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        if (DataContext is LobbyViewModel vm)
+        if (DataContext is not LobbyViewModel vm)
+        {
+            return;
+        }
+
+        // async void (an event override): an exception here would take the app down, so it ends in the log.
+        try
         {
             await vm.InitializeAsync();
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            Services.Diagnostics.CrashGuard.Report(ex, "Lobby initialisation");
         }
     }
 }
