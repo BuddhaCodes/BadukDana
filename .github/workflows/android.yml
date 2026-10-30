@@ -40,12 +40,12 @@ jobs:
     name: KataGo (Android arm64)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || github.sha }}
 
       - id: cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: src/Hoshi.Android/katago
           key: katago-android-${{ env.KATAGO_VERSION }}-${{ hashFiles('tools/android/build-katago.sh') }}
@@ -54,7 +54,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: tools/android/build-katago.sh
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: katago-android-arm64
           path: src/Hoshi.Android/katago/arm64-v8a/libkatago.so
@@ -65,21 +65,21 @@ jobs:
     needs: katago
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || github.sha }}
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: katago-android-arm64
           path: src/Hoshi.Android/katago/arm64-v8a
 
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
@@ -128,7 +128,7 @@ jobs:
           cp "$apk" Hoshi-android.apk
           unzip -l Hoshi-android.apk | grep -E 'libkatago|b10c128' 
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: legacy-Hoshi-android.apk
           path: Hoshi-android.apk

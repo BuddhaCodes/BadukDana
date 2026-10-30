@@ -205,13 +205,13 @@ public partial class MainWindow : Window
     // View-only plumbing: translate the dropped file into the view model's open operation.
     private static void OnDragOver(object? sender, DragEventArgs e)
     {
-        e.DragEffects = e.Data.Contains(DataFormats.Files) ? DragDropEffects.Copy : DragDropEffects.None;
+        e.DragEffects = e.DataTransfer.Contains(DataFormat.File) ? DragDropEffects.Copy : DragDropEffects.None;
     }
 
     private async void OnDrop(object? sender, DragEventArgs e)
     {
         if (DataContext is MainWindowViewModel vm
-            && e.Data.GetFiles()?.FirstOrDefault()?.TryGetLocalPath() is { } path)
+            && e.DataTransfer.TryGetFiles()?.FirstOrDefault()?.TryGetLocalPath() is { } path)
         {
             await vm.Game.OpenFileAsync(path);
         }

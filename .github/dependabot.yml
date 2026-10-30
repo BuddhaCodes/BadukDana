@@ -1,0 +1,31 @@
+# Keeps NuGet packages (Directory.Packages.props) and GitHub Actions current.
+# Avalonia majors and FluentAssertions 8+ (commercial license) are held back on purpose.
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      avalonia:
+        patterns: ["Avalonia*"]
+      microsoft-extensions:
+        patterns: ["Microsoft.Extensions.*"]
+      serilog:
+        patterns: ["Serilog*"]
+      tests:
+        patterns: ["xunit*", "Microsoft.NET.Test.Sdk", "coverlet*"]
+    ignore:
+      - dependency-name: FluentAssertions
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Avalonia*"
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
