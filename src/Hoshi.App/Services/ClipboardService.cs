@@ -1,3 +1,5 @@
+using Avalonia.Input.Platform;
+
 namespace Hoshi.App.Services;
 
 /// <summary>The system clipboard (text only). Abstracted so view models stay testable.</summary>
@@ -14,5 +16,5 @@ public sealed class AvaloniaClipboardService : IClipboardService
         MainWindowLocator.Top?.Clipboard is { } clipboard ? clipboard.SetTextAsync(text) : Task.CompletedTask;
 
     public async Task<string?> GetTextAsync() =>
-        MainWindowLocator.Top?.Clipboard is { } clipboard ? await clipboard.GetTextAsync() : null;
+        MainWindowLocator.Top?.Clipboard is { } clipboard ? await clipboard.TryGetTextAsync() : null;
 }

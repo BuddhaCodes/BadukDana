@@ -35,7 +35,7 @@ jobs:
     outputs:
       release: ${{ steps.diff.outputs.release }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
@@ -64,11 +64,11 @@ jobs:
           - { os: ubuntu-latest,  rid: linux-arm64, asset: Hoshi-linux-arm64.tar.gz }
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
@@ -179,13 +179,13 @@ jobs:
           chmod +x out/Hoshi/Hoshi out/Hoshi/install.sh
           tar -C out -czf ${{ matrix.asset }} Hoshi
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: vp-${{ matrix.rid }}
           path: vp
           retention-days: 3
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: legacy-${{ matrix.asset }}
           path: ${{ matrix.asset }}
@@ -206,18 +206,18 @@ jobs:
     if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: legacy-*
           path: assets
           merge-multiple: true
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: vp-*
           path: vp
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
           sparse-checkout: |
@@ -227,7 +227,7 @@ jobs:
           sparse-checkout-cone-mode: false
           path: src-props
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: src-props/global.json
 
@@ -244,7 +244,7 @@ jobs:
           echo "tag=v${base:-0.1}.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
       # A draft first: nothing is visible (or offered as an update) until every system's files are attached.
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
           target_commitish: ${{ github.event.workflow_run.head_sha }}

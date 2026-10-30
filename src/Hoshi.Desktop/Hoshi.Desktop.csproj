@@ -19,8 +19,6 @@
   <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Velopack" />
-    <!-- Direct reference only to lift the transitive version (see Directory.Packages.props). -->
-    <PackageReference Include="Tmds.DBus.Protocol" />
   </ItemGroup>
 
   <ItemGroup>
