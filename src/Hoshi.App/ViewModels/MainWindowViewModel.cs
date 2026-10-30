@@ -202,6 +202,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             }
         }
         Clock = new LocalClockViewModel(game, ui, sounds: sounds);
+        if (engineMatch is not null)
+        {
+            // Engines are told their clock before each move, so they spend their time sensibly and never lose on time.
+            engineMatch.TimeSource = color => Clock.Clock is { } clock ? Hoshi.Engines.Gtp.GtpTime.Of(clock, color) : null;
+        }
         Clock.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName is nameof(LocalClockViewModel.HasClock) or nameof(LocalClockViewModel.Version))
