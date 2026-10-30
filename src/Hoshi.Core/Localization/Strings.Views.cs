@@ -36,6 +36,16 @@ public static partial class Tr
         Add(d, "Support.Ask", "Hoshi is free and open source, made in spare time. If you enjoy it, you can support it with a donation on PayPal — it is entirely optional.", "Hoshi es gratis y de código abierto, hecho en ratos libres. Si te gusta, puedes apoyarlo con una donación en PayPal; es totalmente opcional.");
         Add(d, "Support.Button", "Support Hoshi", "Apoyar Hoshi");
         Add(d, "Support.Close", "Close", "Cerrar");
+        Add(d, "Backup.Export", "Export a backup…", "Exportar una copia de seguridad…");
+        Add(d, "Backup.Import", "Import a backup…", "Importar una copia de seguridad…");
+        Add(d, "Backup.Type", "Hoshi backup", "Copia de seguridad de Hoshi");
+        Add(d, "Backup.ImportTitle", "Import a Hoshi backup", "Importar una copia de seguridad de Hoshi");
+        Add(d, "Backup.Exported", "Backup saved: your games, studies and progress.", "Copia guardada: tus partidas, estudios y progreso.");
+        Add(d, "Backup.PrefsTitle", "Preferences too?", "¿También las preferencias?");
+        Add(d, "Backup.PrefsAsk", "The backup is merged with what you have (nothing is lost). Also use its theme, language, sounds and other preferences?", "La copia se suma a lo que ya tienes (no se pierde nada). ¿Usar también su tema, idioma, sonidos y demás preferencias?");
+        Add(d, "Backup.Staged", "Close and reopen Hoshi to finish the import.", "Cierra y vuelve a abrir Hoshi para terminar de importar.");
+        Add(d, "Backup.Imported", "Backup imported: {0} games, {1} joseki and {2} problem cards, {3} reviews.", "Copia importada: {0} partidas, {1} tarjetas de joseki y {2} de problemas, {3} revisiones.");
+        Add(d, "Backup.Failed", "The backup could not be used: {0}", "No se pudo usar la copia: {0}");
         Add(d, "Report.Menu", "Report a problem…", "Informar de un problema…");
         Add(d, "Report.Crashed", "Hoshi closed unexpectedly ({0}).", "Hoshi se cerró de forma inesperada ({0}).");
         Add(d, "Report.Ask", "You can open a ready-made report on GitHub. You will see everything before sending it; passwords, tokens and your user folder are left out.", "Puedes abrir un informe ya preparado en GitHub. Verás todo antes de enviarlo; las contraseñas, los tokens y tu carpeta de usuario quedan fuera.");

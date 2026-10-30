@@ -314,6 +314,9 @@
                 <MenuItem Header="{l:T Welcome.Menu}" Command="{Binding Welcome.OpenCommand}" x:Name="WelcomeItem" />
                 <MenuItem Header="{l:T Main.Preferences}" Command="{Binding OpenPreferencesCommand}" InputGesture="Ctrl+OemComma" />
                 <MenuItem Header="{l:T Main.CheckUpdates}" Command="{Binding Updates.CheckNowCommand, FallbackValue={x:Null}}" x:Name="CheckUpdatesItem" />
+                <MenuItem Header="{l:T Backup.Export}" Command="{Binding Backup.ExportCommand}" x:Name="BackupExportItem" />
+                <MenuItem Header="{l:T Backup.Import}" Command="{Binding Backup.ImportCommand}" x:Name="BackupImportItem" />
+                <Separator />
                 <MenuItem Header="{l:T Report.Menu}" Command="{Binding Report.ReportCommand}" x:Name="ReportItem" />
                 <MenuItem Header="{l:T Support.Menu}" Command="{Binding Updates.SupportCommand, FallbackValue={x:Null}}" x:Name="SupportItem" />
               </MenuFlyout>

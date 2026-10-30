@@ -28,6 +28,17 @@ public static class AppHost
             builder.Configuration.AddJsonStream(defaults);
         }
 
+        // A backup chosen last time ("Import backup…") is merged now, before any service reads the files.
+        try
+        {
+            ImportSummary = Services.Backup.BackupPackage.ApplyPending(AppPaths.DataDirectory);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Text.Json.JsonException or InvalidDataException or FormatException)
+        {
+            ImportError = ex.Message;
+            System.Diagnostics.Trace.WriteLine($"Hoshi: the pending import failed: {ex}");
+        }
+
         string logDirectory = Path.Combine(AppPaths.DataDirectory, "logs");
         builder.Services.AddSerilog((_, logger) => logger
             .ReadFrom.Configuration(builder.Configuration)
@@ -46,6 +57,12 @@ public static class AppHost
     }
 
     public const string UpdatesHttpClient = "updates";
+
+    /// <summary>What the import merged at this start (null when there was none).</summary>
+    public static Services.Backup.BackupSummary? ImportSummary { get; private set; }
+
+    /// <summary>Why the pending import could not be merged at this start, if it failed.</summary>
+    public static string? ImportError { get; private set; }
 
     /// <summary>
     /// Phones (Android): windows become pages of the single view and dialogs a card (<see cref="Services.Phone.PhoneNavigation"/>).
@@ -133,6 +150,7 @@ public static class AppHost
         services.AddSingleton<IKataGoInstaller, DefaultKataGoInstaller>();
         services.AddSingleton<KataGoSetupViewModel>();
         services.AddSingleton<UpdateViewModel>();
+        services.AddSingleton(sp => new BackupViewModel(sp.GetService<IFileDialogService>(), sp.GetService<IDialogService>()));
         services.AddSingleton(sp => new ReportViewModel(sp.GetService<IBrowserLauncher>(), sp.GetService<IClipboardService>()));
         services.AddSingleton<GameViewModel>();
         services.AddSingleton<EngineMatchViewModel>();
