@@ -74,8 +74,16 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Services.Summary.SummarySource? summaries = null,
         Services.Presence.DiscordPresence? presence = null,
         IReplayMakerWindowService? replayMakerWindow = null,
-        ReportViewModel? report = null)
+        ReportViewModel? report = null,
+        BackupViewModel? backup = null)
     {
+        Backup = backup ?? new BackupViewModel();
+        Backup.Status += (_, text) => game.ShowStatus(text);
+        if (BackupViewModel.StartupMessage(AppHost.ImportSummary, AppHost.ImportError) is { } imported)
+        {
+            game.ShowStatus(imported);
+        }
+
         Report = report ?? new ReportViewModel(pending: static () => null, clear: static () => { });
         _replayMakerWindow = replayMakerWindow;
         _summaries = summaries;
@@ -417,6 +425,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     /// <summary>The update banner and "Check for updates…" (null without a host, e.g. the designer).</summary>
     public UpdateViewModel? Updates { get; }
+
+    /// <summary>"Export a backup…" and "Import a backup…" (games, studies and progress in one .hoshi file).</summary>
+    public BackupViewModel Backup { get; }
 
     /// <summary>"Report a problem" and the card after a crash.</summary>
     public ReportViewModel Report { get; }

@@ -15,6 +15,9 @@ public interface IFileDialogService
 
     Task<string?> PickSgfToSaveAsync(string suggestedName);
 
+    /// <summary>A Hoshi backup (<c>.hoshi</c>) to import; null when cancelled or not available.</summary>
+    Task<string?> PickBackupToOpenAsync() => Task.FromResult<string?>(null);
+
     /// <summary>Where to save a web page (the study report); null when cancelled or not available.</summary>
     Task<string?> PickHtmlToSaveAsync(string suggestedName) => Task.FromResult<string?>(null);
 
@@ -100,6 +103,23 @@ public sealed class AvaloniaFileDialogService : IFileDialogService
             Title = Tr.T("Dialog.OpenSgf"),
             AllowMultiple = false,
             FileTypeFilter = [Sgf, FilePickerFileTypes.All],
+        });
+        return files.Count > 0 ? await StorageFiles.LocalPathAsync(files[0]) : null;
+    }
+
+    public async Task<string?> PickBackupToOpenAsync()
+    {
+        if (MainWindowLocator.Top?.StorageProvider is not { } storage)
+        {
+            return null;
+        }
+
+        var backup = new FilePickerFileType(Tr.T("Backup.Type")) { Patterns = ["*.hoshi"], MimeTypes = ["application/zip"] };
+        IReadOnlyList<IStorageFile> files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = Tr.T("Backup.ImportTitle"),
+            AllowMultiple = false,
+            FileTypeFilter = [backup, FilePickerFileTypes.All],
         });
         return files.Count > 0 ? await StorageFiles.LocalPathAsync(files[0]) : null;
     }
@@ -258,5 +278,6 @@ public sealed record ExportFileType(string Extension, string Mime, string NameKe
     public static readonly ExportFileType Gif = new("gif", "image/gif", "Share.TypeGif");
     public static readonly ExportFileType Html = new("html", "text/html", "Dialog.WebPage");
     public static readonly ExportFileType Text = new("txt", "text/plain", "Share.TypeText");
+    public static readonly ExportFileType Backup = new("hoshi", "application/zip", "Backup.Type");
     public static readonly ExportFileType Mp4 = new("mp4", "video/mp4", "Share.TypeMp4");
 }
