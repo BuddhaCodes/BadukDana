@@ -38,6 +38,14 @@ public partial class App : Application
     {
         AvaloniaXamlLoader.Load(this);
 
+        // Unhandled exceptions end in the log (and "Report a problem") instead of vanishing. Not without a host:
+        // the designer and the UI tests keep Avalonia's own behaviour.
+        if (_services?.GetService<Microsoft.Extensions.Logging.ILoggerFactory>() is { } loggers)
+        {
+            Hoshi.App.Services.Diagnostics.CrashGuard.Version = Hoshi.App.Services.Updates.UpdatePlatform.Display(Hoshi.App.Services.Updates.UpdatePlatform.CurrentVersion);
+            Hoshi.App.Services.Diagnostics.CrashGuard.Install(loggers.CreateLogger("Hoshi.Crash"), Path.Combine(Hoshi.App.Services.AppPaths.DataDirectory, "logs"));
+        }
+
         // The saved language (English by default). Without a host (designer, UI tests) the current language is kept.
         if (_services is not null)
         {

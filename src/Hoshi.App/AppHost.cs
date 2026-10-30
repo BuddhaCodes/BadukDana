@@ -133,6 +133,7 @@ public static class AppHost
         services.AddSingleton<IKataGoInstaller, DefaultKataGoInstaller>();
         services.AddSingleton<KataGoSetupViewModel>();
         services.AddSingleton<UpdateViewModel>();
+        services.AddSingleton(sp => new ReportViewModel(sp.GetService<IBrowserLauncher>(), sp.GetService<IClipboardService>()));
         services.AddSingleton<GameViewModel>();
         services.AddSingleton<EngineMatchViewModel>();
         services.AddSingleton<MainWindowViewModel>();

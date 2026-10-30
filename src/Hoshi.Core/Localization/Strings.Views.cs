@@ -36,6 +36,11 @@ public static partial class Tr
         Add(d, "Support.Ask", "Hoshi is free and open source, made in spare time. If you enjoy it, you can support it with a donation on PayPal — it is entirely optional.", "Hoshi es gratis y de código abierto, hecho en ratos libres. Si te gusta, puedes apoyarlo con una donación en PayPal; es totalmente opcional.");
         Add(d, "Support.Button", "Support Hoshi", "Apoyar Hoshi");
         Add(d, "Support.Close", "Close", "Cerrar");
+        Add(d, "Report.Menu", "Report a problem…", "Informar de un problema…");
+        Add(d, "Report.Crashed", "Hoshi closed unexpectedly ({0}).", "Hoshi se cerró de forma inesperada ({0}).");
+        Add(d, "Report.Ask", "You can open a ready-made report on GitHub. You will see everything before sending it; passwords, tokens and your user folder are left out.", "Puedes abrir un informe ya preparado en GitHub. Verás todo antes de enviarlo; las contraseñas, los tokens y tu carpeta de usuario quedan fuera.");
+        Add(d, "Report.Open", "Open the report", "Abrir el informe");
+        Add(d, "Report.Copy", "Copy", "Copiar");
         Add(d, "Update.Later", "Later", "Más tarde");
         Add(d, "Update.Skip", "Skip this version", "Saltar esta versión");
         Add(d, "Update.Checking", "Checking for updates…", "Buscando actualizaciones…");
