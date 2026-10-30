@@ -18,7 +18,9 @@
 ```
 
 Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`):
-`App → Ogs, Sgf, Core` · `Ogs → Core` · `Sgf → Core` · `Engines → Core` · `Core → (nada)`.
+`Desktop → App` · `Android → App` · `App → Ogs, Sgf, Engines, Core` · `Ogs → Core` · `Sgf → Core` · `Engines → Core` · `Core → (nada)`.
+
+Las clases grandes se dividen en archivos parciales por tema (`StudyViewModel.Quiz.cs`, `GameViewModel.Online.cs`, `GoBoardControl.Drawing.cs`…); ningún archivo pasa de unas 800 líneas.
 
 ## Hoshi.Core — modelos (implementados en la Fase 1)
 
@@ -36,7 +38,7 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
   - Se aceptan jugadas de cualquier color (como permite SGF); `ToMove` pasa al contrario.
 - `Handicap` — `FixedPoints(size, n)`, `MaxFixed(size)` (9 en impares ≥7, 4 en pares, 0 bajo 7×7).
 - `Scoring.Score(board, deadStones, komi, handicap) → ScoreResult` — territorio o área según el `RuleSet`; las piedras muertas cuentan como prisioneros y su punto como territorio; las regiones que tocan ambos colores son dame (seki). Los ojos en seki cuentan como territorio (modo no estricto, como OGS). `OwnerAt(point)` para el overlay de territorio.
-- `GameClock` — modelos de tiempo (absoluto, Fischer, byo-yomi, canadiense, simple) — **pendiente, Fase 5**.
+- `GameClock` / `TimeControl` / `PlayerClock` — reloj de partidas locales (absoluto, Fischer con tope, byo-yomi): solo pierde tiempo quien juega; `MoveDone` reinicia el periodo o suma el incremento. `Hoshi.Engines.Gtp.GtpTime` lo traduce a GTP para los motores.
 
 ## Hoshi.Sgf (implementado en la Fase 3)
 
@@ -167,7 +169,7 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 
 ### Servicios de App
 - `IDialogService`, `IFileDialogService`, `ISettingsService` (JSON en carpeta de datos).
-- Música (`Services/Music`): `LofiComposer` sintetiza al arrancar un bucle de 8 compases (80 BPM, 24 s) en 5 capas sincronizadas; `MusicDirector` (lógica pura con reloj explícito) convierte los veredictos (`AnalysisViewModel.MoveJudged`) en «calor» 0–4; `MusicMixer` mezcla las capas con ganancias suaves, filtro paso bajo según el calor y efecto tape-stop; `MusicService` lo envía en un hilo propio a un `IPcmSink` del SO (waveOut de winmm en Windows; `pacat`/`aplay` en Linux; sin salida en macOS por ahora). Sin veredictos (partidas de OGS en curso) la música se queda tranquila: no revela nada del motor.
+- Música (`Services/Music`): `LofiComposer` sintetiza al arrancar un bucle de 8 compases (80 BPM, 24 s) en 5 capas sincronizadas; `MusicDirector` (lógica pura con reloj explícito) convierte los veredictos (`AnalysisViewModel.MoveJudged`) en «calor» 0–4; `MusicMixer` mezcla las capas con ganancias suaves, filtro paso bajo según el calor y efecto tape-stop; `MusicService` lo envía en un hilo propio a un `IPcmSink` del SO (waveOut de winmm en Windows; `pacat`/`aplay` en Linux; cola de salida de AudioToolbox en macOS). Sin veredictos (partidas de OGS en curso) la música se queda tranquila: no revela nada del motor.
 - `ISoundService` / `SystemSoundService`: sin librerías de audio; usa lo que trae el SO (MCI de winmm en Windows, `afplay` en macOS, `paplay`/`aplay` en Linux). Los WAV integrados se copian a `cache/sounds/`; un archivo con el mismo nombre (`.wav`/`.mp3`) en `sounds/` de la carpeta de datos los sustituye.
 - `SecureTokenStore` → `ITokenStore` del SO con respaldo en memoria (implementa el `ISecureStore` de CLAUDE.md).
 - `IOgsClient` / `OgsClient` — fachada que une auth, REST, tiempo real y seek graph para el lobby; `LobbyViewModel` solo depende de ella (tests con un falso). `IUiDispatcher` lleva los eventos al hilo de UI.
@@ -207,3 +209,9 @@ Regla de dependencias (la comprueba `tests/Hoshi.App.Tests/ArchitectureTests.cs`
 - Momentos (`ReplayMoment`): `StudyVerdict.Criticality` (`MoveImportance.Criticality`, de `AnalysisViewModel.LineVerdicts` o de la revisión escrita) decide si una jugada buena es clave o brillante. Con efectos, `ReplayMakerViewModel.Frames` anima el momento (`ReplayScene.Render(..., effectSeconds)`: el `ImpactEffect` del tablero congelado con `GoBoardControl.FreezeImpact`, o el `MistakeShock` rojo con sacudida) y luego da la imagen quieta; las duraciones suman la del paso para que el audio no se desfase.
 - `ReplayAudio` mezcla los WAV propios de Hoshi (piedra, captura y, 60 ms después, la explosión o el golpe del momento) en una pista. FFmpeg no se distribuye: se busca en el PATH o en `AppSettings.FfmpegPath`.
 
+## Diagnóstico y copia de seguridad (2026-10-30)
+
+- `Services/Diagnostics/CrashGuard` (se instala en `App.Initialize` cuando hay host): engancha `AppDomain.UnhandledException`, `TaskScheduler.UnobservedTaskException` y `Dispatcher.UIThread.UnhandledException`. Todo va al log; los fallos del hilo de UI se marcan como manejados (la partida no se pierde) y el más grave queda en `logs/last-crash.json`. Los manejadores `async void` de las vistas llaman a `CrashGuard.Report`.
+- `ProblemReport` arma el issue de GitHub (versión, sistema, último error, final del log) y quita tokens, JWT, códigos, contraseñas y la carpeta de usuario (`Scrub`). `ReportViewModel` (`Main.Report`) lo abre en el navegador o lo copia; nunca se envía nada desde Hoshi.
+- `Services/Backup/BackupPackage`: `.hoshi` = zip con `hoshi-backup.json` (formato 1), `replays/`, `joseki/`, `tsumego/`, `tsumego-progress.json`, `reviews.json` y las preferencias portables (`PortableSettings`). `Stage` lo desempaqueta en `import-pending/` (con protección contra «zip slip») y `AppHost.Create` llama a `ApplyPending` antes de construir los servicios, porque estos guardan sus datos en memoria. La fusión: partidas por id (gana la más reciente), tarjetas de Leitner por última revisión, revisiones por partida, colecciones SGF por contenido.
+- `DesktopNotifier` se instala como `PlatformInfo.Notify` en escritorio (Android pone el suyo): solo si la ventana no está activa; Windows hace parpadear el botón de la barra de tareas (`FlashWindowEx`), macOS usa `osascript` y Linux `notify-send`.
