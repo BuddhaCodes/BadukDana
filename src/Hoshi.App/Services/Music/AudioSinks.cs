@@ -38,6 +38,11 @@ public static class PcmSinks
                     ?? throw new InvalidOperationException("no pacat or aplay");
             }
 
+            if (OperatingSystem.IsMacOS())
+            {
+                return new AudioQueueSink(sampleRate);
+            }
+
             problem = Tr.T("Music.NotOnMac");
             return null;
         }
@@ -264,4 +269,193 @@ internal sealed class PipeSink : IPcmSink
 
         _process.Dispose();
     }
+}
+
+/// <summary>
+/// macOS: an AudioToolbox output queue (part of every macOS since 10.5, nothing to install). A few buffers circulate:
+/// <see cref="Write"/> waits for one the queue has finished playing, fills it and enqueues it again.
+/// </summary>
+internal sealed class AudioQueueSink : IPcmSink
+{
+    private const int BufferCount = 4;
+    private const uint LinearPcm = 0x6C70636D; // 'lpcm'
+    private const uint SignedPacked = 0x4 | 0x8; // kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked
+
+    // AudioQueueBuffer (64-bit): UInt32 capacity; void* mAudioData (8); UInt32 mAudioDataByteSize (16); ...
+    private const int AudioDataOffset = 8;
+    private const int ByteSizeOffset = 16;
+    private const int CapacityOffset = 0;
+
+    private readonly IntPtr _queue;
+    private readonly NativeMethods.OutputCallback _callback; // kept alive while the queue may call it
+    private readonly SemaphoreSlim _free = new(0, BufferCount);
+    private readonly System.Collections.Concurrent.ConcurrentQueue<IntPtr> _available = new();
+    private readonly List<IntPtr> _buffers = [];
+    private short[] _scratch = [];
+    private bool _started;
+    private int _enqueued;
+    private bool _disposed;
+
+    public AudioQueueSink(int sampleRate)
+    {
+        var format = new AudioStreamBasicDescription
+        {
+            mSampleRate = sampleRate,
+            mFormatID = LinearPcm,
+            mFormatFlags = SignedPacked,
+            mBytesPerPacket = 4,
+            mFramesPerPacket = 1,
+            mBytesPerFrame = 4,
+            mChannelsPerFrame = 2,
+            mBitsPerChannel = 16,
+        };
+        _callback = OnBufferDone;
+        int status = NativeMethods.AudioQueueNewOutput(ref format, _callback, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, 0, out _queue);
+        if (status != 0)
+        {
+            throw new InvalidOperationException($"AudioQueueNewOutput error {status}");
+        }
+    }
+
+    public void Write(ReadOnlySpan<short> interleaved, CancellationToken cancellationToken)
+    {
+        int bytes = interleaved.Length * 2;
+        IntPtr buffer = Take(bytes, cancellationToken);
+        if (_scratch.Length < interleaved.Length)
+        {
+            _scratch = new short[interleaved.Length];
+        }
+
+        interleaved.CopyTo(_scratch);
+        Marshal.Copy(_scratch, 0, Marshal.ReadIntPtr(buffer, AudioDataOffset), interleaved.Length);
+        Marshal.WriteInt32(buffer, ByteSizeOffset, bytes);
+        int status = NativeMethods.AudioQueueEnqueueBuffer(_queue, buffer, 0, IntPtr.Zero);
+        if (status != 0)
+        {
+            throw new InvalidOperationException($"AudioQueueEnqueueBuffer error {status}");
+        }
+
+        // Start with two buffers queued, so the first one is not played into silence.
+        if (!_started && ++_enqueued >= 2)
+        {
+            _started = true;
+            status = NativeMethods.AudioQueueStart(_queue, IntPtr.Zero);
+            if (status != 0)
+            {
+                throw new InvalidOperationException($"AudioQueueStart error {status}");
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        NativeMethods.AudioQueueStop(_queue, immediate: true);
+        NativeMethods.AudioQueueDispose(_queue, immediate: true); // also frees the buffers
+        _free.Dispose();
+    }
+
+    /// <summary>A free buffer big enough for <paramref name="bytes"/>: a new one while there are fewer than four.</summary>
+    private IntPtr Take(int bytes, CancellationToken cancellationToken)
+    {
+        if (_buffers.Count < BufferCount && _available.IsEmpty)
+        {
+            int status = NativeMethods.AudioQueueAllocateBuffer(_queue, (uint)Math.Max(bytes, 16_384), out IntPtr fresh);
+            if (status != 0)
+            {
+                throw new InvalidOperationException($"AudioQueueAllocateBuffer error {status}");
+            }
+
+            _buffers.Add(fresh);
+            return fresh;
+        }
+
+        _free.Wait(cancellationToken);
+        _available.TryDequeue(out IntPtr buffer);
+        if ((uint)Marshal.ReadInt32(buffer, CapacityOffset) < (uint)bytes)
+        {
+            // The mixer's buffer grew: swap this one for a bigger one.
+            NativeMethods.AudioQueueFreeBuffer(_queue, buffer);
+            _buffers.Remove(buffer);
+            int status = NativeMethods.AudioQueueAllocateBuffer(_queue, (uint)bytes, out buffer);
+            if (status != 0)
+            {
+                throw new InvalidOperationException($"AudioQueueAllocateBuffer error {status}");
+            }
+
+            _buffers.Add(buffer);
+        }
+
+        return buffer;
+    }
+
+    // Called on the queue's own thread when a buffer has been played.
+    private void OnBufferDone(IntPtr userData, IntPtr queue, IntPtr buffer)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _available.Enqueue(buffer);
+        try
+        {
+            _free.Release();
+        }
+        catch (Exception ex) when (ex is ObjectDisposedException or SemaphoreFullException)
+        {
+            // Stopping: nothing waits any more.
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct AudioStreamBasicDescription
+    {
+        public double mSampleRate;
+        public uint mFormatID;
+        public uint mFormatFlags;
+        public uint mBytesPerPacket;
+        public uint mFramesPerPacket;
+        public uint mBytesPerFrame;
+        public uint mChannelsPerFrame;
+        public uint mBitsPerChannel;
+        public uint mReserved;
+    }
+
+#pragma warning disable SYSLIB1054 // A handful of AudioToolbox calls with a callback; DllImport keeps it simple.
+    private static class NativeMethods
+    {
+        private const string AudioToolbox = "/System/Library/Frameworks/AudioToolbox.framework/AudioToolbox";
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void OutputCallback(IntPtr userData, IntPtr queue, IntPtr buffer);
+
+        [DllImport(AudioToolbox)]
+        public static extern int AudioQueueNewOutput(ref AudioStreamBasicDescription format, OutputCallback callback, IntPtr userData,
+            IntPtr callbackRunLoop, IntPtr callbackRunLoopMode, uint flags, out IntPtr queue);
+
+        [DllImport(AudioToolbox)]
+        public static extern int AudioQueueAllocateBuffer(IntPtr queue, uint byteSize, out IntPtr buffer);
+
+        [DllImport(AudioToolbox)]
+        public static extern int AudioQueueFreeBuffer(IntPtr queue, IntPtr buffer);
+
+        [DllImport(AudioToolbox)]
+        public static extern int AudioQueueEnqueueBuffer(IntPtr queue, IntPtr buffer, uint packetDescriptionCount, IntPtr packetDescriptions);
+
+        [DllImport(AudioToolbox)]
+        public static extern int AudioQueueStart(IntPtr queue, IntPtr startTime);
+
+        [DllImport(AudioToolbox)]
+        public static extern int AudioQueueStop(IntPtr queue, [MarshalAs(UnmanagedType.U1)] bool immediate);
+
+        [DllImport(AudioToolbox)]
+        public static extern int AudioQueueDispose(IntPtr queue, [MarshalAs(UnmanagedType.U1)] bool immediate);
+    }
+#pragma warning restore SYSLIB1054
 }
