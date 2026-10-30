@@ -16,7 +16,7 @@ updates:
       serilog:
         patterns: ["Serilog*"]
       tests:
-        patterns: ["xunit*", "Microsoft.NET.Test.Sdk", "coverlet*"]
+        patterns: ["xunit*", "Microsoft.NET.Test.Sdk"]
     ignore:
       - dependency-name: FluentAssertions
         update-types: ["version-update:semver-major"]

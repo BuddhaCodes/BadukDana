@@ -42,7 +42,16 @@ jobs:
         run: dotnet build Hoshi.Desktop.slnf --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test Hoshi.Desktop.slnf --configuration Release --no-build --logger "trx;LogFilePrefix=${{ runner.os }}" --results-directory TestResults
+        run: dotnet test Hoshi.Desktop.slnf --configuration Release --no-build --logger "trx;LogFilePrefix=${{ runner.os }}" --results-directory TestResults --collect:"Code Coverage;Format=Cobertura"
+
+      - name: Coverage summary
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          dotnet tool install -g dotnet-reportgenerator-globaltool --version 5.5.12
+          reportgenerator -reports:"TestResults/**/*.cobertura.xml" -targetdir:TestResults/coverage \
+            -reporttypes:"MarkdownSummaryGithub;Cobertura" -assemblyfilters:"+Hoshi.*;-Hoshi.*.Tests"
+          cat TestResults/coverage/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Report failed tests
         if: failure()
@@ -58,3 +67,35 @@ jobs:
             TestResults/
             tests/**/bin/Release/**/screenshots/*.png
           if-no-files-found: ignore
+
+  # Hoshi.App is shared with the phone: a change that only breaks the Android build must show up in the pull request,
+  # not in the next release. Compiles the app (no KataGo, no signing, no APK upload); the Android workflow builds the real APK.
+  android-compile:
+    name: Android (compile)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-android-${{ hashFiles('Directory.Packages.props', '**/*.csproj') }}
+          restore-keys: nuget-android-
+
+      - name: .NET Android workload
+        run: |
+          dotnet workload install android
+          dotnet build src/Hoshi.Android/Hoshi.Android.csproj -t:InstallAndroidDependencies -f net10.0-android \
+            -p:AndroidSdkDirectory="$ANDROID_HOME" -p:AcceptAndroidSdkLicenses=True
+
+      - name: Build
+        run: dotnet build src/Hoshi.Android/Hoshi.Android.csproj -c Release -f net10.0-android -p:AndroidSdkDirectory="$ANDROID_HOME"
