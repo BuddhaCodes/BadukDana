@@ -74,8 +74,8 @@ public enum ChallengeColor
 }
 
 /// <summary>
-/// A new challenge. Always unranked: Hoshi is a development build and must not create ranked games
-/// (see CLAUDE.md). The JSON sent mirrors the official web client's ChallengeModal.
+/// A new challenge. Always unranked: ranked challenges wait for OGS to confirm Hoshi as a supported client
+/// (see CLAUDE.md §6; Automatch, which OGS always ranks, is the documented exception). The JSON sent mirrors the official web client's ChallengeModal.
 /// </summary>
 public sealed record ChallengeRequest
 {

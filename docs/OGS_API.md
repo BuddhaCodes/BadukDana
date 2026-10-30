@@ -69,7 +69,7 @@ Hoshi usa dos modos, elegidos por configuración (`Ogs:AuthMode`):
 
 Cuerpo de creación (igual que `ChallengeModal` del web): `{ initialized:false, challenger_color, invite_only, min_ranking, max_ranking, rengo_auto_start:0, game:{ name, rules, ranked:false, width, height, handicap, komi_auto:"automatic"|"custom", komi?, disable_analysis, initial_state:null, private, time_control, time_control_parameters, pause_on_weekends, rengo:false, rengo_casual_mode:true } }`. Los dos campos de rengo van siempre, como en el web (`ChallengeModal.tsx`); sin ellos el servidor llegó a tratar una partida normal como rengo (error «rengo: Empty rengo player list!» al pasar en la jugada 0, 2026-10-20). Respuesta: `{ challenge, game }`.
 
-- **Hoshi siempre envía `ranked: false`** y no permite aceptar desafíos clasificatorios.
+- **Hoshi siempre envía `ranked: false`** en los desafíos que crea y no permite aceptar desafíos abiertos clasificatorios. El automatch (abajo) es la excepción: en OGS siempre es clasificatorio.
 - Velocidad (como goban): media por jugada = `main/moves + period` con `moves = round(0.7·w·h)/2`; `< 10 s` blitz, `≤ 3600 s` live, resto (o 0) correspondencia. Live/blitz requieren `challenge/keepalive` cada segundo (§3).
 - Pendiente (fases 5–6): `games/{id}`, `games/{id}/sgf`, perfiles.
 
