@@ -18,14 +18,14 @@ No es un port de Sabaki (Sabaki es Electron + Preact). Tomamos su **estética y 
 | Área | Elección |
 |---|---|
 | Runtime | .NET 10 LTS (C# 14), `Nullable` y `TreatWarningsAsErrors` activados *(migrado desde .NET 9 el 2026-09-29)* |
-| UI | Avalonia UI 11.x, tema Fluent en modo oscuro como base + estilos propios |
+| UI | Avalonia UI 11.x (11.3.22 desde 2026-10-30; la 12 es una migración aparte, ver `docs/ROADMAP.md` → Mantenimiento), tema Fluent como base + estilos propios |
 | MVVM | CommunityToolkit.Mvvm (`[ObservableProperty]`, `[RelayCommand]`) |
 | DI / hosting | Microsoft.Extensions.DependencyInjection + Hosting |
 | HTTP | `HttpClient` vía `IHttpClientFactory`, System.Text.Json (source generators) |
 | Tiempo real OGS | `System.Net.WebSockets.ClientWebSocket` (protocolo JSON propio de OGS, ver `docs/OGS_API.md`) |
 | Credenciales | Almacenamiento seguro del SO (DPAPI / Keychain / libsecret) detrás de `ISecureStore` |
 | Logs | Microsoft.Extensions.Logging + Serilog a archivo |
-| Tests | xUnit + FluentAssertions **7.x** (la 8.x tiene licencia comercial); Avalonia.Headless para pruebas de UI |
+| Tests | xUnit + FluentAssertions **7.x** (la 8.x tiene licencia comercial); Avalonia.Headless para pruebas de UI; cobertura con el recolector de Microsoft (coverlet genera IL inválido en `Hoshi.Sgf`) |
 
 Versiones de paquetes centralizadas en `Directory.Packages.props`.
 
@@ -66,6 +66,9 @@ Regla de dependencias: `Desktop → App` · `Android → App` · `App → Ogs, S
 - Toda llamada de red es `async`, cancelable (`CancellationToken`) y con manejo de reconexión.
 - Nunca registrar tokens, contraseñas ni JWT en logs.
 - Commits pequeños con Conventional Commits (`feat:`, `fix:`, `refactor:`...).
+- Clases que crecen: archivos parciales por tema (`Clase.Tema.cs`) antes de pasar de ~800 líneas.
+- Nada de `async void` salvo manejadores de eventos, y esos con `try/catch` que llama a `CrashGuard.Report`.
+- Hoshi nunca envía datos por su cuenta: los informes de problemas se abren en el navegador del usuario.
 
 ## 5. Cómo trabajar conmigo (Claude)
 

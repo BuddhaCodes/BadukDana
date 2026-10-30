@@ -123,7 +123,8 @@ English and Spanish.
 </table>
 
 **Also:** a library of every game you play (replay it and KataGo judges each move again), territory estimate,
-face-to-face games on one screen, keyboard shortcuts, automatic updates. Free, open source, no account needed
+face-to-face games on one screen, keyboard shortcuts, automatic updates, a `.hoshi` backup that carries your games and
+progress between computer and phone, and **Report a problem** (a ready-made GitHub issue you read before sending). Free, open source, no account needed
 to play locally, and your OGS password is never stored.
 
 ## Support Hoshi
