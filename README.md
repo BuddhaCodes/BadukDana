@@ -104,8 +104,8 @@ down to subtle or off at any time with **F**.
 
 ### 🌐 Play online
 Sign in to [online-go.com](https://online-go.com), accept challenges and play in real time with clock and chat.
-Fair play first: Hoshi only creates unranked games, and every engine, hint and analysis switches off during
-your live OGS games.
+Fair play first: every engine, hint and analysis switches off during your live OGS games. Challenges you create
+are unranked; Automatch is OGS's ranked queue, and Hoshi tells you so before it starts looking.
 
 </td>
 </tr>
@@ -194,8 +194,9 @@ Pick the server in the lobby (**Ctrl+L** or "Online"); it does not depend on the
 | `https://online-go.com` (default) | "Continue with Google" or "Sign in with OGS": browser OAuth (authorization code + PKCE, public client, redirect `http://127.0.0.1:8734/callback`). |
 | `https://beta.online-go.com` (testing) | Username + password (beta cannot register OAuth apps). The password is never stored. |
 
-"Continue with Google" always uses online-go.com. There: unranked, private games against your own second
-account only. Hoshi never creates or accepts ranked games. Set `Ogs:DefaultServer` to `beta` in `appsettings.json`
+"Continue with Google" always uses online-go.com. When testing there: unranked, private games against your own
+second account only. Challenges Hoshi creates are always unranked and ranked open challenges cannot be accepted;
+Automatch games are ranked by OGS (the lobby says so), so never test Automatch against strangers. Set `Ogs:DefaultServer` to `beta` in `appsettings.json`
 to start on beta. No secrets live in the repository: the OAuth client id is public.
 
 ### Credits
