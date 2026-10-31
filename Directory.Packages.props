@@ -30,7 +30,7 @@
   <ItemGroup Label="Tests">
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
     <!-- FluentAssertions 8.x uses a commercial license; stay on 7.x (Apache-2.0). -->
     <PackageVersion Include="FluentAssertions" Version="7.2.2" />
   </ItemGroup>
