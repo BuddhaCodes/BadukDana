@@ -78,7 +78,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         BackupViewModel? backup = null,
         Services.Rank.RankStore? rank = null,
         IBoardPhotoWindowService? photoWindow = null,
-        Services.Study.NoteDeck? notes = null)
+        Services.Study.NoteDeck? notes = null,
+        Services.Study.VoiceNotes? voice = null)
     {
         _photoWindow = photoWindow;
         _notes = notes;
@@ -165,7 +166,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
 
         Analysis = new AnalysisViewModel(game, engine, ui, sounds, settings);
-        Study = new StudyViewModel(game, Analysis, settings, files, dialogs, browser);
+        Study = new StudyViewModel(game, Analysis, settings, files, dialogs, browser) { Voice = voice };
         if (tsumego is not null)
         {
             Study.AddProblem = problem => tsumego.AddProblems([problem]) > 0;

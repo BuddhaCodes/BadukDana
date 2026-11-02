@@ -115,6 +115,17 @@ public sealed partial class StudyPinRow : ObservableObject
     [RelayCommand]
     private void MakeProblem() => _owner.MakeProblem(this);
 
+    /// <summary>A voice note goes with this pin (and its file is here).</summary>
+    public bool HasAudio => Pin.Audio is not null && _owner.Voice?.PathOf(Pin.Audio) is not null;
+
+    /// <summary>"▶ 0:12".</summary>
+    public string AudioLabel => _owner.Voice?.Length(Pin.Audio) is { } length
+        ? "▶ " + length.ToString(@"m\:ss", System.Globalization.CultureInfo.InvariantCulture)
+        : "▶";
+
+    [RelayCommand]
+    private Task PlayAudio() => _owner.PlayAsync(this);
+
     [RelayCommand(CanExecute = nameof(CanReply))]
     private void Reply()
     {
@@ -550,6 +561,7 @@ public sealed partial class StudyViewModel : ViewModelBase
         }
 
         Update(s => s with { Pins = [.. s.Pins.Where(p => p.Id != row.Pin.Id)] });
+        Voice?.Delete(row.Pin.Audio);
     }
 
     [RelayCommand]

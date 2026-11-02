@@ -144,6 +144,16 @@ public static partial class Tr
         Add(d, "Study.QuizSelfRight", "Counted as right.", "Cuenta como acierto.");
         Add(d, "Study.QuizSelfWrong", "Counted as a miss.", "Cuenta como fallo.");
         Add(d, "Study.QuizDone", "Done: {0} of {1} right.", "Terminado: {0} de {1} acertadas.");
+        Add(d, "Study.Record", "● Voice note", "● Nota de voz");
+        Add(d, "Study.RecordStop", "■ Stop and pin", "■ Parar y fijar");
+        Add(d, "Study.RecordTip", "Record a voice note on this move (a minute at most); the category and any text typed go with it", "Graba una nota de voz en esta jugada (un minuto como mucho); la categoría y el texto escrito van con ella");
+        Add(d, "Study.RecordRefused", "The microphone is not available (allow it for Hoshi in the system settings).", "El micrófono no está disponible (permítelo para Hoshi en los ajustes del sistema).");
+        Add(d, "Study.Recording", "Recording… tap again to stop.", "Grabando… toca otra vez para parar.");
+        Add(d, "Study.RecordTooShort", "Too short: nothing was kept.", "Demasiado corta: no se guardó nada.");
+        Add(d, "Study.Recorded", "Voice note pinned ({0} s).", "Nota de voz fijada ({0} s).");
+        Add(d, "Study.PlayVoice", "Play the voice note (tap again to stop)", "Escuchar la nota de voz (toca otra vez para parar)");
+        Add(d, "Study.VoiceMissing", "That voice note's sound is not on this device (it comes with a backup or the sync folder).", "El sonido de esa nota de voz no está en este equipo (llega con una copia o la carpeta de sincronización).");
+        Add(d, "Study.VoiceNoOutput", "No audio output to play it.", "No hay salida de audio para escucharla.");
         Add(d, "Study.Guided", "Guided review", "Revisión guiada");
         Add(d, "Study.GuidedTip", "One step per big mistake KataGo found: write in your own words what went wrong; each answer becomes a note", "Un paso por cada error grande que encontró KataGo: escribe con tus palabras qué salió mal; cada respuesta se vuelve una nota");
         Add(d, "Study.GuidedProgress", "{0} of {1}", "{0} de {1}");

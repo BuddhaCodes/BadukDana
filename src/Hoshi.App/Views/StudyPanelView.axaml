@@ -221,6 +221,8 @@
                               </StackPanel>
                             </Grid>
                             <TextBlock Text="{Binding Text}" IsVisible="{Binding HasText}" TextWrapping="Wrap" FontSize="12.5" />
+                            <Button Content="{Binding AudioLabel}" Command="{Binding PlayAudioCommand}" IsVisible="{Binding HasAudio}" HorizontalAlignment="Left"
+                                    Padding="10,2" FontSize="12" ToolTip.Tip="{l:T Study.PlayVoice}" />
                             <ItemsControl ItemsSource="{Binding Replies}" IsVisible="{Binding HasReplies}">
                               <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:StudyReplyRow">
@@ -258,6 +260,7 @@
                   <TextBox PlaceholderText="{l:T Study.NoteWatermark}" Text="{Binding Study.NewPinText}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="54" MaxLength="4000" x:Name="StudyNewPin" />
                   <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="6">
                     <!-- KataGo writes its reading of the move into the study; hidden without KataGo and during your live OGS games. -->
+                    <Button Content="{Binding Study.RecordLabel}" Command="{Binding Study.ToggleRecordingCommand}" IsVisible="{Binding Study.CanRecord}" ToolTip.Tip="{l:T Study.RecordTip}" x:Name="StudyRecord" />
                     <Button Command="{Binding Study.ExplainCommand}" IsVisible="{Binding Study.ExplainAvailable}" ToolTip.Tip="{l:T Study.ExplainTip}" x:Name="StudyExplain">
                       <TextBlock Text="{l:T Study.Explain}" />
                     </Button>

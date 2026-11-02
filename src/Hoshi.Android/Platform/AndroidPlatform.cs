@@ -45,6 +45,7 @@ internal static class AndroidPlatform
         PlatformInfo.ShareFile = (path, mime, title) => Share(context, path, mime, null, title);
         PlatformInfo.ShareText = (text, title) => Share(context, null, "text/plain", text, title);
         PlatformInfo.TakePhoto = () => TakePhoto(context);
+        PlatformInfo.VoiceRecorder = new AndroidVoiceRecorder(() => _activity);
         PlatformInfo.KeepScreenOn = on =>
         {
             _keepScreenOn = on;

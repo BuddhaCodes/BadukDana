@@ -66,7 +66,8 @@ public static class BackupPackage
                     continue;
                 }
 
-                foreach (string file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories).Where(f => f.EndsWith(".sgf", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".json", StringComparison.OrdinalIgnoreCase)))
+                foreach (string file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories).Where(f => f.EndsWith(".sgf", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
+                    || (folder == "study" && Hoshi.Sgf.Study.StudyStore.IsAudioName(Path.GetFileName(f)))))
                 {
                     string name = Path.GetRelativePath(dataDirectory, file).Replace('\\', '/');
                     zip.CreateEntryFromFile(file, name, CompressionLevel.Optimal);
@@ -192,6 +193,23 @@ public static class BackupPackage
             foreach (string file in Directory.EnumerateFiles(from, "*.sgf", SearchOption.AllDirectories))
             {
                 collections += MergeCollection(file, Path.Combine(target, Path.GetRelativePath(source, file)));
+            }
+        }
+
+        // Voice notes: files with new ids; the ones not here yet are copied (a name is never reused for other sound).
+        string audioFrom = Path.Combine(source, "study", "audio");
+        if (Directory.Exists(audioFrom))
+        {
+            string audioTo = Path.Combine(target, "study", "audio");
+            foreach (string file in Directory.EnumerateFiles(audioFrom).Where(f => Hoshi.Sgf.Study.StudyStore.IsAudioName(Path.GetFileName(f))))
+            {
+                string to = Path.Combine(audioTo, Path.GetFileName(file));
+                if (!File.Exists(to))
+                {
+                    Directory.CreateDirectory(audioTo);
+                    File.Copy(file, to);
+                    notes++;
+                }
             }
         }
 

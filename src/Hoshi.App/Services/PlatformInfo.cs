@@ -48,6 +48,9 @@ public static class PlatformInfo
     /// </summary>
     public static Func<Task<string?>>? TakePhoto { get; set; }
 
+    /// <summary>The microphone for voice notes in the study; set by Android, null where Hoshi does not record.</summary>
+    public static Study.IVoiceRecorder? VoiceRecorder { get; set; }
+
     /// <summary>Where files are written before they are shared (Android: the app's cache, readable by its FileProvider).</summary>
     public static string ShareDirectory { get; set; } = Path.Combine(Path.GetTempPath(), "hoshi-share");
 }
