@@ -284,7 +284,7 @@ public sealed partial class ShareViewModel : ViewModelBase
 
     public bool HasSummary => _summary is not null;
 
-    private static System.Globalization.CultureInfo Culture => System.Globalization.CultureInfo.GetCultureInfo(Tr.Language);
+    private static System.Globalization.CultureInfo Culture => Tr.Culture;
 
     /// <summary>This month (or year) so far, in local time: start and end.</summary>
     public (DateTimeOffset From, DateTimeOffset To, string Title) Period(bool year)

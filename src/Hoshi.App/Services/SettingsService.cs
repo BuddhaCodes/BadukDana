@@ -23,7 +23,7 @@ public sealed record AppSettings
 
     public string? BackgroundSkin { get; init; }
 
-    /// <summary>User interface language: "en" (English, the default) or "es" (Spanish).</summary>
+    /// <summary>User interface language: "en" (English, the default), "es", "ja", "ko" or "zh" (simplified Chinese).</summary>
     public string Language { get; init; } = "en";
 
     /// <summary>Animated backgrounds and stone/UI animations (off = static, for low-power machines or preference).</summary>

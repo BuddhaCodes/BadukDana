@@ -30,6 +30,31 @@ public sealed partial class LocalizationTableTests
         }
     }
 
+    [Theory]
+    [InlineData(Tr.Japanese)]
+    [InlineData(Tr.Korean)]
+    [InlineData(Tr.Chinese)]
+    public void Table_languages_translate_every_key_with_the_same_placeholders(string language)
+    {
+        Tr.TableKeys(language).Where(k => !Tr.Has(k)).Should().BeEmpty($"{language} must not keep keys that no longer exist");
+        foreach (string key in Tr.Keys)
+        {
+            string? text = Tr.Translated(key, language);
+            text.Should().NotBeNullOrWhiteSpace($"{language} lacks {key}");
+            Placeholders(text!).Should().BeEquivalentTo(Placeholders(Tr.T(key, Tr.English)), $"{language}: {key}");
+        }
+    }
+
+    [Fact]
+    public void Languages_are_recognised_from_system_tags()
+    {
+        Tr.Normalize("ja-JP").Should().Be(Tr.Japanese);
+        Tr.Normalize("ko").Should().Be(Tr.Korean);
+        Tr.Normalize("zh-Hans-CN").Should().Be(Tr.Chinese);
+        Tr.Normalize("es-MX").Should().Be(Tr.Spanish);
+        Tr.Normalize("fr").Should().Be(Tr.English);
+    }
+
     [Fact]
     public void Every_key_used_in_the_views_exists()
     {

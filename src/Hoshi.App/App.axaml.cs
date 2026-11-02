@@ -62,6 +62,7 @@ public partial class App : Application
         if (_services?.GetService<Themes.ThemeService>() is { } themes)
         {
             themes.ApplyCurrent(Resources);
+            Tr.LanguageChanged += (_, _) => Themes.ThemeService.ApplyFonts(themes.Current, Resources);
         }
         else
         {

@@ -170,5 +170,5 @@ public sealed partial class StudyViewModel
     }
 
     internal static string FormatTime(DateTimeOffset time) =>
-        time.ToLocalTime().ToString("d MMM HH:mm", CultureInfo.GetCultureInfo(Tr.Language == Tr.Spanish ? "es-ES" : "en-GB"));
+        time.ToLocalTime().ToString("d MMM HH:mm", Tr.Culture);
 }

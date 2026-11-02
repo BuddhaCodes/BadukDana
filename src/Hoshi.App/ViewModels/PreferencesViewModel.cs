@@ -93,7 +93,7 @@ public sealed record AnalysisEngineOption(string? Id, string Label)
     public override string ToString() => Label;
 }
 
-/// <summary>A user interface language choice ("en", "es") with its own name.</summary>
+/// <summary>A user interface language choice ("en", "es", "ja", "ko", "zh") with its own name.</summary>
 public sealed record LanguageOption(string Code, string Name);
 
 /// <summary>A choice of move numbers on the stones, with its translated name.</summary>
@@ -555,7 +555,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     /// <summary>One-click KataGo install (null without a host).</summary>
     public KataGoSetupViewModel? KataGoSetup { get; }
 
-    public IReadOnlyList<LanguageOption> LanguageOptions { get; } = [new("en", "English"), new("es", "Español")];
+    public IReadOnlyList<LanguageOption> LanguageOptions { get; } = [.. Tr.Languages.Select(l => new LanguageOption(l, Tr.NativeName(l)))];
 
     partial void OnSelectedLanguageChanged(LanguageOption value)
     {
