@@ -60,6 +60,7 @@ Regla de dependencias: `Desktop → App` · `Android → App` · `App → Ogs, S
 ## 4. Convenciones
 
 - Código, identificadores, commits y comentarios en **inglés**. Documentación y conversación con el usuario en **español**.
+- Textos de la app: inglés y español en `Strings.*.cs`; **todo texto nuevo** también en `Localization/Translations/ja.json`, `ko.json` y `zh.json` (un test falla si falta alguno o si sus marcadores `{n}` no coinciden con el inglés).
 - Coordenadas internas: `Point(X, Y)` con origen (0,0) arriba-izquierda. Conversión explícita a SGF (`"dd"`), a OGS (también letras SGF; pasar = `".."`) y a notación humana (`"D16"`, sin la letra I).
 - El modelo de juego (`Hoshi.Core`) es **inmutable**: cada jugada produce un `BoardState` nuevo. Esto simplifica el árbol de variantes y el deshacer.
 - Nada de lógica de negocio en code-behind. El control del tablero (`GoBoardControl`) solo dibuja y emite eventos.
