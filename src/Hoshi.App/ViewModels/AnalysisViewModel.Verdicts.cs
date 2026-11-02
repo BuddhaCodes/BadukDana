@@ -147,57 +147,144 @@ public sealed partial class AnalysisViewModel
             return verdicts;
         }
 
-        GameCursor cursor = _game.Cursor;
         foreach (GameNode node in nodes)
         {
-            if (node.GetMove(cursor.BoardSize) is not { } move)
+            (TurnAnalysis Before, MoveAssessment Judged)? judged;
+            try
             {
-                continue;
+                judged = await JudgeAsync(node, cancellationToken);
+            }
+            catch (EngineException)
+            {
+                break; // the report goes out without the remaining verdicts
             }
 
-            Position pos = Position.At(cursor, node);
-            int n = pos.Moves.Count;
-            if (n == 0)
+            if (judged is { } j)
             {
-                continue;
-            }
-
-            var found = new Dictionary<int, TurnAnalysis>();
-            foreach (int t in new[] { n - 1, n })
-            {
-                if (_cache.TryGetValue(pos.Key(t), out TurnAnalysis? cached))
-                {
-                    found[t] = cached;
-                }
-            }
-
-            int[] missing = [.. new[] { n - 1, n }.Where(t => !found.ContainsKey(t))];
-            if (missing.Length > 0)
-            {
-                try
-                {
-                    AnalysisQuery query = pos.Query(missing, Math.Max(30, _engine.Visits / 2)) with { Priority = GraphPriority };
-                    foreach (TurnAnalysis t in await _engine.AnalyzeAsync(query, cancellationToken))
-                    {
-                        found[t.Turn] = t;
-                        string key = pos.Key(t.Turn);
-                        _ui.Post(() => _cache.TryAdd(key, t));
-                    }
-                }
-                catch (EngineException)
-                {
-                    break; // the report goes out without the remaining verdicts
-                }
-            }
-
-            if (found.TryGetValue(n - 1, out TurnAnalysis? before)
-                && MoveReview.Assess(before, found.GetValueOrDefault(n), new EngineMove(move.Color, move.Point)) is { } judged)
-            {
-                verdicts[node] = new Services.Study.StudyVerdict(judged.Quality, judged.PointsLost, judged.Best.Point, MoveImportance.Criticality(before, move.Color));
+                verdicts[node] = new Services.Study.StudyVerdict(j.Judged.Quality, j.Judged.PointsLost, j.Judged.Best.Point, MoveImportance.Criticality(j.Before, j.Judged.Played.Color));
             }
         }
 
         return verdicts;
+    }
+
+    /// <summary>
+    /// KataGo's reading of one move: the position before it and after it (from the cache when already read), and the
+    /// played move compared with the best. Null for a node without a move, or when the engine is not allowed.
+    /// </summary>
+    private async Task<(TurnAnalysis Before, MoveAssessment Judged)?> JudgeAsync(GameNode node, CancellationToken cancellationToken)
+    {
+        GameCursor cursor = _game.Cursor;
+        if (!IsEngineActive || _engine is null || node.GetMove(cursor.BoardSize) is not { } move)
+        {
+            return null;
+        }
+
+        Position pos = Position.At(cursor, node);
+        int n = pos.Moves.Count;
+        if (n == 0)
+        {
+            return null;
+        }
+
+        var found = new Dictionary<int, TurnAnalysis>();
+        foreach (int t in new[] { n - 1, n })
+        {
+            if (_cache.TryGetValue(pos.Key(t), out TurnAnalysis? cached))
+            {
+                found[t] = cached;
+            }
+        }
+
+        int[] missing = [.. new[] { n - 1, n }.Where(t => !found.ContainsKey(t))];
+        if (missing.Length > 0)
+        {
+            AnalysisQuery query = pos.Query(missing, Math.Max(30, _engine.Visits / 2)) with { Priority = GraphPriority };
+            foreach (TurnAnalysis t in await _engine.AnalyzeAsync(query, cancellationToken))
+            {
+                found[t.Turn] = t;
+                string key = pos.Key(t.Turn);
+                _ui.Post(() => _cache.TryAdd(key, t));
+            }
+        }
+
+        return found.TryGetValue(n - 1, out TurnAnalysis? before)
+            && MoveReview.Assess(before, found.GetValueOrDefault(n), new EngineMove(move.Color, move.Point)) is { } judged
+            ? (before, judged)
+            : null;
+    }
+
+    /// <summary>
+    /// "Explain this move": what KataGo thinks of the move on <paramref name="node"/> — points lost, the best move and
+    /// its line. Null without a move, or when the engine is not allowed (never during your live OGS game).
+    /// </summary>
+    public async Task<Services.Study.MoveExplanation?> ExplainAsync(GameNode node, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+        if (await JudgeAsync(node, cancellationToken) is not { } j)
+        {
+            return null;
+        }
+
+        MoveAssessment judged = j.Judged;
+        Stone mover = judged.Played.Color;
+        double moverWinrate = mover == Stone.Black ? j.Before.Winrate : 1 - j.Before.Winrate;
+        IReadOnlyList<Point> line = [.. judged.Best.Pv.TakeWhile(p => p is not null).Select(p => p!.Value).Take(8)];
+        if (line.Count == 0 && judged.Best.Point is { } bestPoint)
+        {
+            line = [bestPoint];
+        }
+
+        return new Services.Study.MoveExplanation(
+            new Services.Study.StudyVerdict(judged.Quality, judged.PointsLost, judged.Best.Point, MoveImportance.Criticality(j.Before, mover)),
+            mover,
+            judged.Played.Point,
+            line,
+            judged.WinrateLost,
+            moverWinrate);
+    }
+
+    /// <summary>
+    /// "Compare two lines": KataGo's score lead (Black's view) at the end of a "what if" line played from the
+    /// position on <paramref name="node"/>; the line stops at its first stone that cannot be played there. Null when
+    /// the engine is not allowed (never during your live OGS game) or the line has no legal stone.
+    /// </summary>
+    public async Task<(double BlackLead, double BlackWinrate, int Played)?> EvaluateLineAsync(GameNode node, IReadOnlyList<Point> line, Stone first, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+        ArgumentNullException.ThrowIfNull(line);
+        if (!IsEngineActive || _engine is null)
+        {
+            return null;
+        }
+
+        GameCursor cursor = _game.Cursor;
+        BoardState board = cursor.GetBoard(node);
+        var extra = new List<EngineMove>();
+        Stone color = first;
+        foreach (Point p in line)
+        {
+            if (!board.IsOnBoard(p) || !board.IsLegal(color, p))
+            {
+                break;
+            }
+
+            board = board.Play(color, p);
+            extra.Add(new EngineMove(color, p));
+            color = color == Stone.Black ? Stone.White : Stone.Black;
+        }
+
+        if (extra.Count == 0)
+        {
+            return null;
+        }
+
+        Position pos = Position.At(cursor, node);
+        pos = pos with { Moves = [.. pos.Moves, .. extra] };
+        int turn = pos.Moves.Count;
+        AnalysisQuery query = pos.Query([turn], Math.Max(30, _engine.Visits / 2)) with { Priority = GraphPriority, IncludeOwnership = false };
+        IReadOnlyList<TurnAnalysis> found = await _engine.AnalyzeAsync(query, cancellationToken);
+        return found.FirstOrDefault(t => t.Turn == turn) is { } end ? (end.ScoreLead, end.Winrate, extra.Count) : null;
     }
 
     /// <summary>Effect strength for a move quality: only good moves are celebrated.</summary>

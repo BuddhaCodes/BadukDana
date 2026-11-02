@@ -23,7 +23,12 @@ public sealed class ReplayRow(ReplayEntry entry, int? matchMove = null)
         string.Create(CultureInfo.InvariantCulture, $"{Entry.Size}×{Entry.Size}"),
         Tr.F("Replays.Moves", Entry.Moves),
         Entry.Result ?? Tr.T("Replays.NoResult"),
-        Entry.Source == "ogs" ? (Entry.OgsGameId is { } id ? string.Create(CultureInfo.InvariantCulture, $"OGS #{id}") : "OGS") : Tr.T("Replays.Local"),
+        Entry.Source switch
+        {
+            "ogs" => Entry.OgsGameId is { } id ? string.Create(CultureInfo.InvariantCulture, $"OGS #{id}") : "OGS",
+            ReplayStore.PhotoSource => Tr.T("Replays.Photo"),
+            _ => Tr.T("Replays.Local"),
+        },
     }.Concat(MatchMove is { } m ? [Tr.F("Replays.PatternAt", m)] : []));
 
     private static string Name(string name, string fallbackKey) => string.IsNullOrWhiteSpace(name) ? Tr.T(fallbackKey) : name;
@@ -69,7 +74,7 @@ public sealed partial class ReplaysViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isSearching;
 
-    public ReplaysViewModel(IReplayStore store)
+    public ReplaysViewModel(IReplayStore store, ISettingsService? settings = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         Results =
@@ -80,8 +85,24 @@ public sealed partial class ReplaysViewModel : ViewModelBase
             new(Tr.T("Replays.NoResult"), ResultFilter.NoResult),
         ];
         _selectedResult = Results[0];
+        Notebook = new NotebookViewModel(store, () => settings?.Current.StudyAuthor ?? string.Empty);
         store.Changed += (_, _) => Reload();
         Reload();
+    }
+
+    /// <summary>The notes of every game (second tab).</summary>
+    public NotebookViewModel Notebook { get; }
+
+    /// <summary>0 = the games, 1 = the notebook (read the first time it is shown).</summary>
+    [ObservableProperty]
+    private int _tab;
+
+    partial void OnTabChanged(int value)
+    {
+        if (value == 1)
+        {
+            _ = Notebook.EnsureLoadedAsync();
+        }
     }
 
     /// <summary>Raised to show a replay on the board.</summary>

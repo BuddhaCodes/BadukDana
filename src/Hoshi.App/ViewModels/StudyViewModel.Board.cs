@@ -355,5 +355,6 @@ public sealed partial class StudyViewModel
         StudyStore.Write(node, change(StudyStore.Read(node)));
         _game.StudyEdited();
         Sync();
+        CompareLinesCommand.NotifyCanExecuteChanged();
     }
 }

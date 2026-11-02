@@ -320,7 +320,7 @@ public sealed class SummarySource(
     public PlayerSummary Build(DateTimeOffset from, DateTimeOffset to) => PlayerSummary.Build(
         from,
         to,
-        replays?.List() ?? [],
+        [.. (replays?.List() ?? []).Where(e => e.Source != ReplayStore.PhotoSource)], // photos are positions, not games played
         Reviews.Records,
         joseki?.Cards.Values ?? [],
         problems?.Cards.Values ?? [],

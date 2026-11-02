@@ -157,6 +157,8 @@ public static class AppHost
         services.AddSingleton<KataGoSetupViewModel>();
         services.AddSingleton<UpdateViewModel>();
         services.AddSingleton(_ => new Services.Rank.RankStore(AppPaths.DataDirectory));
+        services.AddSingleton(_ => new Services.Study.VoiceNotes(AppPaths.DataDirectory));
+        services.AddSingleton(sp => new Services.Study.NoteDeck(AppPaths.DataDirectory, sp.GetService<ILogger<Services.Study.NoteDeck>>()));
         services.AddSingleton(sp => new BackupViewModel(sp.GetService<IFileDialogService>(), sp.GetService<IDialogService>()));
         services.AddSingleton(sp => new ReportViewModel(sp.GetService<IBrowserLauncher>(), sp.GetService<IClipboardService>()));
         services.AddSingleton<GameViewModel>();

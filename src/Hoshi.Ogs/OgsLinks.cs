@@ -29,6 +29,30 @@ public static partial class OgsLinks
         return m.Success && long.TryParse(m.Groups[1].Value, NumberStyles.None, CultureInfo.InvariantCulture, out long id) && id > 0 ? id : null;
     }
 
+    [GeneratedRegex(@"(?:online-go\.com|ogs\.)[^\s]*/review/(?:view/)?(\d{1,12})", RegexOptions.IgnoreCase)]
+    private static partial Regex ReviewUrl();
+
+    /// <summary>The review number in a pasted text ("12345" or a review link), or null.</summary>
+    public static long? TryReviewId(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return null;
+        }
+
+        Match m = Number().Match(text);
+        if (!m.Success)
+        {
+            m = ReviewUrl().Match(text);
+        }
+
+        return m.Success && long.TryParse(m.Groups[1].Value, NumberStyles.None, CultureInfo.InvariantCulture, out long id) && id > 0 ? id : null;
+    }
+
+    /// <summary>The web page of a review room on a server (students open it in their browser or OGS app).</summary>
+    public static Uri ReviewUri(Uri server, long reviewId) =>
+        new(server, string.Create(CultureInfo.InvariantCulture, $"/review/{reviewId}"));
+
     /// <summary>The web page of a game on a server.</summary>
     public static Uri GameUri(Uri server, long gameId) =>
         new(server, string.Create(CultureInfo.InvariantCulture, $"/game/{gameId}"));

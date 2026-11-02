@@ -61,5 +61,15 @@ public static partial class Tr
         Add(d, "Replays.Searching", "Searching the games…", "Buscando en las partidas…");
         Add(d, "Replays.NoMatch", "No game matches.", "Ninguna partida coincide.");
         Add(d, "Replays.NoPattern", "No stones for a pattern: draw a study area around them or play a move.", "No hay piedras para un patrón: dibuja un área de estudio a su alrededor o juega una jugada.");
+        Add(d, "Replays.GamesTab", "Games", "Partidas");
+        Add(d, "Notebook.Tab", "Notebook", "Cuaderno");
+        Add(d, "Notebook.Open", "Open at that move", "Abrir en esa jugada");
+        Add(d, "Notebook.Search", "Search the notes…", "Buscar en las notas…");
+        Add(d, "Notebook.Move", "move {0}", "jugada {0}");
+        Add(d, "Notebook.Replies", "({0} replies)", "({0} respuestas)");
+        Add(d, "Notebook.Count", "{0} notes in {1} games", "{0} notas en {1} partidas");
+        Add(d, "Notebook.Loading", "Reading the notes of your games…", "Leyendo las notas de tus partidas…");
+        Add(d, "Notebook.Empty", "No notes yet: pin moments of your games in the study panel and they gather here.", "Aún no hay notas: marca momentos de tus partidas en el panel de estudio y se reunirán aquí.");
+        Add(d, "Notebook.NoMatch", "No note matches.", "Ninguna nota coincide.");
     }
 }

@@ -42,6 +42,18 @@ public class MainActivity : AvaloniaMainActivity
         AndroidPlatform.OnIntent(intent);
     }
 
+    protected override void OnActivityResult(int requestCode, Result resultCode, Android.Content.Intent? data)
+    {
+        base.OnActivityResult(requestCode, resultCode, data);
+        AndroidPlatform.OnActivityResult(requestCode, resultCode);
+    }
+
+    public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
+    {
+        base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        AndroidVoiceRecorder.OnPermissionResult(requestCode, grantResults);
+    }
+
     protected override void OnPause()
     {
         base.OnPause();

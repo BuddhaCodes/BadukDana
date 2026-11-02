@@ -476,6 +476,9 @@
                 <Button Classes="menu-tile" Command="{Binding Main.ReadBoardPhotoCommand}" x:Name="MenuPhoto">
                   <StackPanel Spacing="6"><TextBlock Text="▣" FontSize="18" HorizontalAlignment="Center" /><TextBlock Text="{l:T Photo.Menu}" TextWrapping="Wrap" TextAlignment="Center" /></StackPanel>
                 </Button>
+                <Button Classes="menu-tile" Command="{Binding Main.ReviewNotesCommand}" x:Name="MenuReviewNotes">
+                  <StackPanel Spacing="6"><TextBlock Text="↻" FontSize="18" HorizontalAlignment="Center" /><TextBlock Text="{Binding Main.ReviewNotesHeader}" TextWrapping="Wrap" TextAlignment="Center" /></StackPanel>
+                </Button>
                 <Button Classes="menu-tile" Command="{Binding Main.Study.Guess.StartCommand}" x:Name="MenuGuess">
                   <StackPanel Spacing="6"><TextBlock Text="?" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" /><TextBlock Text="{l:T Guess.Menu}" TextWrapping="Wrap" TextAlignment="Center" /></StackPanel>
                 </Button>
@@ -650,6 +653,20 @@
             <TextBlock Text="{l:T Zen.Exit}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" />
           </StackPanel>
         </Button>
+        <!-- Presentation: the notes of the moment at the top (the zen exit stays at the bottom). -->
+        <Border IsVisible="{Binding Main.Study.IsPresenting}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="8,4,8,0" Padding="12,8" CornerRadius="10"
+                Background="{DynamicResource Bg.Panel}" BorderBrush="{DynamicResource Accent}" BorderThickness="1" x:Name="PhonePresentation">
+          <StackPanel Spacing="6">
+            <TextBlock Text="{Binding Main.Study.SlideTitle}" FontWeight="SemiBold" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding Main.Study.SlideText}" TextWrapping="Wrap" MaxHeight="160" />
+            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+              <TextBlock Classes="secondary" Text="{Binding Main.Study.SlideProgress}" VerticalAlignment="Center" Margin="0,0,6,0" />
+              <Button Content="‹" Command="{Binding Main.Study.PreviousSlideCommand}" MinWidth="44" />
+              <Button Classes="accent" Content="›" Command="{Binding Main.Study.NextSlideCommand}" MinWidth="44" />
+              <Button Content="{l:T Study.PresentStop}" Command="{Binding Main.Study.StopPresentationCommand}" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
         <Border Classes="warmup" IsHitTestVisible="False" IsVisible="{Binding Main.Study.IsQuizActive}"
                 HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,4,0,0">
           <StackPanel Orientation="Horizontal" Spacing="8">

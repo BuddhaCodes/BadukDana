@@ -55,7 +55,7 @@
                   <StackPanel Spacing="6">
                     <Grid ColumnDefinitions="Auto,*,Auto">
                       <c:HoshiIcon Icon="{DynamicResource Icon.Quiz}" Size="16" Foreground="{DynamicResource Accent}" Margin="0,0,8,0" VerticalAlignment="Center" />
-                      <TextBlock Grid.Column="1" Text="{l:T Study.Quiz}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="1" Text="{Binding Study.QuizTitle}" FontWeight="SemiBold" VerticalAlignment="Center" />
                       <TextBlock Grid.Column="2" Classes="secondary" Text="{Binding Study.QuizScore}" VerticalAlignment="Center" x:Name="QuizScore" />
                     </Grid>
                     <TextBlock Classes="secondary" FontSize="12" Text="{Binding Study.QuizProgress}" IsVisible="{Binding !Study.IsQuizFinished}" />
@@ -73,6 +73,25 @@
                       <Button Content="{l:T Study.QuizMissed}" Command="{Binding Study.MissedCommand}" IsVisible="{Binding Study.CanSelfGrade}" />
                       <Button Classes="accent" Content="{l:T Study.QuizNext}" Command="{Binding Study.NextQuestionCommand}" IsVisible="{Binding Study.CanGoNext}" x:Name="QuizNext" />
                       <Button Content="{l:T Study.QuizEnd}" Command="{Binding Study.EndQuizCommand}" x:Name="QuizEnd" />
+                    </WrapPanel>
+                  </StackPanel>
+                </Border>
+
+                <!-- Guided review: one step per big mistake KataGo found; the player writes what went wrong. -->
+                <Border x:Name="GuidedCard" IsVisible="{Binding Study.IsGuided}" Padding="12,10" CornerRadius="10"
+                        Background="{DynamicResource Bg.Panel}" BorderBrush="{DynamicResource Accent}" BorderThickness="1">
+                  <StackPanel Spacing="6">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{l:T Study.Guided}" FontWeight="SemiBold" />
+                      <TextBlock Grid.Column="1" Classes="secondary" Text="{Binding Study.GuidedProgress}" />
+                    </Grid>
+                    <TextBlock Text="{Binding Study.GuidedPrompt}" TextWrapping="Wrap" x:Name="GuidedPrompt" />
+                    <TextBox Text="{Binding Study.GuidedText}" PlaceholderText="{l:T Study.GuidedWatermark}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="54" MaxLength="4000" x:Name="GuidedText" />
+                    <WrapPanel>
+                      <Button Classes="accent" Content="{l:T Study.GuidedSave}" Command="{Binding Study.GuidedSaveCommand}" Margin="0,0,6,4" x:Name="GuidedSave" />
+                      <Button Content="{l:T Study.Explain}" Command="{Binding Study.ExplainCommand}" IsVisible="{Binding Study.ExplainAvailable}" Margin="0,0,6,4" />
+                      <Button Content="{l:T Study.GuidedSkip}" Command="{Binding Study.GuidedNextCommand}" Margin="0,0,6,4" />
+                      <Button Content="{l:T Study.QuizEnd}" Command="{Binding Study.EndGuidedCommand}" Margin="0,0,6,4" />
                     </WrapPanel>
                   </StackPanel>
                 </Border>
@@ -124,6 +143,10 @@
                     </StackPanel>
                   </Grid>
                   <TextBlock Classes="secondary" FontSize="11.5" TextWrapping="Wrap" Text="{Binding Study.ToolHint}" x:Name="StudyToolHint" />
+                  <!-- Two or more "what if" lines on this move: KataGo ranks them (hidden without KataGo and during your live OGS games). -->
+                  <Button Content="{l:T Study.CompareLines}" Command="{Binding Study.CompareLinesCommand}" IsVisible="{Binding Study.ExplainAvailable}"
+                          ToolTip.Tip="{l:T Study.CompareLinesTip}" HorizontalAlignment="Left" x:Name="StudyCompareLines" />
+                  <TextBlock Text="{Binding Study.LineComparison}" IsVisible="{Binding Study.HasLineComparison}" TextWrapping="Wrap" FontSize="12" x:Name="StudyLineComparison" />
                   </StackPanel>
 
                   <!-- The pins along the game. -->
@@ -179,19 +202,27 @@
                   <ItemsControl ItemsSource="{Binding Study.Pins}" x:Name="StudyPins">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate x:DataType="vm:StudyPinRow">
-                        <Border Margin="0,0,0,6" Padding="10,7" CornerRadius="8" Background="{DynamicResource Bg.PanelAlt}" BorderBrush="{Binding Brush}" BorderThickness="3,0,0,0">
+                        <Border Margin="0,0,0,6" Padding="10,7" CornerRadius="8" Background="{DynamicResource Bg.PanelAlt}" BorderBrush="{Binding Brush}" BorderThickness="3,0,0,0" Opacity="{Binding Opacity}">
                           <StackPanel Spacing="4">
                             <Grid ColumnDefinitions="*,Auto">
                               <WrapPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding CategoryName}" Foreground="{Binding Brush}" FontWeight="SemiBold" FontSize="12" Margin="0,0,6,0" />
                                 <TextBlock Text="{Binding Author}" FontSize="11.5" FontWeight="SemiBold" Margin="0,0,6,0" />
-                                <TextBlock Classes="secondary" Text="{Binding When}" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock Classes="secondary" Text="{Binding When}" FontSize="11" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <TextBlock Classes="secondary" Text="{Binding StatusText}" FontSize="11" VerticalAlignment="Center" />
                               </WrapPanel>
-                              <Button Grid.Column="1" Classes="bar icon" Padding="3" Command="{Binding DeleteCommand}" ToolTip.Tip="{l:T Study.Delete}" VerticalAlignment="Top">
-                                <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="11" />
-                              </Button>
+                              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Top">
+                                <!-- A thread is open until resolved; resolving keeps it, dimmed. -->
+                                <Button Classes="bar" Padding="6,1" FontSize="11" Content="{l:T Study.MakeProblem}" Command="{Binding MakeProblemCommand}" IsVisible="{Binding CanMakeProblem}" ToolTip.Tip="{l:T Study.MakeProblemTip}" />
+                                <Button Classes="bar" Padding="6,1" FontSize="11" Content="{Binding StatusAction}" Command="{Binding ToggleResolvedCommand}" ToolTip.Tip="{l:T Study.ResolveTip}" />
+                                <Button Classes="bar icon" Padding="3" Command="{Binding DeleteCommand}" ToolTip.Tip="{l:T Study.Delete}">
+                                  <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="11" />
+                                </Button>
+                              </StackPanel>
                             </Grid>
                             <TextBlock Text="{Binding Text}" IsVisible="{Binding HasText}" TextWrapping="Wrap" FontSize="12.5" />
+                            <Button Content="{Binding AudioLabel}" Command="{Binding PlayAudioCommand}" IsVisible="{Binding HasAudio}" HorizontalAlignment="Left"
+                                    Padding="10,2" FontSize="12" ToolTip.Tip="{l:T Study.PlayVoice}" />
                             <ItemsControl ItemsSource="{Binding Replies}" IsVisible="{Binding HasReplies}">
                               <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:StudyReplyRow">
@@ -227,9 +258,16 @@
                     </ListBox.ItemTemplate>
                   </ListBox>
                   <TextBox PlaceholderText="{l:T Study.NoteWatermark}" Text="{Binding Study.NewPinText}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="54" MaxLength="4000" x:Name="StudyNewPin" />
-                  <Button Classes="accent" HorizontalAlignment="Right" Command="{Binding Study.AddPinCommand}" x:Name="StudyAddPin">
-                    <StackPanel Orientation="Horizontal" Spacing="6"><c:HoshiIcon Icon="{DynamicResource Icon.Pin}" Size="14" /><TextBlock Text="{l:T Study.AddPin}" /></StackPanel>
-                  </Button>
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="6">
+                    <!-- KataGo writes its reading of the move into the study; hidden without KataGo and during your live OGS games. -->
+                    <Button Content="{Binding Study.RecordLabel}" Command="{Binding Study.ToggleRecordingCommand}" IsVisible="{Binding Study.CanRecord}" ToolTip.Tip="{l:T Study.RecordTip}" x:Name="StudyRecord" />
+                    <Button Command="{Binding Study.ExplainCommand}" IsVisible="{Binding Study.ExplainAvailable}" ToolTip.Tip="{l:T Study.ExplainTip}" x:Name="StudyExplain">
+                      <TextBlock Text="{l:T Study.Explain}" />
+                    </Button>
+                    <Button Classes="accent" Command="{Binding Study.AddPinCommand}" x:Name="StudyAddPin">
+                      <StackPanel Orientation="Horizontal" Spacing="6"><c:HoshiIcon Icon="{DynamicResource Icon.Pin}" Size="14" /><TextBlock Text="{l:T Study.AddPin}" /></StackPanel>
+                    </Button>
+                  </StackPanel>
 
                   </StackPanel>
 
@@ -256,7 +294,30 @@
                     <Button Command="{Binding Study.StartQuizCommand}" ToolTip.Tip="{l:T Study.QuizTip}" x:Name="StudyQuiz">
                       <StackPanel Orientation="Horizontal" Spacing="6"><c:HoshiIcon Icon="{DynamicResource Icon.Quiz}" Size="14" /><TextBlock Text="{l:T Study.Quiz}" FontSize="12" /></StackPanel>
                     </Button>
+                    <Button Command="{Binding Study.StartGuidedCommand}" IsVisible="{Binding Study.CanStartGuided}" ToolTip.Tip="{l:T Study.GuidedTip}" x:Name="StudyGuided">
+                      <TextBlock Text="{l:T Study.Guided}" FontSize="12" />
+                    </Button>
+                    <Button Command="{Binding Study.StartPresentationCommand}" ToolTip.Tip="{l:T Study.PresentTip}" x:Name="StudyPresent">
+                      <TextBlock Text="{l:T Study.Present}" FontSize="12" />
+                    </Button>
                   </WrapPanel>
+                  <!-- Teacher mode: an OGS review room for the game on the board, or follow a teacher's room. -->
+                  <Expander Header="{l:T Teach.Title}" x:Name="TeachExpander" HorizontalAlignment="Stretch">
+                    <StackPanel Spacing="6">
+                      <TextBlock Classes="secondary" FontSize="11.5" TextWrapping="Wrap" Text="{l:T Teach.Hint}" />
+                      <WrapPanel>
+                        <Button Classes="accent" Content="{l:T Teach.Start}" Command="{Binding Teaching.StartTeachingCommand}" IsVisible="{Binding !Teaching.IsInRoom}" Margin="0,0,6,4" x:Name="TeachStart" />
+                        <Button Content="{l:T Teach.CopyLink}" Command="{Binding Teaching.CopyLinkCommand}" IsVisible="{Binding Teaching.IsTeaching}" Margin="0,0,6,4" />
+                        <Button Content="{l:T Teach.Leave}" Command="{Binding Teaching.LeaveCommand}" IsVisible="{Binding Teaching.IsInRoom}" Margin="0,0,6,4" x:Name="TeachLeave" />
+                      </WrapPanel>
+                      <SelectableTextBlock Text="{Binding Teaching.RoomLink}" IsVisible="{Binding Teaching.HasRoom}" FontSize="12" TextWrapping="Wrap" x:Name="TeachLink" />
+                      <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding !Teaching.IsInRoom}">
+                        <TextBox Text="{Binding Teaching.JoinText}" PlaceholderText="{l:T Teach.JoinWatermark}" FontSize="12" x:Name="TeachJoinText" />
+                        <Button Grid.Column="1" Content="{l:T Teach.Follow}" Command="{Binding Teaching.FollowCommand}" Margin="6,0,0,0" x:Name="TeachFollow" />
+                      </Grid>
+                      <TextBlock Text="{Binding Teaching.Status}" TextWrapping="Wrap" FontSize="12" x:Name="TeachStatus" />
+                    </StackPanel>
+                  </Expander>
                   </StackPanel>
                 </StackPanel>
               </StackPanel>

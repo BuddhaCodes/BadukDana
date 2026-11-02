@@ -66,6 +66,22 @@ public sealed partial class TsumegoViewModel : ViewModelBase
     private TsumegoSource _fromGames;
     private TsumegoSource _endgames;
 
+    /// <summary>Adds problems made by hand (a note turned into a problem) to "From my games"; returns how many are new.</summary>
+    public int AddProblems(IEnumerable<GameTree> problems)
+    {
+        int added = _library.AddFromGames(problems);
+        if (added > 0)
+        {
+            _sources.Remove(_fromGames);
+            _fromGames = _library.FromMyGames();
+            _sources.Add(_fromGames);
+            RefreshRows();
+            OnPropertyChanged(nameof(ProgressText));
+        }
+
+        return added;
+    }
+
     /// <summary>Turns KataGo's mistakes in a reviewed game into problems ("From my games"); returns how many are new.</summary>
     public int AddFromGame(GameTree game, IReadOnlyDictionary<GameNode, Services.Study.StudyVerdict> verdicts)
     {

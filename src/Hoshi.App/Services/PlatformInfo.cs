@@ -42,6 +42,15 @@ public static class PlatformInfo
     /// <summary>The system share sheet for text (text, sheet title); set by Android.</summary>
     public static Func<string, string, Task>? ShareText { get; set; }
 
+    /// <summary>
+    /// The phone's camera app takes a photo and returns the path of the JPEG (already turned upright and made smaller),
+    /// or null when the player backed out; set by Android, null where there is no camera to use.
+    /// </summary>
+    public static Func<Task<string?>>? TakePhoto { get; set; }
+
+    /// <summary>The microphone for voice notes in the study; set by Android, null where Hoshi does not record.</summary>
+    public static Study.IVoiceRecorder? VoiceRecorder { get; set; }
+
     /// <summary>Where files are written before they are shared (Android: the app's cache, readable by its FileProvider).</summary>
     public static string ShareDirectory { get; set; } = Path.Combine(Path.GetTempPath(), "hoshi-share");
 }

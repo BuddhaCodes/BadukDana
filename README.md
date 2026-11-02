@@ -63,6 +63,10 @@ Press **S** in any game to pin the moments that mattered — mistake, good move,
 joseki, life and death, lesson — and draw arrows, areas, letters and numbered "what if" lines without
 touching the game. Save the study as an SGF and send it: your friend's notes and replies merge into yours.
 Then test yourself with **What would you play?** or print a game report with KataGo's verdict on each moment.
+Your notes come back as a **spaced review** across all your games, **Explain this move** lets KataGo write the
+points lost and its line into the note, the **notebook** searches every note you ever wrote, and **Teach on OGS**
+opens a review room where your students see each move you show. On the phone, record **voice notes** and take a
+**photo of a real board** to study the position.
 
 </td>
 </tr>

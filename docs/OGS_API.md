@@ -192,6 +192,13 @@ Verificado contra online-go.com `src/views/Joseki/joseki-utils.ts` y `Joseki.tsx
 - El árbol vive en una esquina (arriba a la derecha hoy); Hoshi la deduce de las primeras jugadas de la raíz y traslada cada esquina del tablero con `Corners.Mapping`.
 - Hoshi cachea cada posición (memoria + `cache/oje/<id>.json`, 7 días) y nunca la redistribuye. No se consulta durante las partidas de OGS en curso del jugador.
 
+### Salas de revisión (modo profesor) — verificado (goban main, 2026-11-02) e implementado en `OgsReviewSession`
+
+- Crear: `POST /api/v1/games/{game_id}/reviews` con `{}` → `{ id }` (lo mismo que «Review this game» de la web, `GobanController.startReview`). La página es `/review/{id}`.
+- Cliente → servidor: `review/connect {review_id}`, `review/disconnect {review_id}`, `review/append` (un `ReviewMessage` con `review_id`), `review/chat {review_id, from, moves, body}`.
+- Servidor → cliente: `review/{id}/full_state` (el registro entero: al conectar, al reconectar y tras guardar) y `review/{id}/r` (una entrada nueva).
+- `ReviewMessage` (`src/engine/GobanEngine.ts`): `f` = jugada de la partida donde sale la línea mostrada, `m` = la línea desde ahí (dos letras SGF por jugada, `..` = pasar, `!` + color + punto = piedra editada), `t` texto del nodo, `t+` texto añadido, `k` marcas (`circle`, `square`, `triangle`, `cross`, una letra… → puntos concatenados), `owner` / `controller` (id o `{id, username}`), `gamedata` (en la primera entrada; trae `game_id`), `chat`, `pen`/`pp`/`clearpen` (trazos), `delete`. Solo cuentan las entradas del controlador.
+
 ## 4. Reloj
 
 `game/{id}/clock` (`GameClock`):

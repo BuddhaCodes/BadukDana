@@ -3,6 +3,8 @@
   <uses-permission android:name="android.permission.INTERNET" />
   <!-- "Your move" in another OGS game (asked the first time it is needed, Android 13+). -->
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <!-- Voice notes in the study (asked the first time one is recorded; nothing is sent anywhere). -->
+  <uses-permission android:name="android.permission.RECORD_AUDIO" />
   <!-- extractNativeLibs: KataGo (libkatago.so) must exist as a file to be started as a process. -->
   <application android:label="Hoshi" android:icon="@drawable/icon" android:extractNativeLibs="true"
                android:allowBackup="true" android:supportsRtl="true">

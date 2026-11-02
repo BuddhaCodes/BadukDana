@@ -4,16 +4,19 @@
              xmlns:vm="using:Hoshi.App.ViewModels"
              x:Class="Hoshi.App.Views.BoardPhotoView"
              x:DataType="vm:BoardPhotoViewModel">
-  <!-- Photo of the board: the photo with the tapped corners and the stones read, and the few choices around it. -->
+  <!-- Photo of the board: the photo with the corners (found or tapped) and the stones read, and the few choices around it. -->
   <DockPanel Margin="12">
     <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,10">
       <TextBlock Text="{Binding Status}" TextWrapping="Wrap" FontWeight="SemiBold" x:Name="PhotoStatus" />
       <WrapPanel>
+        <Button Content="{l:T Photo.TakePhoto}" Command="{Binding TakePhotoCommand}" IsVisible="{Binding CanTakePhoto}" Margin="0,0,8,6" x:Name="PhotoTake" />
         <Button Content="{l:T Photo.Choose}" Command="{Binding PickCommand}" Margin="0,0,8,6" x:Name="PhotoPick" />
         <ComboBox ItemsSource="{Binding Sizes}" SelectedItem="{Binding Size}" Margin="0,0,8,6" MinWidth="80" x:Name="PhotoSize" />
         <CheckBox Content="{l:T Photo.WhiteToPlay}" IsChecked="{Binding WhiteToPlay}" Margin="0,0,8,6" />
         <Button Content="{l:T Photo.Again}" Command="{Binding ResetCommand}" Margin="0,0,8,6" />
-        <Button Classes="accent" Content="{l:T Photo.Open}" Command="{Binding OpenCommand}" Margin="0,0,8,6" x:Name="PhotoOpen" />
+        <Button Content="{l:T Photo.Rotate}" Command="{Binding RotateCommand}" Margin="0,0,8,6" x:Name="PhotoRotate" />
+        <Button Classes="accent" Content="{l:T Photo.Study}" Command="{Binding StudyCommand}" Margin="0,0,8,6" x:Name="PhotoStudy" />
+        <Button Content="{l:T Photo.Open}" Command="{Binding OpenCommand}" Margin="0,0,8,6" x:Name="PhotoOpen" />
       </WrapPanel>
     </StackPanel>
     <Border CornerRadius="10" Background="#101218" ClipToBounds="True">

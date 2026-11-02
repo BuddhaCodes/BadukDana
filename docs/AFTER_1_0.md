@@ -69,3 +69,5 @@ Los estudios ya guardan las anotaciones de forma serializable en el nodo, lo que
 - Nada se graba sin avisar.
 
 **Recomendación**: **a** primero (las revisiones de OGS en el lobby y el control del profesor), y **c** para clases presenciales.
+
+**Estado (2026-11-02)**: hecha la opción **a** en su forma básica (decisión del usuario: salas de revisión de OGS). En el panel de estudio, «Enseñar en OGS» abre una sala de revisión de la partida de OGS del tablero (`POST games/{id}/reviews`) y envía cada posición (jugada de la partida donde sale la línea, la línea, el comentario con las notas de estudio y las marcas) con `review/append`; los alumnos la siguen en su navegador, la app de OGS o en Hoshi («Seguir» con el enlace de la sala). Nunca sobre tu propia partida de OGS en curso. Falta: pasar el control a un alumno (`controller`, ya en `OgsReviewSession.PassControl`), el chat de la sala en la interfaz y los trazos a mano alzada (`pen`).

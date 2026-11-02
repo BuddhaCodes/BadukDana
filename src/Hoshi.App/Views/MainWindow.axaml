@@ -295,6 +295,7 @@
                 <MenuItem Header="{l:T Tsumego.Menu}" Command="{Binding OpenTsumegoCommand}" InputGesture="Ctrl+P" x:Name="TsumegoItem" />
                 <MenuItem Header="{l:T Main.StudyMenu}" Command="{Binding Study.ToggleCommand}" InputGesture="S" />
                 <MenuItem Header="{l:T Study.Quiz}" Command="{Binding Study.StartQuizCommand}" ToolTip.Tip="{l:T Study.QuizTip}" />
+                <MenuItem Header="{Binding ReviewNotesHeader}" Command="{Binding ReviewNotesCommand}" ToolTip.Tip="{l:T Notes.Tip}" x:Name="ReviewNotesItem" />
                 <MenuItem Header="{l:T Guess.Menu}" Command="{Binding Study.Guess.StartCommand}" ToolTip.Tip="{l:T Guess.Tip}" x:Name="GuessItem" />
                 <MenuItem Header="{l:T Photo.Menu}" Command="{Binding ReadBoardPhotoCommand}" x:Name="PhotoItem" />
                 <MenuItem Header="{l:T Count.Menu}" Command="{Binding Counting.StartCommand}" x:Name="CountItem" ToolTip.Tip="{l:T Count.MenuTip}" />
@@ -609,6 +610,23 @@
           <StackPanel Orientation="Horizontal" Spacing="8">
             <ProgressBar IsIndeterminate="True" Width="28" MinWidth="28" Height="3" MinHeight="3" VerticalAlignment="Center" IsVisible="{Binding JosekiHints.IsSearching}" />
             <TextBlock Text="{Binding JosekiHints.Text}" VerticalAlignment="Center" FontSize="12.5" MaxWidth="560" TextTrimming="CharacterEllipsis" x:Name="JosekiText" />
+          </StackPanel>
+        </Border>
+        <!-- Presentation: the notes of the moment over the bottom of the board, with the way back and forth. -->
+        <Border x:Name="PresentationCard" IsVisible="{Binding Study.IsPresenting}" HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                Margin="0,0,0,18" MaxWidth="720" Padding="16,12" CornerRadius="12"
+                Background="{DynamicResource Bg.Panel}" BorderBrush="{DynamicResource Accent}" BorderThickness="1">
+          <StackPanel Spacing="8">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="{Binding Study.SlideTitle}" FontWeight="SemiBold" FontSize="14" TextWrapping="Wrap" />
+              <TextBlock Grid.Column="1" Classes="secondary" Text="{Binding Study.SlideProgress}" Margin="12,0,0,0" />
+            </Grid>
+            <TextBlock Text="{Binding Study.SlideText}" TextWrapping="Wrap" FontSize="15" x:Name="SlideText" />
+            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+              <Button Content="‹" Command="{Binding Study.PreviousSlideCommand}" MinWidth="40" ToolTip.Tip="{l:T Study.SlidePrevious}" />
+              <Button Classes="accent" Content="›" Command="{Binding Study.NextSlideCommand}" MinWidth="40" ToolTip.Tip="{l:T Study.SlideNext}" x:Name="SlideNext" />
+              <Button Content="{l:T Study.PresentStop}" Command="{Binding Study.StopPresentationCommand}" />
+            </StackPanel>
           </StackPanel>
         </Border>
         <!-- "What would you play?": the question on top of the board while the quiz runs. -->

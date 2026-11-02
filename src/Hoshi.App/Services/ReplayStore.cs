@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Hoshi.App.Services;
 
 /// <summary>A game kept in the local replay library.</summary>
-/// <param name="Source">"local" or "ogs".</param>
+/// <param name="Source">"local", "ogs" or "photo" (a position read from a photo).</param>
 public sealed record ReplayEntry(
     string Id,
     string FileName,
@@ -43,6 +43,9 @@ public sealed class ReplayStore : IReplayStore
 {
     public const int MinMoves = 10;
 
+    /// <summary>A position read from a photo: kept although it has no moves (it was kept on purpose, to study it).</summary>
+    public const string PhotoSource = "photo";
+
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly string _directory;
     private readonly ILogger _logger;
@@ -71,7 +74,7 @@ public sealed class ReplayStore : IReplayStore
         ArgumentNullException.ThrowIfNull(tree);
         ArgumentException.ThrowIfNullOrEmpty(id);
         int moves = CountMoves(tree);
-        if (moves < MinMoves)
+        if (moves < MinMoves && source != PhotoSource)
         {
             return null;
         }

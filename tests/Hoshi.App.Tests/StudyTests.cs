@@ -356,6 +356,114 @@ public sealed class StudyViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task Explain_writes_KataGos_reading_into_the_study_and_its_line_as_editable_stones()
+    {
+        var engine = new FakeAnalysisEngine { BestMove = new Point(4, 4) };
+        var analysis = new AnalysisViewModel(_game, engine, new ImmediateDispatcher());
+        var study = new StudyViewModel(_game, analysis, _settings, _files, _dialogs, _browser, new FixedTime(T0));
+        Play((2, 2), (6, 6));
+        _game.GoToNodeCommand.Execute(Node(1));
+        study.ExplainAvailable.Should().BeTrue();
+        study.CanExplain.Should().BeTrue();
+
+        await study.ExplainCommand.ExecuteAsync(null);
+
+        NodeStudy written = StudyStore.Read(Node(1));
+        StudyPin pin = written.Pins.Should().ContainSingle().Which;
+        pin.Author.Should().Be("KataGo");
+        pin.Category.Should().Be(PinCategory.Mistake);
+        pin.Text.Should().Contain("Mejor: E5").And.Contain("−2");
+        StudyDrawing line = written.Drawings.Should().ContainSingle().Which;
+        line.Kind.Should().Be(DrawingKind.Sequence);
+        line.Points.Should().Equal(new Point(4, 4));
+        line.FirstColor.Should().Be(Stone.Black);
+        study.IsActive.Should().BeTrue();
+
+        // A second time on a move with a note: a reply from KataGo, and its line replaced, not doubled.
+        await study.ExplainCommand.ExecuteAsync(null);
+        written = StudyStore.Read(Node(1));
+        written.Pins.Should().ContainSingle().Which.Replies.Should().ContainSingle(r => r.Author == "KataGo");
+        written.Drawings.Should().ContainSingle();
+
+        _game.GoToNodeCommand.Execute(_game.Tree.Root);
+        study.CanExplain.Should().BeFalse("the start of the game is not a move");
+    }
+
+    [Fact]
+    public void A_thread_is_resolved_and_reopened_from_its_note()
+    {
+        Play((2, 2));
+        _study.AddPin(PinCategory.Question, "Why here, @Ben?");
+        StudyPinRow row = _study.Pins.Single();
+        row.StatusText.Should().Be("abierto", "a mention makes it a thread");
+        row.ToggleResolvedCommand.Execute(null);
+        StudyPin pin = StudyStore.Read(_game.CurrentNode).Pins.Single();
+        pin.Resolved.Should().BeTrue();
+        pin.StatusTime.Should().Be(T0);
+        _study.Pins.Single().StatusAction.Should().Be("Reabrir");
+        _study.Pins.Single().ToggleResolvedCommand.Execute(null);
+        StudyStore.Read(_game.CurrentNode).Pins.Single().Resolved.Should().BeFalse();
+    }
+
+    [Fact]
+    public void A_note_becomes_a_find_the_move_problem()
+    {
+        var kept = new List<GameTree>();
+        _study.AddProblem = t =>
+        {
+            kept.Add(t);
+            return true;
+        };
+        Play((2, 2), (6, 6), (6, 2));
+        _study.IsActive = true;
+        _game.GoToNodeCommand.Execute(Node(2));
+        _study.AddPin(PinCategory.Mistake, "Too passive");
+        _study.Pins.Single().CanMakeProblem.Should().BeTrue();
+        _study.Pins.Single().MakeProblemCommand.Execute(null);
+        kept.Should().BeEmpty();
+        _game.StatusText.Should().StartWith("Para un error, dibuja primero la mejor jugada");
+
+        _study.SelectToolCommand.Execute(StudyTool.Sequence);
+        _study.BoardClickCommand.Execute(new Point(4, 4));
+        _study.Pins.Single().MakeProblemCommand.Execute(null);
+        GameTree problem = kept.Should().ContainSingle().Which;
+        Hoshi.Sgf.Problems.TsumegoProblem.FromTree(problem).Should().NotBeNull();
+        Hoshi.Sgf.SgfWriter.Write(problem).Should().Contain("Too passive").And.Contain("ee");
+        _game.StatusText.Should().Be("Problema guardado en «De mis partidas» (Problemas).");
+    }
+
+    [Fact]
+    public async Task Two_what_if_lines_are_compared_by_KataGo()
+    {
+        var engine = new FakeAnalysisEngine { BestMove = new Point(4, 4) };
+        var analysis = new AnalysisViewModel(_game, engine, new ImmediateDispatcher());
+        var study = new StudyViewModel(_game, analysis, _settings, _files, _dialogs, _browser, new FixedTime(T0));
+        Play((2, 2), (6, 6));
+        study.IsActive = true;
+        study.SelectToolCommand.Execute(StudyTool.Sequence);
+        study.BoardClickCommand.Execute(new Point(4, 4));
+        study.CanCompareLines.Should().BeFalse("one line is nothing to compare");
+        study.NewSequenceCommand.Execute(null);
+        study.BoardClickCommand.Execute(new Point(1, 1));
+        study.CanCompareLines.Should().BeTrue();
+
+        await study.CompareLinesCommand.ExecuteAsync(null);
+
+        study.LineComparison.Should().StartWith("La línea desde E5 es mejor para Negras por 2.0 puntos.");
+        study.LineComparison.Should().Contain("E5 (1 piedras)").And.Contain("B8 (1 piedras)");
+        _game.GoToNodeCommand.Execute(Node(1));
+        study.HasLineComparison.Should().BeFalse("another move, another comparison");
+    }
+
+    [Fact]
+    public void Explain_is_off_without_KataGo()
+    {
+        Play((2, 2));
+        _study.ExplainAvailable.Should().BeFalse();
+        _study.CanExplain.Should().BeFalse();
+    }
+
+    [Fact]
     public void The_report_without_an_engine_still_has_every_moment()
     {
         GameTree tree = GameTree.Create(9);

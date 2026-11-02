@@ -130,6 +130,17 @@ public sealed class OgsRestClient
         return OgsJson.Long(doc.RootElement, "game") ?? OgsJson.Long(doc.RootElement, "game_id") ?? 0;
     }
 
+    /// <summary>
+    /// Opens a review room of a game (<c>POST games/{id}/reviews</c>, as OGS's own "Review this game"); returns the
+    /// review id. OGS refuses it for a player of a game still being played.
+    /// </summary>
+    public async Task<long> CreateReviewAsync(long gameId, CancellationToken cancellationToken)
+    {
+        using JsonDocument doc = await SendAsync(
+            HttpMethod.Post, string.Create(CultureInfo.InvariantCulture, $"games/{gameId}/reviews"), new JsonObject(), cancellationToken);
+        return OgsJson.Long(doc.RootElement, "id") ?? throw new OgsApiException(System.Net.HttpStatusCode.OK, "No review id.");
+    }
+
     /// <summary>Looks a player up by exact username (<c>GET players?username=</c>).</summary>
     public async Task<OgsUser?> FindPlayerAsync(string username, CancellationToken cancellationToken)
     {
