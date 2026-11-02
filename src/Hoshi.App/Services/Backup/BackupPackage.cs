@@ -39,7 +39,7 @@ public static class BackupPackage
         "moveNumbers", "zenSilence", "shareHideNames", "shareShowBrand", "humanLevel", "engineClock", "welcomeSeen",
     };
 
-    private static readonly string[] Files = ["tsumego-progress.json", "reviews.json", "settings.json"];
+    private static readonly string[] Files = ["tsumego-progress.json", "reviews.json", "rank.json", "settings.json"];
     private static readonly string[] Folders = ["replays", "joseki", "tsumego"];
     private static readonly JsonSerializerOptions Camel = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true };
     private static readonly JsonSerializerOptions Plain = new() { PropertyNameCaseInsensitive = true };
@@ -73,7 +73,7 @@ public static class BackupPackage
                 }
             }
 
-            foreach (string file in Files[..2])
+            foreach (string file in Files[..3])
             {
                 string path = Path.Combine(dataDirectory, file);
                 if (File.Exists(path))
@@ -169,6 +169,13 @@ public static class BackupPackage
 
         int reviews = MergeJson<ReviewDto, string>(Path.Combine(source, "reviews.json"), Path.Combine(target, "reviews.json"), Plain,
             r => r.Key, (a, b) => b.Reviewed > a.Reviewed);
+
+        // The estimated rank: the device with more counted games knows more.
+        string rankFrom = Path.Combine(source, "rank.json"), rankTo = Path.Combine(target, "rank.json");
+        if (File.Exists(rankFrom) && (!File.Exists(rankTo) || Games(rankFrom) > Games(rankTo)))
+        {
+            File.Copy(rankFrom, rankTo, overwrite: true);
+        }
 
         int collections = 0;
         foreach (string folder in new[] { "joseki", "tsumego" })
@@ -364,6 +371,9 @@ public static class BackupPackage
         WriteAtomically(to, SgfWriter.Write(mine));
         return 1;
     }
+
+    private static int Games(string rankFile) =>
+        JsonNode.Parse(File.ReadAllText(rankFile))?["games"]?.GetValue<int>() ?? 0;
 
     private static string Unique(string folder, string name)
     {

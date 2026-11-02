@@ -150,6 +150,7 @@ public static class AppHost
         services.AddSingleton<IKataGoInstaller, DefaultKataGoInstaller>();
         services.AddSingleton<KataGoSetupViewModel>();
         services.AddSingleton<UpdateViewModel>();
+        services.AddSingleton(_ => new Services.Rank.RankStore(AppPaths.DataDirectory));
         services.AddSingleton(sp => new BackupViewModel(sp.GetService<IFileDialogService>(), sp.GetService<IDialogService>()));
         services.AddSingleton(sp => new ReportViewModel(sp.GetService<IBrowserLauncher>(), sp.GetService<IClipboardService>()));
         services.AddSingleton<GameViewModel>();

@@ -75,8 +75,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Services.Presence.DiscordPresence? presence = null,
         IReplayMakerWindowService? replayMakerWindow = null,
         ReportViewModel? report = null,
-        BackupViewModel? backup = null)
+        BackupViewModel? backup = null,
+        Services.Rank.RankStore? rank = null)
     {
+        _rank = rank;
+        game.ResultSet += (_, result) => CountRankGame(result);
         Backup = backup ?? new BackupViewModel();
         Backup.Status += (_, text) => game.ShowStatus(text);
         if (BackupViewModel.StartupMessage(AppHost.ImportSummary, AppHost.ImportError) is { } imported)
@@ -865,7 +868,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        var options = new NewEngineGameViewModel(_engines.Engines, Game.Board.Rules, _settings?.Current.HumanLevel, Clock.Presets, _settings?.Current.EngineClock);
+        var options = new NewEngineGameViewModel(_engines.Engines, Game.Board.Rules, _settings?.Current.HumanLevel, Clock.Presets, _settings?.Current.EngineClock, _rank?.Current);
         if (!await _engineWindows.AskNewGameAsync(options))
         {
             return;
@@ -904,6 +907,38 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
 
         EngineMatch.Start(options.EngineFor(options.Black), options.EngineFor(options.White));
+
+        // You against the human-style KataGo: the result will move the estimated rank.
+        bool humanWhite = options.White.Engine?.IsHumanStyle == true && options.Black.Engine is null;
+        bool humanBlack = options.Black.Engine?.IsHumanStyle == true && options.White.Engine is null;
+        _rankGame = humanWhite || humanBlack ? new RankGameContext(Game.Tree, options.HumanLevel, options.Handicap, options.Size, PlayerIsBlack: humanWhite) : null;
+    }
+
+    private readonly Services.Rank.RankStore? _rank;
+    private RankGameContext? _rankGame;
+
+    /// <summary>The engine game whose result counts for the rank: once, and only while it is still on the board.</summary>
+    private sealed record RankGameContext(Hoshi.Sgf.GameTree Tree, string Rival, int Handicap, int Size, bool PlayerIsBlack);
+
+    private void CountRankGame(string result)
+    {
+        if (_rank is null || _rankGame is not { } g || !ReferenceEquals(Game.Tree, g.Tree))
+        {
+            return;
+        }
+
+        _rankGame = null;
+        double? score = result.Length >= 2 && result[1] == '+'
+            ? (char.ToUpperInvariant(result[0]) == 'B') == g.PlayerIsBlack ? 1 : 0
+            : result is "0" or "Draw" or "Jigo" ? 0.5 : null;
+        if (score is not { } s)
+        {
+            return; // "Void", "?": nothing to learn
+        }
+
+        string before = _rank.CurrentOr(g.Rival).Label;
+        Hoshi.Core.RankEstimate after = _rank.Record(g.Rival, g.Handicap, g.Size, g.PlayerIsBlack, s, DateTimeOffset.Now);
+        Game.ShowStatus(Tr.F("Rank.Updated", after.Label, before));
     }
 
     [RelayCommand(CanExecute = nameof(HasEngines))]
