@@ -317,6 +317,16 @@ public sealed partial class ShareViewModel : ViewModelBase
             tiles.Add((s.BestMoves.ToString(Culture), Tr.T("Summary.BestMoves")));
         }
 
+        // What to study: accuracy in the opening, middle game and endgame, the weakest marked.
+        foreach (Hoshi.Core.GamePhase phase in Enum.GetValues<Hoshi.Core.GamePhase>())
+        {
+            if (s.PhaseAccuracy.TryGetValue(phase, out double value))
+            {
+                string label = Tr.T("Summary.Phase." + phase);
+                tiles.Add((value.ToString("P0", Culture), s.ToStudy == phase ? Tr.F("Summary.ToStudy", label) : label));
+            }
+        }
+
         if (s.JosekiReviewed > 0)
         {
             tiles.Add((s.JosekiLearned.ToString(Culture), Tr.F("Summary.Joseki", s.JosekiReviewed)));

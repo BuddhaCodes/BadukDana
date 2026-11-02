@@ -101,12 +101,19 @@ public static class ShareCard
         ArgumentNullException.ThrowIfNull(tiles);
         PixelSize size = Size(format);
         int columns = format == CardFormat.Wide ? 3 : 2;
+        // Many tiles (the phases added in 2026-11): one more column and smaller type, so everything fits the card.
+        bool dense = tiles.Count > columns * 3;
+        if (dense && format != CardFormat.Story)
+        {
+            columns++;
+        }
+
         var grid = new UniformGrid { Columns = columns, Margin = new Thickness(0, 40, 0, 0) };
         foreach ((string number, string label) in tiles)
         {
-            var tile = new StackPanel { Margin = new Thickness(0, 0, 24, 36) };
-            tile.Children.Add(new TextBlock { Text = number, FontSize = 88, FontWeight = FontWeight.Bold, Foreground = new SolidColorBrush(Color.Parse("#F5B041")) });
-            tile.Children.Add(new TextBlock { Text = label, FontSize = 32, Foreground = new SolidColorBrush(Color.Parse("#C9CCD3")), TextWrapping = TextWrapping.Wrap, MaxLines = 3 });
+            var tile = new StackPanel { Margin = new Thickness(0, 0, 24, dense ? 24 : 36) };
+            tile.Children.Add(new TextBlock { Text = number, FontSize = dense ? 64 : 88, FontWeight = FontWeight.Bold, Foreground = new SolidColorBrush(Color.Parse("#F5B041")) });
+            tile.Children.Add(new TextBlock { Text = label, FontSize = dense ? 26 : 32, Foreground = new SolidColorBrush(Color.Parse("#C9CCD3")), TextWrapping = TextWrapping.Wrap, MaxLines = 3 });
             grid.Children.Add(tile);
         }
 

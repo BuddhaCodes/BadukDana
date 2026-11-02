@@ -69,6 +69,10 @@ public static partial class Tr
         Add(d, "Summary.BestMoves", "moves that were KataGo's first choice", "jugadas que eran la primera de KataGo");
         Add(d, "Summary.Joseki", "joseki learned ({0} reviewed)", "josekis aprendidos ({0} repasados)");
         Add(d, "Summary.Problems", "problems solved", "problemas resueltos");
+        Add(d, "Summary.Phase.Opening", "good moves in the opening", "jugadas buenas en la apertura");
+        Add(d, "Summary.Phase.Middle", "good moves in the middle game", "jugadas buenas en el medio juego");
+        Add(d, "Summary.Phase.Endgame", "good moves in the endgame", "jugadas buenas en el final");
+        Add(d, "Summary.ToStudy", "{0} · to study", "{0} · a estudiar");
         Add(d, "Summary.Of", "{0}'s Go", "El go de {0}");
         Add(d, "Summary.MonthSubtitle", "My month of Go", "Mi mes de go");
         Add(d, "Summary.YearSubtitle", "My year of Go", "Mi año de go");
