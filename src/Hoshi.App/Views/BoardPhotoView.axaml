@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:Hoshi.App.Localization"
+             xmlns:vm="using:Hoshi.App.ViewModels"
+             x:Class="Hoshi.App.Views.BoardPhotoView"
+             x:DataType="vm:BoardPhotoViewModel">
+  <!-- Photo of the board: the photo with the tapped corners and the stones read, and the few choices around it. -->
+  <DockPanel Margin="12">
+    <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,10">
+      <TextBlock Text="{Binding Status}" TextWrapping="Wrap" FontWeight="SemiBold" x:Name="PhotoStatus" />
+      <WrapPanel>
+        <Button Content="{l:T Photo.Choose}" Command="{Binding PickCommand}" Margin="0,0,8,6" x:Name="PhotoPick" />
+        <ComboBox ItemsSource="{Binding Sizes}" SelectedItem="{Binding Size}" Margin="0,0,8,6" MinWidth="80" x:Name="PhotoSize" />
+        <CheckBox Content="{l:T Photo.WhiteToPlay}" IsChecked="{Binding WhiteToPlay}" Margin="0,0,8,6" />
+        <Button Content="{l:T Photo.Again}" Command="{Binding ResetCommand}" Margin="0,0,8,6" />
+        <Button Classes="accent" Content="{l:T Photo.Open}" Command="{Binding OpenCommand}" Margin="0,0,8,6" x:Name="PhotoOpen" />
+      </WrapPanel>
+    </StackPanel>
+    <Border CornerRadius="10" Background="#101218" ClipToBounds="True">
+      <Viewbox Stretch="Uniform" x:Name="PhotoBox">
+        <Panel Width="{Binding PixelWidth}" Height="{Binding PixelHeight}" x:Name="PhotoSurface" Background="Transparent">
+          <Image Source="{Binding Photo}" Stretch="Fill" />
+          <Canvas x:Name="MarkLayer" IsHitTestVisible="False" />
+        </Panel>
+      </Viewbox>
+    </Border>
+  </DockPanel>
+</UserControl>

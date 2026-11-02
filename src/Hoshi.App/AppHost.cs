@@ -84,6 +84,7 @@ public static class AppHost
         services.AddSingleton<ITsumegoWindowService>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
         services.AddSingleton<Services.Engines.IEngineWindows>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
         services.AddSingleton<IDialogService>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
+        services.AddSingleton<IBoardPhotoWindowService>(sp => new PhoneBoardPhotoService(sp.GetRequiredService<Services.Phone.PhoneNavigation>()));
         services.AddSingleton<PhoneShellViewModel>();
         return services;
     }
@@ -124,6 +125,7 @@ public static class AppHost
             sp.GetRequiredService<Services.Tsumego.TsumegoLibrary>(), sp.GetRequiredService<IFileDialogService>(), sp.GetRequiredService<GameViewModel>()));
         services.AddSingleton<ITsumegoWindowService, TsumegoWindowService>();
         services.AddSingleton<IReplayMakerWindowService, ReplayMakerWindowService>();
+        services.AddSingleton<IBoardPhotoWindowService, BoardPhotoWindowService>();
         services.AddSingleton<WelcomeViewModel>();
         services.AddSingleton(sp => new Services.Presence.DiscordPresence(settings: sp.GetService<ISettingsService>(), logger: sp.GetService<ILogger<Services.Presence.DiscordPresence>>()));
         services.AddSingleton(_ => new Services.Summary.ReviewLog(AppPaths.DataDirectory));

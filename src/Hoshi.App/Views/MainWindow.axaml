@@ -296,6 +296,7 @@
                 <MenuItem Header="{l:T Main.StudyMenu}" Command="{Binding Study.ToggleCommand}" InputGesture="S" />
                 <MenuItem Header="{l:T Study.Quiz}" Command="{Binding Study.StartQuizCommand}" ToolTip.Tip="{l:T Study.QuizTip}" />
                 <MenuItem Header="{l:T Guess.Menu}" Command="{Binding Study.Guess.StartCommand}" ToolTip.Tip="{l:T Guess.Tip}" x:Name="GuessItem" />
+                <MenuItem Header="{l:T Photo.Menu}" Command="{Binding ReadBoardPhotoCommand}" x:Name="PhotoItem" />
                 <MenuItem Header="{l:T Count.Menu}" Command="{Binding Counting.StartCommand}" x:Name="CountItem" ToolTip.Tip="{l:T Count.MenuTip}" />
                 <MenuItem Header="{l:T Review.Menu}" Command="{Binding AnnotateReviewCommand}" x:Name="ReviewItem" />
                 <MenuItem Header="{l:T Clock.Menu}" x:Name="ClockMenu" IsVisible="{Binding IsLocal}" ToolTip.Tip="{l:T Clock.LocalOnly}">

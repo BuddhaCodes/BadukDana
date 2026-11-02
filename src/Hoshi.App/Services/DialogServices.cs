@@ -15,6 +15,9 @@ public interface IFileDialogService
 
     Task<string?> PickSgfToSaveAsync(string suggestedName);
 
+    /// <summary>A photo (PNG, JPEG, WebP…) to read a board from; null when cancelled or not available.</summary>
+    Task<string?> PickImageToOpenAsync() => Task.FromResult<string?>(null);
+
     /// <summary>A Hoshi backup (<c>.hoshi</c>) to import; null when cancelled or not available.</summary>
     Task<string?> PickBackupToOpenAsync() => Task.FromResult<string?>(null);
 
@@ -117,6 +120,22 @@ public sealed class AvaloniaFileDialogService : IFileDialogService
             Title = Tr.T("Dialog.OpenSgf"),
             AllowMultiple = false,
             FileTypeFilter = [Sgf, FilePickerFileTypes.All],
+        });
+        return files.Count > 0 ? await StorageFiles.LocalPathAsync(files[0]) : null;
+    }
+
+    public async Task<string?> PickImageToOpenAsync()
+    {
+        if (MainWindowLocator.Top?.StorageProvider is not { } storage)
+        {
+            return null;
+        }
+
+        IReadOnlyList<IStorageFile> files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = Tr.T("Photo.Choose"),
+            AllowMultiple = false,
+            FileTypeFilter = [FilePickerFileTypes.ImageAll, FilePickerFileTypes.All],
         });
         return files.Count > 0 ? await StorageFiles.LocalPathAsync(files[0]) : null;
     }

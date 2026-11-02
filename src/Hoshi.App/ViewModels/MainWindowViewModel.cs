@@ -76,8 +76,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IReplayMakerWindowService? replayMakerWindow = null,
         ReportViewModel? report = null,
         BackupViewModel? backup = null,
-        Services.Rank.RankStore? rank = null)
+        Services.Rank.RankStore? rank = null,
+        IBoardPhotoWindowService? photoWindow = null)
     {
+        _photoWindow = photoWindow;
+        _photoFiles = files;
         _rank = rank;
         game.ResultSet += (_, result) => CountRankGame(result);
         Backup = backup ?? new BackupViewModel();
@@ -915,6 +918,24 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     }
 
     private readonly Services.Rank.RankStore? _rank;
+    private readonly IBoardPhotoWindowService? _photoWindow;
+    private readonly IFileDialogService? _photoFiles;
+
+    public bool CanReadPhoto => _photoWindow is not null;
+
+    /// <summary>"Photo of the board…": read a position from a photo and open it in the editor.</summary>
+    [RelayCommand(CanExecute = nameof(CanReadPhoto))]
+    private async Task ReadBoardPhoto()
+    {
+        if (_photoWindow is null)
+        {
+            return;
+        }
+
+        var photo = new BoardPhotoViewModel(Game, _photoFiles);
+        _photoWindow.Show(photo);
+        await photo.PickCommand.ExecuteAsync(null);
+    }
     private RankGameContext? _rankGame;
 
     /// <summary>The engine game whose result counts for the rank: once, and only while it is still on the board.</summary>
