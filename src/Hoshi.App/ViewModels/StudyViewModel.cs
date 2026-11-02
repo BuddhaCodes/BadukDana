@@ -109,6 +109,12 @@ public sealed partial class StudyPinRow : ObservableObject
     [RelayCommand]
     private void ToggleResolved() => _owner.SetResolved(this, !Pin.Resolved);
 
+    /// <summary>"→ Problem" is offered where problems can be kept (the problems window exists).</summary>
+    public bool CanMakeProblem => _owner.AddProblem is not null;
+
+    [RelayCommand]
+    private void MakeProblem() => _owner.MakeProblem(this);
+
     [RelayCommand(CanExecute = nameof(CanReply))]
     private void Reply()
     {
@@ -487,6 +493,40 @@ public sealed partial class StudyViewModel : ViewModelBase
 
         var reply = new StudyReply(AuthorName, _time.GetUtcNow(), text);
         Update(s => s with { Pins = [.. s.Pins.Select(p => p.Id == row.Pin.Id ? p with { Replies = [.. p.Replies, reply] } : p)] });
+    }
+
+    /// <summary>Keeps a problem among the problems "From my games" (set by the main window); true when it is new.</summary>
+    public Func<GameTree, bool>? AddProblem { get; set; }
+
+    /// <summary>
+    /// Note → problem: the position before the noted move becomes a "find the move" problem. The answer is the move
+    /// played for a good move or key moment, and the first "what if" stone drawn for a mistake or a question; the
+    /// note is the explanation shown after a try.
+    /// </summary>
+    internal void MakeProblem(StudyPinRow row)
+    {
+        GameNode node = _game.CurrentNode;
+        if (AddProblem is not { } add)
+        {
+            return;
+        }
+
+        if (StudyQuiz.For(_game.Tree, node, row.Pin) is not { Answer: { } answer } q)
+        {
+            _game.ShowStatus(Tr.T(row.Pin.Category is PinCategory.Mistake or PinCategory.Question ? "Study.ProblemNeedsLine" : "Study.ProblemNotAMove"));
+            return;
+        }
+
+        BoardState before = _game.Cursor.GetBoard(q.Position);
+        int h = before.Height;
+        int number = GameCursor.Path(node).Count(n => n.HasMove);
+        string players = $"{_game.Tree.Info.BlackPlayer ?? Tr.T("Common.Black")}–{_game.Tree.Info.WhitePlayer ?? Tr.T("Common.White")}";
+        string name = $"{players}, {Tr.F("Tsumego.FromGameMove", number)}";
+        string note = row.Pin.Text.Length > 0 ? row.Pin.Text : StudyReport.CategoryName(row.Pin.Category);
+        Point? wrong = q.Played == answer ? null : q.Played;
+        string explanation = wrong is { } w ? Tr.F("Study.ProblemWrong", w.ToHuman(h), answer.ToHuman(h), note) : note;
+        GameTree problem = Hoshi.Sgf.Problems.TsumegoWriter.BestMove(before, q.ToPlay, answer, wrong, name, "Tsumego.FindBest", explanation, note);
+        _game.ShowStatus(Tr.T(add(problem) ? "Study.ProblemAdded" : "Study.ProblemExists"));
     }
 
     internal void SetResolved(StudyPinRow row, bool resolved)

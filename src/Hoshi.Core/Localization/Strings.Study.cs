@@ -144,6 +144,13 @@ public static partial class Tr
         Add(d, "Study.QuizSelfRight", "Counted as right.", "Cuenta como acierto.");
         Add(d, "Study.QuizSelfWrong", "Counted as a miss.", "Cuenta como fallo.");
         Add(d, "Study.QuizDone", "Done: {0} of {1} right.", "Terminado: {0} de {1} acertadas.");
+        Add(d, "Study.MakeProblem", "→ Problem", "→ Problema");
+        Add(d, "Study.MakeProblemTip", "Turn this note into a 'find the move' problem among the problems from your games", "Convierte esta nota en un problema «encuentra la jugada» entre los problemas de tus partidas");
+        Add(d, "Study.ProblemNeedsLine", "For a mistake, draw the better move first (a 'what if' line): it is the problem's answer.", "Para un error, dibuja primero la mejor jugada (una línea «¿y si…?»): será la respuesta del problema.");
+        Add(d, "Study.ProblemNotAMove", "Only a note on a move can become a problem.", "Solo una nota sobre una jugada puede ser un problema.");
+        Add(d, "Study.ProblemWrong", "{0} was played; {1} is better. {2}", "Se jugó {0}; {1} es mejor. {2}");
+        Add(d, "Study.ProblemAdded", "Problem kept in 'From my games' (Problems).", "Problema guardado en «De mis partidas» (Problemas).");
+        Add(d, "Study.ProblemExists", "That problem is already among your problems.", "Ese problema ya está entre tus problemas.");
         Add(d, "Study.Resolved", "resolved", "resuelto");
         Add(d, "Study.Open", "open", "abierto");
         Add(d, "Study.Resolve", "Resolve", "Resolver");

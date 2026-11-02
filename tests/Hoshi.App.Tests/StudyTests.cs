@@ -406,6 +406,33 @@ public sealed class StudyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void A_note_becomes_a_find_the_move_problem()
+    {
+        var kept = new List<GameTree>();
+        _study.AddProblem = t =>
+        {
+            kept.Add(t);
+            return true;
+        };
+        Play((2, 2), (6, 6), (6, 2));
+        _study.IsActive = true;
+        _game.GoToNodeCommand.Execute(Node(2));
+        _study.AddPin(PinCategory.Mistake, "Too passive");
+        _study.Pins.Single().CanMakeProblem.Should().BeTrue();
+        _study.Pins.Single().MakeProblemCommand.Execute(null);
+        kept.Should().BeEmpty();
+        _game.StatusText.Should().StartWith("Para un error, dibuja primero la mejor jugada");
+
+        _study.SelectToolCommand.Execute(StudyTool.Sequence);
+        _study.BoardClickCommand.Execute(new Point(4, 4));
+        _study.Pins.Single().MakeProblemCommand.Execute(null);
+        GameTree problem = kept.Should().ContainSingle().Which;
+        Hoshi.Sgf.Problems.TsumegoProblem.FromTree(problem).Should().NotBeNull();
+        Hoshi.Sgf.SgfWriter.Write(problem).Should().Contain("Too passive").And.Contain("ee");
+        _game.StatusText.Should().Be("Problema guardado en «De mis partidas» (Problemas).");
+    }
+
+    [Fact]
     public void Explain_is_off_without_KataGo()
     {
         Play((2, 2));

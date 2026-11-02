@@ -166,6 +166,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         Analysis = new AnalysisViewModel(game, engine, ui, sounds, settings);
         Study = new StudyViewModel(game, Analysis, settings, files, dialogs, browser);
+        if (tsumego is not null)
+        {
+            Study.AddProblem = problem => tsumego.AddProblems([problem]) > 0;
+        }
         Moves = new MoveListViewModel(game, Analysis);
         PropertyChanged += (_, e) =>
         {

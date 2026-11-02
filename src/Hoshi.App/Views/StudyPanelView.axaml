@@ -190,6 +190,7 @@
                               </WrapPanel>
                               <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Top">
                                 <!-- A thread is open until resolved; resolving keeps it, dimmed. -->
+                                <Button Classes="bar" Padding="6,1" FontSize="11" Content="{l:T Study.MakeProblem}" Command="{Binding MakeProblemCommand}" IsVisible="{Binding CanMakeProblem}" ToolTip.Tip="{l:T Study.MakeProblemTip}" />
                                 <Button Classes="bar" Padding="6,1" FontSize="11" Content="{Binding StatusAction}" Command="{Binding ToggleResolvedCommand}" ToolTip.Tip="{l:T Study.ResolveTip}" />
                                 <Button Classes="bar icon" Padding="3" Command="{Binding DeleteCommand}" ToolTip.Tip="{l:T Study.Delete}">
                                   <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="11" />
