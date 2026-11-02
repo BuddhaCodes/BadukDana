@@ -124,6 +124,10 @@
                     </StackPanel>
                   </Grid>
                   <TextBlock Classes="secondary" FontSize="11.5" TextWrapping="Wrap" Text="{Binding Study.ToolHint}" x:Name="StudyToolHint" />
+                  <!-- Two or more "what if" lines on this move: KataGo ranks them (hidden without KataGo and during your live OGS games). -->
+                  <Button Content="{l:T Study.CompareLines}" Command="{Binding Study.CompareLinesCommand}" IsVisible="{Binding Study.ExplainAvailable}"
+                          ToolTip.Tip="{l:T Study.CompareLinesTip}" HorizontalAlignment="Left" x:Name="StudyCompareLines" />
+                  <TextBlock Text="{Binding Study.LineComparison}" IsVisible="{Binding Study.HasLineComparison}" TextWrapping="Wrap" FontSize="12" x:Name="StudyLineComparison" />
                   </StackPanel>
 
                   <!-- The pins along the game. -->

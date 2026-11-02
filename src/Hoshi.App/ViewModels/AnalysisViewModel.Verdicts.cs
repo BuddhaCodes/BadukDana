@@ -244,6 +244,49 @@ public sealed partial class AnalysisViewModel
             moverWinrate);
     }
 
+    /// <summary>
+    /// "Compare two lines": KataGo's score lead (Black's view) at the end of a "what if" line played from the
+    /// position on <paramref name="node"/>; the line stops at its first stone that cannot be played there. Null when
+    /// the engine is not allowed (never during your live OGS game) or the line has no legal stone.
+    /// </summary>
+    public async Task<(double BlackLead, double BlackWinrate, int Played)?> EvaluateLineAsync(GameNode node, IReadOnlyList<Point> line, Stone first, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+        ArgumentNullException.ThrowIfNull(line);
+        if (!IsEngineActive || _engine is null)
+        {
+            return null;
+        }
+
+        GameCursor cursor = _game.Cursor;
+        BoardState board = cursor.GetBoard(node);
+        var extra = new List<EngineMove>();
+        Stone color = first;
+        foreach (Point p in line)
+        {
+            if (!board.IsOnBoard(p) || !board.IsLegal(color, p))
+            {
+                break;
+            }
+
+            board = board.Play(color, p);
+            extra.Add(new EngineMove(color, p));
+            color = color == Stone.Black ? Stone.White : Stone.Black;
+        }
+
+        if (extra.Count == 0)
+        {
+            return null;
+        }
+
+        Position pos = Position.At(cursor, node);
+        pos = pos with { Moves = [.. pos.Moves, .. extra] };
+        int turn = pos.Moves.Count;
+        AnalysisQuery query = pos.Query([turn], Math.Max(30, _engine.Visits / 2)) with { Priority = GraphPriority, IncludeOwnership = false };
+        IReadOnlyList<TurnAnalysis> found = await _engine.AnalyzeAsync(query, cancellationToken);
+        return found.FirstOrDefault(t => t.Turn == turn) is { } end ? (end.ScoreLead, end.Winrate, extra.Count) : null;
+    }
+
     /// <summary>Effect strength for a move quality: only good moves are celebrated.</summary>
     public static int ImpactStrength(MoveQuality quality) => quality switch
     {

@@ -197,7 +197,7 @@ public sealed partial class StudyViewModel : ViewModelBase
     private int _timelineCurrent;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ExplainCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ExplainCommand), nameof(CompareLinesCommand))]
     private bool _isBusy;
 
     public StudyViewModel(

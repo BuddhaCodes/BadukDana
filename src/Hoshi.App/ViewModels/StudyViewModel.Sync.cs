@@ -78,7 +78,9 @@ public sealed partial class StudyViewModel
         if (!ReferenceEquals(_node, _game.CurrentNode))
         {
             _node = _game.CurrentNode;
+            LineComparison = string.Empty;
             ExplainCommand.NotifyCanExecuteChanged();
+            CompareLinesCommand.NotifyCanExecuteChanged();
             _sequenceId = null;
             DropPending(); // like a waiting stone, unconfirmed drawings stay behind when the move changes
         }

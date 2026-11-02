@@ -433,6 +433,29 @@ public sealed class StudyViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task Two_what_if_lines_are_compared_by_KataGo()
+    {
+        var engine = new FakeAnalysisEngine { BestMove = new Point(4, 4) };
+        var analysis = new AnalysisViewModel(_game, engine, new ImmediateDispatcher());
+        var study = new StudyViewModel(_game, analysis, _settings, _files, _dialogs, _browser, new FixedTime(T0));
+        Play((2, 2), (6, 6));
+        study.IsActive = true;
+        study.SelectToolCommand.Execute(StudyTool.Sequence);
+        study.BoardClickCommand.Execute(new Point(4, 4));
+        study.CanCompareLines.Should().BeFalse("one line is nothing to compare");
+        study.NewSequenceCommand.Execute(null);
+        study.BoardClickCommand.Execute(new Point(1, 1));
+        study.CanCompareLines.Should().BeTrue();
+
+        await study.CompareLinesCommand.ExecuteAsync(null);
+
+        study.LineComparison.Should().StartWith("La línea desde E5 es mejor para Negras por 2.0 puntos.");
+        study.LineComparison.Should().Contain("E5 (1 piedras)").And.Contain("B8 (1 piedras)");
+        _game.GoToNodeCommand.Execute(Node(1));
+        study.HasLineComparison.Should().BeFalse("another move, another comparison");
+    }
+
+    [Fact]
     public void Explain_is_off_without_KataGo()
     {
         Play((2, 2));

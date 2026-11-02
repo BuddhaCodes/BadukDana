@@ -144,6 +144,11 @@ public static partial class Tr
         Add(d, "Study.QuizSelfRight", "Counted as right.", "Cuenta como acierto.");
         Add(d, "Study.QuizSelfWrong", "Counted as a miss.", "Cuenta como fallo.");
         Add(d, "Study.QuizDone", "Done: {0} of {1} right.", "Terminado: {0} de {1} acertadas.");
+        Add(d, "Study.CompareLines", "Compare the lines", "Comparar las líneas");
+        Add(d, "Study.CompareLinesTip", "KataGo plays each 'what if' line drawn on this move and ranks them by the score at the end", "KataGo juega cada línea «¿y si…?» dibujada en esta jugada y las ordena por la puntuación al final");
+        Add(d, "Study.Comparing", "KataGo is reading the lines…", "KataGo está leyendo las líneas…");
+        Add(d, "Study.LineRow", "{0} ({1} stones): {2}", "{0} ({1} piedras): {2}");
+        Add(d, "Study.LineBest", "The line from {0} is better for {1} by {2} points.", "La línea desde {0} es mejor para {1} por {2} puntos.");
         Add(d, "Study.MakeProblem", "→ Problem", "→ Problema");
         Add(d, "Study.MakeProblemTip", "Turn this note into a 'find the move' problem among the problems from your games", "Convierte esta nota en un problema «encuentra la jugada» entre los problemas de tus partidas");
         Add(d, "Study.ProblemNeedsLine", "For a mistake, draw the better move first (a 'what if' line): it is the problem's answer.", "Para un error, dibuja primero la mejor jugada (una línea «¿y si…?»): será la respuesta del problema.");

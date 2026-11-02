@@ -1,4 +1,5 @@
 using System.Globalization;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Hoshi.App.Services.Study;
 using Hoshi.Core;
@@ -26,6 +27,7 @@ public sealed partial class StudyViewModel
     {
         OnPropertyChanged(nameof(ExplainAvailable));
         ExplainCommand.NotifyCanExecuteChanged();
+        CompareLinesCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>
@@ -132,6 +134,79 @@ public sealed partial class StudyViewModel
         }
 
         return study with { Pins = pins, Drawings = drawings };
+    }
+
+    // ---------- Compare the "what if" lines ----------
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasLineComparison))]
+    private string _lineComparison = string.Empty;
+
+    public bool HasLineComparison => LineComparison.Length > 0;
+
+    /// <summary>The "what if" lines drawn on the move on the board.</summary>
+    private IReadOnlyList<StudyDrawing> Lines => [.. StudyStore.Read(_game.CurrentNode).Drawings.Where(d => d.Kind == DrawingKind.Sequence && d.Points.Count > 0)];
+
+    /// <summary>Two or more "what if" lines on this move, and KataGo allowed here.</summary>
+    public bool CanCompareLines => ExplainAvailable && !IsBusy && Lines.Count >= 2;
+
+    /// <summary>
+    /// "Compare the lines": KataGo plays each "what if" line drawn on this move and reads the position at its end;
+    /// the lines are ranked for the side that starts them. Never during your live OGS game.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanCompareLines))]
+    private async Task CompareLines()
+    {
+        if (_analysis is not { IsEngineActive: true } analysis || IsLiveOnline)
+        {
+            _game.ShowStatus(Tr.T("Study.ExplainUnavailable"));
+            return;
+        }
+
+        GameNode node = _game.CurrentNode;
+        IReadOnlyList<StudyDrawing> lines = [.. Lines.Take(4)];
+        int height = _game.Board.Height;
+        IsBusy = true;
+        _game.ShowStatus(Tr.T("Study.Comparing"));
+        var results = new List<(StudyDrawing Line, double Lead, int Played)>();
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+            foreach (StudyDrawing line in lines)
+            {
+                if (await analysis.EvaluateLineAsync(node, line.Points, line.FirstColor, cts.Token) is { } r)
+                {
+                    // For the side that starts the line: its lead, whoever it is.
+                    results.Add((line, line.FirstColor == Stone.Black ? r.BlackLead : -r.BlackLead, r.Played));
+                }
+            }
+        }
+        catch (Exception ex) when (ex is OperationCanceledException or EngineException)
+        {
+            // what was read so far is still shown
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+
+        if (results.Count < 2 || !ReferenceEquals(node, _game.CurrentNode))
+        {
+            LineComparison = string.Empty;
+            _game.ShowStatus(Tr.T("Study.ExplainUnavailable"));
+            return;
+        }
+
+        string side = Tr.T(results[0].Line.FirstColor == Stone.White ? "Common.White" : "Common.Black");
+        var ranked = results.OrderByDescending(r => r.Lead).ToList();
+        IEnumerable<string> rows = ranked.Select(r => Tr.F(
+            "Study.LineRow",
+            r.Line.Points[0].ToHuman(height),
+            r.Played,
+            (r.Lead >= 0 ? "+" : "−") + Math.Abs(r.Lead).ToString("0.0", CultureInfo.CurrentCulture)));
+        string verdict = Tr.F("Study.LineBest", ranked[0].Line.Points[0].ToHuman(height), side, (ranked[0].Lead - ranked[1].Lead).ToString("0.0", CultureInfo.CurrentCulture));
+        LineComparison = string.Join("\n", rows.Prepend(verdict));
+        _game.ShowStatus(verdict);
     }
 
     private static GameNode Root(GameNode node)
