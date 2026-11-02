@@ -122,7 +122,7 @@ public sealed class AccessibilityTests
         }
         finally
         {
-            Hoshi.Core.Localization.Tr.SetLanguage(Hoshi.Core.Localization.Tr.English);
+            Hoshi.Core.Localization.Tr.SetLanguage(Hoshi.Core.Localization.Tr.Spanish); // the other tests assert Spanish
         }
     }
 
