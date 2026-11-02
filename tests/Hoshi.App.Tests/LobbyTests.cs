@@ -238,6 +238,53 @@ internal sealed class FakeOgsClient : IOgsClient
         _session = new OgsSession(Me, "jwt");
         SessionChanged?.Invoke(this, EventArgs.Empty);
     }
+
+    /// <summary>Signs in at once (tests that only need a session).</summary>
+    public void SignInNow() => SignIn();
+
+    public List<long> ReviewsCreated { get; } = [];
+
+    public Dictionary<long, FakeReviewRoom> Rooms { get; } = [];
+
+    public Task<long> CreateReviewAsync(long gameId, CancellationToken cancellationToken)
+    {
+        ReviewsCreated.Add(gameId);
+        return Task.FromResult(9000L + ReviewsCreated.Count);
+    }
+
+    public IOgsReviewRoom OpenReview(long reviewId) => Rooms[reviewId] = new FakeReviewRoom(reviewId);
+}
+
+internal sealed class FakeReviewRoom(long reviewId) : IOgsReviewRoom
+{
+    public long ReviewId { get; } = reviewId;
+
+    public long MyPlayerId => FakeOgsClient.Me.Id;
+
+    public bool Connected { get; private set; }
+
+    public bool Disposed { get; private set; }
+
+    public List<(int From, string Moves, string Text, IReadOnlyDictionary<string, IReadOnlyList<Hoshi.Core.Point>> Marks)> Shown { get; } = [];
+
+    public event EventHandler<IReadOnlyList<Hoshi.Ogs.Reviews.OgsReviewMessage>>? FullState;
+
+    public event EventHandler<Hoshi.Ogs.Reviews.OgsReviewMessage>? Appended;
+
+    public void Connect() => Connected = true;
+
+    public void Show(int from, IReadOnlyList<Hoshi.Core.Point?> moves, string text, IReadOnlyDictionary<string, IReadOnlyList<Hoshi.Core.Point>> marks) =>
+        Shown.Add((from, Hoshi.Ogs.Reviews.OgsReviewSession.Encode(moves), text, marks));
+
+    public void Chat(int from, IReadOnlyList<Hoshi.Core.Point?> moves, string body)
+    {
+    }
+
+    public void RaiseFullState(params Hoshi.Ogs.Reviews.OgsReviewMessage[] log) => FullState?.Invoke(this, log);
+
+    public void RaiseAppended(Hoshi.Ogs.Reviews.OgsReviewMessage message) => Appended?.Invoke(this, message);
+
+    public void Dispose() => Disposed = true;
 }
 
 public sealed class LobbyViewModelTests

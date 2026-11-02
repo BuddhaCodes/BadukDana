@@ -301,6 +301,23 @@
                       <TextBlock Text="{l:T Study.Present}" FontSize="12" />
                     </Button>
                   </WrapPanel>
+                  <!-- Teacher mode: an OGS review room for the game on the board, or follow a teacher's room. -->
+                  <Expander Header="{l:T Teach.Title}" x:Name="TeachExpander" HorizontalAlignment="Stretch">
+                    <StackPanel Spacing="6">
+                      <TextBlock Classes="secondary" FontSize="11.5" TextWrapping="Wrap" Text="{l:T Teach.Hint}" />
+                      <WrapPanel>
+                        <Button Classes="accent" Content="{l:T Teach.Start}" Command="{Binding Teaching.StartTeachingCommand}" IsVisible="{Binding !Teaching.IsInRoom}" Margin="0,0,6,4" x:Name="TeachStart" />
+                        <Button Content="{l:T Teach.CopyLink}" Command="{Binding Teaching.CopyLinkCommand}" IsVisible="{Binding Teaching.IsTeaching}" Margin="0,0,6,4" />
+                        <Button Content="{l:T Teach.Leave}" Command="{Binding Teaching.LeaveCommand}" IsVisible="{Binding Teaching.IsInRoom}" Margin="0,0,6,4" x:Name="TeachLeave" />
+                      </WrapPanel>
+                      <SelectableTextBlock Text="{Binding Teaching.RoomLink}" IsVisible="{Binding Teaching.HasRoom}" FontSize="12" TextWrapping="Wrap" x:Name="TeachLink" />
+                      <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding !Teaching.IsInRoom}">
+                        <TextBox Text="{Binding Teaching.JoinText}" PlaceholderText="{l:T Teach.JoinWatermark}" FontSize="12" x:Name="TeachJoinText" />
+                        <Button Grid.Column="1" Content="{l:T Teach.Follow}" Command="{Binding Teaching.FollowCommand}" Margin="6,0,0,0" x:Name="TeachFollow" />
+                      </Grid>
+                      <TextBlock Text="{Binding Teaching.Status}" TextWrapping="Wrap" FontSize="12" x:Name="TeachStatus" />
+                    </StackPanel>
+                  </Expander>
                   </StackPanel>
                 </StackPanel>
               </StackPanel>

@@ -167,6 +167,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         Analysis = new AnalysisViewModel(game, engine, ui, sounds, settings);
         Study = new StudyViewModel(game, Analysis, settings, files, dialogs, browser) { Voice = voice };
+        Teaching = new TeachingViewModel(game, ogs, CurrentOgsGameId, ui, clipboard);
         if (tsumego is not null)
         {
             Study.AddProblem = problem => tsumego.AddProblems([problem]) > 0;
@@ -344,6 +345,15 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     }
 
     public GameViewModel Game { get; }
+
+    /// <summary>Teacher mode: OGS review rooms (show the board to students, or follow a teacher).</summary>
+    public TeachingViewModel Teaching { get; }
+
+    /// <summary>The OGS game on the board: the online one, a kept OGS game, or an SGF downloaded from OGS (its PC).</summary>
+    private long? CurrentOgsGameId() =>
+        Game.Online?.GameId
+        ?? _recorder?.OgsGameId
+        ?? Hoshi.Ogs.OgsLinks.TryGameId(Game.Tree.Root.GetValue("PC"));
 
     /// <summary>Territory estimate and the background engine review.</summary>
     public AnalysisViewModel Analysis { get; }

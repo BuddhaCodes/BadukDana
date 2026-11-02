@@ -77,6 +77,13 @@ public interface IOgsClient
     /// <summary>Any game on the current server as SGF (to open it in the editor).</summary>
     Task<string> GetGameSgfAsync(long gameId, CancellationToken cancellationToken);
 
+    /// <summary>Opens a review room of a game (teacher mode); returns its id.</summary>
+    Task<long> CreateReviewAsync(long gameId, CancellationToken cancellationToken) =>
+        Task.FromException<long>(new NotSupportedException());
+
+    /// <summary>A review room to show positions in (as its owner) or to follow (signed in only).</summary>
+    IOgsReviewRoom OpenReview(long reviewId) => throw new NotSupportedException();
+
     /// <summary>An automatch search is waiting for an opponent.</summary>
     bool IsSearchingMatch { get; }
 
@@ -290,6 +297,19 @@ public sealed class OgsClient : IOgsClient, IAsyncDisposable
 
     public Task<long> AcceptChallengeAsync(long challengeId, CancellationToken cancellationToken) =>
         _current.Rest.AcceptChallengeAsync(challengeId, cancellationToken);
+
+    public Task<long> CreateReviewAsync(long gameId, CancellationToken cancellationToken) =>
+        _current.Rest.CreateReviewAsync(gameId, cancellationToken);
+
+    public IOgsReviewRoom OpenReview(long reviewId)
+    {
+        if (Session is null)
+        {
+            throw new InvalidOperationException(Tr.T("Online.SignInToOpen"));
+        }
+
+        return new OgsReviewRoom(_current.Realtime, reviewId, Session.User.Id);
+    }
 
     public IOnlineGame OpenGame(long gameId)
     {
