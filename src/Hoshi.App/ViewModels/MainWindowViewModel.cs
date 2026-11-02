@@ -156,6 +156,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         if (replaysList is not null)
         {
             replaysList.OpenRequested += (_, entry) => OpenReplay(entry, replaysList.Selected?.MatchMove);
+            replaysList.Notebook.OpenRequested += (_, note) =>
+            {
+                OpenReplay(note.Entry, note.Move);
+                Study!.IsActive = true; // assigned below, before any note can be opened
+            };
             replaysList.PatternSource = SearchPattern;
         }
 

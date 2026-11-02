@@ -145,4 +145,36 @@ public sealed class NoteReviewTests : IDisposable
             }
         }
     }
+
+    [Fact]
+    public async Task The_notebook_gathers_every_note_filters_them_and_opens_the_game_at_the_move()
+    {
+        SaveGame("a", 0);
+        SaveGame("b", 1, PinCategory.Mistake);
+        var replays = new ReplaysViewModel(_store);
+        replays.Notebook.Rows.Should().BeEmpty("the notebook reads the games only once it is shown");
+
+        replays.Tab = 1;
+        await replays.Notebook.Loading;
+        replays.Notebook.Rows.Should().HaveCount(4);
+        replays.Notebook.CountText.Should().Be("4 notas en 2 partidas");
+
+        replays.Notebook.Category = replays.Notebook.Categories.First(c => c.Category == PinCategory.Mistake);
+        replays.Notebook.Rows.Should().ContainSingle().Which.Move.Should().Be(3);
+        replays.Notebook.Category = replays.Notebook.Categories[0];
+        replays.Notebook.Search = "corners";
+        replays.Notebook.Rows.Should().HaveCount(2, "the search ignores case");
+        replays.Notebook.Search = "nothing like this";
+        replays.Notebook.IsEmpty.Should().BeTrue();
+        replays.Notebook.EmptyText.Should().Be("Ninguna nota coincide.");
+
+        replays.Notebook.ClearFiltersCommand.Execute(null);
+        var game = new GameViewModel(9, RuleSet.Japanese);
+        var main = new MainWindowViewModel(game, replays: _store, replaysList: replays);
+        replays.Notebook.Selected = replays.Notebook.Rows.First(r => r.Move == 3);
+        replays.Notebook.OpenCommand.Execute(null);
+        game.MoveNumber.Should().Be(3);
+        main.Study.IsActive.Should().BeTrue();
+        StudyStore.Read(game.CurrentNode).Pins.Should().ContainSingle();
+    }
 }

@@ -85,8 +85,24 @@ public sealed partial class ReplaysViewModel : ViewModelBase
             new(Tr.T("Replays.NoResult"), ResultFilter.NoResult),
         ];
         _selectedResult = Results[0];
+        Notebook = new NotebookViewModel(store);
         store.Changed += (_, _) => Reload();
         Reload();
+    }
+
+    /// <summary>The notes of every game (second tab).</summary>
+    public NotebookViewModel Notebook { get; }
+
+    /// <summary>0 = the games, 1 = the notebook (read the first time it is shown).</summary>
+    [ObservableProperty]
+    private int _tab;
+
+    partial void OnTabChanged(int value)
+    {
+        if (value == 1)
+        {
+            _ = Notebook.EnsureLoadedAsync();
+        }
     }
 
     /// <summary>Raised to show a replay on the board.</summary>
