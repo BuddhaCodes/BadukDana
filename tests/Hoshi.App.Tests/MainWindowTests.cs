@@ -51,12 +51,12 @@ public sealed class MainWindowTests
             backdrop.Should().NotBe(theme.Sidebar, "the board sits on the theme's backdrop");
             string outDir = Path.Combine(AppContext.BaseDirectory, "screenshots");
             Directory.CreateDirectory(outDir);
-            frame.Save(Path.Combine(outDir, $"theme-{id}.png"));
+            frame.Save(Path.Combine(outDir, $"theme-{id}.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
 
             window.Width = 1600;
             window.Height = 900;
             using WriteableBitmap wide = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
-            wide.Save(Path.Combine(outDir, $"theme-{id}-wide.png"));
+            wide.Save(Path.Combine(outDir, $"theme-{id}-wide.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         }
         finally
         {

@@ -774,7 +774,7 @@
                        AutomationProperties.LiveSetting="Polite" />
             <TextBlock Grid.Column="1" Classes="secondary" Text="{Binding Game.MoveNumberText}" Margin="8,0,0,0" x:Name="MoveNumber" />
             <!-- Accessibility: play by typing a coordinate (Preferences → Appearance). -->
-            <TextBox Grid.Row="1" Grid.ColumnSpan="2" Margin="0,6,0,0" Text="{Binding MoveEntryText}" Watermark="{l:T Access.MoveEntry}"
+            <TextBox Grid.Row="1" Grid.ColumnSpan="2" Margin="0,6,0,0" Text="{Binding MoveEntryText}" PlaceholderText="{l:T Access.MoveEntry}"
                      IsVisible="{Binding ShowMoveEntry}" x:Name="MoveEntryBox" AutomationProperties.Name="{l:T Access.MoveEntry}">
               <TextBox.KeyBindings>
                 <KeyBinding Gesture="Enter" Command="{Binding PlayEntryCommand}" />
@@ -815,7 +815,7 @@
             </StackPanel>
           </Border>
           <TextBox x:Name="CommentBox" Classes="comment" IsVisible="{Binding IsLocal}"
-                   AcceptsReturn="True" TextWrapping="Wrap" Watermark="{l:T Main.Comment}"
+                   AcceptsReturn="True" TextWrapping="Wrap" PlaceholderText="{l:T Main.Comment}"
                    Text="{Binding Game.Comment}" />
         </DockPanel>
 

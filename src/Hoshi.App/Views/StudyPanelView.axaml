@@ -203,7 +203,7 @@
                                 </DataTemplate>
                               </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <TextBox Watermark="{l:T Study.ReplyWatermark}" Text="{Binding ReplyText}" FontSize="12" MinHeight="26" Padding="6,3" MaxLength="1000">
+                            <TextBox PlaceholderText="{l:T Study.ReplyWatermark}" Text="{Binding ReplyText}" FontSize="12" MinHeight="26" Padding="6,3" MaxLength="1000">
                               <TextBox.KeyBindings>
                                 <KeyBinding Gesture="Enter" Command="{Binding ReplyCommand}" />
                               </TextBox.KeyBindings>
@@ -226,7 +226,7 @@
                       </DataTemplate>
                     </ListBox.ItemTemplate>
                   </ListBox>
-                  <TextBox Watermark="{l:T Study.NoteWatermark}" Text="{Binding Study.NewPinText}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="54" MaxLength="4000" x:Name="StudyNewPin" />
+                  <TextBox PlaceholderText="{l:T Study.NoteWatermark}" Text="{Binding Study.NewPinText}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="54" MaxLength="4000" x:Name="StudyNewPin" />
                   <Button Classes="accent" HorizontalAlignment="Right" Command="{Binding Study.AddPinCommand}" x:Name="StudyAddPin">
                     <StackPanel Orientation="Horizontal" Spacing="6"><c:HoshiIcon Icon="{DynamicResource Icon.Pin}" Size="14" /><TextBlock Text="{l:T Study.AddPin}" /></StackPanel>
                   </Button>

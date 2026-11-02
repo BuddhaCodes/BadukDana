@@ -24,7 +24,7 @@ public sealed class EngineUiTests
     private static void Save(Window window, string name)
     {
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
-        frame.Save(Path.Combine(Shots(), name));
+        frame.Save(Path.Combine(Shots(), name), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
     }
 
     [AvaloniaFact]

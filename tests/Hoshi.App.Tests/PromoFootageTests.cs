@@ -249,7 +249,7 @@ public sealed class PromoFootageTests
     private static void Save(TopLevel window, string path)
     {
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
-        frame.Save(path);
+        frame.Save(path, Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
     }
 
     /// <summary>

@@ -86,7 +86,7 @@ public sealed class AudioTests
         Directory.CreateDirectory(dir);
         using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
         {
-            frame.Save(Path.Combine(dir, "audio-panel.png"));
+            frame.Save(Path.Combine(dir, "audio-panel.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         }
 
         button.Flyout.Hide();

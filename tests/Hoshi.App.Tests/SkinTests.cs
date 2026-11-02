@@ -162,7 +162,7 @@ public sealed class SkinTests
             var window = new Window { Width = 720, Height = 720, Content = panel };
             window.Show();
             using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
-            frame.Save(Path.Combine(dir, $"{b.Id}+{s.Id}+{bg.Id}.png"));
+            frame.Save(Path.Combine(dir, $"{b.Id}+{s.Id}+{bg.Id}.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             window.Close();
         }
     }
@@ -184,7 +184,7 @@ public sealed class SkinTests
         window.FindDeep<TabControl>("Tabs")!.SelectedIndex = 1;
         await Task.Delay(50);
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
-        frame.Save(Path.Combine(dir, "preferences-board.png"));
+        frame.Save(Path.Combine(dir, "preferences-board.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         window.Close();
         ThemeService.Apply(HoshiThemes.Default, animations: false, Application.Current!.Resources);
     }
@@ -204,12 +204,12 @@ public sealed class SkinTests
         window.FindDeep<TabControl>("Tabs")!.SelectedIndex = 1;
         await Task.Delay(50);
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
-        frame.Save(Path.Combine(dir, "preferences-board-theme.png"));
+        frame.Save(Path.Combine(dir, "preferences-board-theme.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         window.FindDeep<ComboBox>("StonesBox")!.IsDropDownOpen = true;
         await Task.Delay(80);
         using (WriteableBitmap open = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
         {
-            open.Save(Path.Combine(dir, "preferences-board-stones-open.png"));
+            open.Save(Path.Combine(dir, "preferences-board-stones-open.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         }
 
         window.Close();

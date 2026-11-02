@@ -13,7 +13,7 @@
             <ToggleButton Grid.Column="1" Classes="bar" Padding="8,2" FontSize="12" IsChecked="{Binding Online.IsChatMuted}" x:Name="ChatMute"
                           Content="{l:T Online.ChatMute}" ToolTip.Tip="{l:T Online.ChatMuteTip}" />
           </Grid>
-          <TextBox DockPanel.Dock="Bottom" Classes="comment" Watermark="{l:T Main.ChatHint}" Text="{Binding Online.ChatInput}" x:Name="ChatInput" MaxLength="500">
+          <TextBox DockPanel.Dock="Bottom" Classes="comment" PlaceholderText="{l:T Main.ChatHint}" Text="{Binding Online.ChatInput}" x:Name="ChatInput" MaxLength="500">
             <TextBox.KeyBindings>
               <KeyBinding Gesture="Enter" Command="{Binding Online.SendChatCommand}" />
             </TextBox.KeyBindings>

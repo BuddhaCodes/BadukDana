@@ -56,7 +56,7 @@ public sealed class TitleBarTests
             Directory.CreateDirectory(dir);
             using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
             {
-                frame.Save(Path.Combine(dir, "title-bar.png"));
+                frame.Save(Path.Combine(dir, "title-bar.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             }
 
             var prefs = new PreferencesWindow { DataContext = new PreferencesViewModel(new ThemeService()) };
@@ -77,7 +77,7 @@ public sealed class TitleBarTests
             splash.ExtendClientAreaToDecorationsHint.Should().BeFalse();
             using (WriteableBitmap frame = splash.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
             {
-                frame.Save(Path.Combine(dir, "splash.png"));
+                frame.Save(Path.Combine(dir, "splash.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             }
 
             splash.Close();

@@ -100,7 +100,7 @@ public static class BoardPicture
     {
         ArgumentNullException.ThrowIfNull(bitmap);
         using var stream = new MemoryStream();
-        bitmap.Save(stream);
+        bitmap.Save(stream, PngBitmapEncoderOptions.Default);
         return stream.ToArray();
     }
 }

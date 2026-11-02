@@ -126,7 +126,7 @@ public sealed class GameTreeTests
         WriteableBitmap frame = window.CaptureRenderedFrame()!;
         string dir = Path.Combine(AppContext.BaseDirectory, "screenshots");
         Directory.CreateDirectory(dir);
-        frame.Save(Path.Combine(dir, "phase3-window.png"));
+        frame.Save(Path.Combine(dir, "phase3-window.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
 
         vm.Game.Markers.Should().HaveCount(6);
         vm.Game.Board[Point.FromSgf("jp")].Should().Be(Stone.Black);

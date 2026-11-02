@@ -98,7 +98,7 @@ public sealed class StudyUiTests
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
         using (Avalonia.Media.Imaging.WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
         {
-            frame.Save(Path.Combine(dir, "study-es.png"));
+            frame.Save(Path.Combine(dir, "study-es.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         }
 
         // Typing an "s" in a note does not close the panel.
@@ -175,7 +175,7 @@ public sealed class StudyUiTests
             await Task.Delay(60);
             using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
             {
-                frame.Save(Path.Combine(dir, "study.png"));
+                frame.Save(Path.Combine(dir, "study.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             }
 
             GameNode mistake = vm.Game.CurrentNode;
@@ -192,7 +192,7 @@ public sealed class StudyUiTests
             await Task.Delay(60);
             using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
             {
-                frame.Save(Path.Combine(dir, "study-quiz.png"));
+                frame.Save(Path.Combine(dir, "study-quiz.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             }
 
             File.WriteAllText(Path.Combine(dir, "study-report.html"), StudyReport.Html(

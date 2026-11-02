@@ -258,7 +258,7 @@ public sealed class MoveEffectsTests
             board.ImpactTime = t;
             board.InvalidateVisual();
             using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
-            frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", name));
+            frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", name), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         }
 
         board.Impact = new BoardImpact(new Point(9, 9), 2, 9);
@@ -266,7 +266,7 @@ public sealed class MoveEffectsTests
         board.InvalidateVisual();
         using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered"))
         {
-            frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "impact-excellent.png"));
+            frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "impact-excellent.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         }
 
         board.ImpactTime = null;
@@ -426,7 +426,7 @@ public sealed class MoveEffectsTests
             board.CaptureTime = t;
             board.InvalidateVisual();
             using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
-            frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", name));
+            frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", name), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         }
     }
 
@@ -472,7 +472,7 @@ public sealed class MoveEffectsTests
             board.GroupPulseTime = t;
             board.InvalidateVisual();
             using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
-            frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", name));
+            frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", name), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         }
     }
 }

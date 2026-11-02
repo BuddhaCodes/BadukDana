@@ -18,7 +18,7 @@ public sealed class SplashTests
         Directory.CreateDirectory(dir);
         using (Avalonia.Media.Imaging.WriteableBitmap frame = splash.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
         {
-            frame.Save(Path.Combine(dir, "splash.png"));
+            frame.Save(Path.Combine(dir, "splash.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         }
 
         splash.Close();

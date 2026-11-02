@@ -24,7 +24,11 @@ internal static class AndroidPlatform
     private static bool _lightBars;
     private static Android.Graphics.Color? _barColor;
 
-    public static void Initialize(Activity activity)
+    /// <summary>
+    /// Called by <see cref="HoshiApplication"/> before Avalonia starts (Avalonia 12 starts the app with the Android
+    /// application, before any activity exists). The activity arrives later through <see cref="Attach"/>.
+    /// </summary>
+    public static void Initialize(Context context)
     {
         if (_initialized)
         {
@@ -32,8 +36,6 @@ internal static class AndroidPlatform
         }
 
         _initialized = true;
-        _activity = activity;
-        Context context = activity.ApplicationContext ?? activity;
         PlatformInfo.IsPhone = true;
 
         // A light tick with each stone (follows the system's touch feedback setting; needs no permission).
@@ -109,6 +111,9 @@ internal static class AndroidPlatform
             music.Stop();
         }
     }
+
+    /// <summary>The activity showing Hoshi (system bars, haptics, permission requests and the like go through it).</summary>
+    public static void Attach(Activity activity) => _activity = activity;
 
     public static void OnResume(Activity activity)
     {

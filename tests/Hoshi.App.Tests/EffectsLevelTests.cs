@@ -87,7 +87,7 @@ public sealed class EffectsLevelTests
         using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
         {
             Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
-            frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "impact-subtle.png"));
+            frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "impact-subtle.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         }
 
         board.ImpactTime = null;
@@ -132,7 +132,7 @@ public sealed class EffectsLevelTests
         await Task.Delay(80);
         using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
         {
-            frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "effects-panel.png"));
+            frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "effects-panel.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         }
 
         button.Flyout.Hide();
@@ -145,7 +145,7 @@ public sealed class EffectsLevelTests
         await Task.Delay(80);
         using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
         {
-            frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "audio-panel-effects.png"));
+            frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "audio-panel-effects.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         }
 
         audio.Flyout.Hide();
@@ -194,7 +194,7 @@ public sealed class WeakGroupHaloTests
         board.InvalidateVisual();
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
-        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "weak-groups-ownership.png"));
+        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "weak-groups-ownership.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
 
         board.Effects = EffectsLevel.Off;
         board.InvalidateVisual();

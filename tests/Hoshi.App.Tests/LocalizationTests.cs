@@ -81,14 +81,14 @@ public sealed class LanguageSwitchTests
             using (Avalonia.Media.Imaging.WriteableBitmap frame = window.CaptureRenderedFrame()!)
             {
                 Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
-                frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "main-en.png"));
+                frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "main-en.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             }
 
             var prefs = new PreferencesWindow { DataContext = new PreferencesViewModel(new Themes.ThemeService(new TestSettings()), new TestSettings()), Width = 900, Height = 700 };
             prefs.Show();
             using (Avalonia.Media.Imaging.WriteableBitmap frame = prefs.CaptureRenderedFrame()!)
             {
-                frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "prefs-en.png"));
+                frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "prefs-en.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             }
             Tr.SetLanguage(Tr.Spanish);
             Avalonia.Threading.Dispatcher.UIThread.RunJobs();

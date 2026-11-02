@@ -375,7 +375,7 @@
                                  BoardSize="{Binding Main.Game.Board.Width}" NodeClickedCommand="{Binding Main.Game.GoToNodeCommand}"
                                  HorizontalAlignment="Left" VerticalAlignment="Top" Margin="6" />
             </ScrollViewer>
-            <TextBox Grid.Row="1" Classes="comment" Height="96" AcceptsReturn="True" TextWrapping="Wrap" Watermark="{l:T Main.Comment}"
+            <TextBox Grid.Row="1" Classes="comment" Height="96" AcceptsReturn="True" TextWrapping="Wrap" PlaceholderText="{l:T Main.Comment}"
                      Text="{Binding Main.Game.Comment}" IsVisible="{Binding Main.IsLocal}" x:Name="PhoneComment" />
           </Grid>
           <ScrollViewer IsVisible="{Binding IsAnalysis}" VerticalScrollBarVisibility="Auto">

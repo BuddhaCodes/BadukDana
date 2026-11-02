@@ -26,7 +26,7 @@
           <DataTemplate x:DataType="eng:EngineChoice"><TextBlock Text="{Binding Name}" /></DataTemplate>
         </ComboBox.ItemTemplate>
       </ComboBox>
-      <TextBox Grid.Column="1" Text="{Binding Command}" Watermark="{l:T Engines.ConsoleWatermark}" x:Name="CommandBox"
+      <TextBox Grid.Column="1" Text="{Binding Command}" PlaceholderText="{l:T Engines.ConsoleWatermark}" x:Name="CommandBox"
                FontFamily="Cascadia Mono, Consolas, Menlo, DejaVu Sans Mono, monospace" KeyDown="OnCommandKeyDown" />
       <Button Grid.Column="2" Classes="accent" Content="{l:T Engines.Send}" Command="{Binding SendCommand}" Margin="8,0,0,0" x:Name="SendButton" />
     </Grid>
