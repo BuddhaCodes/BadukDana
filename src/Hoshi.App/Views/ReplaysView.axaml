@@ -17,9 +17,9 @@
     </StackPanel>
     <!-- Search: player, dates and result filter at once; the pattern comes from the main board. -->
     <WrapPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10" x:Name="SearchBar">
-      <TextBox Text="{Binding PlayerFilter}" Watermark="{l:T Replays.Player}" Width="170" Margin="0,0,8,6" x:Name="PlayerBox" />
-      <CalendarDatePicker SelectedDate="{Binding FromDateValue}" Watermark="{l:T Replays.From}" Width="140" Margin="0,0,8,6" x:Name="FromPicker" />
-      <CalendarDatePicker SelectedDate="{Binding ToDateValue}" Watermark="{l:T Replays.To}" Width="140" Margin="0,0,8,6" x:Name="ToPicker" />
+      <TextBox Text="{Binding PlayerFilter}" PlaceholderText="{l:T Replays.Player}" Width="170" Margin="0,0,8,6" x:Name="PlayerBox" />
+      <CalendarDatePicker SelectedDate="{Binding FromDateValue}" PlaceholderText="{l:T Replays.From}" Width="140" Margin="0,0,8,6" x:Name="FromPicker" />
+      <CalendarDatePicker SelectedDate="{Binding ToDateValue}" PlaceholderText="{l:T Replays.To}" Width="140" Margin="0,0,8,6" x:Name="ToPicker" />
       <ComboBox ItemsSource="{Binding Results}" SelectedItem="{Binding SelectedResult}" Width="150" Margin="0,0,8,6" x:Name="ResultBox" />
       <Button Content="{l:T Replays.UsePattern}" Command="{Binding UsePatternCommand}" ToolTip.Tip="{l:T Replays.UsePatternTip}" Margin="0,0,8,6" x:Name="PatternButton" />
       <Button Content="{l:T Replays.ClearFilters}" Command="{Binding ClearFiltersCommand}" Margin="0,0,8,6" />

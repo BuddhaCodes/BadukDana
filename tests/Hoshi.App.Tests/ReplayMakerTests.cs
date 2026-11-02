@@ -165,8 +165,8 @@ public sealed class ReplayMakerTests
         RenderTargetBitmap shock = ReplayScene.Render(mistake, new ReplayPlayers("Ana", "Luis", true), ReplayFormat.Wide, true, effectSeconds: 0.12);
         BoardPicture.Bgra(boom).Should().NotEqual(BoardPicture.Bgra(still));
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
-        boom.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "replay-brilliant.png"));
-        shock.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "replay-mistake.png"));
+        boom.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "replay-brilliant.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+        shock.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "replay-mistake.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
 
         maker.Effects = false;
         int plain = 0;

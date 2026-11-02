@@ -30,7 +30,7 @@ public sealed class RedesignTests
     {
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
-        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", name));
+        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", name), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
     }
 
     [AvaloniaFact]

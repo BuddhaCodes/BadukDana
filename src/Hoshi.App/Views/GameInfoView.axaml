@@ -42,7 +42,7 @@
       <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Event}" />
 
       <TextBlock Grid.Row="4" Classes="label" Text="{l:T GameInfo.Date}" />
-      <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Date}" Watermark="{l:T GameInfo.DateFormat}" />
+      <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Date}" PlaceholderText="{l:T GameInfo.DateFormat}" />
       <TextBlock Grid.Row="4" Grid.Column="2" Classes="label" Text="{l:T GameInfo.Place}" Margin="12,0" />
       <TextBox Grid.Row="4" Grid.Column="3" Text="{Binding Place}" />
 
@@ -59,7 +59,7 @@
       <TextBox Grid.Row="5" Grid.Column="3" Text="{Binding Komi}" />
 
       <TextBlock Grid.Row="6" Classes="label" Text="{l:T GameInfo.Result}" />
-      <TextBox Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Result}" Watermark="B+R, W+3.5…" />
+      <TextBox Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Result}" PlaceholderText="B+R, W+3.5…" />
     </Grid>
   </DockPanel>
 </UserControl>

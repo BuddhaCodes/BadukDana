@@ -6,6 +6,7 @@
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://Hoshi.App/Styles/Tokens.axaml" />
+        <ResourceInclude Source="avares://Hoshi.App/Styles/WindowChrome.axaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Application.Resources>

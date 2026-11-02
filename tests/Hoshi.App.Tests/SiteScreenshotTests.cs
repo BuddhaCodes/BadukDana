@@ -51,7 +51,7 @@ public sealed class SiteScreenshotTests
                 }
 
                 using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
-                frame.Save(Path.Combine(dir, name));
+                frame.Save(Path.Combine(dir, name), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
                 window.Close();
             }
         }
@@ -118,7 +118,7 @@ public sealed class SiteScreenshotTests
         static void Save(Avalonia.Controls.Window window, string path)
         {
             using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
-            frame.Save(path);
+            frame.Save(path, Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         }
     }
 
@@ -163,7 +163,7 @@ public sealed class SiteScreenshotTests
 
             match.Thinker.Should().NotBeNull();
             using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
-            frame.Save(Path.Combine(dir, "engines.png"));
+            frame.Save(Path.Combine(dir, "engines.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             window.Close();
             match.Stop();
         }
@@ -215,7 +215,7 @@ public sealed class SiteScreenshotTests
             };
             window.Show();
             using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
-            frame.Save(Path.Combine(dir, "weak-groups.png"));
+            frame.Save(Path.Combine(dir, "weak-groups.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             window.Close();
         }
         finally
@@ -243,7 +243,7 @@ public sealed class SiteScreenshotTests
             window.FindDeep<Avalonia.Controls.TabControl>("Tabs")!.SelectedIndex = 1;
             await Task.Delay(60);
             using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
-            frame.Save(Path.Combine(dir, "board-prefs.png"));
+            frame.Save(Path.Combine(dir, "board-prefs.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             window.Close();
         }
         finally

@@ -100,8 +100,8 @@
         <StackPanel IsVisible="{Binding IsPasswordMode}" Spacing="8">
           <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center"
                      Text="{l:T Lobby.BetaHint}" />
-          <TextBox Watermark="{l:T Lobby.Username}" Text="{Binding Username}" x:Name="UsernameBox" />
-          <TextBox Watermark="{l:T Lobby.Password}" PasswordChar="•" Text="{Binding Password}" x:Name="PasswordBox">
+          <TextBox PlaceholderText="{l:T Lobby.Username}" Text="{Binding Username}" x:Name="UsernameBox" />
+          <TextBox PlaceholderText="{l:T Lobby.Password}" PasswordChar="•" Text="{Binding Password}" x:Name="PasswordBox">
             <TextBox.KeyBindings>
               <KeyBinding Gesture="Enter" Command="{Binding SignInCommand}" />
             </TextBox.KeyBindings>
@@ -183,7 +183,7 @@
                 </Style>
               </Grid.Styles>
               <TextBlock Classes="label" Text="{l:T Lobby.Opponent}" />
-              <TextBox Grid.Column="1" Text="{Binding OpponentUsername}" Watermark="{l:T Lobby.OpponentHint}" x:Name="OpponentBox" />
+              <TextBox Grid.Column="1" Text="{Binding OpponentUsername}" PlaceholderText="{l:T Lobby.OpponentHint}" x:Name="OpponentBox" />
 
               <TextBlock Grid.Row="1" Classes="label" Text="{l:T Lobby.Board}" />
               <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding BoardSizes}" SelectedItem="{Binding BoardSize}" />
@@ -256,7 +256,7 @@
         <TabItem Header="{l:T Lobby.Finished}">
           <DockPanel Margin="0,8,0,0">
             <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" Margin="0,0,0,8">
-              <TextBox Text="{Binding GameLink}" Watermark="{l:T Lobby.GameLinkHint}" x:Name="GameLinkBox" />
+              <TextBox Text="{Binding GameLink}" PlaceholderText="{l:T Lobby.GameLinkHint}" x:Name="GameLinkBox" />
               <Button Grid.Column="1" Content="{l:T Lobby.OpenInEditor}" Command="{Binding OpenLinkCommand}" x:Name="OpenLinkButton" />
               <Button Grid.Column="2" Content="{l:T Lobby.Refresh}" Command="{Binding RefreshFinishedCommand}" x:Name="RefreshFinishedButton" />
             </Grid>

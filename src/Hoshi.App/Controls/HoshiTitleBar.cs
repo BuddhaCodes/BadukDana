@@ -99,11 +99,17 @@ public sealed class HoshiTitleBar : Border
         }
 
         // A window without decorations (the splash) draws its own round card: nothing to extend into.
-        if (_window.SystemDecorations != SystemDecorations.None)
+        if (_window.WindowDecorations != WindowDecorations.None)
         {
             _window.ExtendClientAreaToDecorationsHint = true;
             _window.ExtendClientAreaTitleBarHeightHint = BarHeight;
-            _window.ExtendClientAreaChromeHints = OperatingSystem.IsMacOS() ? ExtendClientAreaChromeHints.PreferSystemChrome : ExtendClientAreaChromeHints.NoChrome;
+
+            // Avalonia 12: where it draws the decorations itself (Windows, X11) it would add its own caption buttons;
+            // Hoshi's theme keeps only the frame. macOS keeps its native traffic lights (nothing drawn there).
+            if (!OperatingSystem.IsMacOS() && this.TryFindResource("HoshiWindowDecorations", out object? theme) && theme is Avalonia.Styling.ControlTheme chrome)
+            {
+                _window.WindowDecorationsTheme = chrome;
+            }
         }
 
         _window.PropertyChanged += OnWindowPropertyChanged;
@@ -122,7 +128,7 @@ public sealed class HoshiTitleBar : Border
     private void OnWindowPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
         if (e.Property == Window.TitleProperty || e.Property == Window.IsExtendedIntoWindowDecorationsProperty
-            || e.Property == IsMergedProperty || e.Property == Window.SystemDecorationsProperty)
+            || e.Property == IsMergedProperty || e.Property == Window.WindowDecorationsProperty)
         {
             Update();
         }
@@ -135,7 +141,7 @@ public sealed class HoshiTitleBar : Border
             return;
         }
 
-        bool undecorated = _window.SystemDecorations == SystemDecorations.None;
+        bool undecorated = _window.WindowDecorations == WindowDecorations.None;
         IsVisible = !undecorated && !GetIsMerged(_window) && (AlwaysShow || _window.IsExtendedIntoWindowDecorations);
         _title.Text = _window.Title;
         _icon.Source ??= Themes.Skins.Image("avares://Hoshi.App/Assets/hoshi.png");

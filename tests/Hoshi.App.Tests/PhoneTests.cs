@@ -266,35 +266,35 @@ public sealed class PhoneTests
             await Task.Delay(60);
             using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
             {
-                frame.Save(Path.Combine(dir, "phone-board.png"));
+                frame.Save(Path.Combine(dir, "phone-board.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             }
 
             shell.ToggleSheetCommand.Execute(PhoneSheet.Analysis);
             await Task.Delay(60);
             using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
             {
-                frame.Save(Path.Combine(dir, "phone-analysis.png"));
+                frame.Save(Path.Combine(dir, "phone-analysis.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             }
 
             shell.ToggleSheetCommand.Execute(PhoneSheet.Menu);
             await Task.Delay(60);
             using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
             {
-                frame.Save(Path.Combine(dir, "phone-menu.png"));
+                frame.Save(Path.Combine(dir, "phone-menu.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             }
 
             shell.ToggleSheetCommand.Execute(PhoneSheet.Study);
             await Task.Delay(60);
             using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
             {
-                frame.Save(Path.Combine(dir, "phone-study.png"));
+                frame.Save(Path.Combine(dir, "phone-study.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             }
 
             shell.ToggleSheetCommand.Execute(PhoneSheet.Moves);
             await Task.Delay(60);
             using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
             {
-                frame.Save(Path.Combine(dir, "phone-moves.png"));
+                frame.Save(Path.Combine(dir, "phone-moves.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             }
 
             window.Close();
@@ -476,7 +476,7 @@ public sealed class PhoneTests
     {
         using Avalonia.Media.Imaging.WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
-        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", name));
+        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", name), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
     }
 
     [AvaloniaFact]
@@ -666,7 +666,7 @@ public sealed class PhoneTests
         static void Save(Window window, string dir, string name)
         {
             using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame");
-            frame.Save(Path.Combine(dir, name));
+            frame.Save(Path.Combine(dir, name), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         }
     }
 
@@ -692,7 +692,7 @@ public sealed class PhoneTests
             Directory.CreateDirectory(dir);
             using (WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
             {
-                frame.Save(Path.Combine(dir, "phone-territory.png"));
+                frame.Save(Path.Combine(dir, "phone-territory.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             }
 
             shell.Main.ToggleZenCommand.Execute(null);

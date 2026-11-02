@@ -144,7 +144,7 @@ public sealed class ThemeTests
 
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
-        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "preferences.png"));
+        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "preferences.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         window.FindDeep<Avalonia.Controls.ListBox>("ThemeList")!.ItemCount.Should().Be(HoshiThemes.All.Count);
         ThemeService.Apply(HoshiThemes.Default, animations: false, Application.Current!.Resources);
     }
@@ -271,7 +271,7 @@ public sealed class ThemeTests
             Directory.CreateDirectory(dir);
             using (Avalonia.Media.Imaging.WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
             {
-                frame.Save(Path.Combine(dir, "preferences-appearance.png"));
+                frame.Save(Path.Combine(dir, "preferences-appearance.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             }
 
             window.FindDeep<TextBlock>("GlobalThemeTitle")!.Text.Should().Be(Hoshi.Core.Localization.Tr.T("Prefs.GlobalTheme"));

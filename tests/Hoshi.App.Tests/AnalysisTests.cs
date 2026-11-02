@@ -308,12 +308,12 @@ public sealed class AnalysisWindowTests
         window.FindDeep<Button>("TerritoryButton")!.Classes.Should().Contain("on");
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
-        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "analysis.png"));
+        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "analysis.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
 
         // Territory alone (heuristic) is also saved for review.
         vm.Analysis.IsAnalysisOn = false;
         using WriteableBitmap heuristic = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
-        heuristic.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "territory.png"));
+        heuristic.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "territory.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
     }
 
     [AvaloniaFact]
@@ -328,6 +328,6 @@ public sealed class AnalysisWindowTests
         window.FindDeep<Border>("WarmupPill")!.Opacity.Should().BeApproximately(1, 0.01);
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
-        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "warmup.png"));
+        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "warmup.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
     }
 }

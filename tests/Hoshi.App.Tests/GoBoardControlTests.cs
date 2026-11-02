@@ -182,7 +182,7 @@ public sealed class GoBoardControlTests
         WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         string dir = Path.Combine(AppContext.BaseDirectory, "screenshots");
         Directory.CreateDirectory(dir);
-        frame.Save(Path.Combine(dir, fileName));
+        frame.Save(Path.Combine(dir, fileName), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         return frame;
     }
 

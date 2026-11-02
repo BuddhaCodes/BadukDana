@@ -114,7 +114,7 @@
             <TextBlock Classes="secondary" Text="{l:T Prefs.MoveEntryHint}" TextWrapping="Wrap" />
             <!-- Discord status: off by default, only the kind of activity, through the Discord app on this computer. -->
             <ToggleSwitch IsChecked="{Binding DiscordPresence}" OnContent="{l:T Prefs.Discord}" OffContent="{l:T Prefs.Discord}" x:Name="DiscordSwitch" Margin="0,6,0,0" IsVisible="{Binding IsDesktop}" />
-            <TextBox Text="{Binding DiscordAppId}" Watermark="{l:T Prefs.DiscordAppId}" Width="260" HorizontalAlignment="Left" IsEnabled="{Binding DiscordPresence}" x:Name="DiscordAppIdBox" IsVisible="{Binding IsDesktop}" />
+            <TextBox Text="{Binding DiscordAppId}" PlaceholderText="{l:T Prefs.DiscordAppId}" Width="260" HorizontalAlignment="Left" IsEnabled="{Binding DiscordPresence}" x:Name="DiscordAppIdBox" IsVisible="{Binding IsDesktop}" />
             <TextBlock Classes="secondary" Text="{Binding DiscordHint}" TextWrapping="Wrap" IsVisible="{Binding IsDesktop}" />
             <CheckBox IsChecked="{Binding CheckForUpdates}" Content="{l:T Prefs.CheckForUpdates}" Margin="0,8,0,0" x:Name="UpdatesBox" IsVisible="{Binding IsDesktop}" />
             <TextBlock Classes="secondary" Text="{Binding UpdatesHint}" TextWrapping="Wrap" IsVisible="{Binding IsDesktop}" />
@@ -189,13 +189,13 @@
                 <Style Selector="Button"><Setter Property="Margin" Value="8,3,0,3" /></Style>
               </Grid.Styles>
               <TextBlock Classes="label" Text="{l:T Prefs.Executable}" VerticalAlignment="Center" IsVisible="{Binding IsDesktop}" />
-              <TextBox Grid.Column="1" Text="{Binding KataGoExecutable}" Watermark="katago.exe" x:Name="ExecutableBox" IsVisible="{Binding IsDesktop}" />
+              <TextBox Grid.Column="1" Text="{Binding KataGoExecutable}" PlaceholderText="katago.exe" x:Name="ExecutableBox" IsVisible="{Binding IsDesktop}" />
               <Button Grid.Column="2" Content="{l:T Prefs.Browse}" Command="{Binding BrowseExecutableCommand}" IsVisible="{Binding IsDesktop}" />
               <TextBlock Grid.Row="1" Classes="label" Text="{l:T Prefs.Network}" VerticalAlignment="Center" IsVisible="{Binding IsDesktop}" />
-              <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding KataGoModel}" Watermark="kata1-…bin.gz" IsVisible="{Binding IsDesktop}" />
+              <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding KataGoModel}" PlaceholderText="kata1-…bin.gz" IsVisible="{Binding IsDesktop}" />
               <Button Grid.Row="1" Grid.Column="2" Content="{l:T Prefs.Browse}" Command="{Binding BrowseModelCommand}" IsVisible="{Binding IsDesktop}" />
               <TextBlock Grid.Row="2" Classes="label" Text="{l:T Prefs.Config}" VerticalAlignment="Center" IsVisible="{Binding IsDesktop}" />
-              <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding KataGoConfig}" Watermark="analysis_example.cfg" IsVisible="{Binding IsDesktop}" />
+              <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding KataGoConfig}" PlaceholderText="analysis_example.cfg" IsVisible="{Binding IsDesktop}" />
               <Button Grid.Row="2" Grid.Column="2" Content="{l:T Prefs.Browse}" Command="{Binding BrowseConfigCommand}" IsVisible="{Binding IsDesktop}" />
               <TextBlock Grid.Row="3" Classes="label" Text="{l:T Prefs.MaxVisits}" VerticalAlignment="Center" />
               <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding AnalysisVisitsBox}" x:Name="VisitsBox" Minimum="10" Maximum="100000" Increment="50"
@@ -204,14 +204,14 @@
             <!-- Optional: FFmpeg for the replay maker's MP4 videos. -->
             <TextBlock Classes="label" Text="{l:T Prefs.Ffmpeg}" Margin="0,6,0,0" IsVisible="{Binding IsDesktop}" />
             <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding IsDesktop}">
-              <TextBox Text="{Binding FfmpegPath}" Watermark="ffmpeg" x:Name="FfmpegBox" />
+              <TextBox Text="{Binding FfmpegPath}" PlaceholderText="ffmpeg" x:Name="FfmpegBox" />
               <Button Grid.Column="1" Margin="8,0,0,0" Content="{l:T Prefs.Browse}" Command="{Binding BrowseFfmpegCommand}" />
             </Grid>
             <!-- Optional: KataGo's human-style model adds "KataGo (human style)" with a rank, to play a rival of your level. -->
             <TextBlock Classes="label" Text="{l:T Prefs.HumanModel}" Margin="0,6,0,0" IsVisible="{Binding IsDesktop}" />
             <TextBlock Classes="secondary" Text="{l:T Prefs.HumanModelHint}" TextWrapping="Wrap" IsVisible="{Binding IsDesktop}" />
             <Grid ColumnDefinitions="*,Auto,Auto" IsVisible="{Binding IsDesktop}">
-              <TextBox Text="{Binding KataGoHumanModel}" Watermark="b18c384nbt-humanv0.bin.gz" x:Name="HumanModelBox" />
+              <TextBox Text="{Binding KataGoHumanModel}" PlaceholderText="b18c384nbt-humanv0.bin.gz" x:Name="HumanModelBox" />
               <Button Grid.Column="1" Margin="8,0,0,0" Content="{l:T Prefs.Browse}" Command="{Binding BrowseHumanModelCommand}" />
               <Button Grid.Column="2" Margin="8,0,0,0" Content="{l:T Prefs.HumanModelGet}" Command="{Binding OpenHumanModelPageCommand}" />
             </Grid>
@@ -304,13 +304,13 @@
                 <TextBlock Classes="label" Text="{l:T Prefs.EngineName}" VerticalAlignment="Center" />
                 <TextBox Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedEngineItem.Name, FallbackValue={x:Null}}" x:Name="EngineNameBox" />
                 <TextBlock Grid.Row="1" Classes="label" Text="{l:T Prefs.Executable}" VerticalAlignment="Center" />
-                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEngineItem.Executable, FallbackValue={x:Null}}" Watermark="leelaz.exe, gnugo, katago…" x:Name="EngineExeBox" />
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEngineItem.Executable, FallbackValue={x:Null}}" PlaceholderText="leelaz.exe, gnugo, katago…" x:Name="EngineExeBox" />
                 <Button Grid.Row="1" Grid.Column="2" Content="{l:T Prefs.Browse}" Command="{Binding BrowseEngineExecutableCommand}" />
                 <TextBlock Grid.Row="2" Classes="label" Text="{l:T Prefs.EngineArguments}" VerticalAlignment="Center" />
-                <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedEngineItem.Arguments, FallbackValue={x:Null}}" Watermark="--gtp -w network.gz" x:Name="EngineArgsBox" TextWrapping="Wrap" />
+                <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedEngineItem.Arguments, FallbackValue={x:Null}}" PlaceholderText="--gtp -w network.gz" x:Name="EngineArgsBox" TextWrapping="Wrap" />
                 <TextBlock Grid.Row="3" Classes="label" Text="{l:T Prefs.EngineInit}" VerticalAlignment="Top" Margin="0,8,0,0" />
                 <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedEngineItem.InitCommands, FallbackValue={x:Null}}" AcceptsReturn="True"
-                         MinHeight="64" Watermark="time_settings 0 5 1" FontFamily="Cascadia Mono, Consolas, Menlo, DejaVu Sans Mono, monospace" />
+                         MinHeight="64" PlaceholderText="time_settings 0 5 1" FontFamily="Cascadia Mono, Consolas, Menlo, DejaVu Sans Mono, monospace" />
               </Grid>
               <TextBlock Classes="secondary" TextWrapping="Wrap" Text="{l:T Prefs.EngineInitHint}" IsVisible="{Binding HasEditableEngine}" />
               <StackPanel Orientation="Horizontal" Spacing="8">

@@ -567,7 +567,7 @@ public sealed class LobbyWindowTests
         window.FindDeep<ComboBox>("ServerBox")!.IsEffectivelyVisible.Should().BeTrue();
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
-        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "phase4-lobby-beta.png"));
+        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "phase4-lobby-beta.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         window.FindDeep<TabControl>("Tabs")!.IsVisible.Should().BeFalse();
         window.FindDeep<TextBlock>("SocialAccountHint")!.IsEffectivelyVisible.Should().BeTrue();
     }
@@ -586,7 +586,7 @@ public sealed class LobbyWindowTests
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         string outDir = Path.Combine(AppContext.BaseDirectory, "screenshots");
         Directory.CreateDirectory(outDir);
-        frame.Save(Path.Combine(outDir, "phase4-lobby-signin.png"));
+        frame.Save(Path.Combine(outDir, "phase4-lobby-signin.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
     }
 
     [AvaloniaFact]
@@ -637,7 +637,7 @@ public sealed class LobbyWindowTests
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         string outDir = Path.Combine(AppContext.BaseDirectory, "screenshots");
         Directory.CreateDirectory(outDir);
-        frame.Save(Path.Combine(outDir, "phase4-lobby.png"));
+        frame.Save(Path.Combine(outDir, "phase4-lobby.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
     }
 
     [AvaloniaFact]

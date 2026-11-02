@@ -132,7 +132,7 @@ public sealed class TsumegoTests : IDisposable
         Directory.CreateDirectory(dir);
         using (Avalonia.Media.Imaging.WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame"))
         {
-            frame.Save(Path.Combine(dir, "tsumego.png"));
+            frame.Save(Path.Combine(dir, "tsumego.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         }
 
         window.Close();

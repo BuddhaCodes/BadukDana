@@ -413,7 +413,7 @@ public sealed class MainWindowOnlineTests
 
         using WriteableBitmap frame = window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No frame rendered");
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
-        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "phase5-online-game.png"));
+        frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", "phase5-online-game.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
 
         vm.Online!.LeaveCommand.Execute(null);
         vm.IsOnline.Should().BeFalse();
