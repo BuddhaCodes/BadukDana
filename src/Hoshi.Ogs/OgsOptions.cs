@@ -55,6 +55,15 @@ public sealed record OgsOptions
     /// </summary>
     public Uri? AppReturnUri { get; init; }
 
+    /// <summary>
+    /// Development aid: record the traffic with this server to <see cref="RecordDirectory"/> (secrets removed), to turn
+    /// real beta games into test fixtures. Off unless started with <c>--Ogs:RecordTraffic=true</c>.
+    /// </summary>
+    public bool RecordTraffic { get; init; }
+
+    /// <summary>Where recordings go; the app sets its data folder's <c>ogs-captures</c> when this is empty.</summary>
+    public string? RecordDirectory { get; init; }
+
     public Uri RedirectUri => new($"http://127.0.0.1:{RedirectPort}{RedirectPath}");
 
     public Uri EffectiveWebSocketUrl => WebSocketUrl ?? new UriBuilder(BaseUrl)
