@@ -82,7 +82,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         game.ResultSet += (_, result) => CountRankGame(result);
         Backup = backup ?? new BackupViewModel();
         Backup.Status += (_, text) => game.ShowStatus(text);
-        if (BackupViewModel.StartupMessage(AppHost.ImportSummary, AppHost.ImportError) is { } imported)
+        if (BackupViewModel.StartupMessage(AppHost.ImportSummary, AppHost.ImportError, AppHost.SyncSummary) is { } imported)
         {
             game.ShowStatus(imported);
         }

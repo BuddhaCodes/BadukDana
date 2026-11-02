@@ -29,10 +29,11 @@ public sealed partial class BackupViewModel : ViewModelBase
     public event EventHandler<string>? Status;
 
     /// <summary>The line to show at start about an import merged then (or that failed); null when none.</summary>
-    public static string? StartupMessage(BackupSummary? summary, string? error) =>
+    public static string? StartupMessage(BackupSummary? summary, string? error, BackupSummary? synced = null) =>
         error is not null ? Tr.F("Backup.Failed", error)
-        : summary is null ? null
-        : Tr.F("Backup.Imported", summary.Games, summary.JosekiCards, summary.ProblemCards, summary.Reviews);
+        : summary is not null ? Tr.F("Backup.Imported", summary.Games, summary.JosekiCards, summary.ProblemCards, summary.Reviews)
+        : synced is { IsEmpty: false } ? Tr.F("Sync.Pulled", synced.Games, synced.JosekiCards + synced.ProblemCards, synced.Reviews)
+        : null;
 
     [RelayCommand]
     private async Task Export()

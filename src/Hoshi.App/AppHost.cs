@@ -32,6 +32,7 @@ public static class AppHost
         try
         {
             ImportSummary = Services.Backup.BackupPackage.ApplyPending(AppPaths.DataDirectory);
+            SyncSummary = Services.Backup.FolderSync.PullAtStart(AppPaths.DataDirectory);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Text.Json.JsonException or InvalidDataException or FormatException)
         {
@@ -60,6 +61,9 @@ public static class AppHost
 
     /// <summary>What the import merged at this start (null when there was none).</summary>
     public static Services.Backup.BackupSummary? ImportSummary { get; private set; }
+
+    /// <summary>What the sync folder brought from the other devices at this start (null when sync is off).</summary>
+    public static Services.Backup.BackupSummary? SyncSummary { get; private set; }
 
     /// <summary>Why the pending import could not be merged at this start, if it failed.</summary>
     public static string? ImportError { get; private set; }

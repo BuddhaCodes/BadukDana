@@ -142,3 +142,45 @@ public sealed class BackupTests : IDisposable
         File.Exists(Path.Combine(Path.GetDirectoryName(_root)!, "escaped.txt")).Should().BeFalse();
     }
 }
+
+/// <summary>"Sync with a folder": one file per device, each start merges what the others changed.</summary>
+public sealed class FolderSyncTests : IDisposable
+{
+    private const string Game = "(;GM[1]FF[4]SZ[9]PB[Ana]PW[Ben];B[ee];W[cc];B[gg];W[cg];B[gc];W[dd];B[ed];W[dc];B[eb];W[ce];B[ef])";
+    private readonly string _root = Directory.CreateTempSubdirectory("hoshi-sync").FullName;
+
+    public void Dispose() => Directory.Delete(_root, recursive: true);
+
+    private string Dir(string name) => Directory.CreateDirectory(Path.Combine(_root, name)).FullName;
+
+    [Fact]
+    public void Two_computers_see_each_others_games_through_the_folder_without_touching_each_others_file()
+    {
+        string folder = Dir("Dropbox"), laptop = Dir("laptop"), desktop = Dir("desktop");
+        new ReplayStore(dataDirectory: laptop).Save(SgfParser.Parse(Game), "laptop-game", "local");
+        new ReplayStore(dataDirectory: desktop).Save(SgfParser.Parse(Game.Replace("Ana", "Cleo", StringComparison.Ordinal)), "desktop-game", "local");
+
+        FolderSync.Publish(laptop, folder, "laptop-1a2b", "1").Should().BeTrue();
+        FolderSync.Publish(desktop, folder, "desktop-3c4d", "1").Should().BeTrue();
+        Directory.GetFiles(folder).Select(Path.GetFileName).Should().BeEquivalentTo(["hoshi-laptop-1a2b.hoshi", "hoshi-desktop-3c4d.hoshi"]);
+
+        FolderSync.Pull(desktop, folder, "desktop-3c4d").Games.Should().Be(1);
+        FolderSync.Pull(laptop, folder, "laptop-1a2b").Games.Should().Be(1);
+        new ReplayStore(dataDirectory: desktop).List().Select(e => e.Id).Should().BeEquivalentTo(["laptop-game", "desktop-game"]);
+
+        FolderSync.Pull(desktop, folder, "desktop-3c4d").IsEmpty.Should().BeTrue("nothing changed since the last look");
+    }
+
+    [Fact]
+    public void Sync_settings_are_read_from_the_settings_file_at_start()
+    {
+        string folder = Dir("Sync"), data = Dir("data"), other = Dir("other");
+        new ReplayStore(dataDirectory: other).Save(SgfParser.Parse(Game), "g", "local");
+        FolderSync.Publish(other, folder, "other-0000", "1");
+        File.WriteAllText(Path.Combine(data, "settings.json"), JsonSerializer.Serialize(new { syncFolder = folder, deviceId = "me-1111" }));
+
+        FolderSync.PullAtStart(data)!.Games.Should().Be(1);
+        FolderSync.PullAtStart(Dir("unsynced")).Should().BeNull();
+        FolderSync.NewDeviceId().Should().MatchRegex("^[a-z0-9]+-[0-9a-f]{4}$");
+    }
+}

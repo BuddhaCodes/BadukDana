@@ -68,6 +68,9 @@ internal static class Program
         {
             // Synchronous and owned by the UI thread's objects: done here, before leaving it.
             host.Services.GetService<Hoshi.App.ViewModels.MainWindowViewModel>()?.SaveCurrentGame();
+
+            // Sync folder (if on): this computer's games and progress for the other devices.
+            Hoshi.App.Services.Backup.FolderSync.PublishIfEnabled(host.Services.GetService<Hoshi.App.Services.ISettingsService>());
             host.Services.GetService<Hoshi.App.Services.Music.IMusicService>()?.Stop();
         }
         catch (Exception ex) when (ex is InvalidOperationException or IOException or UnauthorizedAccessException)

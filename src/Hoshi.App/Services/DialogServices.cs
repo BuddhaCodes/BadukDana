@@ -35,10 +35,24 @@ public interface IFileDialogService
 public interface IFilePickerService
 {
     Task<string?> PickFileAsync(string title);
+
+    /// <summary>Picks a folder (the sync folder); null when cancelled or not available.</summary>
+    Task<string?> PickFolderAsync(string title) => Task.FromResult<string?>(null);
 }
 
 public sealed class AvaloniaFilePickerService : IFilePickerService
 {
+    public async Task<string?> PickFolderAsync(string title)
+    {
+        if (MainWindowLocator.Top?.StorageProvider is not { } storage)
+        {
+            return null;
+        }
+
+        IReadOnlyList<IStorageFolder> folders = await storage.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = title, AllowMultiple = false });
+        return folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
+    }
+
     public async Task<string?> PickFileAsync(string title)
     {
         TopLevel? top = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Windows

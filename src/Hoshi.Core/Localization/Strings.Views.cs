@@ -46,6 +46,13 @@ public static partial class Tr
         Add(d, "Backup.Staged", "Close and reopen Hoshi to finish the import.", "Cierra y vuelve a abrir Hoshi para terminar de importar.");
         Add(d, "Backup.Imported", "Backup imported: {0} games, {1} joseki and {2} problem cards, {3} reviews.", "Copia importada: {0} partidas, {1} tarjetas de joseki y {2} de problemas, {3} revisiones.");
         Add(d, "Backup.Failed", "The backup could not be used: {0}", "No se pudo usar la copia: {0}");
+        Add(d, "Sync.Title", "Sync with a folder", "Sincronizar con una carpeta");
+        Add(d, "Sync.Hint", "Pick a folder that Syncthing, Dropbox, Google Drive or OneDrive keeps in step between your computers. Hoshi leaves its games, studies and progress there when it closes and adds the other computers' when it opens; nothing is lost and preferences stay each computer's own.", "Elige una carpeta que Syncthing, Dropbox, Google Drive u OneDrive mantengan igual en tus ordenadores. Hoshi deja allí sus partidas, estudios y progreso al cerrar y suma los de tus otros ordenadores al abrir; no se pierde nada y las preferencias siguen siendo de cada ordenador.");
+        Add(d, "Sync.Choose", "Choose a folder…", "Elegir carpeta…");
+        Add(d, "Sync.Stop", "Stop syncing", "Dejar de sincronizar");
+        Add(d, "Sync.Off", "Not syncing.", "Sin sincronizar.");
+        Add(d, "Sync.On", "Syncing with {0} as \"{1}\".", "Sincronizando con {0} como «{1}».");
+        Add(d, "Sync.Pulled", "From your other devices: {0} games, {1} practice cards, {2} reviews.", "De tus otros dispositivos: {0} partidas, {1} tarjetas de práctica, {2} revisiones.");
         Add(d, "Report.Menu", "Report a problem…", "Informar de un problema…");
         Add(d, "Report.Crashed", "Hoshi closed unexpectedly ({0}).", "Hoshi se cerró de forma inesperada ({0}).");
         Add(d, "Report.Ask", "You can open a ready-made report on GitHub. You will see everything before sending it; passwords, tokens and your user folder are left out.", "Puedes abrir un informe ya preparado en GitHub. Verás todo antes de enviarlo; las contraseñas, los tokens y tu carpeta de usuario quedan fuera.");

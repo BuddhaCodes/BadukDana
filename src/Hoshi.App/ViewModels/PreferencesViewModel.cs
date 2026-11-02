@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Hoshi.App.Services;
 using Hoshi.App.Themes;
 using Hoshi.Core;
@@ -546,6 +547,41 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         if (_loaded && _settings is not null)
         {
             _settings.Save(_settings.Current with { CheckForUpdates = value });
+        }
+    }
+
+    /// <summary>"Sync with a folder": where (null = off) and how this device is named there.</summary>
+    public string SyncText => _settings?.Current is { SyncFolder: { } folder, DeviceId: { } id }
+        ? Tr.F("Sync.On", folder, id)
+        : Tr.T("Sync.Off");
+
+    public bool HasSyncFolder => _settings?.Current.SyncFolder is not null;
+
+    [RelayCommand]
+    private async Task ChooseSyncFolder()
+    {
+        if (_picker is null || _settings is null || await _picker.PickFolderAsync(Tr.T("Sync.Title")) is not { } folder)
+        {
+            return;
+        }
+
+        _settings.Save(_settings.Current with { SyncFolder = folder, DeviceId = _settings.Current.DeviceId ?? Services.Backup.FolderSync.NewDeviceId() });
+
+        // Right away: this computer's file, and the others' (the services keep what they read at start; the rest
+        // arrives at the next start).
+        Services.Backup.FolderSync.PublishIfEnabled(_settings);
+        OnPropertyChanged(nameof(SyncText));
+        OnPropertyChanged(nameof(HasSyncFolder));
+    }
+
+    [RelayCommand]
+    private void StopSync()
+    {
+        if (_settings is not null)
+        {
+            _settings.Save(_settings.Current with { SyncFolder = null });
+            OnPropertyChanged(nameof(SyncText));
+            OnPropertyChanged(nameof(HasSyncFolder));
         }
     }
 
