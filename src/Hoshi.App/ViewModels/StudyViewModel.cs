@@ -238,6 +238,11 @@ public sealed partial class StudyViewModel : ViewModelBase
         {
             _analysis.PropertyChanged += (_, e) =>
             {
+                if (e.PropertyName is nameof(AnalysisViewModel.KeyMistakes) or nameof(AnalysisViewModel.HasMistakes) or nameof(AnalysisViewModel.IsBlocked))
+                {
+                    OnPropertyChanged(nameof(CanStartGuided));
+                }
+
                 if (e.PropertyName is nameof(AnalysisViewModel.IsEngineActive) or nameof(AnalysisViewModel.IsBlocked))
                 {
                     ExplainChanged();

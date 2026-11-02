@@ -116,6 +116,63 @@ public sealed class AnalysisViewModelTests
     }
 
     [AvaloniaFact]
+    public async Task The_guided_review_goes_through_the_biggest_mistakes_and_keeps_the_players_words()
+    {
+        _engine.SecondGap = 9;
+        _engine.MissFactor = 4;
+        var study = new StudyViewModel(_game, _vm);
+        study.CanStartGuided.Should().BeFalse();
+        _vm.IsAnalysisOn = true;
+        _game.PlayCommand.Execute(new Point(15, 3));
+        _game.PlayCommand.Execute(new Point(3, 3));
+        _game.PlayCommand.Execute(new Point(9, 9));
+        await SettleAsync();
+        study.CanStartGuided.Should().BeTrue();
+
+        study.StartGuidedCommand.Execute(null);
+        study.IsGuided.Should().BeTrue();
+        _game.MoveNumber.Should().Be(2);
+        study.GuidedProgress.Should().Be("1 de 2");
+        study.GuidedPrompt.Should().StartWith("Jugada 2, Blancas D16").And.EndWith("¿Qué salió mal?");
+        study.GuidedSaveCommand.CanExecute(null).Should().BeFalse("nothing written yet");
+        study.GuidedText = "I ignored the open corner";
+        study.GuidedSaveCommand.Execute(null);
+        Hoshi.Sgf.Study.StudyStore.Read(_game.Tree.Root.Children[0].Children[0]).Pins.Should().ContainSingle()
+            .Which.Should().Match<Hoshi.Sgf.Study.StudyPin>(p => p.Category == Hoshi.Sgf.Study.PinCategory.Mistake && p.Text == "I ignored the open corner");
+        _game.MoveNumber.Should().Be(3);
+        study.GuidedNextCommand.Execute(null);
+        study.IsGuided.Should().BeFalse();
+        _game.StatusText.Should().StartWith("Revisión guiada terminada: 1 notas");
+    }
+
+    [AvaloniaFact]
+    public void The_presentation_steps_through_the_studied_moments()
+    {
+        var study = new StudyViewModel(_game);
+        study.StartPresentationCommand.Execute(null);
+        study.IsPresenting.Should().BeFalse("nothing studied yet");
+        _game.PlayCommand.Execute(new Point(15, 3));
+        study.AddPin(Hoshi.Sgf.Study.PinCategory.KeyMoment, "The first corner");
+        _game.PlayCommand.Execute(new Point(3, 3));
+        _game.PlayCommand.Execute(new Point(9, 9));
+        study.AddPin(Hoshi.Sgf.Study.PinCategory.Mistake, "Too early");
+        _game.GoFirstCommand.Execute(null);
+
+        study.StartPresentationCommand.Execute(null);
+        study.IsPresenting.Should().BeTrue();
+        _game.MoveNumber.Should().Be(1);
+        study.SlideProgress.Should().Be("1 / 2");
+        study.SlideTitle.Should().Be("jugada 1 · Momento clave");
+        study.SlideText.Should().StartWith("The first corner — ");
+        study.PreviousSlideCommand.CanExecute(null).Should().BeFalse();
+        study.NextSlideCommand.Execute(null);
+        _game.MoveNumber.Should().Be(3);
+        study.NextSlideCommand.CanExecute(null).Should().BeFalse();
+        study.StopPresentationCommand.Execute(null);
+        study.IsPresenting.Should().BeFalse();
+    }
+
+    [AvaloniaFact]
     public async Task The_review_inspector_lists_candidates_and_the_biggest_mistakes_and_jumps_between_them()
     {
         _engine.SecondGap = 9;

@@ -68,6 +68,16 @@ public sealed partial class StudyViewModel
                 EndQuiz(); // another game: its questions are not these (the note review opens its games itself)
             }
 
+            if (!first && IsPresenting)
+            {
+                StopPresentation();
+            }
+
+            if (!first && IsGuided)
+            {
+                EndGuided();
+            }
+
             // A game that comes with a study (a shared file, a replay, a reloaded online game) opens the panel.
             if (!first && StudyStore.All(_tree).Any())
             {

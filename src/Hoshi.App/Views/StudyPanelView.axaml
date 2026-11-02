@@ -77,6 +77,25 @@
                   </StackPanel>
                 </Border>
 
+                <!-- Guided review: one step per big mistake KataGo found; the player writes what went wrong. -->
+                <Border x:Name="GuidedCard" IsVisible="{Binding Study.IsGuided}" Padding="12,10" CornerRadius="10"
+                        Background="{DynamicResource Bg.Panel}" BorderBrush="{DynamicResource Accent}" BorderThickness="1">
+                  <StackPanel Spacing="6">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{l:T Study.Guided}" FontWeight="SemiBold" />
+                      <TextBlock Grid.Column="1" Classes="secondary" Text="{Binding Study.GuidedProgress}" />
+                    </Grid>
+                    <TextBlock Text="{Binding Study.GuidedPrompt}" TextWrapping="Wrap" x:Name="GuidedPrompt" />
+                    <TextBox Text="{Binding Study.GuidedText}" PlaceholderText="{l:T Study.GuidedWatermark}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="54" MaxLength="4000" x:Name="GuidedText" />
+                    <WrapPanel>
+                      <Button Classes="accent" Content="{l:T Study.GuidedSave}" Command="{Binding Study.GuidedSaveCommand}" Margin="0,0,6,4" x:Name="GuidedSave" />
+                      <Button Content="{l:T Study.Explain}" Command="{Binding Study.ExplainCommand}" IsVisible="{Binding Study.ExplainAvailable}" Margin="0,0,6,4" />
+                      <Button Content="{l:T Study.GuidedSkip}" Command="{Binding Study.GuidedNextCommand}" Margin="0,0,6,4" />
+                      <Button Content="{l:T Study.QuizEnd}" Command="{Binding Study.EndGuidedCommand}" Margin="0,0,6,4" />
+                    </WrapPanel>
+                  </StackPanel>
+                </Border>
+
                 <StackPanel Spacing="8" IsVisible="{Binding !Study.IsQuizActive}">
                   <TextBlock Classes="secondary" FontSize="11.5" TextWrapping="Wrap" Text="{l:T Study.OnlineNote}" IsVisible="{Binding Study.IsLiveOnline}" x:Name="StudyOnlineNote" />
 
@@ -271,6 +290,12 @@
                     </Button>
                     <Button Command="{Binding Study.StartQuizCommand}" ToolTip.Tip="{l:T Study.QuizTip}" x:Name="StudyQuiz">
                       <StackPanel Orientation="Horizontal" Spacing="6"><c:HoshiIcon Icon="{DynamicResource Icon.Quiz}" Size="14" /><TextBlock Text="{l:T Study.Quiz}" FontSize="12" /></StackPanel>
+                    </Button>
+                    <Button Command="{Binding Study.StartGuidedCommand}" IsVisible="{Binding Study.CanStartGuided}" ToolTip.Tip="{l:T Study.GuidedTip}" x:Name="StudyGuided">
+                      <TextBlock Text="{l:T Study.Guided}" FontSize="12" />
+                    </Button>
+                    <Button Command="{Binding Study.StartPresentationCommand}" ToolTip.Tip="{l:T Study.PresentTip}" x:Name="StudyPresent">
+                      <TextBlock Text="{l:T Study.Present}" FontSize="12" />
                     </Button>
                   </WrapPanel>
                   </StackPanel>

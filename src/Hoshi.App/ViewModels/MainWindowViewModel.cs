@@ -170,6 +170,24 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         {
             Study.AddProblem = problem => tsumego.AddProblems([problem]) > 0;
         }
+
+        // Presentation: the board alone (zen), as it was before afterwards.
+        bool zenBefore = false;
+        Study.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(StudyViewModel.IsPresenting))
+            {
+                if (Study.IsPresenting)
+                {
+                    zenBefore = IsZen;
+                    IsZen = true;
+                }
+                else
+                {
+                    IsZen = zenBefore;
+                }
+            }
+        };
         Moves = new MoveListViewModel(game, Analysis);
         PropertyChanged += (_, e) =>
         {
