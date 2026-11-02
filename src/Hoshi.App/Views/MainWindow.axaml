@@ -295,6 +295,7 @@
                 <MenuItem Header="{l:T Tsumego.Menu}" Command="{Binding OpenTsumegoCommand}" InputGesture="Ctrl+P" x:Name="TsumegoItem" />
                 <MenuItem Header="{l:T Main.StudyMenu}" Command="{Binding Study.ToggleCommand}" InputGesture="S" />
                 <MenuItem Header="{l:T Study.Quiz}" Command="{Binding Study.StartQuizCommand}" ToolTip.Tip="{l:T Study.QuizTip}" />
+                <MenuItem Header="{l:T Guess.Menu}" Command="{Binding Study.Guess.StartCommand}" ToolTip.Tip="{l:T Guess.Tip}" x:Name="GuessItem" />
                 <MenuItem Header="{l:T Count.Menu}" Command="{Binding Counting.StartCommand}" x:Name="CountItem" ToolTip.Tip="{l:T Count.MenuTip}" />
                 <MenuItem Header="{l:T Review.Menu}" Command="{Binding AnnotateReviewCommand}" x:Name="ReviewItem" />
                 <MenuItem Header="{l:T Clock.Menu}" x:Name="ClockMenu" IsVisible="{Binding IsLocal}" ToolTip.Tip="{l:T Clock.LocalOnly}">
@@ -666,6 +667,19 @@
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
               <Button Content="{l:T Support.Close}" Command="{Binding Updates.DismissThanksCommand}" x:Name="ThanksClose" />
               <Button Classes="accent" Content="{l:T Support.Button}" Command="{Binding Updates.SupportCommand}" x:Name="ThanksSupport" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+        <!-- "Guess the move": the prompt, the score, whose moves, show and end. -->
+        <Border x:Name="GuessCard" IsVisible="{Binding Study.Guess.IsActive}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,70,0,0" MaxWidth="420"
+                Background="{DynamicResource Bg.Panel}" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="1" CornerRadius="10" Padding="12,8">
+          <StackPanel Spacing="6">
+            <TextBlock Text="{Binding Study.Guess.Message}" FontWeight="SemiBold" TextWrapping="Wrap" />
+            <TextBlock Classes="secondary" Text="{Binding Study.Guess.ScoreText}" FontSize="12.5" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <ComboBox ItemsSource="{Binding Study.Guess.Sides}" SelectedItem="{Binding Study.Guess.Side}" MinWidth="150" />
+              <Button Content="{l:T Guess.Show}" Command="{Binding Study.Guess.RevealCommand}" />
+              <Button Content="{l:T Guess.Stop}" Command="{Binding Study.Guess.StopCommand}" />
             </StackPanel>
           </StackPanel>
         </Border>

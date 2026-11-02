@@ -473,6 +473,9 @@
                 <Button Classes="menu-tile" Command="{Binding Main.Welcome.OpenCommand}" x:Name="MenuWelcome">
                   <StackPanel Spacing="6"><c:HoshiIcon Icon="{DynamicResource Icon.Star}" Size="20" HorizontalAlignment="Center" /><TextBlock Text="{l:T Welcome.Menu}" /></StackPanel>
                 </Button>
+                <Button Classes="menu-tile" Command="{Binding Main.Study.Guess.StartCommand}" x:Name="MenuGuess">
+                  <StackPanel Spacing="6"><TextBlock Text="?" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" /><TextBlock Text="{l:T Guess.Menu}" TextWrapping="Wrap" TextAlignment="Center" /></StackPanel>
+                </Button>
                 <Button Classes="menu-tile" Command="{Binding Main.Backup.ExportCommand}" x:Name="MenuBackupExport">
                   <StackPanel Spacing="6"><TextBlock Text="⇪" FontSize="18" HorizontalAlignment="Center" /><TextBlock Text="{l:T Backup.Export}" TextWrapping="Wrap" TextAlignment="Center" /></StackPanel>
                 </Button>
@@ -554,6 +557,19 @@
             <Button Classes="bar icon" Command="{Binding Main.Analysis.ToggleTerritoryCommand}" VerticalAlignment="Center" ToolTip.Tip="{l:T Main.Territory}">
               <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="12" />
             </Button>
+          </StackPanel>
+        </Border>
+        <!-- "Guess the move" over the board. -->
+        <Border x:Name="PhoneGuessCard" IsVisible="{Binding Main.Study.Guess.IsActive}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="8,6,8,0" MaxWidth="420"
+                Background="{DynamicResource Bg.Panel}" BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="1" CornerRadius="10" Padding="12,8">
+          <StackPanel Spacing="6">
+            <TextBlock Text="{Binding Main.Study.Guess.Message}" FontWeight="SemiBold" TextWrapping="Wrap" />
+            <TextBlock Classes="secondary" Text="{Binding Main.Study.Guess.ScoreText}" FontSize="12.5" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <ComboBox ItemsSource="{Binding Main.Study.Guess.Sides}" SelectedItem="{Binding Main.Study.Guess.Side}" MinWidth="150" />
+              <Button Content="{l:T Guess.Show}" Command="{Binding Main.Study.Guess.RevealCommand}" />
+              <Button Content="{l:T Guess.Stop}" Command="{Binding Main.Study.Guess.StopCommand}" />
+            </StackPanel>
           </StackPanel>
         </Border>
         <!-- Counting at the end of a local game: the result, and accept or keep playing. -->

@@ -8,6 +8,8 @@ public static partial class Tr
         Add(d, "Tsumego.Title", "Problems", "Problemas");
         Add(d, "Tsumego.FromGames", "From my games", "De mis partidas");
         Add(d, "Tsumego.FromGameMove", "move {0}", "jugada {0}");
+        Add(d, "Tsumego.Endgames", "Endgames from my games", "Finales de mis partidas");
+        Add(d, "Tsumego.FindBiggest", "Endgame: find the biggest move (KataGo's choice in your game).", "Final: encuentra la jugada más grande (la elección de KataGo en tu partida).");
         Add(d, "Tsumego.FindBest", "Find the best move (KataGo's choice in your game).", "Encuentra la mejor jugada (la elección de KataGo en tu partida).");
         Add(d, "Tsumego.FromGameWrong", "In the game: {0}, losing {1} points. KataGo preferred {2}.", "En la partida: {0}, perdiendo {1} puntos. KataGo prefería {2}.");
         Add(d, "Tsumego.FromGamesAdded", "{0} problems from this game added to Problems → From my games.", "{0} problemas de esta partida añadidos a Problemas → De mis partidas.");
