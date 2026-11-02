@@ -154,7 +154,11 @@ public sealed partial class GameViewModel : ViewModelBase
         Tree.Info.Result = result;
         IsDirty = true;
         _cursor.NotifyEdited();
+        ResultSet?.Invoke(this, result);
     }
+
+    /// <summary>A game got its result (counting, resignation, time): the SGF <c>RE</c> value.</summary>
+    public event EventHandler<string>? ResultSet;
 
     /// <summary>Shows a message in the status line until the next change.</summary>
     public void ShowStatus(string text) => SetStatus(text);

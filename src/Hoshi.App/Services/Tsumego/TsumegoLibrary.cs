@@ -32,71 +32,91 @@ public sealed class TsumegoLibrary
     public TsumegoLibrary(string? dataDirectory = null)
     {
         _progressFile = dataDirectory is null ? null : Path.Combine(dataDirectory, "tsumego-progress.json");
-        _gamesFile = dataDirectory is null ? null : Path.Combine(dataDirectory, "tsumego", "from-my-games.sgf");
+        _fromGames = new GameProblemFile(dataDirectory is null ? null : Path.Combine(dataDirectory, "tsumego", "from-my-games.sgf"));
+        _endgames = new GameProblemFile(dataDirectory is null ? null : Path.Combine(dataDirectory, "tsumego", "endgame-from-my-games.sgf"));
         _cards = Load(_progressFile);
     }
 
-    private readonly string? _gamesFile;
-    private readonly List<GameTree> _fromGames = [];
-    private bool _fromGamesLoaded;
+    private readonly GameProblemFile _fromGames;
+    private readonly GameProblemFile _endgames;
 
     /// <summary>Problems made from KataGo's reviews of the player's games (kept in <c>tsumego/from-my-games.sgf</c>).</summary>
-    public TsumegoSource FromMyGames()
-    {
-        LoadFromGames();
-        return new TsumegoSource(Hoshi.Core.Localization.Tr.T("Tsumego.FromGames"), [.. _fromGames.Select(TsumegoProblem.FromTree)]);
-    }
+    public TsumegoSource FromMyGames() => new(Hoshi.Core.Localization.Tr.T("Tsumego.FromGames"), [.. _fromGames.Trees.Select(TsumegoProblem.FromTree)]);
+
+    /// <summary>The endgame trainer: the biggest moves missed in the player's endgames (<c>tsumego/endgame-from-my-games.sgf</c>).</summary>
+    public TsumegoSource Endgames() => new(Hoshi.Core.Localization.Tr.T("Tsumego.Endgames"), [.. _endgames.Trees.Select(TsumegoProblem.FromTree)]);
 
     /// <summary>Adds problems made from a game (new positions only); returns how many were new.</summary>
-    public int AddFromGames(IEnumerable<GameTree> problems)
+    public int AddFromGames(IEnumerable<GameTree> problems) => _fromGames.Add(problems);
+
+    /// <summary>Adds endgame problems made from a game (new positions only); returns how many were new.</summary>
+    public int AddEndgames(IEnumerable<GameTree> problems) => _endgames.Add(problems);
+
+    /// <summary>An SGF collection of problems made by Hoshi, read on first use and rewritten when it grows.</summary>
+    private sealed class GameProblemFile(string? path)
     {
-        ArgumentNullException.ThrowIfNull(problems);
-        LoadFromGames();
-        var known = new HashSet<string>(_fromGames.Select(t => TsumegoProblem.FromTree(t).Id), StringComparer.Ordinal);
-        int added = 0;
-        foreach (GameTree tree in problems)
+        private readonly List<GameTree> _trees = [];
+        private bool _loaded;
+
+        public IReadOnlyList<GameTree> Trees
         {
-            if (known.Add(TsumegoProblem.FromTree(tree).Id))
+            get
             {
-                _fromGames.Add(tree);
-                added++;
+                Load();
+                return _trees;
             }
         }
 
-        if (added > 0 && _gamesFile is not null)
+        public int Add(IEnumerable<GameTree> problems)
         {
+            ArgumentNullException.ThrowIfNull(problems);
+            Load();
+            var known = new HashSet<string>(_trees.Select(t => TsumegoProblem.FromTree(t).Id), StringComparer.Ordinal);
+            int added = 0;
+            foreach (GameTree tree in problems)
+            {
+                if (known.Add(TsumegoProblem.FromTree(tree).Id))
+                {
+                    _trees.Add(tree);
+                    added++;
+                }
+            }
+
+            if (added > 0 && path is not null)
+            {
+                try
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                    File.WriteAllText(path, SgfWriter.Write(_trees));
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // Kept for this session only.
+                }
+            }
+
+            return added;
+        }
+
+        private void Load()
+        {
+            if (_loaded)
+            {
+                return;
+            }
+
+            _loaded = true;
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(_gamesFile)!);
-                File.WriteAllText(_gamesFile, SgfWriter.Write(_fromGames));
+                if (path is not null && File.Exists(path))
+                {
+                    _trees.AddRange(SgfParser.ParseCollection(File.ReadAllText(path)).Games.Where(g => g.Root.Children.Count > 0));
+                }
             }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            catch (Exception ex) when (ex is IOException or FormatException or UnauthorizedAccessException)
             {
-                // Kept for this session only.
+                // A damaged file starts over.
             }
-        }
-
-        return added;
-    }
-
-    private void LoadFromGames()
-    {
-        if (_fromGamesLoaded)
-        {
-            return;
-        }
-
-        _fromGamesLoaded = true;
-        try
-        {
-            if (_gamesFile is not null && File.Exists(_gamesFile))
-            {
-                _fromGames.AddRange(SgfParser.ParseCollection(File.ReadAllText(_gamesFile)).Games.Where(g => g.Root.Children.Count > 0));
-            }
-        }
-        catch (Exception ex) when (ex is IOException or FormatException or UnauthorizedAccessException)
-        {
-            // A damaged file starts over.
         }
     }
 

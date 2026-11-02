@@ -65,6 +65,19 @@ public sealed class ThemeService
         Apply(Current, Animations, null, save: true);
     }
 
+    /// <summary>The theme's font, then the current CJK language's own fonts (Japanese, Korean, Chinese).</summary>
+    internal static string WithCjk(string font) =>
+        Hoshi.Core.Localization.Tr.CjkFontFallback is { Length: > 0 } cjk ? $"{font}, {cjk}" : font;
+
+    /// <summary>The fonts follow the language: call when it changes.</summary>
+    public static void ApplyFonts(HoshiTheme theme, IResourceDictionary resources)
+    {
+        ArgumentNullException.ThrowIfNull(theme);
+        ArgumentNullException.ThrowIfNull(resources);
+        resources["Font.UI"] = new FontFamily(WithCjk(theme.UiFont));
+        resources["Font.Title"] = new FontFamily(WithCjk(theme.TitleFont));
+    }
+
     /// <summary>The icons of a set ("PhosphorLight", "PhosphorRegular", "Lucide", "Tabler").</summary>
     public static IReadOnlyDictionary<string, IconData> IconSet(string name) => IconSets.All[name];
 
@@ -113,8 +126,8 @@ public sealed class ThemeService
         resources["SystemAccentColorDark1"] = Shade(theme.Accent, 0.85);
         resources["SystemAccentColorLight1"] = Shade(theme.Accent, 1.1);
 
-        resources["Font.UI"] = new FontFamily(theme.UiFont);
-        resources["Font.Title"] = new FontFamily(theme.TitleFont);
+        resources["Font.UI"] = new FontFamily(WithCjk(theme.UiFont));
+        resources["Font.Title"] = new FontFamily(WithCjk(theme.TitleFont));
         resources["Font.Mono"] = new FontFamily(theme.MonoFont);
         resources["Font.Size.Title"] = theme.TitleSize;
 

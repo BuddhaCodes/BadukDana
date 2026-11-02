@@ -52,12 +52,19 @@ public sealed partial class TsumegoViewModel : ViewModelBase
             AddSource(_fromGames);
         }
 
+        _endgames = _library.Endgames();
+        if (_endgames.Problems.Count > 0)
+        {
+            AddSource(_endgames);
+        }
+
         _rules = TsumegoLibrary.Rules();
         Current = _library.Next(AllProblems, null, _time.GetUtcNow());
     }
 
     private readonly TsumegoSource _rules;
     private TsumegoSource _fromGames;
+    private TsumegoSource _endgames;
 
     /// <summary>Turns KataGo's mistakes in a reviewed game into problems ("From my games"); returns how many are new.</summary>
     public int AddFromGame(GameTree game, IReadOnlyDictionary<GameNode, Services.Study.StudyVerdict> verdicts)
@@ -68,11 +75,23 @@ public sealed partial class TsumegoViewModel : ViewModelBase
             _sources.Remove(_fromGames);
             _fromGames = _library.FromMyGames();
             _sources.Add(_fromGames);
+        }
+
+        int endgames = _library.AddEndgames(MistakeProblems.BuildEndgame(game, verdicts));
+        if (endgames > 0)
+        {
+            _sources.Remove(_endgames);
+            _endgames = _library.Endgames();
+            _sources.Add(_endgames);
+        }
+
+        if (added + endgames > 0)
+        {
             RefreshRows();
             OnPropertyChanged(nameof(ProgressText));
         }
 
-        return added;
+        return added + endgames;
     }
 
     /// <summary>The rules lessons for beginners (opened from the welcome tour); added to the list the first time.</summary>

@@ -32,6 +32,7 @@ public static class AppHost
         try
         {
             ImportSummary = Services.Backup.BackupPackage.ApplyPending(AppPaths.DataDirectory);
+            SyncSummary = Services.Backup.FolderSync.PullAtStart(AppPaths.DataDirectory);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Text.Json.JsonException or InvalidDataException or FormatException)
         {
@@ -61,6 +62,9 @@ public static class AppHost
     /// <summary>What the import merged at this start (null when there was none).</summary>
     public static Services.Backup.BackupSummary? ImportSummary { get; private set; }
 
+    /// <summary>What the sync folder brought from the other devices at this start (null when sync is off).</summary>
+    public static Services.Backup.BackupSummary? SyncSummary { get; private set; }
+
     /// <summary>Why the pending import could not be merged at this start, if it failed.</summary>
     public static string? ImportError { get; private set; }
 
@@ -80,6 +84,7 @@ public static class AppHost
         services.AddSingleton<ITsumegoWindowService>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
         services.AddSingleton<Services.Engines.IEngineWindows>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
         services.AddSingleton<IDialogService>(sp => sp.GetRequiredService<Services.Phone.PhoneNavigation>());
+        services.AddSingleton<IBoardPhotoWindowService>(sp => new PhoneBoardPhotoService(sp.GetRequiredService<Services.Phone.PhoneNavigation>()));
         services.AddSingleton<PhoneShellViewModel>();
         return services;
     }
@@ -120,6 +125,7 @@ public static class AppHost
             sp.GetRequiredService<Services.Tsumego.TsumegoLibrary>(), sp.GetRequiredService<IFileDialogService>(), sp.GetRequiredService<GameViewModel>()));
         services.AddSingleton<ITsumegoWindowService, TsumegoWindowService>();
         services.AddSingleton<IReplayMakerWindowService, ReplayMakerWindowService>();
+        services.AddSingleton<IBoardPhotoWindowService, BoardPhotoWindowService>();
         services.AddSingleton<WelcomeViewModel>();
         services.AddSingleton(sp => new Services.Presence.DiscordPresence(settings: sp.GetService<ISettingsService>(), logger: sp.GetService<ILogger<Services.Presence.DiscordPresence>>()));
         services.AddSingleton(_ => new Services.Summary.ReviewLog(AppPaths.DataDirectory));
@@ -150,6 +156,7 @@ public static class AppHost
         services.AddSingleton<IKataGoInstaller, DefaultKataGoInstaller>();
         services.AddSingleton<KataGoSetupViewModel>();
         services.AddSingleton<UpdateViewModel>();
+        services.AddSingleton(_ => new Services.Rank.RankStore(AppPaths.DataDirectory));
         services.AddSingleton(sp => new BackupViewModel(sp.GetService<IFileDialogService>(), sp.GetService<IDialogService>()));
         services.AddSingleton(sp => new ReportViewModel(sp.GetService<IBrowserLauncher>(), sp.GetService<IClipboardService>()));
         services.AddSingleton<GameViewModel>();

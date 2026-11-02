@@ -65,6 +65,12 @@
         <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding HumanLevels}" SelectedItem="{Binding HumanLevel}" x:Name="HumanLevelBox"
                   IsVisible="{Binding HasHumanEngine}" ToolTip.Tip="{l:T Engines.HumanLevelTip}" />
       </Grid>
+      <!-- Estimated rank (games against the human-style KataGo) and "rival at my level". -->
+      <StackPanel Margin="0,12,0,0" Spacing="6" IsVisible="{Binding HasHumanEngine}">
+        <TextBlock Classes="secondary" Text="{Binding EstimateText}" TextWrapping="Wrap" x:Name="EstimateText" />
+        <CheckBox Content="{l:T Rank.AtMyLevel}" IsChecked="{Binding AtMyLevel}" IsVisible="{Binding HasEstimate}"
+                  ToolTip.Tip="{l:T Rank.AtMyLevelTip}" x:Name="AtMyLevelBox" />
+      </StackPanel>
       <TextBlock Classes="secondary" Text="{Binding Hint}" TextWrapping="Wrap" Margin="0,12,0,0" x:Name="HintText" />
     </StackPanel>
   </DockPanel>

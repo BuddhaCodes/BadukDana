@@ -232,3 +232,13 @@ Verificado contra goban `src/engine/protocol/ClientToServer.ts` y `ServerToClien
 
 - Grabar mensajes reales de beta como fixtures JSON en `tests/Hoshi.Ogs.Tests/Fixtures/`, anonimizando nombres e ids.
 - `FakeOgsSocket` para reproducir secuencias (conectar → gamedata → moves → phase → finished).
+
+### 6b. Grabar tráfico real de beta (2026-11-02)
+
+Desde aquí no se puede llegar a OGS, así que las grabaciones las hace el usuario:
+
+1. Abre Hoshi con `--Ogs:RecordTraffic=true` (en Windows: `Hoshi.exe --Ogs:RecordTraffic=true`; desde el código: `dotnet run --project src/Hoshi.Desktop -- --Ogs:RecordTraffic=true`).
+2. En el lobby elige **beta.online-go.com**, entra con usuario y contraseña y juega una partida corta (9×9) contra tu segunda cuenta en el navegador: alguna captura, pedir deshacer, unas frases de chat, pasar dos veces, marcar piedras muertas y aceptar. Mejor dos partidas: una que termine con el conteo y otra por abandono o por tiempo.
+3. Cierra Hoshi. La grabación queda en la carpeta de datos, `ogs-captures/ogs-betaonlinegocom-*.jsonl`. El grabador ya quita JWT, tokens, contraseñas, cookies y valores `*auth*`.
+4. `python3 tools/ogs/trim_capture.py <grabación> tests/Hoshi.Ogs.Tests/Fixtures/recorded/beta-9x9.jsonl --game <id>`: deja solo esa partida, cambia nombres e ids de usuario y quita el texto del chat.
+5. `RecordedTrafficTests` reproduce todo lo que haya en `Fixtures/recorded/` (cada movimiento una vez, fin de partida, sin excepciones) y comprueba que no queda ningún secreto.

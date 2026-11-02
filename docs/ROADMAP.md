@@ -179,7 +179,7 @@ Todo lo que sale del equipo es una acción explícita del usuario; los nombres d
 
 ### Después de la 1.0
 Diseños y recomendaciones en `docs/AFTER_1_0.md` (2026-10-17); cada una espera una decisión del usuario.
-- [ ] 26. Sincronizar estudios y progreso entre escritorio y teléfono. *(Paso 1 hecho el 2026-10-30: copia de seguridad `.hoshi` que se fusiona al importar. Falta la carpeta sincronizada.)*
+- [x] 26. Sincronizar estudios y progreso entre escritorio y teléfono. *(2026-10-30: copia `.hoshi` que se fusiona al importar; 2026-11-02: carpeta sincronizada en escritorio. El teléfono sigue con exportar/importar: Android no deja escribir en esas carpetas sin acceso amplio al almacenamiento.)*
 - [ ] 27. Más servidores (KGS, Fox) si sus términos lo permiten.
 - [ ] 28. iOS.
 - [ ] 29. Modo profesor: tablero compartido en vivo con alumnos.
@@ -192,6 +192,18 @@ Revisión del proyecto pedida por el usuario.
 - [x] «Informar de un problema…» (menú y tras un cierre inesperado): abre un issue de GitHub ya rellenado, sin secretos ni la carpeta de usuario; Hoshi no envía nada.
 - [x] Copia de seguridad `.hoshi` (exportar/importar con fusión), aviso de turno fuera de la ventana en escritorio, reloj para motores GTP y música en macOS.
 - [x] **Avalonia 12** (2026-11-02, rama `avalonia-12`): migración hecha; falta probar la ventana en Windows, macOS y Linux y la app en un teléfono antes de fusionar. Notas de lo que cambió: Rompe la barra de título propia (`ExtendClientAreaChromeHints` ya no existe, `SystemDecorations` → `WindowDecorations`), el arranque de Android (`AvaloniaAndroidApplication<App>`, `IActivityApplicationLifetime`) y obliga a pasar los tests a xUnit v3. Necesita probarse en Windows, macOS, Linux y un teléfono.
+- [x] **Historial de git** (2026-11-02): `Claude outputs/` fuera de todo el historial (34 → 23 MB); `main` reescrita en GitHub. Falta que el usuario ejecute `BadukDana-archivo/terminar-limpieza-historial.ps1` (etiquetas y dos ramas viejas).
 - [ ] **KataGo v1.18.2** (hoy v1.17.1): actualizar `release.yml`, `android.yml`, `build-katago.sh` y `KataGoSetup.KataGoVersion` con los SHA-256 de los nuevos zips.
 - [ ] Ver la primera ejecución del CI con las acciones nuevas (checkout v7, upload-artifact v7, download-artifact v8, action-gh-release v3) y la primera versión publicada con ellas.
 - [ ] Probar en un Mac real la música (AudioToolbox) y el aviso de turno; en Linux, `notify-send`.
+
+## Noviembre 2026 (pedido el 2026-11-02)
+Ramas `avalonia-12` (PR #3) y `mejoras-noviembre` (encima de la anterior).
+- [x] Avalonia 12.1.5 y xUnit v3 (ver Mantenimiento). Falta probar ventanas y teléfono reales.
+- [x] Fixtures reales de OGS: grabador `--Ogs:RecordTraffic=true` (sin secretos), `tools/ogs/trim_capture.py` y `RecordedTrafficTests`. Falta que el usuario grabe partidas en beta (`docs/OGS_API.md` §6b).
+- [x] Japonés, coreano y chino simplificado (tablas JSON; traducción de Claude, pendiente de revisión por hablantes nativos). La web sigue en inglés y español.
+- [x] Precisión por fase (apertura, medio juego, final) en el resumen, con la fase a estudiar.
+- [x] Rango estimado con el KataGo de estilo humano y «Rival a mi medida» (nivel y hándicap automáticos).
+- [x] Sincronizar con una carpeta (escritorio).
+- [x] Entrenador de finales (de tus partidas) y «Adivina la jugada» (cualquier SGF; Hoshi no trae partidas profesionales).
+- [x] Foto del tablero → SGF (cuatro esquinas, homografía, clasificación por brillo; sin IA). Falta probarlo con fotos reales y, en Android, la cámara.

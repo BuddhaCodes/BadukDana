@@ -74,6 +74,9 @@ public sealed partial class KataGoSetupViewModel : ViewModelBase
 
     public bool HasStatus => StatusText is not null;
 
+    private readonly Lock _statusLock = new();
+    private int _installRun;
+
     private bool CanInstall() => !IsInstalling && CanInstallHere;
 
     [RelayCommand(CanExecute = nameof(CanInstall))]
@@ -82,20 +85,31 @@ public sealed partial class KataGoSetupViewModel : ViewModelBase
         IsInstalling = true;
         Progress = 0;
         SetStatus("KataGo.Downloading", 0);
+        int run = ++_installRun;
+        bool done = false;
         try
         {
             var progress = new Progress<double>(p =>
             {
-                // Progress<T> posts its reports: one can arrive after the install finished; it must not undo the result.
-                if (!IsInstalling)
+                // Progress<T> posts its reports (on the thread pool when there is no UI context): one can arrive after
+                // this install finished, or during the next one; it must not undo the result.
+                lock (_statusLock)
                 {
-                    return;
-                }
+                    if (done || run != _installRun)
+                    {
+                        return;
+                    }
 
-                Progress = p;
-                SetStatus("KataGo.Downloading", (int)Math.Round(p * 100));
+                    Progress = p;
+                    SetStatus("KataGo.Downloading", (int)Math.Round(p * 100));
+                }
             });
             await _installer.InstallAsync(progress, CancellationToken.None);
+            lock (_statusLock)
+            {
+                done = true;
+            }
+
             if (_engine is not null && _settings is not null)
             {
                 _engine.Reconfigure(_settings.Current);
@@ -105,6 +119,11 @@ public sealed partial class KataGoSetupViewModel : ViewModelBase
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException or InvalidDataException or UnauthorizedAccessException or PlatformNotSupportedException or JsonException)
         {
+            lock (_statusLock)
+            {
+                done = true;
+            }
+
             _logger.LogWarning(ex, "KataGo install failed");
             SetStatus("KataGo.Failed", ex.Message);
         }

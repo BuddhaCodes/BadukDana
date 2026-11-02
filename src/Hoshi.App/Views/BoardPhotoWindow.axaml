@@ -1,0 +1,12 @@
+<Window Icon="/Assets/hoshi.ico"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:Hoshi.App.Localization"
+        xmlns:v="using:Hoshi.App.Views"
+        x:Class="Hoshi.App.Views.BoardPhotoWindow"
+        Title="{l:T Photo.Title}"
+        Width="900" Height="760" MinWidth="560" MinHeight="480"
+        Background="{DynamicResource Bg.Window}"
+        WindowStartupLocation="CenterOwner">
+  <v:BoardPhotoView />
+</Window>

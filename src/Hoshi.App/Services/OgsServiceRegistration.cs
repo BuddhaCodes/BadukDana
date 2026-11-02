@@ -44,6 +44,11 @@ public sealed class OgsServerCatalog
         IConfigurationSection s = configuration.GetSection("Ogs");
         var defaults = new OgsOptions();
         string version = typeof(OgsServerCatalog).Assembly.GetName().Version?.ToString(3) ?? defaults.ClientVersion;
+        defaults = defaults with
+        {
+            RecordTraffic = bool.TryParse(s["RecordTraffic"], out bool record) && record,
+            RecordDirectory = s["RecordDirectory"] is { Length: > 0 } dir ? dir : null,
+        };
 
         OgsOptions production = defaults with
         {
@@ -122,12 +127,29 @@ public sealed class OgsConnectionFactory(IHttpClientFactory http, ITokenStore st
             return c;
         }
 
+        // Development aid (--Ogs:RecordTraffic=true): REST responses and WebSocket frames, secrets removed.
+        OgsTrafficRecorder? recorder = null;
+        if (options.RecordTraffic)
+        {
+            recorder = new OgsTrafficRecorder(options.RecordDirectory ?? Path.Combine(AppPaths.DataDirectory, "ogs-captures"), options.BaseUrl.Host);
+            loggers.CreateLogger<OgsConnectionFactory>().LogWarning("Recording OGS traffic to {File}", recorder.FilePath);
+        }
+
+        HttpClient Rest() => recorder is null
+            ? Client()
+            : new HttpClient(new RecordingHttpHandler(recorder) { InnerHandler = new SocketsHttpHandler { UseCookies = false, AutomaticDecompression = DecompressionMethods.All } })
+            {
+                BaseAddress = options.BaseUrl,
+                Timeout = TimeSpan.FromSeconds(30),
+                DefaultRequestHeaders = { UserAgent = { new ProductInfoHeaderValue(options.ClientName, options.ClientVersion) }, Accept = { new MediaTypeWithQualityHeaderValue("application/json") } },
+            };
+
         var auth = new OgsAuthService(options, Client(), store, TimeProvider.System, loggers.CreateLogger<OgsAuthService>());
-        var rest = new OgsRestClient(Client(), auth);
+        var rest = new OgsRestClient(Rest(), auth);
         string userAgent = $"{options.ClientName}/{options.ClientVersion}";
         var realtime = new OgsRealtimeClient(
             options.EffectiveWebSocketUrl,
-            () => new ClientWebSocketConnection(userAgent),
+            () => recorder is null ? new ClientWebSocketConnection(userAgent) : new RecordingWebSocketConnection(new ClientWebSocketConnection(userAgent), recorder),
             () => auth.Session?.UserJwt,
             new OgsRealtimeOptions { ClientName = options.ClientName, ClientVersion = options.ClientVersion },
             TimeProvider.System,

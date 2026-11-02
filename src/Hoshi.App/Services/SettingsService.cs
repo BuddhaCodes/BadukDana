@@ -23,7 +23,7 @@ public sealed record AppSettings
 
     public string? BackgroundSkin { get; init; }
 
-    /// <summary>User interface language: "en" (English, the default) or "es" (Spanish).</summary>
+    /// <summary>User interface language: "en" (English, the default), "es", "ja", "ko" or "zh" (simplified Chinese).</summary>
     public string Language { get; init; } = "en";
 
     /// <summary>Animated backgrounds and stone/UI animations (off = static, for low-power machines or preference).</summary>
@@ -146,6 +146,12 @@ public sealed record AppSettings
 
     /// <summary>Phones: a short vibration when a stone is placed.</summary>
     public bool Haptics { get; init; } = true;
+
+    /// <summary>Desktop: a folder kept in step by Syncthing, Dropbox, Drive or OneDrive (null = no sync, the default).</summary>
+    public string? SyncFolder { get; init; }
+
+    /// <summary>This device's name in the sync folder (<c>hoshi-&lt;id&gt;.hoshi</c>), made when sync is first turned on.</summary>
+    public string? DeviceId { get; init; }
 }
 
 /// <summary>Move numbers drawn on the stones.</summary>

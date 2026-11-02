@@ -116,6 +116,14 @@
             <ToggleSwitch IsChecked="{Binding DiscordPresence}" OnContent="{l:T Prefs.Discord}" OffContent="{l:T Prefs.Discord}" x:Name="DiscordSwitch" Margin="0,6,0,0" IsVisible="{Binding IsDesktop}" />
             <TextBox Text="{Binding DiscordAppId}" PlaceholderText="{l:T Prefs.DiscordAppId}" Width="260" HorizontalAlignment="Left" IsEnabled="{Binding DiscordPresence}" x:Name="DiscordAppIdBox" IsVisible="{Binding IsDesktop}" />
             <TextBlock Classes="secondary" Text="{Binding DiscordHint}" TextWrapping="Wrap" IsVisible="{Binding IsDesktop}" />
+            <!-- Sync with a folder (desktop): one .hoshi per device in a folder another service keeps in step. -->
+            <TextBlock Text="{l:T Sync.Title}" FontWeight="SemiBold" Margin="0,10,0,0" IsVisible="{Binding IsDesktop}" />
+            <TextBlock Classes="secondary" Text="{l:T Sync.Hint}" TextWrapping="Wrap" IsVisible="{Binding IsDesktop}" />
+            <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsDesktop}">
+              <Button Content="{l:T Sync.Choose}" Command="{Binding ChooseSyncFolderCommand}" x:Name="SyncChooseButton" />
+              <Button Content="{l:T Sync.Stop}" Command="{Binding StopSyncCommand}" IsVisible="{Binding HasSyncFolder}" x:Name="SyncStopButton" />
+            </StackPanel>
+            <TextBlock Classes="secondary" Text="{Binding SyncText}" TextWrapping="Wrap" IsVisible="{Binding IsDesktop}" x:Name="SyncText" />
             <CheckBox IsChecked="{Binding CheckForUpdates}" Content="{l:T Prefs.CheckForUpdates}" Margin="0,8,0,0" x:Name="UpdatesBox" IsVisible="{Binding IsDesktop}" />
             <TextBlock Classes="secondary" Text="{Binding UpdatesHint}" TextWrapping="Wrap" IsVisible="{Binding IsDesktop}" />
           </StackPanel>

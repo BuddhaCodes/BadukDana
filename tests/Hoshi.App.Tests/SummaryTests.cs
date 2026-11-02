@@ -6,6 +6,7 @@ using Hoshi.App.Services.Summary;
 using Hoshi.App.Services.Tsumego;
 using Hoshi.App.ViewModels;
 using Hoshi.Core;
+using Hoshi.Core.Localization;
 using Hoshi.Engines.KataGo;
 using Hoshi.Sgf;
 using Hoshi.Sgf.Joseki;
@@ -65,6 +66,40 @@ public sealed class SummaryTests
         (s.JosekiReviewed, s.JosekiLearned, s.ProblemsSolved).Should().Be((2, 1, 1));
     }
 
+    [Theory]
+    [InlineData(19, 51, GamePhase.Opening)]
+    [InlineData(19, 52, GamePhase.Middle)]
+    [InlineData(19, 162, GamePhase.Middle)]
+    [InlineData(19, 163, GamePhase.Endgame)]
+    [InlineData(9, 11, GamePhase.Opening)]
+    [InlineData(9, 37, GamePhase.Endgame)]
+    public void Moves_fall_in_a_phase_by_number_and_board_size(int size, int move, GamePhase phase) =>
+        GamePhases.Of(move, size).Should().Be(phase);
+
+    [Fact]
+    public void The_summary_shows_accuracy_per_phase_and_names_the_one_to_study()
+    {
+        var reviews = new[]
+        {
+            new ReviewRecord("g1", October.AddDays(2), October.AddDays(2),
+                new ReviewSide("ana", 100, 70, 20, OpeningMoves: 30, OpeningGood: 27, MiddleMoves: 50, MiddleGood: 35, EndMoves: 20, EndGood: 8),
+                new ReviewSide("luis", 100, 60, 10)),
+            new ReviewRecord("old", October.AddDays(3), October.AddDays(3), new ReviewSide("ana", 5, 5, 5), new ReviewSide("x", 0, 0, 0)),
+        };
+
+        PlayerSummary s = PlayerSummary.Build(October, October.AddMonths(1), [], reviews, [], [], me: "ana");
+
+        s.PhaseAccuracy[GamePhase.Opening].Should().BeApproximately(0.9, 1e-9);
+        s.PhaseAccuracy[GamePhase.Middle].Should().BeApproximately(0.7, 1e-9);
+        s.PhaseAccuracy[GamePhase.Endgame].Should().BeApproximately(0.4, 1e-9);
+        s.ToStudy.Should().Be(GamePhase.Endgame);
+        ShareViewModel.SummaryTiles(s).Select(t => t.Label).Should().Contain(l => l.Contains(Tr.T("Summary.Phase.Endgame"), StringComparison.Ordinal) && l != Tr.T("Summary.Phase.Endgame"));
+
+        PlayerSummary few = PlayerSummary.Build(October, October.AddMonths(1), [], [reviews[1]], [], [], me: "ana");
+        few.PhaseAccuracy.Should().BeEmpty("old reviews have no phases and too few moves");
+        few.ToStudy.Should().BeNull();
+    }
+
     [Fact]
     public void Reviews_are_logged_by_colour_and_kept_on_disk()
     {
@@ -91,8 +126,8 @@ public sealed class SummaryTests
 
             ReviewRecord record = new ReviewLog(dir).Record(tree, verdicts, October.AddDays(20))!;
             record.Played.Should().Be(new DateTimeOffset(2026, 10, 3, 0, 0, 0, record.Played.Offset));
-            record.Black.Should().Be(new ReviewSide("Ana", 2, 1, 1));
-            record.White.Should().Be(new ReviewSide("Luis", 1, 0, 0));
+            record.Black.Should().Be(new ReviewSide("Ana", 2, 1, 1, OpeningMoves: 2, OpeningGood: 1));
+            record.White.Should().Be(new ReviewSide("Luis", 1, 0, 0, OpeningMoves: 1));
 
             var again = new ReviewLog(dir);
             again.Records.Should().ContainSingle().Which.Should().Be(record);

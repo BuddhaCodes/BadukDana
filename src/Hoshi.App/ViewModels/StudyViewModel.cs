@@ -207,6 +207,15 @@ public sealed partial class StudyViewModel : ViewModelBase
         _filter = Filters[0];
         _game.PropertyChanged += OnGamePropertyChanged;
         _game.PlayCommand.CanExecuteChanged += (_, _) => BoardClickCommand.NotifyCanExecuteChanged();
+        Guess = new GuessMoveViewModel(_game);
+        Guess.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(GuessMoveViewModel.Overlay) or nameof(GuessMoveViewModel.IsActive))
+            {
+                OnPropertyChanged(nameof(BoardDrawings));
+                BoardClickCommand.NotifyCanExecuteChanged();
+            }
+        };
         if (_analysis is not null)
         {
             _analysis.PropertyChanged += (_, e) =>
@@ -246,9 +255,14 @@ public sealed partial class StudyViewModel : ViewModelBase
         : Tr.F("Study.TimelineCount", Timeline.Select(t => t.Node).Distinct().Count());
 
     /// <summary>What the board draws: this move's drawings while studying, plus the quiz's answer marks.</summary>
-    public IReadOnlyList<StudyDrawing> BoardDrawings => IsQuizActive
+    public IReadOnlyList<StudyDrawing> BoardDrawings => Guess.IsActive
+        ? Guess.Overlay
+        : IsQuizActive
         ? [.. QuizOverlay]
         : IsActive ? WithShapeStart(Drawings) : [];
+
+    /// <summary>"Guess the move" on the game on the board.</summary>
+    public GuessMoveViewModel Guess { get; }
 
     /// <summary>Id of the marker that shows where a two-tap arrow or area starts.</summary>
     public const string ShapeStartId = "shape-start";
