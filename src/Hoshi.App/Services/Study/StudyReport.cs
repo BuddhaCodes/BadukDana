@@ -303,3 +303,9 @@ public static class StudyReport
         @media print{body{background:#fff}article,.lessons,.chip{border-color:#ccc}}
         """;
 }
+
+/// <summary>
+/// KataGo's reading of one move for "Explain this move": the verdict, who played, what was played, KataGo's line
+/// from the position before the move (its best move first) and the winrate the mover had and lost.
+/// </summary>
+public sealed record MoveExplanation(StudyVerdict Verdict, Stone Mover, Point? Played, IReadOnlyList<Point> Line, double WinrateLost, double MoverWinrate);

@@ -144,6 +144,13 @@ public static partial class Tr
         Add(d, "Study.QuizSelfRight", "Counted as right.", "Cuenta como acierto.");
         Add(d, "Study.QuizSelfWrong", "Counted as a miss.", "Cuenta como fallo.");
         Add(d, "Study.QuizDone", "Done: {0} of {1} right.", "Terminado: {0} de {1} acertadas.");
+        Add(d, "Study.Explain", "Explain this move", "Explícamelo");
+        Add(d, "Study.ExplainTip", "KataGo reads this move and writes what it found into the study: points lost, the better move and its line (editable)", "KataGo lee esta jugada y escribe en el estudio lo que encontró: puntos perdidos, la mejor jugada y su línea (editable)");
+        Add(d, "Study.Explaining", "KataGo is reading the move…", "KataGo está leyendo la jugada…");
+        Add(d, "Study.ExplainUnavailable", "KataGo could not read this move now.", "KataGo no pudo leer esta jugada ahora.");
+        Add(d, "Study.ExplainGood", "KataGo: {0}.", "KataGo: {0}.");
+        Add(d, "Study.ExplainLost", "KataGo: {0}, −{1} points. Better: {2} (its line is drawn, editable).", "KataGo: {0}, −{1} puntos. Mejor: {2} (su línea está dibujada y se puede editar).");
+        Add(d, "Study.ExplainLostWinrate", "KataGo: {0}, −{1} points and {3}% of the winning chances. Better: {2} (its line is drawn, editable).", "KataGo: {0}, −{1} puntos y un {3}% de probabilidad de ganar. Mejor: {2} (su línea está dibujada y se puede editar).");
         Add(d, "Study.ReviewDone", "Review done: {0} of {1} right. They come back when it is time.", "Repaso terminado: {0} de {1} acertadas. Volverán cuando toque.");
         Add(d, "Notes.Menu", "Review my notes", "Repasar mis notas");
         Add(d, "Notes.MenuDue", "Review my notes ({0})", "Repasar mis notas ({0})");

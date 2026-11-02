@@ -50,6 +50,7 @@ public sealed partial class StudyViewModel
             case nameof(GameViewModel.Online) or nameof(GameViewModel.IsOnline):
                 OnPropertyChanged(nameof(IsLiveOnline));
                 StartQuizCommand.NotifyCanExecuteChanged();
+                ExplainChanged();
                 break;
         }
     }
@@ -77,6 +78,7 @@ public sealed partial class StudyViewModel
         if (!ReferenceEquals(_node, _game.CurrentNode))
         {
             _node = _game.CurrentNode;
+            ExplainCommand.NotifyCanExecuteChanged();
             _sequenceId = null;
             DropPending(); // like a waiting stone, unconfirmed drawings stay behind when the move changes
         }

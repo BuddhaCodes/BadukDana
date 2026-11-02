@@ -180,6 +180,7 @@ public sealed partial class StudyViewModel : ViewModelBase
     private int _timelineCurrent;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ExplainCommand))]
     private bool _isBusy;
 
     public StudyViewModel(
@@ -220,6 +221,11 @@ public sealed partial class StudyViewModel : ViewModelBase
         {
             _analysis.PropertyChanged += (_, e) =>
             {
+                if (e.PropertyName is nameof(AnalysisViewModel.IsEngineActive) or nameof(AnalysisViewModel.IsBlocked))
+                {
+                    ExplainChanged();
+                }
+
                 if (e.PropertyName == nameof(AnalysisViewModel.IsBlocked))
                 {
                     OnPropertyChanged(nameof(IsLiveOnline));

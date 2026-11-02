@@ -356,6 +356,48 @@ public sealed class StudyViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task Explain_writes_KataGos_reading_into_the_study_and_its_line_as_editable_stones()
+    {
+        var engine = new FakeAnalysisEngine { BestMove = new Point(4, 4) };
+        var analysis = new AnalysisViewModel(_game, engine, new ImmediateDispatcher());
+        var study = new StudyViewModel(_game, analysis, _settings, _files, _dialogs, _browser, new FixedTime(T0));
+        Play((2, 2), (6, 6));
+        _game.GoToNodeCommand.Execute(Node(1));
+        study.ExplainAvailable.Should().BeTrue();
+        study.CanExplain.Should().BeTrue();
+
+        await study.ExplainCommand.ExecuteAsync(null);
+
+        NodeStudy written = StudyStore.Read(Node(1));
+        StudyPin pin = written.Pins.Should().ContainSingle().Which;
+        pin.Author.Should().Be("KataGo");
+        pin.Category.Should().Be(PinCategory.Mistake);
+        pin.Text.Should().Contain("Mejor: E5").And.Contain("−2");
+        StudyDrawing line = written.Drawings.Should().ContainSingle().Which;
+        line.Kind.Should().Be(DrawingKind.Sequence);
+        line.Points.Should().Equal(new Point(4, 4));
+        line.FirstColor.Should().Be(Stone.Black);
+        study.IsActive.Should().BeTrue();
+
+        // A second time on a move with a note: a reply from KataGo, and its line replaced, not doubled.
+        await study.ExplainCommand.ExecuteAsync(null);
+        written = StudyStore.Read(Node(1));
+        written.Pins.Should().ContainSingle().Which.Replies.Should().ContainSingle(r => r.Author == "KataGo");
+        written.Drawings.Should().ContainSingle();
+
+        _game.GoToNodeCommand.Execute(_game.Tree.Root);
+        study.CanExplain.Should().BeFalse("the start of the game is not a move");
+    }
+
+    [Fact]
+    public void Explain_is_off_without_KataGo()
+    {
+        Play((2, 2));
+        _study.ExplainAvailable.Should().BeFalse();
+        _study.CanExplain.Should().BeFalse();
+    }
+
+    [Fact]
     public void The_report_without_an_engine_still_has_every_moment()
     {
         GameTree tree = GameTree.Create(9);

@@ -227,9 +227,15 @@
                     </ListBox.ItemTemplate>
                   </ListBox>
                   <TextBox PlaceholderText="{l:T Study.NoteWatermark}" Text="{Binding Study.NewPinText}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="54" MaxLength="4000" x:Name="StudyNewPin" />
-                  <Button Classes="accent" HorizontalAlignment="Right" Command="{Binding Study.AddPinCommand}" x:Name="StudyAddPin">
-                    <StackPanel Orientation="Horizontal" Spacing="6"><c:HoshiIcon Icon="{DynamicResource Icon.Pin}" Size="14" /><TextBlock Text="{l:T Study.AddPin}" /></StackPanel>
-                  </Button>
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="6">
+                    <!-- KataGo writes its reading of the move into the study; hidden without KataGo and during your live OGS games. -->
+                    <Button Command="{Binding Study.ExplainCommand}" IsVisible="{Binding Study.ExplainAvailable}" ToolTip.Tip="{l:T Study.ExplainTip}" x:Name="StudyExplain">
+                      <TextBlock Text="{l:T Study.Explain}" />
+                    </Button>
+                    <Button Classes="accent" Command="{Binding Study.AddPinCommand}" x:Name="StudyAddPin">
+                      <StackPanel Orientation="Horizontal" Spacing="6"><c:HoshiIcon Icon="{DynamicResource Icon.Pin}" Size="14" /><TextBlock Text="{l:T Study.AddPin}" /></StackPanel>
+                    </Button>
+                  </StackPanel>
 
                   </StackPanel>
 
