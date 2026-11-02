@@ -124,4 +124,29 @@ public sealed class LanguageSwitchTests
             Tr.SetLanguage(Tr.Spanish); // the other tests assert Spanish
         }
     }
+
+    [AvaloniaTheory]
+    [InlineData(Tr.Japanese, "パス")]
+    [InlineData(Tr.Korean, "패스")]
+    [InlineData(Tr.Chinese, "停一手")]
+    public void The_window_shows_Japanese_Korean_and_Chinese(string language, string pass)
+    {
+        var window = new MainWindow(new MainWindowViewModel(new GameViewModel())) { Width = 1200, Height = 760 };
+        window.Show();
+        try
+        {
+            Tr.SetLanguage(language);
+            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            window.FindDeep<TextBlock>("PassLabel")!.Text.Should().Be(pass);
+            Tr.Culture.Name.Should().StartWith(language);
+            using Avalonia.Media.Imaging.WriteableBitmap frame = window.CaptureRenderedFrame()!;
+            Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "screenshots"));
+            frame.Save(Path.Combine(AppContext.BaseDirectory, "screenshots", $"main-{language}.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+        }
+        finally
+        {
+            Tr.SetLanguage(Tr.Spanish);
+            window.Close();
+        }
+    }
 }
