@@ -144,6 +144,17 @@ public static partial class Tr
         Add(d, "Study.QuizSelfRight", "Counted as right.", "Cuenta como acierto.");
         Add(d, "Study.QuizSelfWrong", "Counted as a miss.", "Cuenta como fallo.");
         Add(d, "Study.QuizDone", "Done: {0} of {1} right.", "Terminado: {0} de {1} acertadas.");
+        Add(d, "Study.ReviewDone", "Review done: {0} of {1} right. They come back when it is time.", "Repaso terminado: {0} de {1} acertadas. Volverán cuando toque.");
+        Add(d, "Notes.Menu", "Review my notes", "Repasar mis notas");
+        Add(d, "Notes.MenuDue", "Review my notes ({0})", "Repasar mis notas ({0})");
+        Add(d, "Notes.Tip", "Your mistakes, good moves and key moments from the game library come back as questions, spaced out over the days", "Tus errores, buenas jugadas y momentos clave de la biblioteca de partidas vuelven como preguntas, espaciadas en los días");
+        Add(d, "Notes.NotDuringGame", "The review of notes waits until your OGS game ends.", "El repaso de notas espera a que termine tu partida de OGS.");
+        Add(d, "Notes.NoNotes", "No notes to review yet: pin mistakes, good moves or key moments in your games (study panel).", "Aún no hay notas para repasar: marca errores, buenas jugadas o momentos clave en tus partidas (panel de estudio).");
+        Add(d, "Notes.NothingDue", "Nothing to review today: your notes come back when it is time.", "Nada que repasar hoy: tus notas volverán cuando toque.");
+        Add(d, "Notes.Next", "Comes back {0}.", "Volverá {0}.");
+        Add(d, "Notes.Soon", "in a few minutes", "en unos minutos");
+        Add(d, "Notes.Tomorrow", "tomorrow", "mañana");
+        Add(d, "Notes.InDays", "in {0} days", "en {0} días");
         Add(d, "Study.QuizReveal", "Show", "Mostrar");
         Add(d, "Study.QuizNext", "Next", "Siguiente");
         Add(d, "Study.QuizEnd", "End quiz", "Terminar");

@@ -295,6 +295,7 @@
                 <MenuItem Header="{l:T Tsumego.Menu}" Command="{Binding OpenTsumegoCommand}" InputGesture="Ctrl+P" x:Name="TsumegoItem" />
                 <MenuItem Header="{l:T Main.StudyMenu}" Command="{Binding Study.ToggleCommand}" InputGesture="S" />
                 <MenuItem Header="{l:T Study.Quiz}" Command="{Binding Study.StartQuizCommand}" ToolTip.Tip="{l:T Study.QuizTip}" />
+                <MenuItem Header="{Binding ReviewNotesHeader}" Command="{Binding ReviewNotesCommand}" ToolTip.Tip="{l:T Notes.Tip}" x:Name="ReviewNotesItem" />
                 <MenuItem Header="{l:T Guess.Menu}" Command="{Binding Study.Guess.StartCommand}" ToolTip.Tip="{l:T Guess.Tip}" x:Name="GuessItem" />
                 <MenuItem Header="{l:T Photo.Menu}" Command="{Binding ReadBoardPhotoCommand}" x:Name="PhotoItem" />
                 <MenuItem Header="{l:T Count.Menu}" Command="{Binding Counting.StartCommand}" x:Name="CountItem" ToolTip.Tip="{l:T Count.MenuTip}" />

@@ -55,7 +55,7 @@
                   <StackPanel Spacing="6">
                     <Grid ColumnDefinitions="Auto,*,Auto">
                       <c:HoshiIcon Icon="{DynamicResource Icon.Quiz}" Size="16" Foreground="{DynamicResource Accent}" Margin="0,0,8,0" VerticalAlignment="Center" />
-                      <TextBlock Grid.Column="1" Text="{l:T Study.Quiz}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="1" Text="{Binding Study.QuizTitle}" FontWeight="SemiBold" VerticalAlignment="Center" />
                       <TextBlock Grid.Column="2" Classes="secondary" Text="{Binding Study.QuizScore}" VerticalAlignment="Center" x:Name="QuizScore" />
                     </Grid>
                     <TextBlock Classes="secondary" FontSize="12" Text="{Binding Study.QuizProgress}" IsVisible="{Binding !Study.IsQuizFinished}" />

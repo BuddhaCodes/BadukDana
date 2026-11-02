@@ -90,6 +90,7 @@ public partial class App : Application
                 ?? new PhoneShellViewModel(new MainWindowViewModel(), new Services.Phone.PhoneNavigation());
             shell.IsHome = true; // the app opens on its home screen
             single.MainView = new PhoneView { DataContext = shell };
+            shell.Main.CountNotesAtStart();
         }
 
         // Phones are told about a new version and update by installing the new APK (from the website) over this one.
@@ -116,6 +117,7 @@ public partial class App : Application
                 main.Show();
                 splash.Close();
                 services.GetService<UpdateViewModel>()?.Start();
+                services.GetService<MainWindowViewModel>()?.CountNotesAtStart();
             },
             Avalonia.Threading.DispatcherPriority.Background);
     }

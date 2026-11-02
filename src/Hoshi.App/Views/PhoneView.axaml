@@ -476,6 +476,9 @@
                 <Button Classes="menu-tile" Command="{Binding Main.ReadBoardPhotoCommand}" x:Name="MenuPhoto">
                   <StackPanel Spacing="6"><TextBlock Text="▣" FontSize="18" HorizontalAlignment="Center" /><TextBlock Text="{l:T Photo.Menu}" TextWrapping="Wrap" TextAlignment="Center" /></StackPanel>
                 </Button>
+                <Button Classes="menu-tile" Command="{Binding Main.ReviewNotesCommand}" x:Name="MenuReviewNotes">
+                  <StackPanel Spacing="6"><TextBlock Text="↻" FontSize="18" HorizontalAlignment="Center" /><TextBlock Text="{Binding Main.ReviewNotesHeader}" TextWrapping="Wrap" TextAlignment="Center" /></StackPanel>
+                </Button>
                 <Button Classes="menu-tile" Command="{Binding Main.Study.Guess.StartCommand}" x:Name="MenuGuess">
                   <StackPanel Spacing="6"><TextBlock Text="?" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" /><TextBlock Text="{l:T Guess.Menu}" TextWrapping="Wrap" TextAlignment="Center" /></StackPanel>
                 </Button>

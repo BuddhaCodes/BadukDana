@@ -62,9 +62,9 @@ public sealed partial class StudyViewModel
             bool first = _tree is null;
             _tree = _game.Tree;
             _sequenceId = null;
-            if (IsQuizActive)
+            if (IsQuizActive && !_openingReviewGame)
             {
-                EndQuiz();
+                EndQuiz(); // another game: its questions are not these (the note review opens its games itself)
             }
 
             // A game that comes with a study (a shared file, a replay, a reloaded online game) opens the panel.
