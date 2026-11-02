@@ -74,7 +74,7 @@ public sealed partial class ReplaysViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isSearching;
 
-    public ReplaysViewModel(IReplayStore store)
+    public ReplaysViewModel(IReplayStore store, ISettingsService? settings = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         Results =
@@ -85,7 +85,7 @@ public sealed partial class ReplaysViewModel : ViewModelBase
             new(Tr.T("Replays.NoResult"), ResultFilter.NoResult),
         ];
         _selectedResult = Results[0];
-        Notebook = new NotebookViewModel(store);
+        Notebook = new NotebookViewModel(store, () => settings?.Current.StudyAuthor ?? string.Empty);
         store.Changed += (_, _) => Reload();
         Reload();
     }

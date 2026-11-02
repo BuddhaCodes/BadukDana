@@ -177,4 +177,29 @@ public sealed class NoteReviewTests : IDisposable
         main.Study.IsActive.Should().BeTrue();
         StudyStore.Read(game.CurrentNode).Pins.Should().ContainSingle();
     }
+
+    [Fact]
+    public async Task The_notebook_finds_open_threads_and_mentions_of_the_player()
+    {
+        ReplayEntry entry = SaveGame("a", 0);
+        GameTree tree = _store.Load(entry);
+        GameNode node = Node(tree, 3);
+        NodeStudy study = StudyStore.Read(node);
+        StudyStore.Write(node, study with { Pins = [.. study.Pins.Select(p => p with { Text = p.Text + " @Ana", Resolved = false })] });
+        GameNode first = Node(tree, 1);
+        NodeStudy lesson = StudyStore.Read(first);
+        StudyStore.Write(first, lesson with { Pins = [.. lesson.Pins.Select(p => p with { Resolved = true, StatusTime = T0 })] });
+        _store.Save(tree, entry.Id, entry.Source);
+
+        var notebook = new NotebookViewModel(_store, () => "ana");
+        await notebook.EnsureLoadedAsync();
+        notebook.Rows.Should().HaveCount(2);
+        notebook.OpenOnly = true;
+        notebook.Rows.Should().ContainSingle().Which.Move.Should().Be(3);
+        notebook.OpenOnly = false;
+        notebook.MentionsMe = true;
+        notebook.Rows.Should().ContainSingle().Which.Pin.Text.Should().EndWith("@Ana");
+        notebook.CanFilterMentions.Should().BeTrue();
+        new NotebookViewModel(_store).CanFilterMentions.Should().BeFalse("without a study name there is no 'me'");
+    }
 }

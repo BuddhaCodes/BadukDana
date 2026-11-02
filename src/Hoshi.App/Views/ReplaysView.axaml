@@ -63,6 +63,8 @@
                 </DataTemplate>
               </ComboBox.ItemTemplate>
             </ComboBox>
+            <CheckBox Content="{l:T Notebook.OpenOnly}" IsChecked="{Binding OpenOnly}" Margin="0,0,8,6" x:Name="NotebookOpenOnly" />
+            <CheckBox Content="{l:T Notebook.MentionsMe}" IsChecked="{Binding MentionsMe}" IsVisible="{Binding CanFilterMentions}" Margin="0,0,8,6" x:Name="NotebookMentions" />
             <Button Content="{l:T Replays.ClearFilters}" Command="{Binding ClearFiltersCommand}" Margin="0,0,8,6" />
             <TextBlock Classes="secondary" Text="{Binding CountText}" VerticalAlignment="Center" Margin="0,0,0,6" x:Name="NotebookCount" />
           </WrapPanel>

@@ -144,6 +144,15 @@ public static partial class Tr
         Add(d, "Study.QuizSelfRight", "Counted as right.", "Cuenta como acierto.");
         Add(d, "Study.QuizSelfWrong", "Counted as a miss.", "Cuenta como fallo.");
         Add(d, "Study.QuizDone", "Done: {0} of {1} right.", "Terminado: {0} de {1} acertadas.");
+        Add(d, "Study.Resolved", "resolved", "resuelto");
+        Add(d, "Study.Open", "open", "abierto");
+        Add(d, "Study.Resolve", "Resolve", "Resolver");
+        Add(d, "Study.Reopen", "Reopen", "Reabrir");
+        Add(d, "Study.ResolveTip", "Mark the thread resolved (it stays, dimmed) or open it again; write @name to mention someone", "Marca el hilo como resuelto (se queda, atenuado) o ábrelo otra vez; escribe @nombre para mencionar a alguien");
+        Add(d, "Study.ResolvedStatus", "Thread resolved.", "Hilo resuelto.");
+        Add(d, "Study.ReopenedStatus", "Thread open again.", "Hilo abierto otra vez.");
+        Add(d, "Notebook.OpenOnly", "Open threads", "Hilos abiertos");
+        Add(d, "Notebook.MentionsMe", "Mention me", "Me mencionan");
         Add(d, "Study.Explain", "Explain this move", "Explícamelo");
         Add(d, "Study.ExplainTip", "KataGo reads this move and writes what it found into the study: points lost, the better move and its line (editable)", "KataGo lee esta jugada y escribe en el estudio lo que encontró: puntos perdidos, la mejor jugada y su línea (editable)");
         Add(d, "Study.Explaining", "KataGo is reading the move…", "KataGo está leyendo la jugada…");

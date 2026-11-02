@@ -98,6 +98,17 @@ public sealed partial class StudyPinRow : ObservableObject
 
     public bool HasReplies => Pin.Replies.Count > 0;
 
+    /// <summary>"Resolved" next to the author, or "Open" when the thread has replies or mentions (empty otherwise).</summary>
+    public string StatusText => Pin.Resolved ? Tr.T("Study.Resolved") : Pin.Replies.Count > 0 || Pin.MentionedNames.Count > 0 ? Tr.T("Study.Open") : string.Empty;
+
+    public string StatusAction => Tr.T(Pin.Resolved ? "Study.Reopen" : "Study.Resolve");
+
+    /// <summary>Resolved threads stay, dimmed.</summary>
+    public double Opacity => Pin.Resolved ? 0.6 : 1;
+
+    [RelayCommand]
+    private void ToggleResolved() => _owner.SetResolved(this, !Pin.Resolved);
+
     [RelayCommand(CanExecute = nameof(CanReply))]
     private void Reply()
     {
@@ -476,6 +487,13 @@ public sealed partial class StudyViewModel : ViewModelBase
 
         var reply = new StudyReply(AuthorName, _time.GetUtcNow(), text);
         Update(s => s with { Pins = [.. s.Pins.Select(p => p.Id == row.Pin.Id ? p with { Replies = [.. p.Replies, reply] } : p)] });
+    }
+
+    internal void SetResolved(StudyPinRow row, bool resolved)
+    {
+        DateTimeOffset now = _time.GetUtcNow();
+        Update(s => s with { Pins = [.. s.Pins.Select(p => p.Id == row.Pin.Id ? p with { Resolved = resolved, StatusTime = now } : p)] });
+        _game.ShowStatus(Tr.T(resolved ? "Study.ResolvedStatus" : "Study.ReopenedStatus"));
     }
 
     internal async Task DeletePinAsync(StudyPinRow row)

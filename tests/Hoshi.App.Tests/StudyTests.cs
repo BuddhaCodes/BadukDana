@@ -390,6 +390,22 @@ public sealed class StudyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void A_thread_is_resolved_and_reopened_from_its_note()
+    {
+        Play((2, 2));
+        _study.AddPin(PinCategory.Question, "Why here, @Ben?");
+        StudyPinRow row = _study.Pins.Single();
+        row.StatusText.Should().Be("abierto", "a mention makes it a thread");
+        row.ToggleResolvedCommand.Execute(null);
+        StudyPin pin = StudyStore.Read(_game.CurrentNode).Pins.Single();
+        pin.Resolved.Should().BeTrue();
+        pin.StatusTime.Should().Be(T0);
+        _study.Pins.Single().StatusAction.Should().Be("Reabrir");
+        _study.Pins.Single().ToggleResolvedCommand.Execute(null);
+        StudyStore.Read(_game.CurrentNode).Pins.Single().Resolved.Should().BeFalse();
+    }
+
+    [Fact]
     public void Explain_is_off_without_KataGo()
     {
         Play((2, 2));

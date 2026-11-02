@@ -179,17 +179,22 @@
                   <ItemsControl ItemsSource="{Binding Study.Pins}" x:Name="StudyPins">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate x:DataType="vm:StudyPinRow">
-                        <Border Margin="0,0,0,6" Padding="10,7" CornerRadius="8" Background="{DynamicResource Bg.PanelAlt}" BorderBrush="{Binding Brush}" BorderThickness="3,0,0,0">
+                        <Border Margin="0,0,0,6" Padding="10,7" CornerRadius="8" Background="{DynamicResource Bg.PanelAlt}" BorderBrush="{Binding Brush}" BorderThickness="3,0,0,0" Opacity="{Binding Opacity}">
                           <StackPanel Spacing="4">
                             <Grid ColumnDefinitions="*,Auto">
                               <WrapPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding CategoryName}" Foreground="{Binding Brush}" FontWeight="SemiBold" FontSize="12" Margin="0,0,6,0" />
                                 <TextBlock Text="{Binding Author}" FontSize="11.5" FontWeight="SemiBold" Margin="0,0,6,0" />
-                                <TextBlock Classes="secondary" Text="{Binding When}" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock Classes="secondary" Text="{Binding When}" FontSize="11" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <TextBlock Classes="secondary" Text="{Binding StatusText}" FontSize="11" VerticalAlignment="Center" />
                               </WrapPanel>
-                              <Button Grid.Column="1" Classes="bar icon" Padding="3" Command="{Binding DeleteCommand}" ToolTip.Tip="{l:T Study.Delete}" VerticalAlignment="Top">
-                                <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="11" />
-                              </Button>
+                              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Top">
+                                <!-- A thread is open until resolved; resolving keeps it, dimmed. -->
+                                <Button Classes="bar" Padding="6,1" FontSize="11" Content="{Binding StatusAction}" Command="{Binding ToggleResolvedCommand}" ToolTip.Tip="{l:T Study.ResolveTip}" />
+                                <Button Classes="bar icon" Padding="3" Command="{Binding DeleteCommand}" ToolTip.Tip="{l:T Study.Delete}">
+                                  <c:HoshiIcon Icon="{DynamicResource Icon.Close}" Size="11" />
+                                </Button>
+                              </StackPanel>
                             </Grid>
                             <TextBlock Text="{Binding Text}" IsVisible="{Binding HasText}" TextWrapping="Wrap" FontSize="12.5" />
                             <ItemsControl ItemsSource="{Binding Replies}" IsVisible="{Binding HasReplies}">

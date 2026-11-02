@@ -22,7 +22,8 @@ public sealed record NotebookRow(ReplayEntry Entry, int Move, StudyPin Pin, stri
 
     /// <summary>The note, or what the category says when it is empty; replies are counted.</summary>
     public string Text => (Pin.Text.Length > 0 ? Pin.Text : CategoryName)
-        + (Pin.Replies.Count > 0 ? "  " + Tr.F("Notebook.Replies", Pin.Replies.Count) : string.Empty);
+        + (Pin.Replies.Count > 0 ? "  " + Tr.F("Notebook.Replies", Pin.Replies.Count) : string.Empty)
+        + (Pin.Resolved ? "  ✓" : string.Empty);
 
     /// <summary>Searchable text: note, replies, authors and players.</summary>
     internal bool Matches(string query) =>
@@ -44,6 +45,7 @@ public sealed record NotebookOpen(ReplayEntry Entry, int Move);
 public sealed partial class NotebookViewModel : ViewModelBase
 {
     private readonly IReplayStore _store;
+    private readonly Func<string> _me;
     private List<NotebookRow> _all = [];
     private int _loads;
 
@@ -61,9 +63,23 @@ public sealed partial class NotebookViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(EmptyText))]
     private bool _isLoading;
 
-    public NotebookViewModel(IReplayStore store)
+    /// <summary>Only threads not marked resolved.</summary>
+    [ObservableProperty]
+    private bool _openOnly;
+
+    /// <summary>Only notes that mention the player ("@name", the study name in Preferences).</summary>
+    [ObservableProperty]
+    private bool _mentionsMe;
+
+    /// <summary>"Mention me" needs a study name.</summary>
+    public bool CanFilterMentions => _me().Trim().Length > 0;
+
+    /// <param name="store">The game library.</param>
+    /// <param name="me">The player's study name (Preferences), for "mention me".</param>
+    public NotebookViewModel(IReplayStore store, Func<string>? me = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
+        _me = me ?? (() => string.Empty);
         Categories = [new StudyCategoryOption(null), .. Enum.GetValues<PinCategory>().Select(c => new StudyCategoryOption(c))];
         _category = Categories[0];
         store.Changed += (_, _) =>
@@ -156,12 +172,19 @@ public sealed partial class NotebookViewModel : ViewModelBase
 
     partial void OnCategoryChanged(StudyCategoryOption value) => Filter();
 
+    partial void OnOpenOnlyChanged(bool value) => Filter();
+
+    partial void OnMentionsMeChanged(bool value) => Filter();
+
     private void Filter()
     {
         string query = Search.Trim();
+        string me = _me().Trim();
         Rows.Clear();
         foreach (NotebookRow row in _all
             .Where(r => Category.Category is not { } c || r.Pin.Category == c)
+            .Where(r => !OpenOnly || !r.Pin.Resolved)
+            .Where(r => !MentionsMe || r.Pin.Mentions(me))
             .Where(r => r.Matches(query))
             .OrderByDescending(r => r.Entry.Played)
             .ThenBy(r => r.Move))
@@ -190,6 +213,8 @@ public sealed partial class NotebookViewModel : ViewModelBase
     {
         Search = string.Empty;
         Category = Categories[0];
+        OpenOnly = false;
+        MentionsMe = false;
     }
 
     private static int MoveNumber(GameNode node)

@@ -162,4 +162,34 @@ public sealed class StudyTests
         var ids = Enumerable.Range(0, 500).Select(_ => StudyStore.NewId()).ToList();
         ids.Should().OnlyHaveUniqueItems().And.OnlyContain(i => i.Length == 8);
     }
+
+    [Fact]
+    public void A_thread_is_open_or_resolved_and_the_later_change_wins_a_merge()
+    {
+        GameTree mine = Game("dd", "pp");
+        var pin = new StudyPin("p1", PinCategory.Question, "Ana", T0, "Why here? @Ben", []);
+        StudyStore.Write(Node(mine, 1), new NodeStudy([pin with { Resolved = true, StatusTime = T0.AddHours(1) }], []));
+
+        GameTree reread = SgfParser.Parse(SgfWriter.Write(mine));
+        StudyPin back = StudyStore.Read(Node(reread, 1)).Pins.Single();
+        back.Resolved.Should().BeTrue();
+        back.StatusTime.Should().Be(T0.AddHours(1));
+
+        // Someone reopens it later on their copy; an older "resolved" does not undo that.
+        GameTree theirs = Game("dd", "pp");
+        StudyStore.Write(Node(theirs, 1), new NodeStudy([pin with { Resolved = false, StatusTime = T0.AddHours(2) }], []));
+        StudyStore.Merge(mine, theirs).Items.Should().Be(1);
+        StudyStore.Read(Node(mine, 1)).Pins.Single().Resolved.Should().BeFalse();
+        StudyStore.Merge(theirs, mine).Items.Should().Be(0);
+    }
+
+    [Fact]
+    public void Mentions_are_found_in_notes_and_replies_but_not_in_emails()
+    {
+        var pin = new StudyPin("p", PinCategory.Question, "Ana", T0, "@Ben what about this? (ana@example.com)", [new StudyReply("Ben", T0, "Ask @Chen.Li.")]);
+        pin.MentionedNames.Should().BeEquivalentTo(["Ben", "Chen.Li"]);
+        pin.Mentions("ben").Should().BeTrue();
+        pin.Mentions("Chen Li").Should().BeFalse();
+        pin.Mentions("ana").Should().BeFalse();
+    }
 }
