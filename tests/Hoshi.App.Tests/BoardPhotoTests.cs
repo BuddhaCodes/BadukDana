@@ -175,9 +175,67 @@ public sealed class BoardPhotoTests
         game.Board[new Point(2, 2)].Should().Be(Stone.Black);
         game.Board[new Point(6, 2)].Should().Be(Stone.White);
 
-        photo.Tap(10, 10); // a fifth tap starts the corners over
-        photo.Corners.Should().ContainSingle();
+        photo.Tap(Tilted[2].X + 4, Tilted[2].Y - 3); // a fifth tap moves the nearest corner
+        photo.Corners.Should().HaveCount(4);
+        photo.Corners[2].Should().Be((Tilted[2].X + 4, Tilted[2].Y - 3));
+        photo.HasResult.Should().BeTrue();
+
+        photo.ResetCommand.Execute(null); // "Corners again": all by hand
+        photo.Corners.Should().BeEmpty();
         photo.HasResult.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task A_photo_finds_its_corners_rotates_and_opens_to_study_kept_in_the_library()
+    {
+        var truth = new Stone[9, 9];
+        truth[2, 2] = Stone.Black;
+        truth[6, 2] = Stone.White;
+        truth[4, 6] = Stone.Black;
+        (PhotoPixels pixels, _) = OnTable(9, truth, 0.06);
+        var game = new Hoshi.App.ViewModels.GameViewModel();
+        var study = new Hoshi.App.ViewModels.StudyViewModel(game);
+        Hoshi.Sgf.GameTree? kept = null;
+        var photo = new Hoshi.App.ViewModels.BoardPhotoViewModel(game, study: study, keep: t => (kept = t) is not null) { Size = 9 };
+        photo.Load(null, pixels);
+
+        await photo.FindCornersAsync();
+
+        photo.Corners.Should().HaveCount(4);
+        photo.HasResult.Should().BeTrue();
+        photo.Status.Should().Contain("2").And.Contain("1");
+
+        photo.RotateCommand.Execute(null); // taken from White's side: a quarter turn
+        photo.StudyCommand.Execute(null);
+
+        kept.Should().BeSameAs(game.Tree);
+        study.IsActive.Should().BeTrue();
+        game.IsEditMode.Should().BeFalse();
+        // (x, y) → (y, 8 − x) after the quarter turn of the corners.
+        game.Board[new Point(2, 6)].Should().Be(Stone.Black);
+        game.Board[new Point(2, 2)].Should().Be(Stone.White);
+        game.Board[new Point(6, 4)].Should().Be(Stone.Black);
+    }
+
+    [Fact]
+    public void Positions_from_photos_are_kept_in_the_library_without_moves_and_left_out_of_the_summaries()
+    {
+        string dir = Path.Combine(Path.GetTempPath(), "hoshi-photo-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new Hoshi.App.Services.ReplayStore(dataDirectory: dir);
+            Hoshi.Sgf.GameTree tree = Hoshi.Sgf.GameTree.Create(9, RuleSet.Japanese);
+            store.Save(tree, "local-1", "local").Should().BeNull("a game without moves is not kept");
+            store.Save(tree, "photo-1", Hoshi.App.Services.ReplayStore.PhotoSource).Should().NotBeNull();
+            new Hoshi.App.ViewModels.ReplayRow(store.List()[0]).Details.Should().EndWith("Foto");
+        }
+        finally
+        {
+            if (Directory.Exists(dir))
+            {
+                Directory.Delete(dir, recursive: true);
+            }
+        }
     }
 
     [Avalonia.Headless.XUnit.AvaloniaFact]
@@ -214,5 +272,83 @@ public sealed class BoardPhotoTests
         }
 
         window.Close();
+    }
+
+    /// <summary>A board lying on a dark table, seen at an angle: wood only inside the board's outline.</summary>
+    private static (PhotoPixels Photo, (double X, double Y)[] Grid) OnTable(int size, Stone[,] stones, double margin, int seed = 5)
+    {
+        (double X, double Y)[] outline = [(170, 110), (840, 140), (900, 800), (110, 760)];
+        double[] board = BoardRecognizer.Homography(outline);
+        (double, double) At(double u, double v) => BoardRecognizer.Map(board, u, v);
+        (double X, double Y)[] grid = [At(margin, margin), At(1 - margin, margin), At(1 - margin, 1 - margin), At(margin, 1 - margin)];
+        PhotoPixels photo = Photo(size, stones, grid, seed);
+
+        // Repaint everything outside the board's outline as the table.
+        double[] inverse = Invert(board);
+        for (int y = 0; y < photo.Height; y++)
+        {
+            for (int x = 0; x < photo.Width; x++)
+            {
+                (double u, double v) = BoardRecognizer.Map(inverse, x, y);
+                if (u < 0 || v < 0 || u > 1 || v > 1)
+                {
+                    int i = ((y * photo.Width) + x) * 4;
+                    (photo.Bgra[i], photo.Bgra[i + 1], photo.Bgra[i + 2]) = ((byte)55, (byte)62, (byte)58);
+                }
+            }
+        }
+
+        return (photo, grid);
+    }
+
+    private static double[] Invert(double[] m)
+    {
+        double a = m[0], b = m[1], c = m[2], d = m[3], e = m[4], f = m[5], g = m[6], h = m[7], k = m[8];
+        double det = (a * ((e * k) - (f * h))) - (b * ((d * k) - (f * g))) + (c * ((d * h) - (e * g)));
+        return
+        [
+            ((e * k) - (f * h)) / det, ((c * h) - (b * k)) / det, ((b * f) - (c * e)) / det,
+            ((f * g) - (d * k)) / det, ((a * k) - (c * g)) / det, ((c * d) - (a * f)) / det,
+            ((d * h) - (e * g)) / det, ((b * g) - (a * h)) / det, ((a * e) - (b * d)) / det,
+        ];
+    }
+
+    [Theory]
+    [InlineData(9, 0.06)]
+    [InlineData(13, 0.04)]
+    [InlineData(19, 0.03)]
+    public void The_board_is_found_by_itself_and_read_from_the_corners_it_finds(int size, double margin)
+    {
+        Stone[,] truth = Position(size, seed: size + 1);
+        (PhotoPixels photo, (double X, double Y)[] grid) = OnTable(size, truth, margin);
+
+        IReadOnlyList<(double X, double Y)> found = BoardFinder.FindCorners(photo, size)!;
+
+        found.Should().NotBeNull();
+        double spacing = 650.0 / (size - 1);
+        for (int i = 0; i < 4; i++)
+        {
+            Math.Sqrt(Math.Pow(found[i].X - grid[i].X, 2) + Math.Pow(found[i].Y - grid[i].Y, 2)).Should().BeLessThan(spacing * 0.15, $"corner {i}");
+        }
+
+        RecognizedBoard read = BoardRecognizer.Recognize(photo, found, size);
+        int wrong = 0;
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                wrong += read.Stones[x, y] == truth[x, y] ? 0 : 1;
+            }
+        }
+
+        wrong.Should().Be(0);
+    }
+
+    [Fact]
+    public void No_board_in_the_photo_means_no_guess()
+    {
+        var grey = new byte[200 * 150 * 4];
+        Array.Fill(grey, (byte)90);
+        BoardFinder.FindCorners(new PhotoPixels(200, 150, grey), 19).Should().BeNull();
     }
 }

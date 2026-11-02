@@ -42,6 +42,12 @@ public class MainActivity : AvaloniaMainActivity
         AndroidPlatform.OnIntent(intent);
     }
 
+    protected override void OnActivityResult(int requestCode, Result resultCode, Android.Content.Intent? data)
+    {
+        base.OnActivityResult(requestCode, resultCode, data);
+        AndroidPlatform.OnActivityResult(requestCode, resultCode);
+    }
+
     protected override void OnPause()
     {
         base.OnPause();

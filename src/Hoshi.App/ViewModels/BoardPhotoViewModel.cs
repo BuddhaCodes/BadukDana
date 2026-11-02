@@ -13,8 +13,10 @@ namespace Hoshi.App.ViewModels;
 public sealed record PhotoMark(double X, double Y, Stone Stone, string Label);
 
 /// <summary>
-/// "Photo of the board": open a photo (on the phone, the picker can also take one), tap the four corner
-/// intersections, choose the size, read the stones, and open the position in the editor to fix what the photo hid.
+/// "Photo of the board": take a photo (phone camera) or open one, check the four corner intersections Hoshi found by
+/// itself (a tap moves the nearest one; "Start over" taps them all by hand), choose the size, rotate if the photo was
+/// taken from another side, and open the position: to study it (study panel open, kept in the game library) or in
+/// the editor to fix what the photo hid.
 /// </summary>
 public sealed partial class BoardPhotoViewModel : ViewModelBase
 {
@@ -23,6 +25,8 @@ public sealed partial class BoardPhotoViewModel : ViewModelBase
 
     private readonly GameViewModel _game;
     private readonly IFileDialogService? _files;
+    private readonly StudyViewModel? _study;
+    private readonly Func<Hoshi.Sgf.GameTree, bool>? _keep;
     private PhotoPixels? _pixels;
     private RecognizedBoard? _result;
 
@@ -37,18 +41,30 @@ public sealed partial class BoardPhotoViewModel : ViewModelBase
     private string _status = string.Empty;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(OpenCommand))]
+    [NotifyCanExecuteChangedFor(nameof(OpenCommand), nameof(StudyCommand), nameof(RotateCommand))]
     private bool _hasResult;
+
+    [ObservableProperty]
+    private bool _isFinding;
 
     [ObservableProperty]
     private bool _whiteToPlay;
 
-    public BoardPhotoViewModel(GameViewModel game, IFileDialogService? files = null)
+    /// <param name="game">Where the position opens.</param>
+    /// <param name="files">The photo picker.</param>
+    /// <param name="study">Opened by "Study it".</param>
+    /// <param name="keep">Saves the position in the game library (true when it was kept).</param>
+    public BoardPhotoViewModel(GameViewModel game, IFileDialogService? files = null, StudyViewModel? study = null, Func<Hoshi.Sgf.GameTree, bool>? keep = null)
     {
         _game = game ?? throw new ArgumentNullException(nameof(game));
         _files = files;
+        _study = study;
+        _keep = keep;
         Status = Tr.T("Photo.Pick");
     }
+
+    /// <summary>The phone has a camera Hoshi can use.</summary>
+    public bool CanTakePhoto => PlatformInfo.TakePhoto is not null;
 
     public IReadOnlyList<int> Sizes { get; } = [9, 13, 19];
 
@@ -71,6 +87,37 @@ public sealed partial class BoardPhotoViewModel : ViewModelBase
             return;
         }
 
+        await LoadFileAsync(path);
+    }
+
+    /// <summary>The phone's camera app takes the photo; it comes back here (nothing leaves the phone).</summary>
+    [RelayCommand]
+    private async Task TakePhoto()
+    {
+        if (PlatformInfo.TakePhoto is not { } take)
+        {
+            return;
+        }
+
+        string? path;
+        try
+        {
+            path = await take();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            Status = Tr.F("Photo.Unreadable", ex.Message);
+            return;
+        }
+
+        if (path is not null)
+        {
+            await LoadFileAsync(path);
+        }
+    }
+
+    private async Task LoadFileAsync(string path)
+    {
         try
         {
             await using FileStream stream = File.OpenRead(path);
@@ -81,6 +128,76 @@ public sealed partial class BoardPhotoViewModel : ViewModelBase
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or NotSupportedException)
         {
             Status = Tr.F("Photo.Unreadable", ex.Message);
+            return;
+        }
+
+        await FindCornersAsync();
+    }
+
+    /// <summary>
+    /// Looks for the board by itself and, when found, places the four corners and reads the stones; the player checks
+    /// them (a tap moves the nearest corner). When not found, the player taps the corners as before.
+    /// </summary>
+    public async Task FindCornersAsync()
+    {
+        if (_pixels is not { } pixels)
+        {
+            return;
+        }
+
+        IsFinding = true;
+        Status = Tr.T("Photo.Finding");
+        int size = Size;
+        IReadOnlyList<(double X, double Y)>? found;
+        try
+        {
+            found = await Task.Run(() => BoardFinder.FindCorners(pixels, size));
+        }
+        finally
+        {
+            IsFinding = false;
+        }
+
+        if (!ReferenceEquals(pixels, _pixels) || Corners.Count > 0)
+        {
+            return; // another photo arrived, or the player started tapping meanwhile
+        }
+
+        if (found is null)
+        {
+            Status = Tr.T("Photo.NotFound");
+            return;
+        }
+
+        SetCorners(found);
+        if (HasResult)
+        {
+            Status = Tr.F("Photo.Found", _result!.Count(Stone.Black), _result.Count(Stone.White));
+        }
+    }
+
+    private void SetCorners(IReadOnlyList<(double X, double Y)> corners)
+    {
+        Marks.Clear();
+        for (int i = 0; i < 4; i++)
+        {
+            Marks.Add(new PhotoMark(corners[i].X, corners[i].Y, Stone.Empty, (i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        }
+
+        Read();
+    }
+
+    /// <summary>
+    /// The photo was taken from another side of the board: turns the position a quarter (the corners are the same
+    /// four points; which one is the top left changes).
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(HasResult))]
+    private void Rotate()
+    {
+        IReadOnlyList<(double X, double Y)> c = Corners;
+        if (c.Count == 4)
+        {
+            SetCorners([c[1], c[2], c[3], c[0]]);
         }
     }
 
@@ -112,7 +229,10 @@ public sealed partial class BoardPhotoViewModel : ViewModelBase
         Status = Tr.T("Photo.TapCorners");
     }
 
-    /// <summary>A tap on the photo (image pixels): the next corner; with four, the stones are read.</summary>
+    /// <summary>
+    /// A tap on the photo (image pixels): the next corner; with four, the stones are read. Once there are four (found
+    /// or tapped), a tap moves the nearest corner there.
+    /// </summary>
     public void Tap(double x, double y)
     {
         if (_pixels is null)
@@ -120,9 +240,12 @@ public sealed partial class BoardPhotoViewModel : ViewModelBase
             return;
         }
 
-        if (Corners.Count >= 4)
+        IReadOnlyList<(double X, double Y)> corners = Corners;
+        if (corners.Count >= 4)
         {
-            Reset();
+            int nearest = Enumerable.Range(0, 4).MinBy(i => Math.Pow(corners[i].X - x, 2) + Math.Pow(corners[i].Y - y, 2));
+            SetCorners([.. corners.Select((c, i) => i == nearest ? (x, y) : c)]);
+            return;
         }
 
         string[] names = ["1", "2", "3", "4"];
@@ -211,6 +334,37 @@ public sealed partial class BoardPhotoViewModel : ViewModelBase
         }
 
         _game.ShowStatus(Tr.T("Photo.Opened"));
+        Opened?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// "Study it": the position opens with the study panel (notes, drawings, "what if…" lines) and is kept in the game
+    /// library, so it can be found again. Your live OGS game is never replaced by it: the board leaves that game first,
+    /// as with any game opened.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(HasResult))]
+    private void Study()
+    {
+        if (_result is null)
+        {
+            return;
+        }
+
+        Hoshi.Sgf.GameTree tree = BoardRecognizer.ToGame(_result, WhiteToPlay ? Stone.White : Stone.Black);
+        tree.Root.SetValue("GN", Tr.F("Photo.GameName", DateTime.Now.ToString("g", System.Globalization.CultureInfo.CurrentCulture)));
+        _game.Load(tree, path: null);
+        if (_game.IsEditMode)
+        {
+            _game.ToggleEditModeCommand.Execute(null);
+        }
+
+        if (_study is { IsActive: false })
+        {
+            _study.IsActive = true;
+        }
+
+        bool kept = _keep?.Invoke(tree) ?? false;
+        _game.ShowStatus(Tr.T(kept ? "Photo.Studying" : "Photo.StudyOpened"));
         Opened?.Invoke(this, EventArgs.Empty);
     }
 

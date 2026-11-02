@@ -23,7 +23,12 @@ public sealed class ReplayRow(ReplayEntry entry, int? matchMove = null)
         string.Create(CultureInfo.InvariantCulture, $"{Entry.Size}×{Entry.Size}"),
         Tr.F("Replays.Moves", Entry.Moves),
         Entry.Result ?? Tr.T("Replays.NoResult"),
-        Entry.Source == "ogs" ? (Entry.OgsGameId is { } id ? string.Create(CultureInfo.InvariantCulture, $"OGS #{id}") : "OGS") : Tr.T("Replays.Local"),
+        Entry.Source switch
+        {
+            "ogs" => Entry.OgsGameId is { } id ? string.Create(CultureInfo.InvariantCulture, $"OGS #{id}") : "OGS",
+            ReplayStore.PhotoSource => Tr.T("Replays.Photo"),
+            _ => Tr.T("Replays.Local"),
+        },
     }.Concat(MatchMove is { } m ? [Tr.F("Replays.PatternAt", m)] : []));
 
     private static string Name(string name, string fallbackKey) => string.IsNullOrWhiteSpace(name) ? Tr.T(fallbackKey) : name;

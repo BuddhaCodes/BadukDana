@@ -61,6 +61,16 @@ public static partial class Tr
         Add(d, "Photo.WhiteToPlay", "White to play", "Juegan blancas");
         Add(d, "Photo.Again", "Corners again", "Esquinas otra vez");
         Add(d, "Photo.Open", "Open in the editor", "Abrir en el editor");
+        Add(d, "Photo.TakePhoto", "Take a photo…", "Tomar una foto…");
+        Add(d, "Photo.Finding", "Looking for the board…", "Buscando el tablero…");
+        Add(d, "Photo.NotFound", "The board was not found by itself: tap the four corner intersections, top left first, then clockwise.", "No se encontró el tablero solo: toca las cuatro esquinas de la cuadrícula, primero arriba a la izquierda y luego en el sentido del reloj.");
+        Add(d, "Photo.Found", "Board found: {0} black and {1} white stones. Check the corners (a tap moves the nearest one) and the stones.", "Tablero encontrado: {0} piedras negras y {1} blancas. Revisa las esquinas (un toque mueve la más cercana) y las piedras.");
+        Add(d, "Photo.Rotate", "Rotate", "Girar");
+        Add(d, "Photo.Study", "Study it", "Estudiarla");
+        Add(d, "Photo.GameName", "Photo {0}", "Foto {0}");
+        Add(d, "Photo.Studying", "Position from the photo, in the study panel and kept in the game library.", "Posición de la foto, en el panel de estudio y guardada en la biblioteca de partidas.");
+        Add(d, "Photo.StudyOpened", "Position from the photo, in the study panel.", "Posición de la foto, en el panel de estudio.");
+        Add(d, "Replays.Photo", "Photo", "Foto");
         Add(d, "Photo.Opened", "Position from the photo: the editor is on to fix anything it missed (Ctrl+E to leave it).", "Posición de la foto: el editor está activo para corregir lo que falte (Ctrl+E para salir).");
         Add(d, "Sync.Title", "Sync with a folder", "Sincronizar con una carpeta");
         Add(d, "Sync.Hint", "Pick a folder that Syncthing, Dropbox, Google Drive or OneDrive keeps in step between your computers. Hoshi leaves its games, studies and progress there when it closes and adds the other computers' when it opens; nothing is lost and preferences stay each computer's own.", "Elige una carpeta que Syncthing, Dropbox, Google Drive u OneDrive mantengan igual en tus ordenadores. Hoshi deja allí sus partidas, estudios y progreso al cerrar y suma los de tus otros ordenadores al abrir; no se pierde nada y las preferencias siguen siendo de cada ordenador.");

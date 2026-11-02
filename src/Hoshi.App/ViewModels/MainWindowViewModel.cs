@@ -932,9 +932,21 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        var photo = new BoardPhotoViewModel(Game, _photoFiles);
+        var photo = new BoardPhotoViewModel(Game, _photoFiles, Study, KeepPhoto);
         _photoWindow.Show(photo);
-        await photo.PickCommand.ExecuteAsync(null);
+        await (photo.CanTakePhoto ? photo.TakePhotoCommand : photo.PickCommand).ExecuteAsync(null);
+    }
+
+    /// <summary>A position from a photo goes to the game library; later changes update that same entry.</summary>
+    private bool KeepPhoto(Hoshi.Sgf.GameTree tree)
+    {
+        if (_replayStore?.Save(tree, "photo-" + Guid.NewGuid().ToString("N")[..12], Services.ReplayStore.PhotoSource) is not { } entry)
+        {
+            return false;
+        }
+
+        _recorder?.MarkReplay(entry);
+        return true;
     }
     private RankGameContext? _rankGame;
 

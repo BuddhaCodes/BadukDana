@@ -206,4 +206,5 @@ Ramas `avalonia-12` (PR #3) y `mejoras-noviembre` (encima de la anterior).
 - [x] Rango estimado con el KataGo de estilo humano y «Rival a mi medida» (nivel y hándicap automáticos).
 - [x] Sincronizar con una carpeta (escritorio).
 - [x] Entrenador de finales (de tus partidas) y «Adivina la jugada» (cualquier SGF; Hoshi no trae partidas profesionales).
-- [x] Foto del tablero → SGF (cuatro esquinas, homografía, clasificación por brillo; sin IA). Falta probarlo con fotos reales y, en Android, la cámara.
+- [x] Foto del tablero → SGF (cuatro esquinas, homografía, clasificación por brillo; sin IA). Falta probarlo con fotos reales.
+- [x] Foto → estudio (2026-11-02): cámara del teléfono (la app de cámara del sistema, sin permiso de cámara), esquinas encontradas solas (región de madera más grande, margen y ajuste fino de cada esquina por la oscuridad de las líneas) que se corrigen con un toque, girar un cuarto, y «Estudiarla»: abre la posición con el panel de estudio y la guarda en la biblioteca (origen «Foto», fuera de los resúmenes). Falta probarlo con fotos reales en un teléfono.
