@@ -32,7 +32,7 @@
 <link rel="canonical" href="https://buddhacodes.github.io/BadukDana/">
 <link rel="icon" type="image/png" href="icon.png">
 <meta name="google-site-verification" content="OhEOMrl2Oe92KjPXcQ_2Sg160fy-5NgJycDRdxuR4Fg" />
-<meta name="description" content="Hoshi is a free desktop Go (Baduk, Weiqi) app: beautiful kaya boards and stones, live KataGo analysis, play against KataGo or any GTP engine, joseki guidance, cinematic effects for great moves, adaptive lo-fi music and online play on OGS.">
+<meta name="description" content="Hoshi is a free desktop Go (Baduk, Weiqi) app: beautiful kaya boards and stones, live KataGo analysis, play against KataGo or any GTP engine, joseki guidance, cinematic effects for great moves, adaptive lo-fi music, study notes that come back as questions, a photo of a real board turned into a position, and online play on OGS.">
 <!-- Link previews (Open Graph: Facebook, Discord, WhatsApp, LinkedIn, Slack; Twitter/X cards) -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Hoshi">
@@ -446,7 +446,7 @@
         <li data-i18n="hero.badge3">Play on OGS</li>
         <li data-i18n="hero.badge4">Joseki trainer</li>
         <li data-i18n="hero.badge5">GTP engines</li>
-        <li>English · Español</li>
+        <li>English · Español · 日本語 · 한국어 · 中文</li>
       </ul>
     </div>
     <div class="goban-wrap">
@@ -533,7 +533,11 @@
       <ul class="items">
         <li><span class="ico">◎</span><div><h3 data-i18n="f1.t">Live AI analysis</h3><p data-i18n="f1.d">KataGo runs in the background from the moment Hoshi opens and rates every move: best, excellent, good, inaccuracy, mistake or blunder, with points lost.</p></div></li>
         <li><span class="ico">▦</span><div><h3 data-i18n="f4.t">Territory at a glance</h3><p data-i18n="f4.d">See secure and potential territory and the estimated score, from Hoshi's own estimator or KataGo's ownership map.</p></div></li>
-        <li><span class="ico">▤</span><div><h3><span data-i18n="f11.t">Your game library</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f11.d">Every game you play is kept. Open one later and step through it: KataGo judges each move again, with all its effects and music.</p></div></li>
+        <li><span class="ico">▤</span><div><h3><span data-i18n="f11.t">Your game library</span></h3><p data-i18n="f11.d">Every game you play is kept. Open one later and step through it: KataGo judges each move again, with all its effects and music.</p></div></li>
+        <li><span class="ico">▣</span><div><h3><span data-i18n="f24.t">Photo of a real board</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f24.d">Take a photo on your phone, or open one on the computer: Hoshi finds the board and its corners by itself, reads the stones and opens the position to study it. A tap fixes a corner.</p></div></li>
+        <li><span class="ico">↻</span><div><h3><span data-i18n="f25.t">Your notes come back</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f25.d">Every mistake, good move and key moment you pinned, in any game, returns as a question on the day spaced repetition picks: ten minutes, a day, three days… a month.</p></div></li>
+        <li><span class="ico">✎</span><div><h3><span data-i18n="f26.t">Explain this move</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f26.d">KataGo writes into your note the points lost, the better move and its line as “what if” stones you can edit.</p></div></li>
+        <li><span class="ico">⌕</span><div><h3><span data-i18n="f27.t">A notebook of every note</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f27.d">All your notes from all your games in one list: filter by category, text, open threads or mentions of you, and jump to the move.</p></div></li>
         <li><span class="ico">❖</span><div><h3 data-i18n="f6.t">SGF editor</h3><p data-i18n="f6.d">Open and save SGF files, explore variations in a game tree, add comments, marks and setup stones.</p></div></li>
       </ul>
     </div>
@@ -541,10 +545,14 @@
     <div class="panel" role="tabpanel" id="p-review" aria-labelledby="t-review" hidden>
       <div class="shot"><img src="img/study.jpg" width="1120" height="704" alt="Hoshi's study panel: pins by two players with replies, a timeline of the game, and arrows, an area and a numbered what-if line on the board" loading="lazy"></div>
       <ul class="items">
-        <li><span class="ico">⚑</span><div><h3><span data-i18n="f19.t">Pin what mattered</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f19.d">Press S during any game and pin moments as a mistake, good move, question, key moment, joseki, life and death or lesson. A timeline shows them along the game.</p></div></li>
-        <li><span class="ico">↗</span><div><h3><span data-i18n="f20.t">Draw your thinking</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f20.d">Arrows, areas, circles, letters and numbered "what if" lines, without touching the game. During your OGS games it is notes only: no engine, and drawing never sends a move.</p></div></li>
-        <li><span class="ico">⇆</span><div><h3><span data-i18n="f21.t">Share and discuss</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f21.d">Save the study as an SGF and send it to a friend or a teacher. Their notes and replies merge into yours; other programs still read it as comments.</p></div></li>
-        <li><span class="ico">?</span><div><h3><span data-i18n="f22.t">What would you play?</span><span class="new" data-i18n="new">New</span></h3><p><span data-i18n="f22.d">A quiz built from your pins, and a printable game report with every moment, the notes and KataGo's verdict.</span> <a href="sample-report.html" data-i18n="f22.a">See a sample report</a></p></div></li>
+        <li><span class="ico">⚑</span><div><h3><span data-i18n="f19.t">Pin what mattered</span></h3><p data-i18n="f19.d">Press S during any game and pin moments as a mistake, good move, question, key moment, joseki, life and death or lesson. A timeline shows them along the game.</p></div></li>
+        <li><span class="ico">↗</span><div><h3><span data-i18n="f20.t">Draw your thinking</span></h3><p data-i18n="f20.d">Arrows, areas, circles, letters and numbered "what if" lines, without touching the game. During your OGS games it is notes only: no engine, and drawing never sends a move.</p></div></li>
+        <li><span class="ico">⇆</span><div><h3><span data-i18n="f21.t">Share and discuss</span></h3><p data-i18n="f21.d">Save the study as an SGF and send it to a friend or a teacher. Their notes and replies merge into yours; other programs still read it as comments.</p></div></li>
+        <li><span class="ico">?</span><div><h3><span data-i18n="f22.t">What would you play?</span></h3><p><span data-i18n="f22.d">A quiz built from your pins, and a printable game report with every moment, the notes and KataGo's verdict.</span> <a href="sample-report.html" data-i18n="f22.a">See a sample report</a></p></div></li>
+        <li><span class="ico">✓</span><div><h3><span data-i18n="f28.t">Guided review</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f28.d">After a game, Hoshi walks you through KataGo's three biggest mistakes and asks what went wrong; your words become notes.</p></div></li>
+        <li><span class="ico">⚖</span><div><h3><span data-i18n="f29.t">Compare your ideas</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f29.d">Draw two “what if” lines on the same move and KataGo ranks them by the score at the end.</p></div></li>
+        <li><span class="ico">▶</span><div><h3><span data-i18n="f30.t">Present and teach</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f30.d">Step through the studied moments with the board alone, or open an OGS review room: your students see every move you show, with its notes and marks.</p></div></li>
+        <li><span class="ico">●</span><div><h3><span data-i18n="f31.t">Voice notes</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f31.d">On the phone, record up to a minute on any move. The sound travels with your backups and plays on every device.</p></div></li>
         <li><span class="ico">→</span><div><h3 data-i18n="f13.t">More below</h3><p><a href="#review" data-i18n="f23.d">How pins, drawings, sharing and the quiz work</a></p></div></li>
       </ul>
     </div>
@@ -552,8 +560,8 @@
     <div class="panel" role="tabpanel" id="p-joseki" aria-labelledby="t-joseki" hidden>
       <div class="shot"><img src="img/joseki-hints.jpg" width="1120" height="704" alt="Joseki continuations shown as coloured discs in the corners" loading="lazy"></div>
       <ul class="items">
-        <li><span class="ico">◈</span><div><h3><span data-i18n="f9.t">Joseki on the board</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f9.d">Turn on Joseki and every corner shows the known continuations, coloured by how the OGS Joseki Explorer rates them, with its comments in the sidebar.</p></div></li>
-        <li><span class="ico">❀</span><div><h3><span data-i18n="f10.t">Joseki trainer</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f10.d">Practise lines on the main board in random corners. Spaced repetition brings back the ones you miss; fetch new lines from OGS or import your own SGF.</p></div></li>
+        <li><span class="ico">◈</span><div><h3><span data-i18n="f9.t">Joseki on the board</span></h3><p data-i18n="f9.d">Turn on Joseki and every corner shows the known continuations, coloured by how the OGS Joseki Explorer rates them, with its comments in the sidebar.</p></div></li>
+        <li><span class="ico">❀</span><div><h3><span data-i18n="f10.t">Joseki trainer</span></h3><p data-i18n="f10.d">Practise lines on the main board in random corners. Spaced repetition brings back the ones you miss; fetch new lines from OGS or import your own SGF.</p></div></li>
         <li><span class="ico">→</span><div><h3 data-i18n="f13.t">More below</h3><p><a href="#joseki" data-i18n="f13.d">How the hints, the colours and the trainer work</a></p></div></li>
       </ul>
     </div>
@@ -563,18 +571,20 @@
       <ul class="items">
         <li><span class="ico">⌁</span><div><h3 data-i18n="f5.t">Online on OGS</h3><p data-i18n="f5.d">Sign in to online-go.com, accept challenges or use Automatch, and play in real time with clock and chat. Engines and hints always stay off in your live games.</p></div></li>
         <li><span class="ico">●</span><div><h3 data-i18n="f14.t">Face to face</h3><p data-i18n="f14.d">Two players, one screen, on 19×19, 13×13 or 9×9, with pass and undo — every move still judged by KataGo.</p></div></li>
+        <li><span class="ico">☆</span><div><h3><span data-i18n="f32.t">A rival at your level</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f32.d">Hoshi estimates your rank from your games against KataGo and offers a rival that plays like you, a little stronger each time you win.</p></div></li>
+        <li><span class="ico">⇅</span><div><h3><span data-i18n="f33.t">Your games on every device</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f33.d">Back up everything in one .hoshi file, or point Hoshi at a synced folder (Dropbox, Drive, Syncthing…) and your phone and computer stay in step.</p></div></li>
         <li><span class="ico">⇄</span><div><h3 data-i18n="f8.t">Yours, offline</h3><p data-i18n="f8.d">Free and open source. No account needed to play locally; your OGS login uses OAuth and Hoshi never stores your password.</p></div></li>
-        <li><span class="ico">文</span><div><h3><span data-i18n="f12.t">English and Spanish</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f12.d">The whole app switches language live from Preferences. English by default.</p></div></li>
+        <li><span class="ico">文</span><div><h3><span data-i18n="f12.t">Five languages</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f12.d">English, Spanish, Japanese, Korean and simplified Chinese; the whole app switches live from Preferences.</p></div></li>
       </ul>
     </div>
 
     <div class="panel" role="tabpanel" id="p-engines" aria-labelledby="t-engines" hidden>
       <div class="shot"><img src="img/engines.jpg" width="1120" height="704" alt="KataGo and Leela Zero playing each other in Hoshi, with the engine panel in the sidebar and the analysis graph" loading="lazy"></div>
       <ul class="items">
-        <li><span class="ico">⚙</span><div><h3><span data-i18n="f15.t">Play against any engine</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f15.d">Hoshi's own KataGo is ready out of the box; add Leela Zero, GNU Go, Pachi or any GTP engine with its command line. Choose colours, board, handicap, komi and rules with Ctrl+G.</p></div></li>
-        <li><span class="ico">⇋</span><div><h3><span data-i18n="f16.t">Engine vs engine</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f16.d">Let two engines play each other and watch the game grow in the tree. Pause, go back to any move and try your own idea: the engine answers from there.</p></div></li>
-        <li><span class="ico">⌨</span><div><h3><span data-i18n="f17.t">GTP console</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f17.d">See every command and answer between Hoshi and its engines, read their logs and type GTP commands yourself.</p></div></li>
-        <li><span class="ico">◎</span><div><h3><span data-i18n="f18.t">Analysis with your engine</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f18.d">Any engine with lz-analyze or kata-analyze can drive the analysis panel instead of the built-in KataGo. All engines stay off during your OGS games.</p></div></li>
+        <li><span class="ico">⚙</span><div><h3><span data-i18n="f15.t">Play against any engine</span></h3><p data-i18n="f15.d">Hoshi's own KataGo is ready out of the box; add Leela Zero, GNU Go, Pachi or any GTP engine with its command line. Choose colours, board, handicap, komi and rules with Ctrl+G.</p></div></li>
+        <li><span class="ico">⇋</span><div><h3><span data-i18n="f16.t">Engine vs engine</span></h3><p data-i18n="f16.d">Let two engines play each other and watch the game grow in the tree. Pause, go back to any move and try your own idea: the engine answers from there.</p></div></li>
+        <li><span class="ico">⌨</span><div><h3><span data-i18n="f17.t">GTP console</span></h3><p data-i18n="f17.d">See every command and answer between Hoshi and its engines, read their logs and type GTP commands yourself.</p></div></li>
+        <li><span class="ico">◎</span><div><h3><span data-i18n="f18.t">Analysis with your engine</span></h3><p data-i18n="f18.d">Any engine with lz-analyze or kata-analyze can drive the analysis panel instead of the built-in KataGo. All engines stay off during your OGS games.</p></div></li>
       </ul>
     </div>
 
@@ -583,7 +593,7 @@
       <ul class="items">
         <li><span class="ico">✦</span><div><h3 data-i18n="f2.t">Moves you can feel</h3><p data-i18n="f2.d">The move that wins a fight shakes the board, cracks the wood and throws embers; routine opening moves just click. Captured stones shatter and weak groups glow faintly. Too much? Turn it down to subtle or off at any time with F.</p></div></li>
         <li><span class="ico">♪</span><div><h3 data-i18n="f3.t">Adaptive music</h3><p data-i18n="f3.d">A calm lo-fi loop that adds drums, arpeggios and an overdrive layer as strong moves at key moments stack up. It stays calm through the opening and cools down when you slip.</p></div></li>
-        <li><span class="ico">☾</span><div><h3><span data-i18n="f7.t">Themes, boards and stones</span><span class="new" data-i18n="new">New</span></h3><p data-i18n="f7.d">Six themes — Pole star, Kaya (light), Ink and gold, Zen garden, Warm minimal and High contrast — plus six gobans, eight stone sets and nine backgrounds to mix with any of them.</p></div></li>
+        <li><span class="ico">☾</span><div><h3><span data-i18n="f7.t">Themes, boards and stones</span></h3><p data-i18n="f7.d">Six themes — Pole star, Kaya (light), Ink and gold, Zen garden, Warm minimal and High contrast — plus six gobans, eight stone sets and nine backgrounds to mix with any of them.</p></div></li>
       </ul>
     </div>
   </div>
@@ -617,9 +627,12 @@
       <div class="reveal"><h3><span>01</span><b data-i18n="rp1.t">Pin it</b></h3><p data-i18n="rp1.d">S opens the study, or the Study button under the board. Pick a category, add a note and press Pin. Under “Sign as” you choose the name your notes carry.</p></div>
       <div class="reveal"><h3><span>02</span><b data-i18n="rp2.t">Draw it</b></h3><p data-i18n="rp2.d">Drag for arrows and areas; click for circles and letters; the eraser removes a drawing. Five colours. Drawings belong to the move and never change the game.</p></div>
       <div class="reveal"><h3><span>03</span><b data-i18n="rp3.t">What if…</b></h3><p data-i18n="rp3.d">Lay out a numbered line of stones without playing it; click the last stone to take it back. On a move pinned as a mistake the line starts with the better move, and that becomes the quiz's answer.</p></div>
-      <div class="reveal"><h3><span>04</span><b data-i18n="rp4.t">Share it</b></h3><p data-i18n="rp4.d">“Save study…” writes one SGF with the game and every note. Your friend opens it with “Open study…”, replies and sends it back: Hoshi merges it move by move without duplicates. Sabaki and other programs show it as comments.</p></div>
+      <div class="reveal"><h3><span>04</span><b data-i18n="rp4.t">Share it</b></h3><p data-i18n="rp4.d">“Save study…” writes one SGF with the game and every note. Your friend opens it with “Open study…”, replies and sends it back: Hoshi merges it move by move without duplicates. Sabaki and other programs show it as comments. Mark a thread resolved, or write @name to mention someone.</p></div>
       <div class="reveal"><h3><span>05</span><b data-i18n="rp5.t">Quiz and report</b></h3><p><span data-i18n="rp5.d">Mistakes, good moves, key moments, joseki and life-and-death pins make the questions. “Report…” saves a printable page with every moment on a small board, the notes and KataGo's verdict.</span> <a href="sample-report.html" data-i18n="f22.a">See a sample report</a></p></div>
       <div class="reveal"><h3><span>06</span><b data-i18n="rp6.t">Fair on OGS</b></h3><p data-i18n="rp6.d">During your OGS games you can still take notes and draw, but there is no engine and no quiz, and a drawing tool never sends a move. Your notes stay with the game in your library.</p></div>
+      <div class="reveal"><h3><span>07</span><b data-i18n="rp7.t">Ask KataGo</b></h3><p data-i18n="rp7.d">“Explain this move” writes KataGo's reading into the note: points lost, the better move and its line. With two lines drawn on a move, “Compare the lines” ranks them.</p></div>
+      <div class="reveal"><h3><span>08</span><b data-i18n="rp8.t">It comes back</b></h3><p data-i18n="rp8.d">“Review my notes” turns the pins of every game in your library into questions, spaced out over the days. A note can also become a problem of its own.</p></div>
+      <div class="reveal"><h3><span>09</span><b data-i18n="rp10.t">Teach on OGS</b></h3><p data-i18n="rp10.d">Open an OGS review room for a game and share its link: students follow in their browser, the OGS app or Hoshi. Or step through your study in presentation mode.</p></div>
     </div>
   </div>
 </section>
@@ -898,7 +911,7 @@ dotnet run --project src/Hoshi.Desktop -c Release</pre></div>
     "f9.t": "Josekis en el tablero", "f9.d": "Activa Joseki y cada esquina muestra las continuaciones conocidas, coloreadas según las valora el Joseki Explorer de OGS, con sus comentarios en la barra lateral.",
     "f10.t": "Entrenador de josekis", "f10.d": "Practica líneas en el tablero principal y en esquinas al azar. La repetición espaciada te devuelve las que fallas; trae líneas nuevas de OGS o importa tus SGF.",
     "f11.t": "Tu biblioteca de partidas", "f11.d": "Cada partida que juegas se guarda. Ábrela después y avanza: KataGo vuelve a valorar cada jugada, con todos sus efectos y su música.",
-    "f12.t": "Inglés y español", "f12.d": "Toda la app cambia de idioma al instante desde Preferencias. Inglés por defecto.",
+    "f12.t": "Cinco idiomas", "f12.d": "Inglés, español, japonés, coreano y chino simplificado; toda la app cambia al instante desde Preferencias.",
     "f13.t": "Más abajo", "f13.d": "Cómo funcionan las sugerencias, los colores y el entrenador",
     "f15.t": "Juega contra cualquier motor", "f15.d": "El KataGo de Hoshi viene listo; añade Leela Zero, GNU Go, Pachi o cualquier motor GTP con su línea de comandos. Elige colores, tablero, hándicap, komi y reglas con Ctrl+G.",
     "f16.t": "Motor contra motor", "f16.d": "Pon a dos motores a jugar entre sí y mira crecer la partida en el árbol. Pausa, vuelve a cualquier jugada y prueba tu idea: el motor responde desde ahí.",
@@ -918,8 +931,21 @@ dotnet run --project src/Hoshi.Desktop -c Release</pre></div>
     "rp1.t": "Márcalo", "rp1.d": "S abre el estudio, o el botón Estudio bajo el tablero. Elige una categoría, añade una nota y pulsa Marcar. En «Firmar como» eliges el nombre que llevan tus notas.",
     "rp2.t": "Dibújalo", "rp2.d": "Arrastra para flechas y zonas; haz clic para círculos y letras; la goma quita un dibujo. Cinco colores. Los dibujos pertenecen a la jugada y nunca cambian la partida.",
     "rp3.t": "¿Y si…?", "rp3.d": "Dibuja una línea numerada de piedras sin jugarla; clic en la última piedra para quitarla. En una jugada marcada como error la línea empieza con la jugada mejor, y esa es la respuesta del test.",
-    "rp4.t": "Compártelo", "rp4.d": "«Guardar estudio…» escribe un solo SGF con la partida y todas las notas. Tu amigo lo abre con «Abrir estudio…», responde y te lo devuelve: Hoshi lo suma jugada por jugada, sin duplicados. Sabaki y otros programas lo muestran como comentarios.",
+    "rp4.t": "Compártelo", "rp4.d": "«Guardar estudio…» escribe un solo SGF con la partida y todas las notas. Tu amigo lo abre con «Abrir estudio…», responde y te lo devuelve: Hoshi lo suma jugada por jugada, sin duplicados. Sabaki y otros programas lo muestran como comentarios. Marca un hilo como resuelto, o escribe @nombre para mencionar a alguien.",
     "rp5.t": "Test e informe", "rp5.d": "Los pins de error, buena jugada, momento clave, joseki y vida y muerte forman las preguntas. «Informe…» guarda una página imprimible con cada momento en un mini tablero, las notas y el veredicto de KataGo.",
+    "f24.t": "Foto de un tablero real", "f24.d": "Toma una foto con el teléfono, o abre una en el ordenador: Hoshi encuentra solo el tablero y sus esquinas, lee las piedras y abre la posición para estudiarla. Un toque corrige una esquina.",
+    "f25.t": "Tus notas vuelven", "f25.d": "Cada error, buena jugada y momento clave que marcaste, en cualquier partida, vuelve como pregunta el día que elige la repetición espaciada: diez minutos, un día, tres días… un mes.",
+    "f26.t": "Explícamelo", "f26.d": "KataGo escribe en tu nota los puntos perdidos, la mejor jugada y su línea como piedras «¿y si…?» que puedes editar.",
+    "f27.t": "Un cuaderno con todas tus notas", "f27.d": "Todas las notas de todas tus partidas en una lista: filtra por categoría, texto, hilos abiertos o menciones a ti, y salta a la jugada.",
+    "f28.t": "Revisión guiada", "f28.d": "Tras una partida, Hoshi te lleva por los tres errores más grandes según KataGo y te pregunta qué salió mal; tus palabras se vuelven notas.",
+    "f29.t": "Compara tus ideas", "f29.d": "Dibuja dos líneas «¿y si…?» en la misma jugada y KataGo las ordena por la puntuación al final.",
+    "f30.t": "Presenta y enseña", "f30.d": "Recorre los momentos estudiados con el tablero solo, o abre una sala de revisión de OGS: tus alumnos ven cada jugada que muestras, con sus notas y marcas.",
+    "f31.t": "Notas de voz", "f31.d": "En el teléfono, graba hasta un minuto en cualquier jugada. El sonido viaja con tus copias y se escucha en todos tus equipos.",
+    "f32.t": "Un rival a tu nivel", "f32.d": "Hoshi estima tu rango con tus partidas contra KataGo y te ofrece un rival que juega como tú, un poco más fuerte cada vez que ganas.",
+    "f33.t": "Tus partidas en todos tus equipos", "f33.d": "Guarda todo en un archivo .hoshi, o indica a Hoshi una carpeta sincronizada (Dropbox, Drive, Syncthing…) y tu teléfono y tu ordenador quedan al día.",
+    "rp7.t": "Pregúntale a KataGo", "rp7.d": "«Explícamelo» escribe en la nota la lectura de KataGo: puntos perdidos, la mejor jugada y su línea. Con dos líneas dibujadas en una jugada, «Comparar las líneas» las ordena.",
+    "rp8.t": "Vuelve cuando toca", "rp8.d": "«Repasar mis notas» convierte los pins de todas las partidas de tu biblioteca en preguntas, espaciadas en los días. Una nota también puede volverse un problema.",
+    "rp10.t": "Enseña en OGS", "rp10.d": "Abre una sala de revisión de OGS para una partida y comparte el enlace: los alumnos la siguen en su navegador, la app de OGS o Hoshi. O recorre tu estudio en modo presentación.",
     "rp6.t": "Limpio en OGS", "rp6.d": "Durante tus partidas de OGS puedes tomar notas y dibujar, pero sin motor ni test, y una herramienta de dibujo nunca envía una jugada. Tus notas quedan con la partida en tu biblioteca.",
     "jo.eyebrow": "Joseki", "jo.title": "Que no se te vuelva a olvidar un joseki.",
     "jo.lead": "Estudia las secuencias de esquina mientras juegas y luego practícalas hasta que se queden.",
