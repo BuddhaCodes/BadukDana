@@ -191,17 +191,24 @@
   .tabs button { flex: none; border: 0; background: none; padding: 9px 20px; border-radius: 999px; font: 600 14.5px Figtree, sans-serif; color: var(--paper-muted); cursor: pointer; transition: background .2s, color .2s; }
   .tabs button[aria-selected="true"] { background: var(--paper-ink); color: var(--paper); box-shadow: 0 6px 16px rgba(31, 27, 22, .2); }
   .tabs button:focus-visible { outline: 2px solid #a07a2c; outline-offset: 2px; }
-  .panel { display: grid; grid-template-columns: 1.25fr 1fr; gap: 48px; align-items: start; }
+  /* The screenshot stays in view while the compact cards scroll beside it. */
+  .panel { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.3fr); gap: 40px; align-items: start; }
   .panel[hidden] { display: none; }
-  .panel .shot { border-color: rgba(31, 27, 22, .2); box-shadow: 0 30px 60px rgba(60, 40, 10, .25); }
-  .items { list-style: none; margin: 0; padding: 0; }
-  .items li { display: grid; grid-template-columns: 38px 1fr; gap: 16px; padding: 18px 0; border-top: 1px solid var(--paper-line); }
-  .items li:first-child { border-top: 0; padding-top: 4px; }
-  .items .ico { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--paper-ink); color: var(--gold-2); font-size: 16px; }
-  .items h3 { font-size: 20px; }
-  .items p { color: var(--paper-muted); font-size: 15.5px; margin-top: 4px; }
+  .panel .shot { position: sticky; top: 92px; border-color: rgba(31, 27, 22, .2); box-shadow: 0 30px 60px rgba(60, 40, 10, .25); }
+  .items { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .items li { display: grid; grid-template-columns: 30px 1fr; gap: 12px; align-content: start; padding: 16px 16px 15px; border: 1px solid var(--paper-line); border-radius: 12px; background: rgba(255, 252, 244, .38); transition: border-color .2s, transform .2s; }
+  .items li:hover { border-color: rgba(160, 122, 44, .55); transform: translateY(-1px); }
+  .items li:has(.new) { background: rgba(255, 252, 244, .62); box-shadow: inset 3px 0 0 var(--seal); }
+  .items .ico { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--paper-ink); color: #f3d995; font-size: 13px; } /* gold on ink in every theme (the light theme's --gold-2 is navy) */
+  .items h3 { font-size: 16.5px; line-height: 1.25; }
+  .items p { color: var(--paper-muted); font-size: 14px; line-height: 1.5; margin-top: 4px; }
+  .items .new { margin-left: 6px; vertical-align: 2px; }
+  .items li:last-child:nth-child(odd) { grid-column: 1 / -1; } /* no lone card at the end */
+  .items li:has(> div > h3[data-i18n="f13.t"]) { background: none; border-style: dashed; align-items: center; } /* "More below" is a link, not a feature */
+  @media (max-width: 1100px) { .panel { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 28px; } }
+  @media (max-width: 920px) { .panel { grid-template-columns: 1fr; gap: 24px; } .panel .shot { position: static; } }
+  @media (max-width: 600px) { .items { grid-template-columns: 1fr; } }
   .new { display: inline-block; margin-left: 8px; font: 700 10px Figtree, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #fff; background: var(--seal); border-radius: 3px; padding: 2px 6px; vertical-align: 3px; }
-  @media (max-width: 920px) { .panel { grid-template-columns: 1fr; gap: 28px; } }
 
   /* Joseki */
   .joseki { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
