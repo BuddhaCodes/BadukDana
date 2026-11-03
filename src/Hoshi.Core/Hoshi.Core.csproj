@@ -4,4 +4,9 @@
     <Description>Pure Go rules: board, captures, ko, superko, scoring. No UI or I/O.</Description>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Japanese, Korean and Chinese text tables (key -> text), read by Tr. -->
+    <EmbeddedResource Include="Localization\Translations\*.json" LogicalName="Hoshi.Core.Localization.Translations.%(Filename).json" />
+  </ItemGroup>
+
 </Project>

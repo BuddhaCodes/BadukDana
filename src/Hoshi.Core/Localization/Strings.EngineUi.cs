@@ -33,6 +33,11 @@ public static partial class Tr
         Add(d, "Engines.NewGameTitle", "Play against an engine", "Jugar contra un motor");
         Add(d, "Engines.Start", "Start", "Empezar");
         Add(d, "Engines.Size", "Board", "Tablero");
+        Add(d, "Rank.AtMyLevel", "Rival at my level", "Rival a mi medida");
+        Add(d, "Rank.AtMyLevelTip", "The human-style KataGo's rank and the handicap follow your estimated rank, so each game is close to even.", "El rango del KataGo de estilo humano y el hándicap siguen tu rango estimado, para que cada partida esté pareja.");
+        Add(d, "Rank.Estimate", "Your estimated rank: {0} (±{1}, {2} games)", "Tu rango estimado: {0} (±{1}, {2} partidas)");
+        Add(d, "Rank.NoEstimate", "Play a few games against the human-style KataGo and Hoshi will estimate your rank.", "Juega unas partidas contra el KataGo de estilo humano y Hoshi estimará tu rango.");
+        Add(d, "Rank.Updated", "Estimated rank: {0} (was {1})", "Rango estimado: {0} (antes {1})");
         Add(d, "Engines.Handicap", "Handicap", "Hándicap");
         Add(d, "Engines.NoEngines",
             "No engine yet: install KataGo (Preferences → Analysis) or add a GTP engine (Leela Zero, GNU Go, KataGo…) in Preferences → Engines.",

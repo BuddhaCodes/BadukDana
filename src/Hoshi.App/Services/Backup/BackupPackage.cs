@@ -7,9 +7,9 @@ using Hoshi.Sgf.Joseki;
 namespace Hoshi.App.Services.Backup;
 
 /// <summary>What an import brought in (for the status line and the log).</summary>
-public sealed record BackupSummary(int Games, int JosekiCards, int ProblemCards, int Reviews, int Collections, bool Preferences)
+public sealed record BackupSummary(int Games, int JosekiCards, int ProblemCards, int Reviews, int Collections, bool Preferences, int NoteCards = 0)
 {
-    public bool IsEmpty => Games + JosekiCards + ProblemCards + Reviews + Collections == 0 && !Preferences;
+    public bool IsEmpty => Games + JosekiCards + ProblemCards + Reviews + Collections + NoteCards == 0 && !Preferences;
 }
 
 /// <summary>
@@ -39,8 +39,8 @@ public static class BackupPackage
         "moveNumbers", "zenSilence", "shareHideNames", "shareShowBrand", "humanLevel", "engineClock", "welcomeSeen",
     };
 
-    private static readonly string[] Files = ["tsumego-progress.json", "reviews.json", "settings.json"];
-    private static readonly string[] Folders = ["replays", "joseki", "tsumego"];
+    private static readonly string[] Files = ["tsumego-progress.json", "reviews.json", "rank.json", "settings.json"];
+    private static readonly string[] Folders = ["replays", "joseki", "tsumego", "study"];
     private static readonly JsonSerializerOptions Camel = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true };
     private static readonly JsonSerializerOptions Plain = new() { PropertyNameCaseInsensitive = true };
 
@@ -66,14 +66,15 @@ public static class BackupPackage
                     continue;
                 }
 
-                foreach (string file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories).Where(f => f.EndsWith(".sgf", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".json", StringComparison.OrdinalIgnoreCase)))
+                foreach (string file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories).Where(f => f.EndsWith(".sgf", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
+                    || (folder == "study" && Hoshi.Sgf.Study.StudyStore.IsAudioName(Path.GetFileName(f)))))
                 {
                     string name = Path.GetRelativePath(dataDirectory, file).Replace('\\', '/');
                     zip.CreateEntryFromFile(file, name, CompressionLevel.Optimal);
                 }
             }
 
-            foreach (string file in Files[..2])
+            foreach (string file in Files[..3])
             {
                 string path = Path.Combine(dataDirectory, file);
                 if (File.Exists(path))
@@ -164,11 +165,21 @@ public static class BackupPackage
         int joseki = MergeJson<JosekiCard, string>(Path.Combine(source, "joseki", "progress.json"), Path.Combine(target, "joseki", "progress.json"), Camel,
             c => c.Id, (a, b) => (b.LastReview ?? DateTimeOffset.MinValue, b.Reviews).CompareTo((a.LastReview ?? DateTimeOffset.MinValue, a.Reviews)) > 0);
 
+        int notes = MergeJson<JosekiCard, string>(Path.Combine(source, "study", "note-cards.json"), Path.Combine(target, "study", "note-cards.json"), Camel,
+            c => c.Id, (a, b) => (b.LastReview ?? DateTimeOffset.MinValue, b.Reviews).CompareTo((a.LastReview ?? DateTimeOffset.MinValue, a.Reviews)) > 0);
+
         int problems = MergeDictionary<TsumegoCardDto>(Path.Combine(source, "tsumego-progress.json"), Path.Combine(target, "tsumego-progress.json"),
             (a, b) => (b.LastSolved ?? DateTimeOffset.MinValue, b.Solved + b.Failed).CompareTo((a.LastSolved ?? DateTimeOffset.MinValue, a.Solved + a.Failed)) > 0);
 
         int reviews = MergeJson<ReviewDto, string>(Path.Combine(source, "reviews.json"), Path.Combine(target, "reviews.json"), Plain,
             r => r.Key, (a, b) => b.Reviewed > a.Reviewed);
+
+        // The estimated rank: the device with more counted games knows more.
+        string rankFrom = Path.Combine(source, "rank.json"), rankTo = Path.Combine(target, "rank.json");
+        if (File.Exists(rankFrom) && (!File.Exists(rankTo) || Games(rankFrom) > Games(rankTo)))
+        {
+            File.Copy(rankFrom, rankTo, overwrite: true);
+        }
 
         int collections = 0;
         foreach (string folder in new[] { "joseki", "tsumego" })
@@ -185,8 +196,25 @@ public static class BackupPackage
             }
         }
 
+        // Voice notes: files with new ids; the ones not here yet are copied (a name is never reused for other sound).
+        string audioFrom = Path.Combine(source, "study", "audio");
+        if (Directory.Exists(audioFrom))
+        {
+            string audioTo = Path.Combine(target, "study", "audio");
+            foreach (string file in Directory.EnumerateFiles(audioFrom).Where(f => Hoshi.Sgf.Study.StudyStore.IsAudioName(Path.GetFileName(f))))
+            {
+                string to = Path.Combine(audioTo, Path.GetFileName(file));
+                if (!File.Exists(to))
+                {
+                    Directory.CreateDirectory(audioTo);
+                    File.Copy(file, to);
+                    notes++;
+                }
+            }
+        }
+
         bool prefs = applyPreferences && MergePreferences(Path.Combine(source, "settings.json"), Path.Combine(target, "settings.json"));
-        return new BackupSummary(games, joseki, problems, reviews, collections, prefs);
+        return new BackupSummary(games, joseki, problems, reviews, collections, prefs, notes);
     }
 
     private static JsonObject? PortablePreferences(string settingsPath)
@@ -364,6 +392,9 @@ public static class BackupPackage
         WriteAtomically(to, SgfWriter.Write(mine));
         return 1;
     }
+
+    private static int Games(string rankFile) =>
+        JsonNode.Parse(File.ReadAllText(rankFile))?["games"]?.GetValue<int>() ?? 0;
 
     private static string Unique(string folder, string name)
     {

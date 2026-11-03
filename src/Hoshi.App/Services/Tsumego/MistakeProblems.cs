@@ -17,7 +17,21 @@ public static class MistakeProblems
     /// <summary>Only moves losing at least this many points become problems (smaller ones are hard to tell apart).</summary>
     public const double MinPointsLost = 3;
 
-    public static IReadOnlyList<GameTree> Build(GameTree game, IReadOnlyDictionary<GameNode, StudyVerdict> verdicts)
+    /// <summary>In the endgame a smaller gap is already worth practising: the biggest move by a point or more.</summary>
+    public const double MinEndgamePointsLost = 1;
+
+    /// <summary>Mistakes before the endgame (3 points or more): "find the best move".</summary>
+    public static IReadOnlyList<GameTree> Build(GameTree game, IReadOnlyDictionary<GameNode, StudyVerdict> verdicts) =>
+        Make(game, verdicts, endgame: false);
+
+    /// <summary>
+    /// Endgame moves (<see cref="GamePhases"/>) that lost a point or more: "find the biggest move" — the endgame
+    /// trainer, made from the player's own games.
+    /// </summary>
+    public static IReadOnlyList<GameTree> BuildEndgame(GameTree game, IReadOnlyDictionary<GameNode, StudyVerdict> verdicts) =>
+        Make(game, verdicts, endgame: true);
+
+    private static IReadOnlyList<GameTree> Make(GameTree game, IReadOnlyDictionary<GameNode, StudyVerdict> verdicts, bool endgame)
     {
         ArgumentNullException.ThrowIfNull(game);
         ArgumentNullException.ThrowIfNull(verdicts);
@@ -27,8 +41,15 @@ public static class MistakeProblems
         var problems = new List<(int Move, GameTree Tree)>();
         foreach ((GameNode node, StudyVerdict v) in verdicts)
         {
-            if (v.Quality is not (MoveQuality.Mistake or MoveQuality.Blunder) || v.PointsLost < MinPointsLost
-                || v.Best is not { } best || node.Parent is not { } parent || node.GetMove(size) is not { Point: { } played } move || played == best)
+            if (v.Best is not { } best || node.Parent is not { } parent || node.GetMove(size) is not { Point: { } played } move || played == best)
+            {
+                continue;
+            }
+
+            int moveNumber = GameCursor.Path(node).Count(n => n.HasMove);
+            bool inEndgame = GamePhases.Of(moveNumber, size) == GamePhase.Endgame;
+            if (inEndgame != endgame
+                || (endgame ? v.PointsLost < MinEndgamePointsLost : v.Quality is not (MoveQuality.Mistake or MoveQuality.Blunder) || v.PointsLost < MinPointsLost))
             {
                 continue;
             }
@@ -42,7 +63,7 @@ public static class MistakeProblems
             int number = GameCursor.Path(node).Count(n => n.HasMove);
             string name = $"{players}, {Tr.F("Tsumego.FromGameMove", number)}";
             string wrong = Tr.F("Tsumego.FromGameWrong", played.ToHuman(before.Height), v.PointsLost.ToString("0.0", CultureInfo.CurrentCulture), best.ToHuman(before.Height));
-            problems.Add((number, TsumegoWriter.BestMove(before, move.Color, best, played, name, "Tsumego.FindBest", wrong)));
+            problems.Add((number, TsumegoWriter.BestMove(before, move.Color, best, played, name, endgame ? "Tsumego.FindBiggest" : "Tsumego.FindBest", wrong)));
         }
 
         return [.. problems.OrderBy(p => p.Move).Select(p => p.Tree)];

@@ -50,6 +50,7 @@ public sealed partial class StudyViewModel
             case nameof(GameViewModel.Online) or nameof(GameViewModel.IsOnline):
                 OnPropertyChanged(nameof(IsLiveOnline));
                 StartQuizCommand.NotifyCanExecuteChanged();
+                ExplainChanged();
                 break;
         }
     }
@@ -62,9 +63,19 @@ public sealed partial class StudyViewModel
             bool first = _tree is null;
             _tree = _game.Tree;
             _sequenceId = null;
-            if (IsQuizActive)
+            if (IsQuizActive && !_openingReviewGame)
             {
-                EndQuiz();
+                EndQuiz(); // another game: its questions are not these (the note review opens its games itself)
+            }
+
+            if (!first && IsPresenting)
+            {
+                StopPresentation();
+            }
+
+            if (!first && IsGuided)
+            {
+                EndGuided();
             }
 
             // A game that comes with a study (a shared file, a replay, a reloaded online game) opens the panel.
@@ -77,6 +88,9 @@ public sealed partial class StudyViewModel
         if (!ReferenceEquals(_node, _game.CurrentNode))
         {
             _node = _game.CurrentNode;
+            LineComparison = string.Empty;
+            ExplainCommand.NotifyCanExecuteChanged();
+            CompareLinesCommand.NotifyCanExecuteChanged();
             _sequenceId = null;
             DropPending(); // like a waiting stone, unconfirmed drawings stay behind when the move changes
         }
@@ -170,5 +184,5 @@ public sealed partial class StudyViewModel
     }
 
     internal static string FormatTime(DateTimeOffset time) =>
-        time.ToLocalTime().ToString("d MMM HH:mm", CultureInfo.GetCultureInfo(Tr.Language == Tr.Spanish ? "es-ES" : "en-GB"));
+        time.ToLocalTime().ToString("d MMM HH:mm", Tr.Culture);
 }

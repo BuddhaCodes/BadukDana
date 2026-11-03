@@ -58,6 +58,55 @@ public sealed partial class StudyViewModel
 
     private int _quizIndex;
 
+    // The note review: questions from many games of the library, each opened when its turn comes.
+    private IReadOnlyList<NoteReviewItem>? _review;
+    private Action<NoteReviewItem>? _openReview;
+    private Action<NoteReviewItem, bool>? _gradedReview;
+    private bool _openingReviewGame;
+
+    /// <summary>"Quiz", or "Review my notes" during the note review (with the game the question comes from).</summary>
+    public string QuizTitle => _review is null ? Tr.T("Study.Quiz") : Tr.T("Notes.Menu");
+
+    /// <summary>True while the quiz is the spaced review of notes from the library (not this game's quiz).</summary>
+    public bool IsNoteReview => _review is not null && IsQuizActive;
+
+    /// <summary>
+    /// Starts the review of notes from the library: <paramref name="open"/> puts a question's game on the board (the
+    /// very tree the question was built from), <paramref name="graded"/> moves its card. Not during a live OGS game.
+    /// </summary>
+    public bool StartNoteReview(IReadOnlyList<NoteReviewItem> items, Action<NoteReviewItem> open, Action<NoteReviewItem, bool> graded)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        ArgumentNullException.ThrowIfNull(open);
+        ArgumentNullException.ThrowIfNull(graded);
+        if (items.Count == 0 || IsLiveOnline)
+        {
+            return false;
+        }
+
+        _review = items;
+        _openReview = open;
+        _gradedReview = graded;
+        _quiz = [.. items.Select(i => i.Question)];
+        IsActive = true;
+        QuizRight = 0;
+        QuizDone = 0;
+        IsQuizFinished = false;
+        IsQuizActive = true;
+        OnPropertyChanged(nameof(IsNoteReview));
+        OnPropertyChanged(nameof(QuizTitle));
+        Ask(0);
+        return true;
+    }
+
+    private void ReportGrade(QuizQuestion q, bool right)
+    {
+        if (_review is { } items && _gradedReview is { } graded && items.FirstOrDefault(i => ReferenceEquals(i.Question, q)) is { } item)
+        {
+            graded(item, right);
+        }
+    }
+
     public string QuizProgress => Question is null ? string.Empty : Tr.F("Study.QuizProgress", _quizIndex + 1, _quiz.Count);
 
     public string QuizPrompt => Question is { } q
@@ -112,7 +161,7 @@ public sealed partial class StudyViewModel
             IsQuizFinished = true;
             Question = null;
             QuizOverlay = [];
-            QuizResult = Tr.F("Study.QuizDone", QuizRight, QuizDone);
+            QuizResult = Tr.F(_review is null ? "Study.QuizDone" : "Study.ReviewDone", QuizRight, QuizDone);
             return;
         }
 
@@ -148,6 +197,7 @@ public sealed partial class StudyViewModel
             QuizRight++;
         }
 
+        ReportGrade(Question!, right);
         QuizResult = Tr.T(right ? "Study.QuizSelfRight" : "Study.QuizSelfWrong");
     }
 
@@ -156,6 +206,11 @@ public sealed partial class StudyViewModel
     {
         IsQuizActive = false;
         IsQuizFinished = false;
+        _review = null;
+        _openReview = null;
+        _gradedReview = null;
+        OnPropertyChanged(nameof(IsNoteReview));
+        OnPropertyChanged(nameof(QuizTitle));
         Question = null;
         QuizOverlay = [];
         QuizResult = string.Empty;
@@ -166,6 +221,19 @@ public sealed partial class StudyViewModel
     {
         _quizIndex = index;
         QuizQuestion q = _quiz[index];
+        if (_review is { } items && _openReview is { } open && !ReferenceEquals(_game.Tree, items[index].Tree))
+        {
+            _openingReviewGame = true;
+            try
+            {
+                open(items[index]);
+            }
+            finally
+            {
+                _openingReviewGame = false;
+            }
+        }
+
         IsQuizAnswered = false;
         IsGraded = false;
         QuizOverlay = [];
@@ -205,6 +273,7 @@ public sealed partial class StudyViewModel
                 overlay.Add(new StudyDrawing("quiz-guess", DrawingKind.Mark, string.Empty, StudyColor.Red, [wrong]));
             }
 
+            ReportGrade(q, right);
             QuizResult = right
                 ? Tr.T("Study.QuizRight")
                 : Tr.F("Study.QuizWrong", q.Answer.Value.ToHuman(h));
@@ -219,6 +288,10 @@ public sealed partial class StudyViewModel
 
             QuizResult = guess is null ? Tr.T("Study.QuizRevealed") : Tr.T("Study.QuizCompare");
             IsGraded = guess is null;
+            if (guess is null)
+            {
+                ReportGrade(q, right: false); // shown without trying: comes back soon
+            }
         }
 
         // What was played in the game: for a mistake, the move to avoid.

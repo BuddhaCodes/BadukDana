@@ -52,17 +52,24 @@ public sealed partial class TsumegoViewModel : ViewModelBase
             AddSource(_fromGames);
         }
 
+        _endgames = _library.Endgames();
+        if (_endgames.Problems.Count > 0)
+        {
+            AddSource(_endgames);
+        }
+
         _rules = TsumegoLibrary.Rules();
         Current = _library.Next(AllProblems, null, _time.GetUtcNow());
     }
 
     private readonly TsumegoSource _rules;
     private TsumegoSource _fromGames;
+    private TsumegoSource _endgames;
 
-    /// <summary>Turns KataGo's mistakes in a reviewed game into problems ("From my games"); returns how many are new.</summary>
-    public int AddFromGame(GameTree game, IReadOnlyDictionary<GameNode, Services.Study.StudyVerdict> verdicts)
+    /// <summary>Adds problems made by hand (a note turned into a problem) to "From my games"; returns how many are new.</summary>
+    public int AddProblems(IEnumerable<GameTree> problems)
     {
-        int added = _library.AddFromGames(MistakeProblems.Build(game, verdicts));
+        int added = _library.AddFromGames(problems);
         if (added > 0)
         {
             _sources.Remove(_fromGames);
@@ -73,6 +80,34 @@ public sealed partial class TsumegoViewModel : ViewModelBase
         }
 
         return added;
+    }
+
+    /// <summary>Turns KataGo's mistakes in a reviewed game into problems ("From my games"); returns how many are new.</summary>
+    public int AddFromGame(GameTree game, IReadOnlyDictionary<GameNode, Services.Study.StudyVerdict> verdicts)
+    {
+        int added = _library.AddFromGames(MistakeProblems.Build(game, verdicts));
+        if (added > 0)
+        {
+            _sources.Remove(_fromGames);
+            _fromGames = _library.FromMyGames();
+            _sources.Add(_fromGames);
+        }
+
+        int endgames = _library.AddEndgames(MistakeProblems.BuildEndgame(game, verdicts));
+        if (endgames > 0)
+        {
+            _sources.Remove(_endgames);
+            _endgames = _library.Endgames();
+            _sources.Add(_endgames);
+        }
+
+        if (added + endgames > 0)
+        {
+            RefreshRows();
+            OnPropertyChanged(nameof(ProgressText));
+        }
+
+        return added + endgames;
     }
 
     /// <summary>The rules lessons for beginners (opened from the welcome tour); added to the list the first time.</summary>

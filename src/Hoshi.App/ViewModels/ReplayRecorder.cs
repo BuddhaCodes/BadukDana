@@ -16,6 +16,9 @@ public sealed class ReplayRecorder
     private string _kind = "local";
     private string _id = ReplayStore.NewLocalId();
     private long? _ogsGameId;
+
+    /// <summary>The OGS game the board's game was recorded from (an OGS game, or a kept one opened again).</summary>
+    public long? OgsGameId => _ogsGameId;
     private OnlineGameViewModel? _watched;
 
     public ReplayRecorder(GameViewModel game, IReplayStore store)

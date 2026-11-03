@@ -179,7 +179,7 @@ Todo lo que sale del equipo es una acción explícita del usuario; los nombres d
 
 ### Después de la 1.0
 Diseños y recomendaciones en `docs/AFTER_1_0.md` (2026-10-17); cada una espera una decisión del usuario.
-- [ ] 26. Sincronizar estudios y progreso entre escritorio y teléfono. *(Paso 1 hecho el 2026-10-30: copia de seguridad `.hoshi` que se fusiona al importar. Falta la carpeta sincronizada.)*
+- [x] 26. Sincronizar estudios y progreso entre escritorio y teléfono. *(2026-10-30: copia `.hoshi` que se fusiona al importar; 2026-11-02: carpeta sincronizada en escritorio. El teléfono sigue con exportar/importar: Android no deja escribir en esas carpetas sin acceso amplio al almacenamiento.)*
 - [ ] 27. Más servidores (KGS, Fox) si sus términos lo permiten.
 - [ ] 28. iOS.
 - [ ] 29. Modo profesor: tablero compartido en vivo con alumnos.
@@ -192,6 +192,29 @@ Revisión del proyecto pedida por el usuario.
 - [x] «Informar de un problema…» (menú y tras un cierre inesperado): abre un issue de GitHub ya rellenado, sin secretos ni la carpeta de usuario; Hoshi no envía nada.
 - [x] Copia de seguridad `.hoshi` (exportar/importar con fusión), aviso de turno fuera de la ventana en escritorio, reloj para motores GTP y música en macOS.
 - [x] **Avalonia 12** (2026-11-02, rama `avalonia-12`): migración hecha; falta probar la ventana en Windows, macOS y Linux y la app en un teléfono antes de fusionar. Notas de lo que cambió: Rompe la barra de título propia (`ExtendClientAreaChromeHints` ya no existe, `SystemDecorations` → `WindowDecorations`), el arranque de Android (`AvaloniaAndroidApplication<App>`, `IActivityApplicationLifetime`) y obliga a pasar los tests a xUnit v3. Necesita probarse en Windows, macOS, Linux y un teléfono.
+- [x] **Historial de git** (2026-11-02): `Claude outputs/` fuera de todo el historial (34 → 23 MB); `main` reescrita en GitHub. Falta que el usuario ejecute `BadukDana-archivo/terminar-limpieza-historial.ps1` (etiquetas y dos ramas viejas).
 - [ ] **KataGo v1.18.2** (hoy v1.17.1): actualizar `release.yml`, `android.yml`, `build-katago.sh` y `KataGoSetup.KataGoVersion` con los SHA-256 de los nuevos zips.
 - [ ] Ver la primera ejecución del CI con las acciones nuevas (checkout v7, upload-artifact v7, download-artifact v8, action-gh-release v3) y la primera versión publicada con ellas.
 - [ ] Probar en un Mac real la música (AudioToolbox) y el aviso de turno; en Linux, `notify-send`.
+
+## Noviembre 2026 (pedido el 2026-11-02)
+Ramas `avalonia-12` (PR #3) y `mejoras-noviembre` (encima de la anterior).
+- [x] Avalonia 12.1.5 y xUnit v3 (ver Mantenimiento). Falta probar ventanas y teléfono reales.
+- [x] Fixtures reales de OGS: grabador `--Ogs:RecordTraffic=true` (sin secretos), `tools/ogs/trim_capture.py` y `RecordedTrafficTests`. Falta que el usuario grabe partidas en beta (`docs/OGS_API.md` §6b).
+- [x] Japonés, coreano y chino simplificado (tablas JSON; traducción de Claude, pendiente de revisión por hablantes nativos). La web sigue en inglés y español.
+- [x] Precisión por fase (apertura, medio juego, final) en el resumen, con la fase a estudiar.
+- [x] Rango estimado con el KataGo de estilo humano y «Rival a mi medida» (nivel y hándicap automáticos).
+- [x] Sincronizar con una carpeta (escritorio).
+- [x] Entrenador de finales (de tus partidas) y «Adivina la jugada» (cualquier SGF; Hoshi no trae partidas profesionales).
+- [x] Foto del tablero → SGF (cuatro esquinas, homografía, clasificación por brillo; sin IA). Falta probarlo con fotos reales.
+- [x] Foto → estudio (2026-11-02): cámara del teléfono (la app de cámara del sistema, sin permiso de cámara), esquinas encontradas solas (región de madera más grande, margen y ajuste fino de cada esquina por la oscuridad de las líneas) que se corrigen con un toque, girar un cuarto, y «Estudiarla»: abre la posición con el panel de estudio y la guarda en la biblioteca (origen «Foto», fuera de los resúmenes). Falta probarlo con fotos reales en un teléfono.
+- [x] Repaso espaciado de notas (2026-11-02): «Repasar mis notas (N)» convierte cada error, buena jugada y momento clave marcados en las partidas de la biblioteca en una tarjeta «¿qué jugarías?» con cajas de Leitner (10 min, 1, 3, 7, 14, 30 días); abre cada partida a su turno; hasta 10 nuevas por sesión. Progreso en `study/note-cards.json`, que viaja en las copias y la sincronización. No durante tus partidas de OGS en curso.
+- [x] «Explícamelo» (2026-11-02): KataGo lee la jugada del tablero y escribe en el estudio los puntos perdidos (y la probabilidad de ganar), la mejor jugada y su línea como piedras «¿y si…?» editables; si la jugada ya tiene nota, responde en su hilo. Oculto sin KataGo y durante tus partidas de OGS en curso.
+- [x] Cuaderno entre partidas (2026-11-02): segunda pestaña de la biblioteca con todas las notas de todas las partidas, filtro por categoría y por texto (notas, respuestas, autores, jugadores) y apertura de la partida en esa jugada (línea principal) con el panel de estudio. Lee las partidas solo cuando se muestra.
+- [x] Hilos con estado y menciones (2026-11-02): cada nota es un hilo abierto o resuelto (`done`/`doneAt` en `HS`; al fusionar gana el cambio más reciente); «@nombre» menciona a alguien. El cuaderno filtra «Hilos abiertos» y «Me mencionan» (con el nombre de estudio de Preferencias).
+- [x] Nota → problema (2026-11-02): «→ Problema» en una nota convierte la posición anterior en un problema «encuentra la jugada» de «De mis partidas»: la respuesta es la jugada para una buena jugada o momento clave, y la primera piedra «¿y si…?» para un error o una pregunta; la nota se muestra como explicación.
+- [x] Comparar líneas (2026-11-02): con dos o más líneas «¿y si…?» en una jugada, KataGo juega cada una (hasta su primera piedra imposible) y las ordena por la ventaja al final para el bando que las empieza. Oculto sin KataGo y durante tus partidas de OGS en curso.
+- [x] Revisión guiada (2026-11-02): con el análisis encendido, recorre los (hasta tres) errores más grandes que encontró KataGo; en cada uno dice lo que costó y lo que prefería KataGo, y el jugador escribe qué salió mal: cada respuesta es una nota «Error» (que vuelve en el repaso). «Explícamelo» a mano.
+- [x] Modo presentación (2026-11-02): los momentos estudiados uno tras otro (jugadas con notas o dibujos), el tablero solo (zen) y las notas en una tarjeta con ‹ ›; en el teléfono, la tarjeta arriba.
+- [x] Notas de voz (2026-11-02): en el teléfono, «● Nota de voz» graba hasta un minuto (16 kHz mono, permiso de micrófono pedido la primera vez) y fija la nota en la jugada; el sonido es un WAV en `study/audio/` y el SGF guarda solo su nombre (validado: nunca una ruta). Se escuchan en todas las plataformas por la misma salida que la música, y viajan en las copias `.hoshi` y la sincronización. Un estudio compartido como archivo no lleva el sonido.
+- [x] Modo profesor con salas de revisión de OGS (2026-11-02): «Enseñar en OGS» en el panel de estudio abre una sala para la partida de OGS del tablero y muestra cada jugada con sus notas y marcas; «Seguir» une a un alumno a la sala de un profesor. Ver `docs/OGS_API.md` y `docs/AFTER_1_0.md` §29. Falta probarlo en beta con dos cuentas propias.

@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Hoshi.App.Services;
 using Hoshi.App.Themes;
 using Hoshi.Core;
@@ -93,7 +94,7 @@ public sealed record AnalysisEngineOption(string? Id, string Label)
     public override string ToString() => Label;
 }
 
-/// <summary>A user interface language choice ("en", "es") with its own name.</summary>
+/// <summary>A user interface language choice ("en", "es", "ja", "ko", "zh") with its own name.</summary>
 public sealed record LanguageOption(string Code, string Name);
 
 /// <summary>A choice of move numbers on the stones, with its translated name.</summary>
@@ -549,13 +550,48 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         }
     }
 
+    /// <summary>"Sync with a folder": where (null = off) and how this device is named there.</summary>
+    public string SyncText => _settings?.Current is { SyncFolder: { } folder, DeviceId: { } id }
+        ? Tr.F("Sync.On", folder, id)
+        : Tr.T("Sync.Off");
+
+    public bool HasSyncFolder => _settings?.Current.SyncFolder is not null;
+
+    [RelayCommand]
+    private async Task ChooseSyncFolder()
+    {
+        if (_picker is null || _settings is null || await _picker.PickFolderAsync(Tr.T("Sync.Title")) is not { } folder)
+        {
+            return;
+        }
+
+        _settings.Save(_settings.Current with { SyncFolder = folder, DeviceId = _settings.Current.DeviceId ?? Services.Backup.FolderSync.NewDeviceId() });
+
+        // Right away: this computer's file, and the others' (the services keep what they read at start; the rest
+        // arrives at the next start).
+        Services.Backup.FolderSync.PublishIfEnabled(_settings);
+        OnPropertyChanged(nameof(SyncText));
+        OnPropertyChanged(nameof(HasSyncFolder));
+    }
+
+    [RelayCommand]
+    private void StopSync()
+    {
+        if (_settings is not null)
+        {
+            _settings.Save(_settings.Current with { SyncFolder = null });
+            OnPropertyChanged(nameof(SyncText));
+            OnPropertyChanged(nameof(HasSyncFolder));
+        }
+    }
+
     /// <summary>Board effects strength, shared with the bottom bar so a change mid-game shows here too.</summary>
     public EffectsViewModel Effects { get; }
 
     /// <summary>One-click KataGo install (null without a host).</summary>
     public KataGoSetupViewModel? KataGoSetup { get; }
 
-    public IReadOnlyList<LanguageOption> LanguageOptions { get; } = [new("en", "English"), new("es", "Español")];
+    public IReadOnlyList<LanguageOption> LanguageOptions { get; } = [.. Tr.Languages.Select(l => new LanguageOption(l, Tr.NativeName(l)))];
 
     partial void OnSelectedLanguageChanged(LanguageOption value)
     {

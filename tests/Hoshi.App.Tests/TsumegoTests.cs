@@ -139,6 +139,47 @@ public sealed class TsumegoTests : IDisposable
     }
 
     [AvaloniaFact]
+    public void Endgame_moves_that_lost_a_point_become_the_endgame_trainer()
+    {
+        Hoshi.Sgf.GameTree game = Hoshi.Sgf.GameTree.Create(9, RuleSet.Japanese);
+        var cursor = new Hoshi.Sgf.GameCursor(game);
+        var spots = new List<Point>();
+        for (int y = 0; y < 9; y += 2)
+        {
+            for (int x = 0; x < 9; x++)
+            {
+                spots.Add(new Point(x, y));
+            }
+        }
+
+        Hoshi.Sgf.GameNode? late = null, early = null;
+        for (int i = 0; i < 40; i++)
+        {
+            cursor.Play(spots[i]);
+            if (i == 4)
+            {
+                early = cursor.Current;
+            }
+        }
+
+        late = cursor.Current; // move 40 on 9×9: the endgame starts after 36
+        var verdicts = new Dictionary<Hoshi.Sgf.GameNode, Hoshi.App.Services.Study.StudyVerdict>
+        {
+            [late] = new(Hoshi.Engines.KataGo.MoveQuality.Inaccuracy, 1.4, new Point(8, 7)),
+            [early!] = new(Hoshi.Engines.KataGo.MoveQuality.Inaccuracy, 1.4, new Point(8, 7)),
+        };
+
+        MistakeProblems.BuildEndgame(game, verdicts).Should().ContainSingle("only the endgame move, and a point lost is enough there");
+        MistakeProblems.Build(game, verdicts).Should().BeEmpty("small and not in the endgame");
+        var vm = new TsumegoViewModel(new TsumegoLibrary(_dir), time: new ManualTime());
+        vm.AddFromGame(game, verdicts).Should().Be(1);
+        TsumegoRow row = vm.Rows.Single(r => r.Source == Tr.T("Tsumego.Endgames"));
+        vm.SelectCommand.Execute(row);
+        vm.Instructions.Should().Be(Tr.T("Tsumego.FindBiggest"));
+        new TsumegoViewModel(new TsumegoLibrary(_dir), time: new ManualTime()).Rows.Should().Contain(r => r.Source == Tr.T("Tsumego.Endgames"), "kept on disk");
+    }
+
+    [AvaloniaFact]
     public void Kata_gos_mistakes_in_a_reviewed_game_become_problems_from_my_games()
     {
         Hoshi.Sgf.GameTree game = Hoshi.Sgf.GameTree.Create(9, RuleSet.Japanese);

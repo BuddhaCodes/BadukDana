@@ -51,14 +51,38 @@ public enum StudyColor
 /// <summary>An answer in a pin's thread.</summary>
 public sealed record StudyReply(string Author, DateTimeOffset Time, string Text);
 
-/// <summary>A note pinned to a move, with its thread of replies.</summary>
-public sealed record StudyPin(string Id, PinCategory Category, string Author, DateTimeOffset Time, string Text, IReadOnlyList<StudyReply> Replies)
+/// <summary>
+/// A note pinned to a move, with its thread of replies. A thread is open until someone marks it resolved
+/// (<see cref="Resolved"/>, changed at <see cref="StatusTime"/>: the later change wins when studies are merged).
+/// </summary>
+/// <para><see cref="Audio"/>: the file name of a voice note recorded with it (the sound lives next to the games, in
+/// Hoshi's data folder, never inside the SGF).</para>
+public sealed record StudyPin(string Id, PinCategory Category, string Author, DateTimeOffset Time, string Text, IReadOnlyList<StudyReply> Replies,
+    bool Resolved = false, DateTimeOffset? StatusTime = null, string? Audio = null)
 {
     public bool Equals(StudyPin? other) =>
         other is not null && Id == other.Id && Category == other.Category && Author == other.Author && Time == other.Time
-        && Text == other.Text && Replies.SequenceEqual(other.Replies);
+        && Text == other.Text && Replies.SequenceEqual(other.Replies) && Resolved == other.Resolved && StatusTime == other.StatusTime
+        && Audio == other.Audio;
+
+    /// <summary>The names mentioned with "@" in the note and its replies ("@ana", "@Ben.K").</summary>
+    public IReadOnlySet<string> MentionedNames =>
+        new HashSet<string>(Replies.Select(r => r.Text).Prepend(Text).SelectMany(StudyMentions.In), StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>True when the note or a reply mentions <paramref name="name"/> (case does not matter).</summary>
+    public bool Mentions(string name) => name.Length > 0 && MentionedNames.Contains(name.Replace(" ", string.Empty, StringComparison.Ordinal));
 
     public override int GetHashCode() => HashCode.Combine(Id, Category, Author, Text);
+}
+
+/// <summary>"@name" mentions in study text.</summary>
+public static partial class StudyMentions
+{
+    [System.Text.RegularExpressions.GeneratedRegex(@"(?<![\w@])@([\p{L}\p{N}_][\p{L}\p{N}_.\-]*[\p{L}\p{N}_]|[\p{L}\p{N}_])")]
+    private static partial System.Text.RegularExpressions.Regex Pattern();
+
+    public static IEnumerable<string> In(string text) =>
+        string.IsNullOrEmpty(text) ? [] : Pattern().Matches(text).Select(m => m.Groups[1].Value);
 }
 
 /// <summary>A drawing on the board at a move: arrow, area, mark, label or a sequence of "what if" stones.</summary>
@@ -162,7 +186,10 @@ public static class StudyStore
                     }
 
                     PinCategory category = Enum.TryParse(Str(o, "cat"), out PinCategory c) ? c : PinCategory.Question;
-                    pins.Add(new StudyPin(id, category, Str(o, "by"), Time(o), Str(o, "text"), replies));
+                    bool resolved = o["done"] is JsonValue done && done.TryGetValue(out bool b) && b;
+                    DateTimeOffset? statusTime = o["doneAt"] is JsonValue && DateTimeOffset.TryParse(Str(o, "doneAt"), CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset st) ? st : null;
+                    string audio = Str(o, "audio");
+                    pins.Add(new StudyPin(id, category, Str(o, "by"), Time(o), Str(o, "text"), replies, resolved, statusTime, IsAudioName(audio) ? audio : null));
                 }
             }
 
@@ -213,6 +240,21 @@ public static class StudyStore
             if (p.Replies.Count > 0)
             {
                 o["re"] = new JsonArray([.. p.Replies.Select(r => (JsonNode)new JsonObject { ["by"] = r.Author, ["at"] = Stamp(r.Time), ["text"] = r.Text })]);
+            }
+
+            if (p.Resolved)
+            {
+                o["done"] = true;
+            }
+
+            if (p.Audio is { } audio)
+            {
+                o["audio"] = audio;
+            }
+
+            if (p.StatusTime is { } changed)
+            {
+                o["doneAt"] = Stamp(changed); // also when reopened: the later change wins in a merge
             }
 
             pins.Add(o);
@@ -396,7 +438,12 @@ public static class StudyStore
                     items++;
                 }
 
-                pins[i] = pins[i] with { Replies = [.. replies.OrderBy(r => r.Time)] };
+                pins[i] = pins[i] with { Replies = [.. replies.OrderBy(r => r.Time)], Audio = pins[i].Audio ?? p.Audio };
+                if ((p.StatusTime ?? DateTimeOffset.MinValue) > (pins[i].StatusTime ?? DateTimeOffset.MinValue))
+                {
+                    pins[i] = pins[i] with { Resolved = p.Resolved, StatusTime = p.StatusTime };
+                    items++;
+                }
             }
 
             var drawings = mine.Drawings.ToList();
@@ -479,6 +526,11 @@ public static class StudyStore
 
     private static DateTimeOffset Time(JsonObject o) =>
         DateTimeOffset.TryParse(Str(o, "at"), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset t) ? t : DateTimeOffset.UnixEpoch;
+
+    /// <summary>A voice note's file name: letters, digits, dashes and one extension; never a path (the SGF comes from anyone).</summary>
+    public static bool IsAudioName(string? name) =>
+        !string.IsNullOrEmpty(name) && name.Length <= 80
+        && System.Text.RegularExpressions.Regex.IsMatch(name, "^[A-Za-z0-9_-]+\\.(wav|m4a)$");
 
     private static string Stamp(DateTimeOffset t) => t.ToString("O", CultureInfo.InvariantCulture);
 }

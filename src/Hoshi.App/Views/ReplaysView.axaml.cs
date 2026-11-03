@@ -16,5 +16,12 @@ public partial class ReplaysView : UserControl
                 vm.OpenCommand.Execute(null);
             }
         };
+        NotebookList.DoubleTapped += (_, _) =>
+        {
+            if (DataContext is ReplaysViewModel vm)
+            {
+                vm.Notebook.OpenCommand.Execute(null);
+            }
+        };
     }
 }

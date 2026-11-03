@@ -25,7 +25,7 @@ public static class StudyQuiz
         var questions = new List<QuizQuestion>();
         foreach ((GameNode node, NodeStudy study) in StudyStore.All(tree))
         {
-            if (node.Parent is not { } parent || node.GetMove(size) is not { Point: { } played } move)
+            if (node.Parent is null || node.GetMove(size) is not { Point: not null })
             {
                 continue;
             }
@@ -39,16 +39,38 @@ public static class StudyQuiz
                 continue;
             }
 
-            BoardState before = cursor.GetBoard(parent);
-            Point? answer = pin.Category switch
-            {
-                PinCategory.Mistake or PinCategory.Question => Alternative(study, StudyStore.Read(parent), before, move.Color, played),
-                _ => played,
-            };
-            questions.Add(new QuizQuestion(parent, node, pin, move.Color, played, answer));
+            questions.Add(Make(cursor, node, study, pin)!);
         }
 
         return questions;
+    }
+
+    /// <summary>
+    /// The question one pin makes (whatever its category): the position before its move, with the answer when it
+    /// is known. Null when the pin is not on a move.
+    /// </summary>
+    public static QuizQuestion? For(GameTree tree, GameNode node, StudyPin pin)
+    {
+        ArgumentNullException.ThrowIfNull(tree);
+        ArgumentNullException.ThrowIfNull(node);
+        ArgumentNullException.ThrowIfNull(pin);
+        return Make(new GameCursor(tree), node, StudyStore.Read(node), pin);
+    }
+
+    private static QuizQuestion? Make(GameCursor cursor, GameNode node, NodeStudy study, StudyPin pin)
+    {
+        if (node.Parent is not { } parent || node.GetMove(cursor.BoardSize) is not { Point: { } played } move)
+        {
+            return null;
+        }
+
+        BoardState before = cursor.GetBoard(parent);
+        Point? answer = pin.Category switch
+        {
+            PinCategory.Mistake or PinCategory.Question => Alternative(study, StudyStore.Read(parent), before, move.Color, played),
+            _ => played,
+        };
+        return new QuizQuestion(parent, node, pin, move.Color, played, answer);
     }
 
     /// <summary>True when the guess is the answer.</summary>

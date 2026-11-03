@@ -75,11 +75,20 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Services.Presence.DiscordPresence? presence = null,
         IReplayMakerWindowService? replayMakerWindow = null,
         ReportViewModel? report = null,
-        BackupViewModel? backup = null)
+        BackupViewModel? backup = null,
+        Services.Rank.RankStore? rank = null,
+        IBoardPhotoWindowService? photoWindow = null,
+        Services.Study.NoteDeck? notes = null,
+        Services.Study.VoiceNotes? voice = null)
     {
+        _photoWindow = photoWindow;
+        _notes = notes;
+        _photoFiles = files;
+        _rank = rank;
+        game.ResultSet += (_, result) => CountRankGame(result);
         Backup = backup ?? new BackupViewModel();
         Backup.Status += (_, text) => game.ShowStatus(text);
-        if (BackupViewModel.StartupMessage(AppHost.ImportSummary, AppHost.ImportError) is { } imported)
+        if (BackupViewModel.StartupMessage(AppHost.ImportSummary, AppHost.ImportError, AppHost.SyncSummary) is { } imported)
         {
             game.ShowStatus(imported);
         }
@@ -148,11 +157,39 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         if (replaysList is not null)
         {
             replaysList.OpenRequested += (_, entry) => OpenReplay(entry, replaysList.Selected?.MatchMove);
+            replaysList.Notebook.OpenRequested += (_, note) =>
+            {
+                OpenReplay(note.Entry, note.Move);
+                Study!.IsActive = true; // assigned below, before any note can be opened
+            };
             replaysList.PatternSource = SearchPattern;
         }
 
         Analysis = new AnalysisViewModel(game, engine, ui, sounds, settings);
-        Study = new StudyViewModel(game, Analysis, settings, files, dialogs, browser);
+        Study = new StudyViewModel(game, Analysis, settings, files, dialogs, browser) { Voice = voice };
+        Teaching = new TeachingViewModel(game, ogs, CurrentOgsGameId, ui, clipboard);
+        if (tsumego is not null)
+        {
+            Study.AddProblem = problem => tsumego.AddProblems([problem]) > 0;
+        }
+
+        // Presentation: the board alone (zen), as it was before afterwards.
+        bool zenBefore = false;
+        Study.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(StudyViewModel.IsPresenting))
+            {
+                if (Study.IsPresenting)
+                {
+                    zenBefore = IsZen;
+                    IsZen = true;
+                }
+                else
+                {
+                    IsZen = zenBefore;
+                }
+            }
+        };
         Moves = new MoveListViewModel(game, Analysis);
         PropertyChanged += (_, e) =>
         {
@@ -308,6 +345,15 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     }
 
     public GameViewModel Game { get; }
+
+    /// <summary>Teacher mode: OGS review rooms (show the board to students, or follow a teacher).</summary>
+    public TeachingViewModel Teaching { get; }
+
+    /// <summary>The OGS game on the board: the online one, a kept OGS game, or an SGF downloaded from OGS (its PC).</summary>
+    private long? CurrentOgsGameId() =>
+        Game.Online?.GameId
+        ?? _recorder?.OgsGameId
+        ?? Hoshi.Ogs.OgsLinks.TryGameId(Game.Tree.Root.GetValue("PC"));
 
     /// <summary>Territory estimate and the background engine review.</summary>
     public AnalysisViewModel Analysis { get; }
@@ -555,22 +601,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         try
         {
-            Hoshi.Sgf.GameTree tree = _replayStore.Load(entry);
-            LeaveOnline();
-            Game.Load(tree, path: null);
-            Game.IsReview = true;
-            _recorder?.MarkReplay(entry);
-            if (atMove is { } move)
-            {
-                Hoshi.Sgf.GameNode node = tree.Root;
-                for (int n = 0; n < move && node.Children.Count > 0;)
-                {
-                    node = node.Children[0];
-                    n += node.HasMove ? 1 : 0;
-                }
-
-                Game.Cursor.GoTo(node);
-            }
+            ShowReplay(entry, _replayStore.Load(entry), atMove);
         }
         catch (Exception ex) when (ex is IOException or FormatException or UnauthorizedAccessException)
         {
@@ -578,6 +609,110 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             _ = _dialogs?.ShowErrorAsync(Tr.T("Replays.CouldNotOpen"), ex.Message);
         }
     }
+
+    /// <summary>Puts a game of the library on the board (this very tree); later changes update its entry.</summary>
+    private void ShowReplay(ReplayEntry entry, Hoshi.Sgf.GameTree tree, int? atMove = null)
+    {
+        LeaveOnline();
+        Game.Load(tree, path: null);
+        Game.IsReview = true;
+        _recorder?.MarkReplay(entry);
+        if (atMove is { } move)
+        {
+            Hoshi.Sgf.GameNode node = tree.Root;
+            for (int n = 0; n < move && node.Children.Count > 0;)
+            {
+                node = node.Children[0];
+                n += node.HasMove ? 1 : 0;
+            }
+
+            Game.Cursor.GoTo(node);
+        }
+    }
+
+    // ---------- Review of notes (spaced repetition) ----------
+
+    private readonly Services.Study.NoteDeck? _notes;
+
+    /// <summary>The clock of the note review (tests set it).</summary>
+    internal Func<DateTimeOffset> Now { get; set; } = () => DateTimeOffset.Now;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ReviewNotesHeader))]
+    private int _notesDue;
+
+    public bool CanReviewNotes => _notes is not null && _replayStore is not null;
+
+    /// <summary>"Review my notes (4)".</summary>
+    public string ReviewNotesHeader => NotesDue > 0 ? Tr.F("Notes.MenuDue", NotesDue) : Tr.T("Notes.Menu");
+
+    /// <summary>Counts the notes waiting today (reads the library: off the UI thread).</summary>
+    public async Task RefreshNotesDueAsync()
+    {
+        if (_notes is null || _replayStore is null)
+        {
+            return;
+        }
+
+        IReplayStore store = _replayStore;
+        NotesDue = await Task.Run(() => _notes.DueCount(Services.Study.NoteDeck.Collect(store), Now()));
+    }
+
+    /// <summary>Counts the notes waiting today once the app is shown (the menu says how many).</summary>
+    public async void CountNotesAtStart()
+    {
+        try
+        {
+            await RefreshNotesDueAsync();
+        }
+        catch (Exception ex)
+        {
+            Services.Diagnostics.CrashGuard.Report(ex, "count notes");
+        }
+    }
+
+    /// <summary>
+    /// "Review my notes": the mistakes, good moves and key moments pinned in the library's games come back as
+    /// questions on the days the spaced repetition picks; each opens in its game. Not during your live OGS game.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanReviewNotes))]
+    private async Task ReviewNotes()
+    {
+        if (_notes is null || _replayStore is null)
+        {
+            return;
+        }
+
+        if (Study.IsLiveOnline)
+        {
+            Game.ShowStatus(Tr.T("Notes.NotDuringGame"));
+            return;
+        }
+
+        IReplayStore store = _replayStore;
+        IReadOnlyList<Services.Study.NoteReviewItem> all = await Task.Run(() => Services.Study.NoteDeck.Collect(store));
+        IReadOnlyList<Services.Study.NoteReviewItem> session = _notes.Session(all, Now());
+        NotesDue = session.Count;
+        if (session.Count == 0 || Study.IsLiveOnline)
+        {
+            Game.ShowStatus(Tr.T(all.Count == 0 ? "Notes.NoNotes" : "Notes.NothingDue"));
+            return;
+        }
+
+        Study.StartNoteReview(
+            session,
+            item => ShowReplay(item.Entry, item.Tree),
+            (item, right) =>
+            {
+                Hoshi.Sgf.Joseki.JosekiCard card = _notes.Grade(item.Id, right, Now());
+                NotesDue = Math.Max(0, NotesDue - 1);
+                Game.ShowStatus(Tr.F("Notes.Next", NoteWhen(card.Due - Now())));
+            });
+    }
+
+    private static string NoteWhen(TimeSpan wait) => wait.TotalHours < 1 ? Tr.T("Notes.Soon")
+        : Math.Round(wait.TotalDays) <= 1 ? Tr.T("Notes.Tomorrow")
+        : Tr.F("Notes.InDays", (int)Math.Round(wait.TotalDays));
 
     /// <summary>Keeps the game on the board in the replay library (called when the app closes).</summary>
     public void SaveCurrentGame() => _recorder?.SaveCurrent();
@@ -865,7 +1000,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        var options = new NewEngineGameViewModel(_engines.Engines, Game.Board.Rules, _settings?.Current.HumanLevel, Clock.Presets, _settings?.Current.EngineClock);
+        var options = new NewEngineGameViewModel(_engines.Engines, Game.Board.Rules, _settings?.Current.HumanLevel, Clock.Presets, _settings?.Current.EngineClock, _rank?.Current);
         if (!await _engineWindows.AskNewGameAsync(options))
         {
             return;
@@ -904,6 +1039,68 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
 
         EngineMatch.Start(options.EngineFor(options.Black), options.EngineFor(options.White));
+
+        // You against the human-style KataGo: the result will move the estimated rank.
+        bool humanWhite = options.White.Engine?.IsHumanStyle == true && options.Black.Engine is null;
+        bool humanBlack = options.Black.Engine?.IsHumanStyle == true && options.White.Engine is null;
+        _rankGame = humanWhite || humanBlack ? new RankGameContext(Game.Tree, options.HumanLevel, options.Handicap, options.Size, PlayerIsBlack: humanWhite) : null;
+    }
+
+    private readonly Services.Rank.RankStore? _rank;
+    private readonly IBoardPhotoWindowService? _photoWindow;
+    private readonly IFileDialogService? _photoFiles;
+
+    public bool CanReadPhoto => _photoWindow is not null;
+
+    /// <summary>"Photo of the board…": read a position from a photo and open it in the editor.</summary>
+    [RelayCommand(CanExecute = nameof(CanReadPhoto))]
+    private async Task ReadBoardPhoto()
+    {
+        if (_photoWindow is null)
+        {
+            return;
+        }
+
+        var photo = new BoardPhotoViewModel(Game, _photoFiles, Study, KeepPhoto);
+        _photoWindow.Show(photo);
+        await (photo.CanTakePhoto ? photo.TakePhotoCommand : photo.PickCommand).ExecuteAsync(null);
+    }
+
+    /// <summary>A position from a photo goes to the game library; later changes update that same entry.</summary>
+    private bool KeepPhoto(Hoshi.Sgf.GameTree tree)
+    {
+        if (_replayStore?.Save(tree, "photo-" + Guid.NewGuid().ToString("N")[..12], Services.ReplayStore.PhotoSource) is not { } entry)
+        {
+            return false;
+        }
+
+        _recorder?.MarkReplay(entry);
+        return true;
+    }
+    private RankGameContext? _rankGame;
+
+    /// <summary>The engine game whose result counts for the rank: once, and only while it is still on the board.</summary>
+    private sealed record RankGameContext(Hoshi.Sgf.GameTree Tree, string Rival, int Handicap, int Size, bool PlayerIsBlack);
+
+    private void CountRankGame(string result)
+    {
+        if (_rank is null || _rankGame is not { } g || !ReferenceEquals(Game.Tree, g.Tree))
+        {
+            return;
+        }
+
+        _rankGame = null;
+        double? score = result.Length >= 2 && result[1] == '+'
+            ? (char.ToUpperInvariant(result[0]) == 'B') == g.PlayerIsBlack ? 1 : 0
+            : result is "0" or "Draw" or "Jigo" ? 0.5 : null;
+        if (score is not { } s)
+        {
+            return; // "Void", "?": nothing to learn
+        }
+
+        string before = _rank.CurrentOr(g.Rival).Label;
+        Hoshi.Core.RankEstimate after = _rank.Record(g.Rival, g.Handicap, g.Size, g.PlayerIsBlack, s, DateTimeOffset.Now);
+        Game.ShowStatus(Tr.F("Rank.Updated", after.Label, before));
     }
 
     [RelayCommand(CanExecute = nameof(HasEngines))]

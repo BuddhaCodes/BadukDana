@@ -44,6 +44,8 @@ internal static class AndroidPlatform
         PlatformInfo.ShareDirectory = Path.Combine(context.CacheDir?.AbsolutePath ?? Path.GetTempPath(), "share");
         PlatformInfo.ShareFile = (path, mime, title) => Share(context, path, mime, null, title);
         PlatformInfo.ShareText = (text, title) => Share(context, null, "text/plain", text, title);
+        PlatformInfo.TakePhoto = () => TakePhoto(context);
+        PlatformInfo.VoiceRecorder = new AndroidVoiceRecorder(() => _activity);
         PlatformInfo.KeepScreenOn = on =>
         {
             _keepScreenOn = on;
@@ -126,6 +128,109 @@ internal static class AndroidPlatform
             _musicWasPlaying = false;
             music.Start();
         }
+    }
+
+    // ---------- Camera ----------
+
+    private const int PhotoRequest = 4207;
+    private static TaskCompletionSource<bool>? _photoResult;
+
+    /// <summary>
+    /// The phone's camera app takes the photo into the cache's share folder (through the FileProvider, so Hoshi needs
+    /// no camera permission); it is then turned upright (EXIF) and made smaller, ready for the board reader.
+    /// </summary>
+    private static async Task<string?> TakePhoto(Context context)
+    {
+        if (_activity is not { } activity)
+        {
+            return null;
+        }
+
+        string directory = PlatformInfo.ShareDirectory;
+        Directory.CreateDirectory(directory);
+        string raw = Path.Combine(directory, "camera.jpg");
+        File.Delete(raw);
+        Android.Net.Uri uri = AndroidX.Core.Content.FileProvider.GetUriForFile(context, ShareAuthority, new Java.IO.File(raw))!;
+        var intent = new Intent(Android.Provider.MediaStore.ActionImageCapture);
+        intent.PutExtra(Android.Provider.MediaStore.ExtraOutput, uri);
+        intent.AddFlags(ActivityFlags.GrantWriteUriPermission | ActivityFlags.GrantReadUriPermission);
+
+        var result = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _photoResult?.TrySetResult(false);
+        _photoResult = result;
+        try
+        {
+            activity.StartActivityForResult(intent, PhotoRequest);
+        }
+        catch (ActivityNotFoundException)
+        {
+            _photoResult = null;
+            return null; // no camera app
+        }
+
+        if (!await result.Task || !File.Exists(raw) || new FileInfo(raw).Length == 0)
+        {
+            return null;
+        }
+
+        return await Task.Run(() => Upright(raw, Path.Combine(directory, "camera-upright.jpg")));
+    }
+
+    /// <summary>MainActivity passes on the results of the activities Hoshi started (the camera).</summary>
+    public static void OnActivityResult(int requestCode, Result resultCode)
+    {
+        if (requestCode == PhotoRequest)
+        {
+            TaskCompletionSource<bool>? pending = _photoResult;
+            _photoResult = null;
+            pending?.TrySetResult(resultCode == Result.Ok);
+        }
+    }
+
+    private static string Upright(string path, string output)
+    {
+        var exif = new Android.Media.ExifInterface(path);
+        int degrees = exif.GetAttributeInt(Android.Media.ExifInterface.TagOrientation, 1) switch
+        {
+            6 => 90,
+            3 => 180,
+            8 => 270,
+            _ => 0,
+        };
+
+        var bounds = new Android.Graphics.BitmapFactory.Options { InJustDecodeBounds = true };
+        Android.Graphics.BitmapFactory.DecodeFile(path, bounds);
+        int sample = 1;
+        while (Math.Max(bounds.OutWidth, bounds.OutHeight) / (sample * 2) >= BoardPhotoViewModel.MaxWidth)
+        {
+            sample *= 2;
+        }
+
+        using Android.Graphics.Bitmap? decoded = Android.Graphics.BitmapFactory.DecodeFile(path, new Android.Graphics.BitmapFactory.Options { InSampleSize = sample });
+        if (decoded is null)
+        {
+            return path;
+        }
+
+        Android.Graphics.Bitmap upright = decoded;
+        if (degrees != 0)
+        {
+            using var turn = new Android.Graphics.Matrix();
+            turn.PostRotate(degrees);
+            upright = Android.Graphics.Bitmap.CreateBitmap(decoded, 0, 0, decoded.Width, decoded.Height, turn, true)!;
+        }
+
+        using (FileStream stream = File.Create(output))
+        {
+            upright.Compress(Android.Graphics.Bitmap.CompressFormat.Jpeg!, 92, stream);
+        }
+
+        if (!ReferenceEquals(upright, decoded))
+        {
+            upright.Dispose();
+        }
+
+        return output;
     }
 
     /// <summary>Extra of the intent a notification opens: the OGS game to show.</summary>

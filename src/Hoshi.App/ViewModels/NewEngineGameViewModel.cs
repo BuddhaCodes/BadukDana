@@ -79,8 +79,9 @@ public sealed partial class NewEngineGameViewModel : ViewModelBase
     private TimeOption _time;
 
     public NewEngineGameViewModel(IReadOnlyList<EngineChoice> engines, RuleSet? rules = null, string? humanLevel = null,
-        IReadOnlyList<ClockPreset>? clocks = null, string? lastClock = null)
+        IReadOnlyList<ClockPreset>? clocks = null, string? lastClock = null, RankEstimate? estimate = null)
     {
+        _estimate = estimate;
         TimeOptions = [new TimeOption(Tr.T("Engines.NoClock"), null), .. (clocks ?? []).Select(c => new TimeOption(c.Name, c))];
         _time = TimeOptions.FirstOrDefault(t => t.Preset is not null && t.Preset.Name == lastClock) ?? TimeOptions[0];
 
@@ -103,6 +104,59 @@ public sealed partial class NewEngineGameViewModel : ViewModelBase
             new(Tr.T("Game.Rules.NewZealand"), RuleSet.NewZealand),
         ];
         _rules = RulesOptions.FirstOrDefault(r => r.Rules == rules) ?? RulesOptions[0];
+
+        // With an estimate, the human-style KataGo starts at the player's level (they can turn it off).
+        if (estimate is not null && Players.FirstOrDefault(p => p.Engine?.IsHumanStyle == true) is { } human)
+        {
+            _white = human;
+            _atMyLevel = true;
+            Adjust();
+        }
+    }
+
+    private readonly RankEstimate? _estimate;
+    private bool _adjusting;
+
+    /// <summary>"Rival at my level": the human-style KataGo's rank and the handicap follow the estimated rank.</summary>
+    [ObservableProperty]
+    private bool _atMyLevel;
+
+    public bool HasEstimate => _estimate is not null;
+
+    /// <summary>"Your estimated rank: 8k (±2, 12 games)", or how to get one.</summary>
+    public string EstimateText => _estimate is { } e
+        ? Tr.F("Rank.Estimate", e.Label, Math.Round(e.Uncertainty).ToString(System.Globalization.CultureInfo.InvariantCulture), e.Games)
+        : Tr.T("Rank.NoEstimate");
+
+    partial void OnAtMyLevelChanged(bool value) => Adjust();
+
+    /// <summary>The player against the human-style KataGo, with the rank and handicap that make it about even.</summary>
+    private void Adjust()
+    {
+        if (!AtMyLevel || _estimate is null || _adjusting)
+        {
+            return;
+        }
+
+        PlayerOption? human = Players.FirstOrDefault(p => p.Engine?.IsHumanStyle == true);
+        if (human is null)
+        {
+            return;
+        }
+
+        _adjusting = true;
+        try
+        {
+            (string level, int handicap) = RankEstimates.RivalFor(_estimate, Services.Engines.GtpEngineHost.HumanLevels, Size);
+            Black = Players[0]; // the player takes Black: the handicap stones are theirs
+            White = human;
+            HumanLevel = level;
+            Handicap = Handicaps.Contains(handicap) ? handicap : 0;
+        }
+        finally
+        {
+            _adjusting = false;
+        }
     }
 
     public IReadOnlyList<PlayerOption> Players { get; }
@@ -130,6 +184,8 @@ public sealed partial class NewEngineGameViewModel : ViewModelBase
         {
             Handicap = 0;
         }
+
+        Adjust();
     }
 
     partial void OnHandicapChanged(int value) => Komi = value >= 2 ? 0.5 : Rules.Rules.DefaultKomi;

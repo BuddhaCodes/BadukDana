@@ -63,6 +63,10 @@ Press **S** in any game to pin the moments that mattered — mistake, good move,
 joseki, life and death, lesson — and draw arrows, areas, letters and numbered "what if" lines without
 touching the game. Save the study as an SGF and send it: your friend's notes and replies merge into yours.
 Then test yourself with **What would you play?** or print a game report with KataGo's verdict on each moment.
+Your notes come back as a **spaced review** across all your games, **Explain this move** lets KataGo write the
+points lost and its line into the note, the **notebook** searches every note you ever wrote, and **Teach on OGS**
+opens a review room where your students see each move you show. On the phone, record **voice notes** and take a
+**photo of a real board** to study the position.
 
 </td>
 </tr>
@@ -115,7 +119,7 @@ are unranked; Automatch is OGS's ranked queue, and Hoshi tells you so before it 
 ### 🎨 Make it yours
 Five themes — Night sky, Ink and gold, Zen garden, Warm minimal and a Classic tribute — plus six gobans,
 five stone sets and ten backgrounds to mix freely. Every board and stone is rendered by Hoshi itself.
-English and Spanish.
+English, Spanish, Japanese, Korean and simplified Chinese.
 
 </td>
 <td width="50%"><img src="docs/site/img/zen-territory.jpg" alt="Zen garden theme with the territory estimate"></td>
@@ -123,8 +127,9 @@ English and Spanish.
 </table>
 
 **Also:** a library of every game you play (replay it and KataGo judges each move again), territory estimate,
-face-to-face games on one screen, keyboard shortcuts, automatic updates, a `.hoshi` backup that carries your games and
-progress between computer and phone, and **Report a problem** (a ready-made GitHub issue you read before sending). Free, open source, no account needed
+face-to-face games on one screen, keyboard shortcuts, automatic updates, a `.hoshi` backup (and folder sync) that carries your games and
+progress between devices, an estimated rank with a KataGo rival at your level, accuracy per game phase, an endgame
+trainer from your own games, "Guess the move", a photo of a real board turned into SGF, and **Report a problem** (a ready-made GitHub issue you read before sending). Free, open source, no account needed
 to play locally, and your OGS password is never stored.
 
 ## Support Hoshi

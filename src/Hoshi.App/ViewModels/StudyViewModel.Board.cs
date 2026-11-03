@@ -147,6 +147,12 @@ public sealed partial class StudyViewModel
     [RelayCommand(CanExecute = nameof(CanBoardClick))]
     private void BoardClick(Point point)
     {
+        if (Guess.IsActive)
+        {
+            Guess.Answer(point);
+            return;
+        }
+
         if (IsQuizActive)
         {
             AnswerQuiz(point);
@@ -165,7 +171,7 @@ public sealed partial class StudyViewModel
         }
     }
 
-    private bool CanBoardClick(Point point) => IsQuizActive || (IsActive && Tool != StudyTool.Note) || _game.PlayCommand.CanExecute(point);
+    private bool CanBoardClick(Point point) => Guess.IsActive || IsQuizActive || (IsActive && Tool != StudyTool.Note) || _game.PlayCommand.CanExecute(point);
 
     /// <summary>A drag on the board: an arrow or an area.</summary>
     [RelayCommand]
@@ -349,5 +355,6 @@ public sealed partial class StudyViewModel
         StudyStore.Write(node, change(StudyStore.Read(node)));
         _game.StudyEdited();
         Sync();
+        CompareLinesCommand.NotifyCanExecuteChanged();
     }
 }
