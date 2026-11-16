@@ -2,7 +2,7 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <AvaloniaVersion>12.1.5</AvaloniaVersion>
-    <MsExtensionsVersion>10.0.14</MsExtensionsVersion>
+    <MsExtensionsVersion>11.0.0</MsExtensionsVersion>
   </PropertyGroup>
 
   <ItemGroup Label="UI">
